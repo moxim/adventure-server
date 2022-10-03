@@ -7,21 +7,20 @@ import static org.assertj.core.api.Assertions.*;
 class DescriptionProviderTest {
 
     @Test
-    void checkInvalidSetup() throws Exception {
+    void checkInvalidSetup() {
         // given
 
         // when
 
         // then
-        Throwable thrown = catchThrowable(() -> {
-            new DescriptionProvider(null);
-        });
+        Throwable thrown = catchThrowable(() ->
+            new DescriptionProvider(null)
+        );
         assertThat(thrown).hasMessage(DescriptionProvider.NOUN_MISSING_MESSAGE);
-
     }
 
     @Test
-    void checkSimpleDescription() throws Exception {
+    void checkSimpleDescription() {
         // given
         DescriptionProvider sut = new DescriptionProvider("box");
 
@@ -36,7 +35,7 @@ class DescriptionProviderTest {
     }
 
     @Test
-    void checkWhenAdjectiveIsPresent() throws Exception {
+    void checkWhenAdjectiveIsPresent() {
         // given
         DescriptionProvider sut = new DescriptionProvider("small", "box");
 
@@ -51,11 +50,11 @@ class DescriptionProviderTest {
     }
 
     @Test
-    void checkWhenLongAndShortDescriptionsArePresent() throws Exception {
+    void checkWhenLongAndShortDescriptionsArePresent() {
         // given
         DescriptionProvider sut = new DescriptionProvider("small", "box");
-        String shortDescriptioin = "SHORT_D";
-        sut.setShortDescription(shortDescriptioin);
+        String shortDescription = "SHORT_D";
+        sut.setShortDescription(shortDescription);
         String longDescription = "LONG_D";
         sut.setLongDescription(longDescription);
         // when
@@ -64,7 +63,7 @@ class DescriptionProviderTest {
         assertThat(sut.getAdjective()).isEqualTo("small");
         assertThat(sut.getNoun()).isEqualTo("box");
         assertThat(sut.getLongDescription()).isNotEqualTo(sut.getShortDescription());
-        assertThat(sut.getShortDescription()).isEqualTo(shortDescriptioin);
+        assertThat(sut.getShortDescription()).isEqualTo(shortDescription);
         assertThat(sut.getLongDescription()).isEqualTo(longDescription);
     }
 }

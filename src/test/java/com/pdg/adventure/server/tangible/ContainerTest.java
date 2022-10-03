@@ -16,7 +16,7 @@ class ContainerTest {
     private final Container sut = new DefaultContainer(descriptionProvider, CONTAINER_MAX_SIZE);
 
     @Test
-    void testCreation() throws Exception {
+    void testCreation() {
         // given
 
         // when
@@ -28,19 +28,19 @@ class ContainerTest {
     }
 
     @Test
-    void cannotPutAnyItemIntoContainer() throws Exception {
+    void cannotPutAnyItemIntoContainer() {
         // given
 
         // when
 
         // then
-        assertThatThrownBy(() -> {
-            sut.addItem(new Item(descriptionProvider, false));
-        }).hasMessageContaining(NotContainableException.CANNOT_PUT_TEXT);
+        assertThatThrownBy(() ->
+            sut.addItem(new Item(descriptionProvider, false))
+        ).hasMessageContaining(NotContainableException.CANNOT_PUT_TEXT);
     }
 
     @Test
-    void checkContainerMaxed() throws Exception {
+    void checkContainerMaxed() {
         // given
 
         // when
@@ -53,7 +53,7 @@ class ContainerTest {
     }
 
     @Test
-    void cannotItemWhenContainerFull() throws Exception {
+    void cannotItemWhenContainerFull() {
         // given
 
         // when
@@ -62,13 +62,13 @@ class ContainerTest {
         sut.addItem(new Item(descriptionProvider, true));
 
         // then
-        assertThatThrownBy(() -> {
-            sut.addItem(new Item(descriptionProvider, true));
-        }).hasMessageContaining(ContainerFullException.ALREADY_FULL_TEXT);
+        assertThatThrownBy(() ->
+            sut.addItem(new Item(descriptionProvider, true))
+        ).hasMessageContaining(ContainerFullException.ALREADY_FULL_TEXT);
     }
 
     @Test
-    void cannotRemoveMissingItem() throws Exception {
+    void cannotRemoveMissingItem() {
         // given
 
         // when
@@ -78,7 +78,7 @@ class ContainerTest {
     }
 
     @Test
-    void canRemovePresentItem() throws Exception {
+    void canRemovePresentItem() {
         // given
         Item item = new Item(descriptionProvider, true);
 
@@ -90,7 +90,7 @@ class ContainerTest {
     }
 
     @Test
-    void cannotAddPresentItem() throws Exception {
+    void cannotAddPresentItem() {
         // given
         Item item = new Item(descriptionProvider, true);
 
@@ -98,9 +98,9 @@ class ContainerTest {
         sut.addItem(item);
 
         // then
-        assertThatThrownBy(() -> {
-            sut.addItem(item);
-        }).hasMessageContaining(AlreadyPresentException.ALREADY_PRESENT_TEXT);
+        assertThatThrownBy(() ->
+            sut.addItem(item)
+        ).hasMessageContaining(AlreadyPresentException.ALREADY_PRESENT_TEXT);
 
     }
 }
