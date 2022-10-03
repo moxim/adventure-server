@@ -12,7 +12,7 @@ public class Vocabulary {
 //    private static final String WORD_OF_DIFFERENT_TYPE_ALREADY_EXISTS = "Word '%s' is already present, but is of " +
 //            "different type (%s)!";
 
-    private Map<String, Word> vocabulary; // text -> synonym, eg. take -> Word(get, null, VERB)
+    private Map<String, Word> words; // text -> synonym, eg. take -> Word(get, null, VERB)
     /*
       text   | synonym | type
       -------+---------+------
@@ -24,7 +24,7 @@ public class Vocabulary {
      */
 
     public Vocabulary() {
-        vocabulary = new HashMap<>();
+        words = new HashMap<>();
     }
 
     public void addWord(String aWord, Word.WordType aType) {
@@ -33,23 +33,23 @@ public class Vocabulary {
     }
 
     public void addWord(Word aWord) {
-        vocabulary.put(aWord.getText(), aWord);
+        words.put(aWord.getText(), aWord);
     }
 
     public void addSynonym(String aNewWord, Word aSynonym) {
-        Word synonym = vocabulary.get(aSynonym.getText());
+        Word synonym = words.get(aSynonym.getText());
         if (synonym == null) {
             throw new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, aSynonym));
         }
-        vocabulary.put(aNewWord, synonym);
+        words.put(aNewWord, synonym);
     }
 
     public Word getSynonym(String aWord) {
-        return vocabulary.get(aWord);
+        return words.get(aWord);
     }
 
     public Word.WordType getType(String aWord) {
-        Word synonym = vocabulary.get(aWord);
+        Word synonym = words.get(aWord);
         if (synonym == null) {
             throw new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, aWord));
         }

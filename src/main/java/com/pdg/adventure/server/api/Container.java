@@ -12,6 +12,8 @@ public interface Container extends Describable {
     boolean removeItem(Item anItem);
 
     void setMaxSize(int aMaxSize);
+
     int getMaxSize();
+
     int getCurrentSize();
 }

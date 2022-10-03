@@ -4,11 +4,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class VocabularyTest {
+class VocabularyTest {
     private final Vocabulary sut = new Vocabulary();
 
     @Test
-    public void addSimpleWord() {
+    void addSimpleWord() {
         // given
         sut.addWord("take", Word.WordType.VERB);
 
@@ -19,7 +19,7 @@ public class VocabularyTest {
     }
 
     @Test
-    public void addWordForSynonym() {
+    void addWordForSynonym() {
         // given
         Word take = new Word("take", Word.WordType.VERB);
 

@@ -1,0 +1,70 @@
+package com.pdg.adventure.server;
+
+import com.pdg.adventure.server.action.DescribeAction;
+import com.pdg.adventure.server.action.MessageAction;
+import com.pdg.adventure.server.action.MoveAction;
+import com.pdg.adventure.server.api.Container;
+import com.pdg.adventure.server.support.DescriptionProvider;
+import com.pdg.adventure.server.tangible.DefaultContainer;
+import com.pdg.adventure.server.tangible.Item;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.server.vocabulary.Word;
+
+public class MiniAdventure {
+    private final Vocabulary vocabulary;
+    private final Container container;
+
+    public static void main(String[] args) {
+        MiniAdventure game = new MiniAdventure();
+
+        game.setup();
+
+        new MoveAction(new Item(new DescriptionProvider("ring"), true),
+                new DefaultContainer(new DescriptionProvider("box"), 3)).execute();
+    }
+
+    private void setup() {
+        setUpVocabulary();
+        new MessageAction("You have words!").execute();
+        setUpItems();
+        new MessageAction("You have items!").execute();
+    }
+
+    private void setUpItems() {
+        Item knife = new Item(new DescriptionProvider("small", "knife"), true);
+        knife.setLongDescription("The knife is exceptionally sharp. Don't cut yourself!");
+        knife.addAction(new DescribeAction(knife));
+        container.addItem(knife);
+
+        Item rabbit = new Item(new DescriptionProvider("small", "rabbit"), true);
+        rabbit.setLongDescription("The rabbit looks very tasty!");
+        rabbit.addAction(new DescribeAction(rabbit));
+        container.addItem(rabbit);
+    }
+
+    public MiniAdventure() {
+        vocabulary = new Vocabulary();
+        container = new DefaultContainer(new DescriptionProvider("MiniAdventure"), 5);
+        new MessageAction("You enter the game.").execute();
+    }
+
+    private void setUpVocabulary() {
+        Word desc = new Word("desc", Word.WordType.VERB);
+        vocabulary.addWord(desc);
+        vocabulary.addSynonym("look", desc);
+        vocabulary.addWord("knife", Word.WordType.NOUN);
+        Word get = new Word("get", Word.WordType.VERB);
+        vocabulary.addWord(get);
+        vocabulary.addSynonym("take", get);
+        vocabulary.addWord("open", Word.WordType.VERB);
+        vocabulary.addWord("enter", Word.WordType.VERB);
+        vocabulary.addWord("cut", Word.WordType.VERB);
+        vocabulary.addWord("kill", Word.WordType.VERB);
+        Word rabbit = new Word("rabbit", Word.WordType.NOUN);
+        vocabulary.addWord(rabbit);
+        vocabulary.addWord("big", Word.WordType.ADJECTIVE);
+        vocabulary.addSynonym("hare", rabbit);
+        vocabulary.addWord("portal", Word.WordType.NOUN);
+    }
+
+}

@@ -1,19 +1,25 @@
 package com.pdg.adventure.server.tangible;
 
+import com.pdg.adventure.server.api.Action;
+import com.pdg.adventure.server.api.Actionable;
 import com.pdg.adventure.server.api.Describable;
+import com.pdg.adventure.server.support.ActionProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-public class Thing implements Describable {
+public class Thing implements Describable, Actionable {
 
     private final DescriptionProvider descriptionProvider;
+    private final ActionProvider actionProvider;
 
     private final UUID id;
 
     public Thing(DescriptionProvider aDescriptionProvider) {
         descriptionProvider = aDescriptionProvider;
+        actionProvider = new ActionProvider();
         id = UUID.randomUUID();
     }
 
@@ -43,6 +49,21 @@ public class Thing implements Describable {
 
     public void setLongDescription(String aLongDescription) {
         descriptionProvider.setLongDescription(aLongDescription);
+    }
+
+    @Override
+    public List<Action> getActions() {
+        return  actionProvider.getActions();
+    }
+
+    @Override
+    public void addAction(Action anAction) {
+        actionProvider.addAction(anAction);
+    }
+
+    @Override
+    public void removeAction(Action anAction) {
+        actionProvider.removeAction(anAction);
     }
 
     @Override
