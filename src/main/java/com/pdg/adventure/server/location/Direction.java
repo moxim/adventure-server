@@ -1,6 +1,6 @@
 package com.pdg.adventure.server.location;
 
-import com.pdg.adventure.server.action.CommandDescription;
+import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.support.Environment;

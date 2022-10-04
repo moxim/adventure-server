@@ -1,9 +1,13 @@
 package com.pdg.adventure.server;
 
-import com.pdg.adventure.server.action.*;
+import com.pdg.adventure.server.action.DescribeAction;
+import com.pdg.adventure.server.action.MessageAction;
+import com.pdg.adventure.server.action.MoveAction;
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.location.Direction;
 import com.pdg.adventure.server.location.Location;
+import com.pdg.adventure.server.parser.CommandDescription;
+import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.Environment;
 import com.pdg.adventure.server.tangible.GenericContainer;

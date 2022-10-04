@@ -1,6 +1,6 @@
 package com.pdg.adventure.server.tangible;
 
-import com.pdg.adventure.server.action.GenericCommand;
+import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.api.*;
 import com.pdg.adventure.server.support.ActionProvider;
 import com.pdg.adventure.server.support.CommandProvider;

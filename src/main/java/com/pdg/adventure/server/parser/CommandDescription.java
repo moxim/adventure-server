@@ -1,4 +1,4 @@
-package com.pdg.adventure.server.action;
+package com.pdg.adventure.server.parser;
 
 import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.support.Environment;
