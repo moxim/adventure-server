@@ -12,6 +12,8 @@ public class MiniAdventure {
     private final Vocabulary vocabulary;
     private final Container container;
 
+    private static final String SMALL_TEXT = "small";
+
     public static void main(String[] args) {
         MiniAdventure game = new MiniAdventure();
 
@@ -31,17 +33,18 @@ public class MiniAdventure {
     private void setUpMoveCommands(Item anItem) {
         CommandDescription description = new CommandDescription("take", anItem);
         GenericCommand command = new GenericCommand(description, new MoveAction(anItem, container));
+        anItem.addCommand(command);
     }
 
     private void setUpItems() {
-        Item knife = new Item(new DescriptionProvider("small", "knife"), true);
+        Item knife = new Item(new DescriptionProvider(SMALL_TEXT, "knife"), true);
         knife.setShortDescription("A small sharp knife.");
         knife.setLongDescription("The knife is exceptionally sharp. Don't cut yourself!");
 
         knife.addAction(new DescribeAction(knife));
         container.addItem(knife);
 
-        Item rabbit = new Item(new DescriptionProvider("small", "rabbit"), true);
+        Item rabbit = new Item(new DescriptionProvider(SMALL_TEXT, "rabbit"), true);
         rabbit.setLongDescription("The rabbit looks very tasty!");
         rabbit.addAction(new DescribeAction(rabbit));
         GenericCommand cut = new GenericCommand(new CommandDescription("cut",  rabbit), new MessageAction(
@@ -79,7 +82,7 @@ public class MiniAdventure {
         vocabulary.addSynonym("hare", rabbit);
 
         vocabulary.addWord("big", Word.WordType.ADJECTIVE);
-        vocabulary.addWord("small", Word.WordType.ADJECTIVE);
+        vocabulary.addWord(SMALL_TEXT, Word.WordType.ADJECTIVE);
 
         vocabulary.addWord("portal", Word.WordType.NOUN);
     }

@@ -19,7 +19,7 @@ public class CommandProvider {
     }
 
     public void removeCommand(Command aCommand) {
-        availableCommands.remove(aCommand);
+        availableCommands.remove(aCommand.getDescription());
     }
 
     public boolean hasCommand(Command aCommand) {
