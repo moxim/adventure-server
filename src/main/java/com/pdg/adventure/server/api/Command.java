@@ -5,4 +5,8 @@ public interface Command {
     String getDescription();
 
     void execute();
+
+    void addPreCondition(PreCondition aCondition);
+
+    void addFollowUpAction(Action anAction);
 }
