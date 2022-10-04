@@ -1,9 +1,9 @@
 package com.pdg.adventure.server.tangible;
 
 import com.pdg.adventure.server.api.Container;
-import com.pdg.adventure.server.exceptions.AlreadyPresentException;
-import com.pdg.adventure.server.exceptions.ContainerFullException;
-import com.pdg.adventure.server.exceptions.NotContainableException;
+import com.pdg.adventure.server.exception.AlreadyPresentException;
+import com.pdg.adventure.server.exception.ContainerFullException;
+import com.pdg.adventure.server.exception.NotContainableException;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import org.junit.jupiter.api.Test;
 

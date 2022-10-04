@@ -58,10 +58,7 @@ public class Thing implements Describable, Actionable {
     }
 
     public boolean applyCommand(GenericCommand aCommand) {
-        if (commandProvider.couldApplyCommand(aCommand)) {
-            return true;
-        }
-        return false;
+        return commandProvider.couldApplyCommand(aCommand);
     }
 
     public List<String> getAvailableCommandDescriptions() {
@@ -74,8 +71,7 @@ public class Thing implements Describable, Actionable {
 
     @Override
     public List<Command> getCommands() {
-        List<Command> result = new ArrayList<>(commandProvider.getCommands());
-        return result;
+        return new ArrayList<>(commandProvider.getCommands());
     }
 
     @Override

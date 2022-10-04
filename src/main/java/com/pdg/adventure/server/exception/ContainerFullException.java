@@ -1,4 +1,4 @@
-package com.pdg.adventure.server.exceptions;
+package com.pdg.adventure.server.exception;
 
 import com.pdg.adventure.server.api.Container;
 
