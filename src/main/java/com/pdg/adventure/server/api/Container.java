@@ -16,4 +16,6 @@ public interface Container extends Describable {
     int getMaxSize();
 
     int getCurrentSize();
+
+    boolean contains(Describable aThing);
 }

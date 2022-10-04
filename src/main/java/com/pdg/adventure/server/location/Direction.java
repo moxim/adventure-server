@@ -16,8 +16,6 @@ public class Direction implements Describable {
 
     public String getDescription() {
         String verb = "You can " + command.getVerb();
-        String adjective = command.getAdjective();
-
         String result = verb;
 
         String noun = command.getNoun();
@@ -25,14 +23,22 @@ public class Direction implements Describable {
             result += " the ";
         }
 
+        result += constructDescriptionFromAdjectiveAndNoun();
+
+        return result;
+    }
+
+    private String constructDescriptionFromAdjectiveAndNoun() {
+        String result = "";
+        String adjective = command.getAdjective();
         if (!Environment.EMPTY_STRING.equals(adjective)) {
             result += command.getAdjective() + " ";
         }
 
+        String noun = command.getNoun();
         if (!Environment.EMPTY_STRING.equals(noun)) {
             result += noun;
         }
-
         return result;
     }
 
@@ -48,7 +54,7 @@ public class Direction implements Describable {
 
     @Override
     public String getShortDescription() {
-        return getDescription();
+        return constructDescriptionFromAdjectiveAndNoun();
     }
 
     @Override

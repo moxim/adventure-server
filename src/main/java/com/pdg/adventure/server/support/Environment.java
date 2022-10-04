@@ -17,7 +17,7 @@ public class Environment {
     public static void show(Location aLocation) {
         showDescription(aLocation);
         showDirections(aLocation);
-        showContents(aLocation.getContainer());
+        showContents(aLocation.getContainer(), "You also see:");
     }
 
     private static void showDirections(Location aLocation) {
@@ -30,8 +30,8 @@ public class Environment {
         }
     }
 
-    private static void showContents(Container aContainer) {
-        tell("You also see: ");
+    public static void showContents(Container aContainer, String aMessageForamt) {
+        tell(String.format(aMessageForamt, aContainer.getShortDescription()));
         showShortDescriptions(aContainer.getContents());
     }
 

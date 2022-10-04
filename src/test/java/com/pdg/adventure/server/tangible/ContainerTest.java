@@ -35,7 +35,7 @@ class ContainerTest {
 
         // then
         assertThatThrownBy(() ->
-            sut.addItem(new Item(descriptionProvider, false))
+            sut.add(new Item(descriptionProvider, false))
         ).hasMessageContaining(NotContainableException.CANNOT_PUT_TEXT);
     }
 
@@ -44,9 +44,9 @@ class ContainerTest {
         // given
 
         // when
-        sut.addItem(new Item(descriptionProvider, true));
-        sut.addItem(new Item(descriptionProvider, true));
-        sut.addItem(new Item(descriptionProvider, true));
+        sut.add(new Item(descriptionProvider, true));
+        sut.add(new Item(descriptionProvider, true));
+        sut.add(new Item(descriptionProvider, true));
 
         // then
         assertThat(sut.getCurrentSize()).isEqualTo(3);
@@ -57,13 +57,13 @@ class ContainerTest {
         // given
 
         // when
-        sut.addItem(new Item(descriptionProvider, true));
-        sut.addItem(new Item(descriptionProvider, true));
-        sut.addItem(new Item(descriptionProvider, true));
+        sut.add(new Item(descriptionProvider, true));
+        sut.add(new Item(descriptionProvider, true));
+        sut.add(new Item(descriptionProvider, true));
 
         // then
         assertThatThrownBy(() ->
-            sut.addItem(new Item(descriptionProvider, true))
+            sut.add(new Item(descriptionProvider, true))
         ).hasMessageContaining(ContainerFullException.ALREADY_FULL_TEXT);
     }
 
@@ -74,7 +74,7 @@ class ContainerTest {
         // when
 
         // then
-        assertThat(sut.removeItem(new Item(descriptionProvider, false))).isFalse();
+        assertThat(sut.remove(new Item(descriptionProvider, false))).isFalse();
     }
 
     @Test
@@ -83,10 +83,10 @@ class ContainerTest {
         Item item = new Item(descriptionProvider, true);
 
         // when
-        sut.addItem(item);
+        sut.add(item);
 
         // then
-        assertThat(sut.removeItem(item)).isTrue();
+        assertThat(sut.remove(item)).isTrue();
     }
 
     @Test
@@ -95,11 +95,11 @@ class ContainerTest {
         Item item = new Item(descriptionProvider, true);
 
         // when
-        sut.addItem(item);
+        sut.add(item);
 
         // then
         assertThatThrownBy(() ->
-            sut.addItem(item)
+            sut.add(item)
         ).hasMessageContaining(AlreadyPresentException.ALREADY_PRESENT_TEXT);
 
     }

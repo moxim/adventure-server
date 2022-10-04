@@ -15,6 +15,7 @@ public class MiniAdventure {
     private final Vocabulary vocabulary;
     private final Container pocket;
     private final Location location;
+    private final Item ring;
 
     private static final String SMALL_TEXT = "small";
 
@@ -23,9 +24,15 @@ public class MiniAdventure {
 
         game.setup();
 
+        Environment.tell("$> look");
         Environment.show(game.location);
 
-        new MoveAction(new Item(new DescriptionProvider("ring"), true), game.pocket).execute();
+        new MoveAction(game.ring, game.pocket).execute();
+
+        Environment.showContents(game.pocket, "In the %s you see:");
+
+        Environment.tell("$> look");
+        Environment.show(game.location);
     }
 
     private void setup() {
@@ -37,10 +44,10 @@ public class MiniAdventure {
     }
 
     private void setUpDirections() {
-        CommandDescription enterPortal = new CommandDescription("enter", "portal");
-        DescriptionProvider portalDescription = new DescriptionProvider("glowing", "portal");
-        portalDescription.setLongDescription("The portal fades already, it looks like it closes soon!");
+        DescriptionProvider portalDescription = new DescriptionProvider("fading", "portal");
+        portalDescription.setLongDescription("The portal fades slowly already, it looks like it closes soon!");
         Location portal = new Location(portalDescription);
+        CommandDescription enterPortal = new CommandDescription("enter", portal);
         Direction toPortal = new Direction(portal.getContainer(), enterPortal);
         location.addDirection(toPortal);
     }
@@ -58,7 +65,7 @@ public class MiniAdventure {
         setUpMoveCommands(knife);
 
         knife.addAction(new DescribeAction(knife));
-        container.addItem(knife);
+        container.add(knife);
 
         Item rabbit = new Item(new DescriptionProvider(SMALL_TEXT, "rabbit"), true);
         rabbit.setLongDescription("The rabbit looks very tasty!");
@@ -68,11 +75,7 @@ public class MiniAdventure {
         rabbit.addCommand(cut);
         setUpMoveCommands(rabbit);
 
-        Item ring = new Item(new DescriptionProvider("golden", "ring"), true);
-        container.addItem(ring);
-        setUpMoveCommands(ring);
-
-        container.addItem(rabbit);
+        container.add(rabbit);
     }
 
     public MiniAdventure() {
@@ -84,6 +87,10 @@ public class MiniAdventure {
         location = new Location(locationDescription);
         new MessageAction("You enter the game.").execute();
         pocket = new GenericContainer(new DescriptionProvider("pocket"), 3);
+
+        ring = new Item(new DescriptionProvider("golden", "ring"), true);
+        location.getContainer().add(ring);
+        setUpMoveCommands(ring);
     }
 
     private void setUpVocabulary() {
