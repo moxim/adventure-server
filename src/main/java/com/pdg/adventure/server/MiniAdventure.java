@@ -115,8 +115,8 @@ public class MiniAdventure {
         vocabulary.addWord(rabbit);
         vocabulary.addSynonym("hare", rabbit);
 
-        Word ring = new Word("ring", Word.WordType.NOUN);
-        vocabulary.addWord(ring);
+        Word ringWord = new Word("ring", Word.WordType.NOUN);
+        vocabulary.addWord(ringWord);
 
         vocabulary.addWord("big", Word.WordType.ADJECTIVE);
         vocabulary.addWord(SMALL_TEXT, Word.WordType.ADJECTIVE);

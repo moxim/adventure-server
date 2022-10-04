@@ -39,8 +39,8 @@ public class GenericCommand implements Command {
         }
         if (canExecute) {
             action.execute();
-            for (Action action : followUpActions) {
-                action.execute();
+            for (Action followUpAction : followUpActions) {
+                followUpAction.execute();
             }
         }
 

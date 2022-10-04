@@ -30,7 +30,7 @@ public class Environment {
 
     private static void showDirections(Location aLocation) {
         final List<Direction> directions = aLocation.getDirections();
-        if (directions.size() > 0) {
+        if (!directions.isEmpty()) {
             tell("Exits are:");
             showShortDescriptions(directions);
         } else {
