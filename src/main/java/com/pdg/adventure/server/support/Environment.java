@@ -9,6 +9,7 @@ import java.util.List;
 
 public class Environment {
     public static final String EMPTY_STRING = "";
+    private static final VariableProvider variableProvider = new VariableProvider();
 
     private Environment() {
         // don't instantiate me
@@ -62,5 +63,11 @@ public class Environment {
         System.out.println(aMessage);
     }
 
+    public static Variable getVariable(String aName) {
+        return variableProvider.get(aName);
+    }
 
+    public static void setVariable(String aName, String aValue) {
+        variableProvider.set(new Variable(aName, aValue));
+    }
 }
