@@ -35,6 +35,7 @@ public class MiniAdventure {
 
     private void setUpItems() {
         Item knife = new Item(new DescriptionProvider("small", "knife"), true);
+        knife.setShortDescription("A small sharp knife.");
         knife.setLongDescription("The knife is exceptionally sharp. Don't cut yourself!");
 
         knife.addAction(new DescribeAction(knife));
