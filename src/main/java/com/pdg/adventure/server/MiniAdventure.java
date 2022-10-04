@@ -6,7 +6,6 @@ import com.pdg.adventure.server.action.MoveAction;
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.location.Direction;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.Environment;
@@ -51,14 +50,13 @@ public class MiniAdventure {
         DescriptionProvider portalDescription = new DescriptionProvider("fading", "portal");
         portalDescription.setLongDescription("The portal fades slowly already, it looks like it closes soon!");
         Location portal = new Location(portalDescription);
-        CommandDescription enterPortal = new CommandDescription("enter", portal);
-        Direction toPortal = new Direction(portal.getContainer(), enterPortal);
+
+        Direction toPortal = new Direction("enter", portal);
         location.addDirection(toPortal);
     }
 
     private void setUpMoveCommands(Item anItem) {
-        CommandDescription description = new CommandDescription("take", anItem);
-        GenericCommand command = new GenericCommand(description, new MoveAction(anItem, pocket));
+        GenericCommand command = new GenericCommand("take", new MoveAction(anItem, pocket));
         anItem.addCommand(command);
     }
 
@@ -68,14 +66,13 @@ public class MiniAdventure {
         knife.setLongDescription("The knife is exceptionally sharp. Don't cut yourself!");
         setUpMoveCommands(knife);
 
-        knife.addAction(new DescribeAction(knife));
+        knife.addCommand(new GenericCommand("look", new DescribeAction(knife)));
         container.add(knife);
 
         Item rabbit = new Item(new DescriptionProvider(SMALL_TEXT, "rabbit"), true);
         rabbit.setLongDescription("The rabbit looks very tasty!");
-        rabbit.addAction(new DescribeAction(rabbit));
-        GenericCommand cut = new GenericCommand(new CommandDescription("cut",  rabbit), new MessageAction(
-                "You cut the rabbit to pieces."));
+        rabbit.addCommand(new GenericCommand("look", new DescribeAction(rabbit)));
+        GenericCommand cut = new GenericCommand("cut", new MessageAction("You cut the rabbit to pieces."));
         rabbit.addCommand(cut);
         setUpMoveCommands(rabbit);
 

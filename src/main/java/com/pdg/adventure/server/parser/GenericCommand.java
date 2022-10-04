@@ -9,24 +9,26 @@ import java.util.List;
 import java.util.UUID;
 
 public class GenericCommand implements Command {
-    private final CommandDescription description;
+    private final String verb;
     private final List<PreCondition> preConditions;
     private final List<Action> followUpActions;
     private final Action action;
     private final UUID id;
 
-    public GenericCommand(CommandDescription aDescription, Action anAction) {
-        description = aDescription;
+    public GenericCommand(String aVerb, Action anAction) {
+        verb = aVerb;
         action = anAction;
         id = UUID.randomUUID();
         preConditions = new ArrayList<>();
         followUpActions = new ArrayList<>();
     }
 
+    @Override
     public String getDescription() {
-        return description.getDescription();
+        return verb;
     }
 
+    @Override
     public void execute() {
         boolean canExecute = true;
         for (PreCondition condition : preConditions) {

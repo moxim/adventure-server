@@ -1,8 +1,9 @@
 package com.pdg.adventure.server.tangible;
 
+import com.pdg.adventure.server.api.Actionable;
+import com.pdg.adventure.server.api.Command;
+import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.parser.GenericCommand;
-import com.pdg.adventure.server.api.*;
-import com.pdg.adventure.server.support.ActionProvider;
 import com.pdg.adventure.server.support.CommandProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
 
@@ -14,7 +15,6 @@ import java.util.UUID;
 public class Thing implements Describable, Actionable {
 
     private final DescriptionProvider descriptionProvider;
-    private final ActionProvider actionProvider;
     private final CommandProvider commandProvider;
 
     private final UUID id;
@@ -22,7 +22,6 @@ public class Thing implements Describable, Actionable {
     public Thing(DescriptionProvider aDescriptionProvider) {
         descriptionProvider = aDescriptionProvider;
         commandProvider = new CommandProvider();
-        actionProvider = new ActionProvider();
         id = UUID.randomUUID();
     }
 
@@ -80,22 +79,6 @@ public class Thing implements Describable, Actionable {
     public void removeCommand(Command aCommand) {
         commandProvider.removeCommand(aCommand);
     }
-
-    @Override
-    public List<Action> getActions() {
-        return  actionProvider.getActions();
-    }
-
-    @Override
-    public void addAction(Action anAction) {
-        actionProvider.addAction(anAction);
-    }
-
-    @Override
-    public void removeAction(Action anAction) {
-        actionProvider.removeAction(anAction);
-    }
-
 
     @Override
     public boolean equals(Object aO) {

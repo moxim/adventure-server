@@ -4,15 +4,22 @@ import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.location.Direction;
 import com.pdg.adventure.server.location.Location;
+import com.pdg.adventure.server.tangible.Thing;
 
 import java.util.List;
 
 public class Environment {
     public static final String EMPTY_STRING = "";
+
+    private static final Thing player = new Thing(new DescriptionProvider("you"));
     private static final VariableProvider variableProvider = new VariableProvider();
 
     private Environment() {
         // don't instantiate me
+    }
+
+    public static Thing getPlayer() {
+        return player;
     }
 
     public static void show(Location aLocation) {

@@ -17,7 +17,7 @@ public class DescriptionProvider {
         validateParameters(aNoun);
         adjective = anAdjective;
         if (adjective == null) {
-            adjective = "";
+            adjective = Environment.EMPTY_STRING;
         } else {
 //            Environment.addCustomWord(adjective, ZWord.WordType.ADJECTIVE);
         }
@@ -41,7 +41,7 @@ public class DescriptionProvider {
 
     public String getShortDescription() {
         if (shortDescription == null) {
-            if ("".equals(adjective)) {
+            if (Environment.EMPTY_STRING.equals(adjective)) {
                 shortDescription = noun;
             } else {
                 shortDescription = adjective + " " + noun;

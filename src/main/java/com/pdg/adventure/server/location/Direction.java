@@ -1,41 +1,38 @@
 package com.pdg.adventure.server.location;
 
-import com.pdg.adventure.server.parser.CommandDescription;
-import com.pdg.adventure.server.api.Container;
+import com.pdg.adventure.server.action.MoveAction;
 import com.pdg.adventure.server.api.Describable;
+import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.support.Environment;
 
-public class Direction implements Describable {
-    private final Container location;
-    private final CommandDescription command;
+public class Direction extends GenericCommand implements Describable {
+    private final Location destination;
+    private final String command;
+    private final boolean destinationMustBeMentioned;
 
-    public Direction(Container aLocation, CommandDescription aCommand) {
-        location = aLocation;
-        command = aCommand;
+    public Direction(String aCommand, Location aDestination) {
+        this(aCommand, aDestination, false);
     }
 
-    public String getDescription() {
-        String verb = "You can " + command.getVerb();
-        String result = verb;
+    public Direction(String aCommand, Location aDestination, boolean aFlagWhetherDestinationMustBeMentioned) {
+        super(aCommand, new MoveAction(null, aDestination.getContainer()));
+        destination = aDestination;
+        command = aCommand;
+        destinationMustBeMentioned = aFlagWhetherDestinationMustBeMentioned;
+    }
 
-        String noun = command.getNoun();
-        if (!Environment.EMPTY_STRING.equals(noun)) {
-            result += " the ";
-        }
-
-        result += constructDescriptionFromAdjectiveAndNoun();
-
-        return result;
+    public Location getDestination() {
+        return destination;
     }
 
     private String constructDescriptionFromAdjectiveAndNoun() {
         String result = "";
-        String adjective = command.getAdjective();
+        String adjective = destination.getAdjective();
         if (!Environment.EMPTY_STRING.equals(adjective)) {
-            result += command.getAdjective() + " ";
+            result += destination.getAdjective() + " ";
         }
 
-        String noun = command.getNoun();
+        String noun = destination.getNoun();
         if (!Environment.EMPTY_STRING.equals(noun)) {
             result += noun;
         }
@@ -44,21 +41,36 @@ public class Direction implements Describable {
 
     @Override
     public String getAdjective() {
-        return command.getAdjective();
+        return destination.getAdjective();
     }
 
     @Override
     public String getNoun() {
-        return command.getNoun();
+        return destination.getNoun();
     }
 
     @Override
     public String getShortDescription() {
-        return constructDescriptionFromAdjectiveAndNoun();
+        if (destinationMustBeMentioned) {
+            return constructDescriptionFromAdjectiveAndNoun();
+        }
+        return command;
     }
 
     @Override
     public String getLongDescription() {
-        return getDescription();
+        if (destinationMustBeMentioned) {
+            String result = "You can " + command;
+
+            String noun = destination.getNoun();
+            if (!Environment.EMPTY_STRING.equals(noun)) {
+                result += " the ";
+            }
+
+            result += constructDescriptionFromAdjectiveAndNoun();
+
+            return result;
+        }
+        return command;
     }
 }
