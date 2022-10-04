@@ -12,5 +12,5 @@ public interface Actionable {
     void removeCommand(Command aDefautCommand);
 
 //    void executeAction(Action anAction, Actor anActor);
-//    void executeCommandFor(Actor anActor, DefaultCommand aCommand);
+//    void executeCommandFor(Actor anActor, GenericCommand aCommand);
 }

@@ -3,7 +3,7 @@ package com.pdg.adventure.server;
 import com.pdg.adventure.server.action.*;
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.tangible.DefaultContainer;
+import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 import com.pdg.adventure.server.vocabulary.Word;
@@ -18,7 +18,7 @@ public class MiniAdventure {
         game.setup();
 
         new MoveAction(new Item(new DescriptionProvider("ring"), true),
-                new DefaultContainer(new DescriptionProvider("box"), 3)).execute();
+                new GenericContainer(new DescriptionProvider("box"), 3)).execute();
     }
 
     private void setup() {
@@ -30,7 +30,7 @@ public class MiniAdventure {
 
     private void setUpMoveCommands(Item anItem) {
         CommandDescription description = new CommandDescription("take", anItem);
-        DefaultCommand defaultCommand = new DefaultCommand(description, new MoveAction(anItem, container));
+        GenericCommand command = new GenericCommand(description, new MoveAction(anItem, container));
     }
 
     private void setUpItems() {
@@ -43,7 +43,7 @@ public class MiniAdventure {
         Item rabbit = new Item(new DescriptionProvider("small", "rabbit"), true);
         rabbit.setLongDescription("The rabbit looks very tasty!");
         rabbit.addAction(new DescribeAction(rabbit));
-        DefaultCommand cut = new DefaultCommand(new CommandDescription("cut",  rabbit), new MessageAction(
+        GenericCommand cut = new GenericCommand(new CommandDescription("cut",  rabbit), new MessageAction(
                 "You cut the rabbit to pieces."));
         rabbit.addCommand(cut);
 
@@ -52,7 +52,7 @@ public class MiniAdventure {
 
     public MiniAdventure() {
         vocabulary = new Vocabulary();
-        container = new DefaultContainer(new DescriptionProvider("MiniAdventure"), 5);
+        container = new GenericContainer(new DescriptionProvider("MiniAdventure"), 5);
         new MessageAction("You enter the game.").execute();
     }
 

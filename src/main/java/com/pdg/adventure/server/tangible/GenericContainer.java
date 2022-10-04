@@ -9,12 +9,12 @@ import com.pdg.adventure.server.support.DescriptionProvider;
 import java.util.LinkedList;
 import java.util.List;
 
-public class DefaultContainer extends Thing implements Container {
+public class GenericContainer extends Thing implements Container {
 
     private final List<Item> contents = new LinkedList<>();
     private int maxSize;
 
-    public DefaultContainer(DescriptionProvider aDescriptionProvider, int aMaxSize) {
+    public GenericContainer(DescriptionProvider aDescriptionProvider, int aMaxSize) {
         super(aDescriptionProvider);
         maxSize = aMaxSize;
     }

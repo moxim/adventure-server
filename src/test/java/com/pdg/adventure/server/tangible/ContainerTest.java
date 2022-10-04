@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ContainerTest {
     private static final int CONTAINER_MAX_SIZE = 3;
     private static final DescriptionProvider descriptionProvider = new DescriptionProvider("box");
-    private final Container sut = new DefaultContainer(descriptionProvider, CONTAINER_MAX_SIZE);
+    private final Container sut = new GenericContainer(descriptionProvider, CONTAINER_MAX_SIZE);
 
     @Test
     void testCreation() {

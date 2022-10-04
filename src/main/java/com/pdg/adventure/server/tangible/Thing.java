@@ -1,6 +1,6 @@
 package com.pdg.adventure.server.tangible;
 
-import com.pdg.adventure.server.action.DefaultCommand;
+import com.pdg.adventure.server.action.GenericCommand;
 import com.pdg.adventure.server.api.Action;
 import com.pdg.adventure.server.api.Actionable;
 import com.pdg.adventure.server.api.Command;
@@ -57,8 +57,8 @@ public class Thing implements Describable, Actionable {
         descriptionProvider.setLongDescription(aLongDescription);
     }
 
-    public boolean applyCommand(DefaultCommand aDefaultCommand) {
-        if (commandProvider.couldApplyCommand(aDefaultCommand)) {
+    public boolean applyCommand(GenericCommand aCommand) {
+        if (commandProvider.couldApplyCommand(aCommand)) {
             return true;
         }
         return false;
