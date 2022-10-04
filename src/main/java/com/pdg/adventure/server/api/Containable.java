@@ -1,6 +1,6 @@
 package com.pdg.adventure.server.api;
 
-public interface Containable {
+public interface Containable extends Describable {
     boolean isContainable();
 
     Container getParentContainer();

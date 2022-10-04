@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.tangible;
 
+import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.exception.AlreadyPresentException;
@@ -10,18 +11,18 @@ import com.pdg.adventure.server.support.DescriptionProvider;
 import java.util.LinkedList;
 import java.util.List;
 
-public class GenericContainer extends Thing implements Container {
+public class GenericContainer extends Item implements Container {
 
-    private final List<Item> contents = new LinkedList<>();
+    private final List<Containable> contents = new LinkedList<>();
     private int maxSize;
 
     public GenericContainer(DescriptionProvider aDescriptionProvider, int aMaxSize) {
-        super(aDescriptionProvider);
+        super(aDescriptionProvider, false);
         maxSize = aMaxSize;
     }
 
     @Override
-    public List<Item> getContents() {
+    public List<Containable> getContents() {
         return contents;
     }
 
@@ -51,7 +52,7 @@ public class GenericContainer extends Thing implements Container {
     }
 
     @Override
-    public void addItem(Item anItem) {
+    public void add(Containable anItem) {
         if (contents.contains(anItem)) {
             throw new AlreadyPresentException(anItem, this);
         }
@@ -66,7 +67,7 @@ public class GenericContainer extends Thing implements Container {
     }
 
     @Override
-    public boolean removeItem(Item anItem) {
+    public boolean remove(Containable anItem) {
         return contents.remove(anItem);
     }
 }

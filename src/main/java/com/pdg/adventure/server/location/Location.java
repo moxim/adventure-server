@@ -23,12 +23,12 @@ public class Location extends Thing implements Visitable {
         hasBeenVisited = false; // explicit, but redundant
     }
 
-    public void addItem(Item anItem) {
-        container.addItem(anItem);
+    public void add(Item anItem) {
+        container.add(anItem);
     }
 
-    public void removeItem(Item anItem) {
-        container.removeItem(anItem);
+    public void remove(Item anItem) {
+        container.remove(anItem);
     }
 
     public Container getContainer() {

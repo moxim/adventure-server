@@ -1,15 +1,13 @@
 package com.pdg.adventure.server.api;
 
-import com.pdg.adventure.server.tangible.Item;
-
 import java.util.List;
 
 public interface Container extends Describable {
-    List<Item> getContents();
+    List<Containable> getContents();
 
-    void addItem(Item anItem);
+    void add(Containable aThing);
 
-    boolean removeItem(Item anItem);
+    boolean remove(Containable aThing);
 
     void setMaxSize(int aMaxSize);
 
