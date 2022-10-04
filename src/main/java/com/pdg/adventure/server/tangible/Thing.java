@@ -1,10 +1,7 @@
 package com.pdg.adventure.server.tangible;
 
 import com.pdg.adventure.server.action.GenericCommand;
-import com.pdg.adventure.server.api.Action;
-import com.pdg.adventure.server.api.Actionable;
-import com.pdg.adventure.server.api.Command;
-import com.pdg.adventure.server.api.Describable;
+import com.pdg.adventure.server.api.*;
 import com.pdg.adventure.server.support.ActionProvider;
 import com.pdg.adventure.server.support.CommandProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
@@ -98,6 +95,7 @@ public class Thing implements Describable, Actionable {
     public void removeAction(Action anAction) {
         actionProvider.removeAction(anAction);
     }
+
 
     @Override
     public boolean equals(Object aO) {

@@ -1,18 +1,26 @@
 package com.pdg.adventure.server.location;
 
 import com.pdg.adventure.server.api.Container;
+import com.pdg.adventure.server.api.Visitable;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.tangible.Thing;
 
-public class Location extends Thing {
+import java.util.ArrayList;
+import java.util.List;
+
+public class Location extends Thing implements Visitable {
 
     private final Container container;
+    private final List<Direction> directions;
+    private boolean hasBeenVisited;
 
     public Location(DescriptionProvider aDescriptionProvider) {
         super(aDescriptionProvider);
-        container  = new GenericContainer(aDescriptionProvider, 99);
+        container = new GenericContainer(aDescriptionProvider, 99);
+        directions = new ArrayList<>();
+        hasBeenVisited = false; // explicit, but redundant
     }
 
     public void addItem(Item anItem) {
@@ -22,4 +30,27 @@ public class Location extends Thing {
     public void removeItem(Item anItem) {
         container.removeItem(anItem);
     }
+
+    public Container getContainer() {
+        return container;
+    }
+
+    public void addDirection(Direction aDirection) {
+        directions.add(aDirection);
+    }
+
+    public List<Direction> getDirections() {
+        return directions;
+    }
+
+    @Override
+    public boolean hasBeenVisited() {
+        return hasBeenVisited;
+    }
+
+    @Override
+    public void setHasBeenVisited(boolean aFlagWhetherThisHasBeenSeen) {
+        hasBeenVisited = aFlagWhetherThisHasBeenSeen;
+    }
+
 }

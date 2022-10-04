@@ -1,6 +1,7 @@
 package com.pdg.adventure.server.action;
 
 import com.pdg.adventure.server.api.Describable;
+import com.pdg.adventure.server.support.Environment;
 
 public class CommandDescription {
     private final String verb;
@@ -12,17 +13,29 @@ public class CommandDescription {
     }
 
     public CommandDescription(String aVerb) {
-        this(aVerb, "", "");
+        this(aVerb, Environment.EMPTY_STRING, Environment.EMPTY_STRING);
     }
 
     public CommandDescription(String aVerb, String aNoun) {
-        this(aVerb, "", aNoun);
+        this(aVerb, Environment.EMPTY_STRING, aNoun);
     }
 
     public CommandDescription(String aVerb, String anAdjective, String aNoun) {
         verb = aVerb;
         adjective = anAdjective;
         noun = aNoun;
+    }
+
+    public String getVerb() {
+        return verb;
+    }
+
+    public String getAdjective() {
+        return adjective;
+    }
+
+    public String getNoun() {
+        return noun;
     }
 
     public String getDescription() {

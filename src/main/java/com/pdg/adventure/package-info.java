@@ -5,6 +5,5 @@ package com.pdg.adventure;
  *  - create PostCondition & PreCondition in package condition
  *  - add ListOfPostConditions & PreConditions to Command
  *  - create DestroyAction & CreateAction
- *  - rename package exceptions to exception
  *
  */
