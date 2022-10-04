@@ -1,11 +1,15 @@
 package com.pdg.adventure.server.tangible;
 
+import com.pdg.adventure.server.action.DefaultCommand;
 import com.pdg.adventure.server.api.Action;
 import com.pdg.adventure.server.api.Actionable;
+import com.pdg.adventure.server.api.Command;
 import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.support.ActionProvider;
+import com.pdg.adventure.server.support.CommandProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -14,11 +18,13 @@ public class Thing implements Describable, Actionable {
 
     private final DescriptionProvider descriptionProvider;
     private final ActionProvider actionProvider;
+    private final CommandProvider commandProvider;
 
     private final UUID id;
 
     public Thing(DescriptionProvider aDescriptionProvider) {
         descriptionProvider = aDescriptionProvider;
+        commandProvider = new CommandProvider();
         actionProvider = new ActionProvider();
         id = UUID.randomUUID();
     }
@@ -49,6 +55,37 @@ public class Thing implements Describable, Actionable {
 
     public void setLongDescription(String aLongDescription) {
         descriptionProvider.setLongDescription(aLongDescription);
+    }
+
+    public boolean applyCommand(DefaultCommand aDefaultCommand) {
+        if (commandProvider.couldApplyCommand(aDefaultCommand)) {
+            return true;
+        }
+        return false;
+    }
+
+    public List<String> getAvailableCommandDescriptions() {
+        List<String> result = new ArrayList<>();
+        for (Command command : commandProvider.getCommands()) {
+            result.add(command.getDescription());
+        }
+        return result;
+    }
+
+    @Override
+    public List<Command> getCommands() {
+        List<Command> result = new ArrayList<>(commandProvider.getCommands());
+        return result;
+    }
+
+    @Override
+    public void addCommand(Command aCommand) {
+        commandProvider.addCommand(aCommand);
+    }
+
+    @Override
+    public void removeCommand(Command aCommand) {
+        commandProvider.removeCommand(aCommand);
     }
 
     @Override

@@ -1,8 +1,6 @@
 package com.pdg.adventure.server;
 
-import com.pdg.adventure.server.action.DescribeAction;
-import com.pdg.adventure.server.action.MessageAction;
-import com.pdg.adventure.server.action.MoveAction;
+import com.pdg.adventure.server.action.*;
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.DefaultContainer;
@@ -30,15 +28,25 @@ public class MiniAdventure {
         new MessageAction("You have items!").execute();
     }
 
+    private void setUpMoveCommands(Item anItem) {
+        CommandDescription description = new CommandDescription("take", anItem);
+        DefaultCommand defaultCommand = new DefaultCommand(description, new MoveAction(anItem, container));
+    }
+
     private void setUpItems() {
         Item knife = new Item(new DescriptionProvider("small", "knife"), true);
         knife.setLongDescription("The knife is exceptionally sharp. Don't cut yourself!");
+
         knife.addAction(new DescribeAction(knife));
         container.addItem(knife);
 
         Item rabbit = new Item(new DescriptionProvider("small", "rabbit"), true);
         rabbit.setLongDescription("The rabbit looks very tasty!");
         rabbit.addAction(new DescribeAction(rabbit));
+        DefaultCommand cut = new DefaultCommand(new CommandDescription("cut",  rabbit), new MessageAction(
+                "You cut the rabbit to pieces."));
+        rabbit.addCommand(cut);
+
         container.addItem(rabbit);
     }
 
@@ -52,18 +60,26 @@ public class MiniAdventure {
         Word desc = new Word("desc", Word.WordType.VERB);
         vocabulary.addWord(desc);
         vocabulary.addSynonym("look", desc);
-        vocabulary.addWord("knife", Word.WordType.NOUN);
+
+        Word knife = new Word("knife", Word.WordType.NOUN);
+        vocabulary.addWord(knife);
+
         Word get = new Word("get", Word.WordType.VERB);
         vocabulary.addWord(get);
         vocabulary.addSynonym("take", get);
+
         vocabulary.addWord("open", Word.WordType.VERB);
         vocabulary.addWord("enter", Word.WordType.VERB);
         vocabulary.addWord("cut", Word.WordType.VERB);
         vocabulary.addWord("kill", Word.WordType.VERB);
+
         Word rabbit = new Word("rabbit", Word.WordType.NOUN);
         vocabulary.addWord(rabbit);
-        vocabulary.addWord("big", Word.WordType.ADJECTIVE);
         vocabulary.addSynonym("hare", rabbit);
+
+        vocabulary.addWord("big", Word.WordType.ADJECTIVE);
+        vocabulary.addWord("small", Word.WordType.ADJECTIVE);
+
         vocabulary.addWord("portal", Word.WordType.NOUN);
     }
 

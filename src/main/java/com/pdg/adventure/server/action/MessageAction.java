@@ -14,5 +14,4 @@ public class MessageAction extends AbstractAction {
     public void execute() {
         Environment.tell(message);
     }
-
 }

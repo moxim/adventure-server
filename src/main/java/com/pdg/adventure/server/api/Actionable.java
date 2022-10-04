@@ -7,6 +7,10 @@ public interface Actionable {
     void addAction(Action anAction);
     void removeAction(Action anAction);
 
+    List<Command> getCommands();
+    void addCommand(Command aDefautCommand);
+    void removeCommand(Command aDefautCommand);
+
 //    void executeAction(Action anAction, Actor anActor);
-//    void executeCommandFor(Actor anActor, Command aCommand);
+//    void executeCommandFor(Actor anActor, DefaultCommand aCommand);
 }
