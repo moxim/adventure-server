@@ -18,11 +18,8 @@ public class DescriptionProvider {
         adjective = anAdjective;
         if (adjective == null) {
             adjective = Environment.EMPTY_STRING;
-        } else {
-//            Environment.addCustomWord(adjective, ZWordType.ADJECTIVE);
         }
         noun = aNoun;
-//        Environment.addCustomWord(noun, ZWordType.NOUN);
     }
 
     private void validateParameters(String aNoun) {
