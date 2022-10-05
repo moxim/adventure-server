@@ -19,10 +19,10 @@ public class DescriptionProvider {
         if (adjective == null) {
             adjective = Environment.EMPTY_STRING;
         } else {
-//            Environment.addCustomWord(adjective, ZWord.WordType.ADJECTIVE);
+//            Environment.addCustomWord(adjective, ZWordType.ADJECTIVE);
         }
         noun = aNoun;
-//        Environment.addCustomWord(noun, ZWord.WordType.NOUN);
+//        Environment.addCustomWord(noun, ZWordType.NOUN);
     }
 
     private void validateParameters(String aNoun) {

@@ -8,9 +8,6 @@ import java.util.Map;
  */
 public class Vocabulary {
     public static final String UNKNOWN_WORD_TEXT = "Word '%s' is not present, yet!";
-//    private static final String WORD_ALREADY_PRESENT_TEXT = "Word '%s' is already present!";
-//    private static final String WORD_OF_DIFFERENT_TYPE_ALREADY_EXISTS = "Word '%s' is already present, but is of " +
-//            "different type (%s)!";
 
     private Map<String, Word> words; // text -> synonym, eg. take -> Word(get, null, VERB)
     /*
@@ -27,28 +24,34 @@ public class Vocabulary {
         words = new HashMap<>();
     }
 
-    public void addWord(String aWord, Word.WordType aType) {
-        Word word = new Word(aWord, aType);
-        addWord(word);
-    }
-
-    public void addWord(Word aWord) {
-        words.put(aWord.getText(), aWord);
-    }
-
-    public void addSynonym(String aNewWord, Word aSynonym) {
-        Word synonym = words.get(aSynonym.getText());
+    public void addSynonym(String aNewWord, String aSynonym) {
+        String lowerSynonym = aSynonym.toLowerCase();
+        Word synonym = words.get(lowerSynonym);
         if (synonym == null) {
             throw new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, aSynonym));
         }
-        words.put(aNewWord, synonym);
+        addWord(aNewWord, synonym);
     }
 
     public Word getSynonym(String aWord) {
         return words.get(aWord);
     }
 
-    public Word.WordType getType(String aWord) {
+    public void addWord(String aWord, WordType aType) {
+        Word word = new Word(aWord.toLowerCase(), aType);
+        addWord(word);
+    }
+
+    public void addWord(Word aWord) {
+        addWord(aWord.getText(), aWord);
+    }
+
+    private void addWord(String aText, Word aWord) {
+        String lowerText = aText.toLowerCase();
+        words.put(lowerText, aWord);
+    }
+
+    public WordType getType(String aWord) {
         Word synonym = words.get(aWord);
         if (synonym == null) {
             throw new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, aWord));
@@ -56,43 +59,32 @@ public class Vocabulary {
         return synonym.getType();
     }
 
-//
-//    public String getRoot(String aWord) {
-//        return getRootAsWord(aWord).getWord();
-//    }
-//
-//    public Word getRootAsWord(String aWord) {
-//        final Word result = vocabulary.get(aWord);
-//        if (result == null) {
-//            throw new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, aWord));
-//        }
-//        return result;
-//    }
-//
-//    public void addSynonym(String aSynonym, String aRoot) {
-//        Word root = getRootAsWord(aRoot);
-//        if (vocabulary.containsKey(aSynonym)) {
-//            throw new IllegalArgumentException(String.format(WORD_ALREADY_PRESENT_TEXT, aSynonym));
-//        }
-//        vocabulary.put(aSynonym, root);
-//    }
-//
-//    public void addWord(Word aWord) {
-//        if (vocabulary.containsKey(aWord.getWord())) { // word is already present
-//            if (!hasWord(aWord.getWord(), aWord.getType())) {
-//                throw new IllegalArgumentException(String.format(WORD_OF_DIFFERENT_TYPE_ALREADY_EXISTS, aWord, vocabulary.get(aWord.getWord())));
-//            }
-//            return; // don't add the word again
-//        }
-//        vocabulary.put(aWord.getWord(), aWord);
-//    }
-//
-//    public boolean hasWord(String aWord, Word.WordType aType) {
-//        Word word = vocabulary.get(aWord);
-//        return word != null && word.getType() == aType;
-//    }
-//
-//    public boolean hasWord(String aWord) {
-//        return vocabulary.containsKey(aWord);
-//    }
+    public static class Word {
+        private final String text;
+        private final WordType type;
+
+        private Word(String aText, WordType aType) {
+            text = aText;
+            type = aType;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public WordType getType() {
+            return type;
+        }
+
+        @Override
+        public String toString() {
+                return text + "[" + type + "]";
+            }
+    }
+
+    public enum WordType {
+        VERB,
+        NOUN,
+        ADJECTIVE
+    }
 }

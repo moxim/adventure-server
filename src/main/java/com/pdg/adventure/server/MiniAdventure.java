@@ -12,7 +12,6 @@ import com.pdg.adventure.server.support.Environment;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
-import com.pdg.adventure.server.vocabulary.Word;
 
 public class MiniAdventure {
     private final Vocabulary vocabulary;
@@ -95,34 +94,29 @@ public class MiniAdventure {
     }
 
     private void setUpVocabulary() {
-        Word desc = new Word("desc", Word.WordType.VERB);
-        vocabulary.addWord(desc);
-        vocabulary.addSynonym("look", desc);
+        vocabulary.addWord("desc", Vocabulary.WordType.VERB);
+        vocabulary.addSynonym("look", "desc");
 
-        Word knife = new Word("knife", Word.WordType.NOUN);
-        vocabulary.addWord(knife);
+        vocabulary.addWord("knife", Vocabulary.WordType.NOUN);
 
-        Word get = new Word("get", Word.WordType.VERB);
-        vocabulary.addWord(get);
-        vocabulary.addSynonym("take", get);
+        vocabulary.addWord("get", Vocabulary.WordType.VERB);
+        vocabulary.addSynonym("take", "get");
 
-        vocabulary.addWord("open", Word.WordType.VERB);
-        vocabulary.addWord("enter", Word.WordType.VERB);
-        vocabulary.addWord("cut", Word.WordType.VERB);
-        vocabulary.addWord("kill", Word.WordType.VERB);
+        vocabulary.addWord("open", Vocabulary.WordType.VERB);
+        vocabulary.addWord("enter", Vocabulary.WordType.VERB);
+        vocabulary.addWord("cut", Vocabulary.WordType.VERB);
+        vocabulary.addWord("kill", Vocabulary.WordType.VERB);
 
-        Word rabbit = new Word("rabbit", Word.WordType.NOUN);
-        vocabulary.addWord(rabbit);
-        vocabulary.addSynonym("hare", rabbit);
+        vocabulary.addWord("rabbit", Vocabulary.WordType.NOUN);
+        vocabulary.addSynonym("hare", "rabbit");
 
-        Word ringWord = new Word("ring", Word.WordType.NOUN);
-        vocabulary.addWord(ringWord);
+        vocabulary.addWord("ring", Vocabulary.WordType.NOUN);
 
-        vocabulary.addWord("big", Word.WordType.ADJECTIVE);
-        vocabulary.addWord(SMALL_TEXT, Word.WordType.ADJECTIVE);
-        vocabulary.addWord("golden", Word.WordType.ADJECTIVE);
+        vocabulary.addWord("big", Vocabulary.WordType.ADJECTIVE);
+        vocabulary.addWord(SMALL_TEXT, Vocabulary.WordType.ADJECTIVE);
+        vocabulary.addWord("golden", Vocabulary.WordType.ADJECTIVE);
 
-        vocabulary.addWord("portal", Word.WordType.NOUN);
+        vocabulary.addWord("portal", Vocabulary.WordType.NOUN);
     }
 
 }
