@@ -3,6 +3,7 @@ package com.pdg.adventure.server.parser;
 import com.pdg.adventure.server.api.Action;
 import com.pdg.adventure.server.api.Command;
 import com.pdg.adventure.server.api.PreCondition;
+import com.pdg.adventure.server.support.Environment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,19 +32,33 @@ public class GenericCommand implements Command {
     @Override
     public void execute() {
         boolean canExecute = true;
+        canExecute = checkPreconditions(canExecute);
+        if (canExecute) {
+            executeAction();
+            executeFollowupActions();
+        } else {
+            Environment.tell("You can't do that yet.");
+        }
+    }
+
+    public void executeAction() {
+        action.execute();
+    }
+
+    private void executeFollowupActions() {
+        for (Action followUpAction : followUpActions) {
+            followUpAction.execute();
+        }
+    }
+
+    private boolean checkPreconditions(boolean canExecute) {
         for (PreCondition condition : preConditions) {
             if (!condition.isValid()) {
                 canExecute = false;
                 break;
             }
         }
-        if (canExecute) {
-            action.execute();
-            for (Action followUpAction : followUpActions) {
-                followUpAction.execute();
-            }
-        }
-
+        return canExecute;
     }
 
     @Override

@@ -1,13 +1,13 @@
 package com.pdg.adventure.server.action;
 
+import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.support.Environment;
-import com.pdg.adventure.server.tangible.Item;
 
 public class DescribeAction extends AbstractAction {
 
-    private final Item target;
+    private final Describable target;
 
-    public DescribeAction(Item aTarget) {
+    public DescribeAction(Describable aTarget) {
         target = aTarget;
     }
 

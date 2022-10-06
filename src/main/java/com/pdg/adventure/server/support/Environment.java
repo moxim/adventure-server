@@ -23,6 +23,7 @@ public class Environment {
     }
 
     public static void show(Location aLocation) {
+        tell("");
         showDescription(aLocation);
         showDirections(aLocation);
         showContents(aLocation.getContainer(), "You also see:");
@@ -38,31 +39,32 @@ public class Environment {
         }
     }
 
-    public static void showContents(Container aContainer, String aMessageForamt) {
-        tell(String.format(aMessageForamt, aContainer.getShortDescription()));
+    public static void showContents(Container aContainer, String aMessageFormat) {
+        tell(String.format(aMessageFormat, aContainer.getShortDescription()));
         showShortDescriptions(aContainer.getContents());
     }
 
     private static void showShortDescriptions(List<? extends Describable> items) {
         if (items.isEmpty()) {
+            tell("nothing.");
             return;
         }
         for (int i = 0; i < items.size() - 1; i++) {
             tell(describe(items.get(i)) + ", ");
         }
-        tell(describe(items.get(items.size() - 1)));
+        tell(describe(items.get(items.size() - 1)) + ".");
     }
 
     private static String describe(Describable anItem) {
-        return "a " + anItem.getShortDescription();
+        return anItem.getShortDescription();
     }
 
     private static void showDescription(Location aLocation) {
         if (!aLocation.hasBeenVisited()) {
-            tell(aLocation.getLongDescription() + ".");
+            tell(aLocation.getLongDescription());
             aLocation.setHasBeenVisited(true);
         } else {
-            tell("The " + aLocation.getShortDescription() + ".");
+            tell(aLocation.getShortDescription());
         }
     }
 
@@ -71,7 +73,13 @@ public class Environment {
     }
 
     public static Variable getVariable(String aName) {
-        return variableProvider.get(aName);
+        Variable variable = variableProvider.get(aName);
+
+        if (variable == null) {
+            variable = new Variable(aName, "");
+            variableProvider.set(variable);
+        }
+        return variable;
     }
 
     public static void setVariable(String aName, String aValue) {

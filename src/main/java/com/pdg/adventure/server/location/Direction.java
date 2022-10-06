@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.location;
 
-import com.pdg.adventure.server.action.MoveAction;
 import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.support.Environment;
@@ -15,7 +14,7 @@ public class Direction extends GenericCommand implements Describable {
     }
 
     public Direction(String aCommand, Location aDestination, boolean aFlagWhetherDestinationMustBeMentioned) {
-        super(aCommand, new MoveAction(null, aDestination.getContainer()));
+        super(aCommand, null);
         destination = aDestination;
         command = aCommand;
         destinationMustBeMentioned = aFlagWhetherDestinationMustBeMentioned;
@@ -52,7 +51,7 @@ public class Direction extends GenericCommand implements Describable {
     @Override
     public String getShortDescription() {
         if (destinationMustBeMentioned) {
-            return constructDescriptionFromAdjectiveAndNoun();
+            return "a " + constructDescriptionFromAdjectiveAndNoun();
         }
         return command;
     }
@@ -72,5 +71,11 @@ public class Direction extends GenericCommand implements Describable {
             return result;
         }
         return command;
+    }
+
+    @Override
+    public void executeAction() {
+        Environment.tell("You move to the " + destination.getNoun());
+        Environment.setCurrentLocation(destination);
     }
 }

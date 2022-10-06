@@ -30,9 +30,10 @@ public class CommandProvider {
         return new ArrayList<>(availableCommands.values());
     }
 
-    public boolean couldApplyCommand(Command aCommand) {
-        if (availableCommands.containsKey(aCommand.getDescription())) {
-            aCommand.execute();
+    public boolean couldApplyCommand(String aCommand) {
+        Command command = availableCommands.get(aCommand);
+        if (command != null) {
+            command.execute();
             return true;
         }
         return false;

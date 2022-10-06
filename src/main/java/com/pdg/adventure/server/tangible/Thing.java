@@ -3,7 +3,6 @@ package com.pdg.adventure.server.tangible;
 import com.pdg.adventure.server.api.Actionable;
 import com.pdg.adventure.server.api.Command;
 import com.pdg.adventure.server.api.Describable;
-import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.support.CommandProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
 
@@ -53,7 +52,7 @@ public class Thing implements Describable, Actionable {
         descriptionProvider.setLongDescription(aLongDescription);
     }
 
-    public boolean applyCommand(GenericCommand aCommand) {
+    public boolean applyCommand(String aCommand) {
         return commandProvider.couldApplyCommand(aCommand);
     }
 
@@ -97,4 +96,7 @@ public class Thing implements Describable, Actionable {
         return getShortDescription();
     }
 
+    protected CommandProvider getCommandProvider() {
+        return commandProvider;
+    }
 }

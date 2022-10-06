@@ -37,6 +37,7 @@ public class Location extends Thing implements Visitable {
 
     public void addDirection(Direction aDirection) {
         directions.add(aDirection);
+        getCommandProvider().addCommand(aDirection);
     }
 
     public List<Direction> getDirections() {
