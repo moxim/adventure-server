@@ -25,16 +25,30 @@ public class MiniAdventure {
         MiniAdventure game = new MiniAdventure();
 
         game.setup();
+        game.run();
+    }
+
+    private void run() {
+        Environment.setCurrentLocation(location);
+
+        Environment.tell("$> inventory");
+        Environment.showContents(pocket, "In the %s you see:");
 
         Environment.tell("$> look");
-        Environment.show(game.location);
+        Environment.show(location);
 
-        new MoveAction(game.ring, game.pocket).execute();
+        Environment.tell("$> look at portal");
+        portal.applyCommand("look");
 
-        Environment.showContents(game.pocket, "In the %s you see:");
+        Environment.tell("$> enter portal");
+        location.applyCommand("enter");
 
-        Environment.tell("$> look");
-        Environment.show(game.location);
+        Environment.tell("$> wear ring");
+        ring.applyCommand("wear");
+
+        Environment.tell("$> enter portal");
+        location.applyCommand("enter");
+
     }
 
     private void setup() {
