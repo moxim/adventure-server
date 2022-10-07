@@ -135,6 +135,7 @@ public class MiniAdventure {
     private void setUpVocabulary() {
         vocabulary.addWord("desc", Vocabulary.WordType.VERB);
         vocabulary.addSynonym("look", "desc");
+        vocabulary.addSynonym("describe", "desc");
 
         vocabulary.addWord("knife", Vocabulary.WordType.NOUN);
 

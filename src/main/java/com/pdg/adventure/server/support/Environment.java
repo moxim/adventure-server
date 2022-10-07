@@ -13,9 +13,15 @@ public class Environment {
 
     private static final Thing player = new Thing(new DescriptionProvider("you"));
     private static final VariableProvider variableProvider = new VariableProvider();
+    private static Location currentLocation;
 
     private Environment() {
         // don't instantiate me
+    }
+
+    public static void setCurrentLocation(Location aLocation) {
+        currentLocation = aLocation;
+        show(currentLocation);
     }
 
     public static Thing getPlayer() {
