@@ -14,7 +14,7 @@ public class Parser {
     }
 
     public CommandDescription getInput() {
-        System.out.println("What now? > ");
+        Environment.tell("What now? > ");
         InputStream input = System.in;
         String aciontThing = input.toString();
         return handle(aciontThing);
@@ -26,19 +26,21 @@ public class Parser {
         String noun = Environment.EMPTY_STRING;
         String lowerCaseInput = anInput.toLowerCase();
 
-        Scanner scanner = new Scanner(lowerCaseInput);
-        while (scanner.hasNext()) {
-            String token = scanner.next();
-            Vocabulary.Word word = vocabulary.getSynonym(token);
-            if (word == null) {
-                // don't know this word
-                continue;
-            }
-            switch (word.getType()) {
-                case NOUN -> noun = word.getText();
-                case VERB -> verb = word.getText();
-                case ADJECTIVE -> adjective = word.getText();
-                default -> throw new IllegalArgumentException("Unknown word type " + word.getType());
+        try (
+        Scanner scanner = new Scanner(lowerCaseInput)) {
+            while (scanner.hasNext()) {
+                String token = scanner.next();
+                Vocabulary.Word word = vocabulary.getSynonym(token);
+                if (word == null) {
+                    // don't know this word
+                    continue;
+                }
+                switch (word.getType()) {
+                    case NOUN -> noun = word.getText();
+                    case VERB -> verb = word.getText();
+                    case ADJECTIVE -> adjective = word.getText();
+                    default -> throw new IllegalArgumentException("Unknown word type " + word.getType());
+                }
             }
         }
         return new CommandDescription(verb, adjective, noun);
