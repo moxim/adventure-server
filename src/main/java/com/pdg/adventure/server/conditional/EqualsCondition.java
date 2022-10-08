@@ -1,22 +1,22 @@
 package com.pdg.adventure.server.conditional;
 
-import com.pdg.adventure.server.api.PreCondition;
-import com.pdg.adventure.server.support.Environment;
 import com.pdg.adventure.server.support.Variable;
+import com.pdg.adventure.server.support.VariableProvider;
 
-public class EqualsCondition implements PreCondition  {
+public class EqualsCondition extends AbstractVariableCondition  {
 
     private final String variableName;
     private final String value;
 
-    public EqualsCondition(String aVariableName, String aValue) {
+    public EqualsCondition(String aVariableName, String aValue, VariableProvider aVariableProvider) {
+        super(aVariableProvider);
         variableName = aVariableName;
         value = aValue;
     }
 
     @Override
     public boolean isValid() {
-        final Variable envVariable = Environment.getVariable(variableName);
+        final Variable envVariable = variableProvider.get(variableName);
         if (envVariable == null) {
             throw new IllegalArgumentException("Variable " + variableName + " does not exist!");
         }

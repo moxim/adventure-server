@@ -12,7 +12,6 @@ public class Environment {
     public static final String EMPTY_STRING = "";
 
     private static final Thing player = new Thing(new DescriptionProvider("you"));
-    private static final VariableProvider variableProvider = new VariableProvider();
     private static Location currentLocation;
 
     private Environment() {
@@ -76,19 +75,5 @@ public class Environment {
 
     public static void tell(String aMessage) {
         System.out.println(aMessage);
-    }
-
-    public static Variable getVariable(String aName) {
-        Variable variable = variableProvider.get(aName);
-
-        if (variable == null) {
-            variable = new Variable(aName, "");
-            variableProvider.set(variable);
-        }
-        return variable;
-    }
-
-    public static void setVariable(String aName, String aValue) {
-        variableProvider.set(new Variable(aName, aValue));
     }
 }

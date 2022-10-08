@@ -11,12 +11,15 @@ import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.Environment;
+import com.pdg.adventure.server.support.Variable;
+import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.tangible.Thing;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 public class MiniAdventure {
+    private final VariableProvider variableProvider;
     private final Vocabulary vocabulary;
     private final Container pocket;
     private final Item ring;
@@ -43,6 +46,9 @@ public class MiniAdventure {
         Environment.tell("$> look at portal");
         portal.applyCommand("look");
 
+        Environment.tell("$> look at ring");
+        ring.applyCommand("look");
+
         Environment.tell("$> enter portal");
         location.applyCommand("enter");
 
@@ -58,6 +64,8 @@ public class MiniAdventure {
         setUpVocabulary();
         Environment.tell("You have words!");
 
+        setUpVariables();
+
         setUpDirections();
         Environment.tell("You have places!");
 
@@ -65,9 +73,13 @@ public class MiniAdventure {
         Environment.tell("You have items!");
     }
 
+    private void setUpVariables() {
+        variableProvider.set(new Variable("wornRing", "false"));
+    }
+
     private void setUpDirections() {
         Direction toPortal = new Direction("enter", portal, true);
-        toPortal.addPreCondition(new EqualsCondition("wornRing", "true"));
+        toPortal.addPreCondition(new EqualsCondition("wornRing", "true", variableProvider));
         location.addDirection(toPortal);
     }
 
@@ -94,7 +106,7 @@ public class MiniAdventure {
         location.add(rabbit);
 
         GenericCommand wear = new GenericCommand("wear", new MessageAction("You wear the ring."));
-        wear.addFollowUpAction(new SetVariableAction("wornRing", "true"));
+        wear.addFollowUpAction(new SetVariableAction("wornRing", "true", variableProvider));
         ring.addCommand(wear);
         setUpLookCommands(ring);
         setUpMoveCommands(ring);
@@ -108,6 +120,7 @@ public class MiniAdventure {
     }
 
     public MiniAdventure() {
+        variableProvider = new VariableProvider();
         vocabulary = new Vocabulary();
         DescriptionProvider locationDescription = new DescriptionProvider("first", "location");
         locationDescription.setShortDescription("You find yourself in a very eerie location.");
