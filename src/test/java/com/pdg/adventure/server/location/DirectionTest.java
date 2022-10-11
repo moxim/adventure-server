@@ -13,6 +13,11 @@ class DirectionTest {
     private static final String PORTAL_TXT = "portal";
 
     private Vocabulary vocabulary = new Vocabulary();
+    {
+        vocabulary.addWord("enter", Vocabulary.WordType.VERB);
+        vocabulary.addWord("south", Vocabulary.WordType.VERB);
+    }
+
     private final Direction destination = new Direction("enter", new Location(new DescriptionProvider(GLOWING_TXT,
             PORTAL_TXT)), true, vocabulary);
 
