@@ -43,6 +43,7 @@ public class DescriptionProvider {
             } else {
                 shortDescription = adjective + " " + noun;
             }
+            shortDescription = ArticleProvider.prependUnknownArticle(shortDescription);
         }
         return shortDescription;
     }
@@ -53,7 +54,7 @@ public class DescriptionProvider {
 
     public String getLongDescription() {
         if (longDescription == null) {
-            longDescription = getShortDescription();
+            longDescription = "You see " + getShortDescription() + ".";
         }
         return longDescription;
     }

@@ -98,7 +98,7 @@ public class MiniAdventure {
 
     private void setUpItems(Location location) {
         Item knife = new Item(new DescriptionProvider(SMALL_TEXT, "knife"), true);
-        knife.setShortDescription("small sharp knife");
+        knife.setShortDescription("a small sharp knife");
         knife.setLongDescription("The knife is exceptionally sharp. Don't cut yourself!");
         setUpLookCommands(knife);
         setUpMoveCommands(knife);
@@ -149,7 +149,9 @@ public class MiniAdventure {
 
         // special items, not needed in real game
         pocket = new GenericContainer(new DescriptionProvider("pocket"), 3);
-        ring = new Item(new DescriptionProvider("golden", "ring"), true);
+        DescriptionProvider ringDescription = new DescriptionProvider("golden", "ring");
+        ringDescription.setLongDescription("As you inspect the ring you notice the shape of a portal engraved in it.");
+        ring = new Item(ringDescription, true);
 
         new MessageAction("You enter the game.").execute();
     }
