@@ -12,15 +12,13 @@ public class Environment {
     public static final String EMPTY_STRING = "";
 
     private static final Thing player = new Thing(new DescriptionProvider("you"));
-    private static Location currentLocation;
 
     private Environment() {
         // don't instantiate me
     }
 
     public static void setCurrentLocation(Location aLocation) {
-        currentLocation = aLocation;
-        show(currentLocation);
+        show(aLocation);
     }
 
     public static Thing getPlayer() {

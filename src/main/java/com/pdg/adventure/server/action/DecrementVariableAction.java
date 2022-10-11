@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.action;
 
-import com.pdg.adventure.server.support.Environment;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
@@ -22,7 +21,7 @@ public class DecrementVariableAction extends AbstractVariableAction {
             throw new IllegalArgumentException("Variable " + name + " does not exist!");
         }
         Long envVal = Long.valueOf(envVariable.aValue());
-        Long iVal = Long.valueOf(value.toString());
+        Long iVal = Long.valueOf(value);
         variableProvider.set(new Variable(name, String.valueOf(Long.valueOf(envVal - iVal))));
     }
 }

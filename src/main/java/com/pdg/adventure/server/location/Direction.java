@@ -112,10 +112,9 @@ public class Direction extends GenericCommand implements Describable {
         final String adjective = aCommand.getAdjective();
         final String noun = aCommand.getNoun();
 
-        if (verb.equals(command) && noun.equals(destination.getNoun())) {
-            if (adjective.isEmpty() || adjective.equals(getAdjective())) {
-                return execute();
-            }
+        if (verb.equals(command) && noun.equals(destination.getNoun()) &&
+                (adjective.isEmpty() || adjective.equals(getAdjective()))) {
+            return execute();
         }
         return false;
     }

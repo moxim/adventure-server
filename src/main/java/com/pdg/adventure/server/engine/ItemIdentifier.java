@@ -20,7 +20,7 @@ public class ItemIdentifier {
         List<Containable> foundItems = new ArrayList<>();
         for (Containable item : items) {
             if (item.getNoun().equals(aNoun)) {
-                if (anAdjective != "" && !item.getAdjective().equals(anAdjective)) {
+                if (!anAdjective.equals("") && !item.getAdjective().equals(anAdjective)) {
                     continue;
                 }
                 foundItems.add(item);
@@ -30,7 +30,7 @@ public class ItemIdentifier {
         if (foundItems.size() > 1) {
             throw new ItemNotFoundException(String.format(TOO_MANY_MATCHES_TEXT, anAdjective, aNoun));
         }
-        if (foundItems.size() == 0) {
+        if (foundItems.isEmpty()) {
             throw new ItemNotFoundException(String.format(ITEM_NOT_FOUND_TEXT, anAdjective, aNoun));
         }
 

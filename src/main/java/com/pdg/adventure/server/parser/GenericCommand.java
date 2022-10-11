@@ -84,6 +84,6 @@ public class GenericCommand implements Command {
     }
 
     public String toString() {
-        return verb + " " + action;
+        return verb + action == null ? "" : "[" + action + "]";
     }
 }

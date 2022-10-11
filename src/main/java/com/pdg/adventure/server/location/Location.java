@@ -63,17 +63,17 @@ public class Location extends Thing implements Visitable {
         final String adjective = aCommand.getAdjective();
         final String noun = aCommand.getNoun();
 
-        if (commandProvider.hasCommand(verb) && noun.equals(getNoun())) {
-            if (adjective.isEmpty() || adjective.equals(getAdjective())
-            ) {
-                return commandProvider.applyCommand(verb);
-            }
+        if (commandProvider.hasCommand(verb) && noun.equals(getNoun()) &&
+                (adjective.isEmpty() || adjective.equals(getAdjective()))) {
+            return commandProvider.applyCommand(verb);
         }
 
         for (Direction direction : directions) {
             if (direction.applyCommand(aCommand)) {
                 return true;
-            } else if (direction.getDestination().applyCommand(aCommand)) {
+            }
+
+            if (direction.getDestination().applyCommand(aCommand)) {
                 return true;
             }
         }
