@@ -41,4 +41,9 @@ public class CommandDescription {
     public String getDescription() {
         return verb + "_" + adjective + "_" + noun;
     }
+
+    @Override
+    public String toString() {
+        return getDescription();
+    }
 }

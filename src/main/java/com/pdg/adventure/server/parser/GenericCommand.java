@@ -4,6 +4,7 @@ import com.pdg.adventure.server.api.Action;
 import com.pdg.adventure.server.api.Command;
 import com.pdg.adventure.server.api.PreCondition;
 import com.pdg.adventure.server.support.Environment;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +17,9 @@ public class GenericCommand implements Command {
     private final Action action;
     private final UUID id;
 
-    public GenericCommand(String aVerb, Action anAction) {
-        verb = aVerb;
+    public GenericCommand(String aVerb, Action anAction, Vocabulary aVocabulary) {
+        Vocabulary.Word someWord = aVocabulary.getSynonym(aVerb);
+        verb = someWord.getText();
         action = anAction;
         id = UUID.randomUUID();
         preConditions = new ArrayList<>();
@@ -30,15 +32,14 @@ public class GenericCommand implements Command {
     }
 
     @Override
-    public void execute() {
-        boolean canExecute = true;
-        canExecute = checkPreconditions(canExecute);
-        if (canExecute) {
+    public boolean execute() {
+        if (canFulfillPreconditions()) {
             executeAction();
             executeFollowupActions();
-        } else {
-            Environment.tell("You can't do that yet.");
+            return true;
         }
+        Environment.tell("You can't do that yet.");
+        return false;
     }
 
     public void executeAction() {
@@ -51,14 +52,13 @@ public class GenericCommand implements Command {
         }
     }
 
-    private boolean checkPreconditions(boolean canExecute) {
+    private boolean canFulfillPreconditions() {
         for (PreCondition condition : preConditions) {
             if (!condition.isValid()) {
-                canExecute = false;
-                break;
+                return false;
             }
         }
-        return canExecute;
+        return true;
     }
 
     @Override
@@ -81,5 +81,9 @@ public class GenericCommand implements Command {
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+
+    public String toString() {
+        return verb + " " + action;
     }
 }

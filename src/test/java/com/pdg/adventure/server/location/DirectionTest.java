@@ -1,6 +1,7 @@
 package com.pdg.adventure.server.location;
 
 import com.pdg.adventure.server.support.DescriptionProvider;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,8 +12,9 @@ class DirectionTest {
     private static final String GLOWING_TXT = "glowing";
     private static final String PORTAL_TXT = "portal";
 
+    private Vocabulary vocabulary = new Vocabulary();
     private final Direction destination = new Direction("enter", new Location(new DescriptionProvider(GLOWING_TXT,
-            PORTAL_TXT)), true);
+            PORTAL_TXT)), true, vocabulary);
 
     @Test
     void getDestination() {
@@ -69,7 +71,7 @@ class DirectionTest {
     @Test
     void getLongDescriptionWithoutAdjective() {
         // given
-        Direction noAdj = new Direction("enter", new Location(new DescriptionProvider(PORTAL_TXT)), true);
+        Direction noAdj = new Direction("enter", new Location(new DescriptionProvider(PORTAL_TXT)), true, vocabulary);
 
         // when
 
@@ -81,7 +83,7 @@ class DirectionTest {
     @Test
     void getDescriptionsWithoutLocation() throws Exception {
         // given
-        Direction noAdj = new Direction("south", new Location(new DescriptionProvider(PORTAL_TXT)), false);
+        Direction noAdj = new Direction("south", new Location(new DescriptionProvider(PORTAL_TXT)), false, vocabulary);
 
         // when
 

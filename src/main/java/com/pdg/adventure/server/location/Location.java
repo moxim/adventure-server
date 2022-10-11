@@ -1,7 +1,11 @@
 package com.pdg.adventure.server.location;
 
+import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.api.Visitable;
+import com.pdg.adventure.server.engine.ItemIdentifier;
+import com.pdg.adventure.server.exception.ItemNotFoundException;
+import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
@@ -37,7 +41,7 @@ public class Location extends Thing implements Visitable {
 
     public void addDirection(Direction aDirection) {
         directions.add(aDirection);
-        getCommandProvider().addCommand(aDirection);
+        commandProvider.addCommand(aDirection);
     }
 
     public List<Direction> getDirections() {
@@ -54,4 +58,31 @@ public class Location extends Thing implements Visitable {
         hasBeenVisited = aFlagWhetherThisHasBeenSeen;
     }
 
+    public boolean applyCommand(CommandDescription aCommand) {
+        final String verb = aCommand.getVerb();
+        final String adjective = aCommand.getAdjective();
+        final String noun = aCommand.getNoun();
+
+        if (commandProvider.hasCommand(verb) && noun.equals(getNoun())) {
+            if (adjective.isEmpty() || adjective.equals(getAdjective())
+            ) {
+                return commandProvider.applyCommand(verb);
+            }
+        }
+
+        for (Direction direction : directions) {
+            if (direction.applyCommand(aCommand)) {
+                return true;
+            } else if (direction.getDestination().applyCommand(aCommand)) {
+                return true;
+            }
+        }
+
+        try {
+            final Containable item = ItemIdentifier.findItem(container, adjective, noun);
+            return item.applyCommand(verb);
+        } catch (ItemNotFoundException e) {
+            return false;
+        }
+    }
 }

@@ -4,7 +4,7 @@ public interface Command {
 
     String getDescription();
 
-    void execute();
+    boolean execute();
 
     void addPreCondition(PreCondition aCondition);
 

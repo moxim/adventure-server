@@ -8,7 +8,9 @@ import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.conditional.EqualsCondition;
 import com.pdg.adventure.server.location.Direction;
 import com.pdg.adventure.server.location.Location;
+import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.parser.GenericCommand;
+import com.pdg.adventure.server.parser.Parser;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.Environment;
 import com.pdg.adventure.server.support.Variable;
@@ -25,6 +27,7 @@ public class MiniAdventure {
     private final Item ring;
     private final Location portal;
     private final Location location;
+    private final Parser parser;
 
     private static final String SMALL_TEXT = "small";
 
@@ -43,20 +46,25 @@ public class MiniAdventure {
         Environment.tell("$> look");
         Environment.show(location);
 
+        CommandDescription command = parser.handle("look at portal");
         Environment.tell("$> look at portal");
-        portal.applyCommand("look");
+        location.applyCommand(command);
 
+        command = parser.handle("look at ring");
         Environment.tell("$> look at ring");
-        ring.applyCommand("look");
+        location.applyCommand(command);
 
+        command = parser.handle("enter portal");
         Environment.tell("$> enter portal");
-        location.applyCommand("enter");
+        location.applyCommand(command);
 
         Environment.tell("$> wear ring");
-        ring.applyCommand("wear");
+        command = parser.handle("wear ring");
+        location.applyCommand(command);
 
+        command = parser.handle("enter portal");
         Environment.tell("$> enter portal");
-        location.applyCommand("enter");
+        location.applyCommand(command);
 
     }
 
@@ -78,13 +86,13 @@ public class MiniAdventure {
     }
 
     private void setUpDirections() {
-        Direction toPortal = new Direction("enter", portal, true);
+        Direction toPortal = new Direction("enter", portal, true, vocabulary);
         toPortal.addPreCondition(new EqualsCondition("wornRing", "true", variableProvider));
         location.addDirection(toPortal);
     }
 
     private void setUpMoveCommands(Item anItem) {
-        GenericCommand command = new GenericCommand("take", new MoveAction(anItem, pocket));
+        GenericCommand command = new GenericCommand("take", new MoveAction(anItem, pocket), vocabulary);
         anItem.addCommand(command);
     }
 
@@ -98,30 +106,32 @@ public class MiniAdventure {
 
         Item rabbit = new Item(new DescriptionProvider(SMALL_TEXT, "rabbit"), true);
         rabbit.setLongDescription("The rabbit looks very tasty!");
-        rabbit.addCommand(new GenericCommand("look", new DescribeAction(rabbit)));
-        GenericCommand cut = new GenericCommand("cut", new MessageAction("You cut the rabbit to pieces."));
+        GenericCommand cut = new GenericCommand("cut", new MessageAction("You cut the rabbit to pieces."), vocabulary);
         rabbit.addCommand(cut);
         setUpLookCommands(rabbit);
         setUpMoveCommands(rabbit);
         location.add(rabbit);
 
-        GenericCommand wear = new GenericCommand("wear", new MessageAction("You wear the ring."));
+        GenericCommand wear = new GenericCommand("wear", new MessageAction("You wear the ring."), vocabulary);
         wear.addFollowUpAction(new SetVariableAction("wornRing", "true", variableProvider));
         ring.addCommand(wear);
         setUpLookCommands(ring);
         setUpMoveCommands(ring);
         location.add(ring);
 
+        setUpLookCommands(location);
         setUpLookCommands(portal);
     }
 
     private void setUpLookCommands(Thing aThing) {
-        aThing.addCommand(new GenericCommand("look", new DescribeAction(aThing)));
+        aThing.addCommand(new GenericCommand("look", new DescribeAction(aThing), vocabulary));
     }
 
     public MiniAdventure() {
         variableProvider = new VariableProvider();
         vocabulary = new Vocabulary();
+        parser = new Parser(vocabulary);
+
         DescriptionProvider locationDescription = new DescriptionProvider("first", "location");
         locationDescription.setShortDescription("You find yourself in a very eerie location.");
         locationDescription.setLongDescription(
@@ -131,7 +141,6 @@ public class MiniAdventure {
                 Some strange mind must have created it. Suddenly, you notice a faint glowing portal!"""
         );
         location = new Location(locationDescription);
-        location.addCommand(new GenericCommand("look", new DescribeAction(location)));
 
         DescriptionProvider portalDescription = new DescriptionProvider("fading", "portal");
         portalDescription.setShortDescription("a small portal.");

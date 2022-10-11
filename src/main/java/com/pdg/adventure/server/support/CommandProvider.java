@@ -22,19 +22,18 @@ public class CommandProvider {
         availableCommands.remove(aCommand.getDescription());
     }
 
-    public boolean hasCommand(Command aCommand) {
-        return availableCommands.containsKey(aCommand.getDescription());
+    public boolean hasCommand(String aCommand) {
+        return availableCommands.containsKey(aCommand);
     }
 
     public List<Command> getCommands() {
         return new ArrayList<>(availableCommands.values());
     }
 
-    public boolean couldApplyCommand(String aCommand) {
+    public boolean applyCommand(String aCommand) {
         Command command = availableCommands.get(aCommand);
         if (command != null) {
-            command.execute();
-            return true;
+            return command.execute();
         }
         return false;
     }

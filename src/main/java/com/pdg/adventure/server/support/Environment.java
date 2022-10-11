@@ -31,7 +31,7 @@ public class Environment {
         tell("");
         showDescription(aLocation);
         showDirections(aLocation);
-        showContents(aLocation.getContainer(), "You also see:");
+        showContents(aLocation, "You also see:");
     }
 
     private static void showDirections(Location aLocation) {
@@ -44,9 +44,14 @@ public class Environment {
         }
     }
 
-    public static void showContents(Container aContainer, String aMessageFormat) {
-        tell(String.format(aMessageFormat, aContainer.getShortDescription()));
-        showShortDescriptions(aContainer.getContents());
+    public static void showContents(Location aLocation, String aMessageFormat) {
+        Container container = aLocation.getContainer();
+        showContents(container, aMessageFormat);
+    }
+
+    public static void showContents(Container container, String aMessageFormat) {
+        tell(String.format(aMessageFormat, container.getShortDescription()));
+        showShortDescriptions(container.getContents());
     }
 
     private static void showShortDescriptions(List<? extends Describable> items) {

@@ -1,6 +1,6 @@
 package com.pdg.adventure.server.api;
 
-public interface Describable {
+public interface Describable extends Actionable {
     String getAdjective();
 
     String getNoun();

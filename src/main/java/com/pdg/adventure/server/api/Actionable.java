@@ -10,6 +10,5 @@ public interface Actionable {
 
     void removeCommand(Command aCommand);
 
-//    void executeAction(Action anAction, Actor anActor);
-//    void executeCommandFor(Actor anActor, GenericCommand aCommand);
+    boolean applyCommand(String aVerb);
 }

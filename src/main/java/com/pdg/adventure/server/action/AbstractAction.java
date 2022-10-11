@@ -8,4 +8,9 @@ public abstract class AbstractAction implements Action {
     public String getName() {
         return this.getClass().getSimpleName();
     }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

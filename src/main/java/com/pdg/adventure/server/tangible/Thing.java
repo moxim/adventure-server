@@ -13,14 +13,14 @@ import java.util.UUID;
 
 public class Thing implements Describable, Actionable {
 
-    private final DescriptionProvider descriptionProvider;
-    private final CommandProvider commandProvider;
+    protected final CommandProvider commandProvider;
 
+    private final DescriptionProvider descriptionProvider;
     private final UUID id;
 
     public Thing(DescriptionProvider aDescriptionProvider) {
-        descriptionProvider = aDescriptionProvider;
         commandProvider = new CommandProvider();
+        descriptionProvider = aDescriptionProvider;
         id = UUID.randomUUID();
     }
 
@@ -53,15 +53,7 @@ public class Thing implements Describable, Actionable {
     }
 
     public boolean applyCommand(String aCommand) {
-        return commandProvider.couldApplyCommand(aCommand);
-    }
-
-    public List<String> getAvailableCommandDescriptions() {
-        List<String> result = new ArrayList<>();
-        for (Command command : commandProvider.getCommands()) {
-            result.add(command.getDescription());
-        }
-        return result;
+        return commandProvider.applyCommand(aCommand);
     }
 
     @Override
@@ -94,9 +86,5 @@ public class Thing implements Describable, Actionable {
     @Override
     public String toString() {
         return getShortDescription();
-    }
-
-    protected CommandProvider getCommandProvider() {
-        return commandProvider;
     }
 }
