@@ -24,11 +24,7 @@ public class GameLoop {
                 if ("quit".equals(verb)) {
                     break;
                 }
-                if (currentLocation.applyCommand(command)) {
-                    if (currentLocation != Environment.getCurrentLocation()) {
-                        currentLocation = Environment.getCurrentLocation();
-                    }
-                } else {
+                if (!currentLocation.applyCommand(command)) {
                     Environment.tell("You can't do that.");
                 }
             } catch (IOException aE) {

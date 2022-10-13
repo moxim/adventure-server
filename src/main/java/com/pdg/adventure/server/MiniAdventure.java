@@ -88,15 +88,8 @@ public class MiniAdventure {
         Direction toPortal = new Direction("enter", portal, true, vocabulary);
         toPortal.addPreCondition(new EqualsCondition("wornRing", "true", variableProvider));
         location.addDirection(toPortal);
-        addCompassToSelf("north");
-        addCompassToSelf("east");
-        addCompassToSelf("south");
-        addCompassToSelf("west");
-    }
-
-    private void addCompassToSelf(String aDirection) {
-        Direction exit = new Direction(aDirection, location, false, vocabulary);
-        location.addDirection(exit);
+        Direction toLocation = new Direction("leave", location, false, vocabulary);
+        portal.addDirection(toLocation);
     }
 
     private void setUpTakeCommands(Item anItem) {
@@ -150,15 +143,22 @@ public class MiniAdventure {
 
     private void setUpVocabulary() {
         vocabulary.addWord("quit", Vocabulary.WordType.VERB);
+        vocabulary.addWord("save", Vocabulary.WordType.VERB);
+        vocabulary.addWord("load", Vocabulary.WordType.VERB);
         vocabulary.addWord("inventory", Vocabulary.WordType.VERB);
         vocabulary.addWord("north", Vocabulary.WordType.VERB);
+        vocabulary.addSynonym("n", "north");
         vocabulary.addWord("east", Vocabulary.WordType.VERB);
+        vocabulary.addSynonym("e", "east");
         vocabulary.addWord("south", Vocabulary.WordType.VERB);
+        vocabulary.addSynonym("s", "south");
         vocabulary.addWord("west", Vocabulary.WordType.VERB);
+        vocabulary.addSynonym("w", "west");
+        vocabulary.addWord("leave", Vocabulary.WordType.VERB);
         vocabulary.addWord("desc", Vocabulary.WordType.VERB);
         vocabulary.addSynonym("look", "desc");
+        vocabulary.addSynonym("l", "desc");
         vocabulary.addSynonym("describe", "desc");
-
 
         vocabulary.addWord("knife", Vocabulary.WordType.NOUN);
 

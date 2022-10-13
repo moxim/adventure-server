@@ -83,7 +83,7 @@ public class Direction extends GenericCommand implements Describable {
 
     @Override
     public void executeAction() {
-        Environment.tell("You move to the " + destination.getNoun());
+        Environment.tell("You move to the " + destination.getNoun() + ".");
         Environment.setCurrentLocation(destination);
     }
 
