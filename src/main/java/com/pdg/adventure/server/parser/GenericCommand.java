@@ -3,7 +3,6 @@ package com.pdg.adventure.server.parser;
 import com.pdg.adventure.server.api.Action;
 import com.pdg.adventure.server.api.Command;
 import com.pdg.adventure.server.api.PreCondition;
-import com.pdg.adventure.server.support.Environment;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.util.ArrayList;
@@ -38,7 +37,6 @@ public class GenericCommand implements Command {
             executeFollowupActions();
             return true;
         }
-        Environment.tell("You can't do that yet.");
         return false;
     }
 
@@ -84,6 +82,6 @@ public class GenericCommand implements Command {
     }
 
     public String toString() {
-        return verb + action == null ? "" : "[" + action + "]";
+        return verb + (action == null ? "" : "[" + action + "]");
     }
 }

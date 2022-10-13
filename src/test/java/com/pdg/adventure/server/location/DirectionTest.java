@@ -12,13 +12,14 @@ class DirectionTest {
     private static final String GLOWING_TXT = "glowing";
     private static final String PORTAL_TXT = "portal";
 
-    private Vocabulary vocabulary = new Vocabulary();
+    private final Vocabulary vocabulary = new Vocabulary();
     {
         vocabulary.addWord("enter", Vocabulary.WordType.VERB);
         vocabulary.addWord("south", Vocabulary.WordType.VERB);
     }
 
-    private final Direction destination = new Direction("enter", new Location(new DescriptionProvider(GLOWING_TXT,
+    private final Direction destination = new Direction("enter",
+            new Location(new DescriptionProvider(GLOWING_TXT,
             PORTAL_TXT)), true, vocabulary);
 
     @Test
@@ -76,7 +77,8 @@ class DirectionTest {
     @Test
     void getLongDescriptionWithoutAdjective() {
         // given
-        Direction noAdj = new Direction("enter", new Location(new DescriptionProvider(PORTAL_TXT)), true, vocabulary);
+        Direction noAdj = new Direction("enter", new Location(new DescriptionProvider(PORTAL_TXT)), true,
+                vocabulary);
 
         // when
 
@@ -88,7 +90,8 @@ class DirectionTest {
     @Test
     void getDescriptionsWithoutLocation() throws Exception {
         // given
-        Direction noAdj = new Direction("south", new Location(new DescriptionProvider(PORTAL_TXT)), false, vocabulary);
+        Direction noAdj = new Direction("south", new Location(new DescriptionProvider(PORTAL_TXT)), false,
+                vocabulary);
 
         // when
 

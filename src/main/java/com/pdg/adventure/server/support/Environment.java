@@ -4,25 +4,23 @@ import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.location.Direction;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.tangible.Thing;
 
 import java.util.List;
 
 public class Environment {
     public static final String EMPTY_STRING = "";
-
-    private static final Thing player = new Thing(new DescriptionProvider("you"));
+    public static Location currentLocation;
 
     private Environment() {
         // don't instantiate me
     }
 
-    public static void setCurrentLocation(Location aLocation) {
-        show(aLocation);
-    }
-
-    public static Thing getPlayer() {
-        return player;
+    public static void show(Describable aThing) {
+        if (aThing instanceof Location) {
+            show((Location)aThing);
+        } else {
+            tell(aThing.getLongDescription());
+        }
     }
 
     public static void show(Location aLocation) {
@@ -78,5 +76,14 @@ public class Environment {
 
     public static void tell(String aMessage) {
         System.out.println(aMessage);
+    }
+
+    public static void setCurrentLocation(Location aDestination) {
+        currentLocation = aDestination;
+        show(aDestination);
+    }
+
+    public static Location getCurrentLocation() {
+        return currentLocation;
     }
 }

@@ -43,9 +43,12 @@ public class DescriptionProvider {
             } else {
                 shortDescription = adjective + " " + noun;
             }
-            shortDescription = ArticleProvider.prependUnknownArticle(shortDescription);
         }
         return shortDescription;
+    }
+
+    public String getEnrichedShortDescription() {
+        return ArticleProvider.prependUnknownArticle(getShortDescription());
     }
 
     public void setShortDescription(String aShortDescription) {
@@ -54,10 +57,15 @@ public class DescriptionProvider {
 
     public String getLongDescription() {
         if (longDescription == null) {
-            longDescription = "You see " + getShortDescription() + ".";
+            longDescription = getShortDescription();
         }
         return longDescription;
     }
+
+    public String getEnrichedLongDescription() {
+        return "You see " + ArticleProvider.prependUnknownArticle(getLongDescription()) + ".";
+    }
+
 
     public void setLongDescription(String aLongDescription) {
         longDescription = aLongDescription;

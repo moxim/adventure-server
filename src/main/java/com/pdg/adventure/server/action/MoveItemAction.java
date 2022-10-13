@@ -4,12 +4,12 @@ import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.support.Environment;
 
-public class MoveAction extends AbstractAction {
+public class MoveItemAction extends AbstractAction {
 
     private final Containable target;
     private final Container destination;
 
-    public MoveAction(Containable aTarget, Container aDestination) {
+    public MoveItemAction(Containable aTarget, Container aDestination) {
         target = aTarget;
         destination = aDestination;
     }

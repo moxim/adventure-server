@@ -2,13 +2,13 @@ package com.pdg.adventure.server;
 
 import com.pdg.adventure.server.action.DescribeAction;
 import com.pdg.adventure.server.action.MessageAction;
-import com.pdg.adventure.server.action.MoveAction;
+import com.pdg.adventure.server.action.MoveItemAction;
 import com.pdg.adventure.server.action.SetVariableAction;
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.conditional.EqualsCondition;
+import com.pdg.adventure.server.engine.GameLoop;
 import com.pdg.adventure.server.location.Direction;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.Parser;
 import com.pdg.adventure.server.support.DescriptionProvider;
@@ -20,14 +20,16 @@ import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.tangible.Thing;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 public class MiniAdventure {
     private final VariableProvider variableProvider;
     private final Vocabulary vocabulary;
     private final Container pocket;
     private final Item ring;
-    private final Location portal;
-    private final Location location;
-    private final Parser parser;
+    private Location portal;
+    private Location location;
 
     private static final String SMALL_TEXT = "small";
 
@@ -38,34 +40,9 @@ public class MiniAdventure {
     }
 
     private void run() {
-        Environment.setCurrentLocation(location);
-
-        Environment.tell("$> inventory");
-        Environment.showContents(pocket, "In the %s you see:");
-
-        Environment.tell("$> look");
-        Environment.show(location);
-
-        CommandDescription command = parser.handle("look at portal");
-        Environment.tell("$> look at portal");
-        location.applyCommand(command);
-
-        command = parser.handle("look at ring");
-        Environment.tell("$> look at ring");
-        location.applyCommand(command);
-
-        command = parser.handle("enter portal");
-        Environment.tell("$> enter portal");
-        location.applyCommand(command);
-
-        Environment.tell("$> wear ring");
-        command = parser.handle("wear ring");
-        location.applyCommand(command);
-
-        command = parser.handle("enter portal");
-        Environment.tell("$> enter portal");
-        location.applyCommand(command);
-
+        GameLoop gameLoop = new GameLoop(new Parser(vocabulary));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        gameLoop.run(reader);
     }
 
     private void setup() {
@@ -74,11 +51,33 @@ public class MiniAdventure {
 
         setUpVariables();
 
+        setUpLocations();
         setUpDirections();
         Environment.tell("You have places!");
 
         setUpItems(location);
         Environment.tell("You have items!");
+
+        Environment.setCurrentLocation(location);
+    }
+
+    private void setUpLocations() {
+
+        DescriptionProvider locationDescription = new DescriptionProvider("first", "location");
+        locationDescription.setShortDescription("You find yourself in a very eerie location.");
+        locationDescription.setLongDescription(
+                """
+                You find yourself in a very eerie location. Pitch black darkness stretches endlessly around you,
+                robbing you of any sense of direction.
+                Some strange mind must have created it. Suddenly, you notice a faint glowing portal!"""
+        );
+        location = new Location(locationDescription);
+
+        DescriptionProvider portalDescription = new DescriptionProvider("fading", "portal");
+        portalDescription.setShortDescription("You are in a small portal.");
+        portalDescription.setLongDescription("The portal slowly fades away already, it looks like it closes soon!");
+        portal = new Location(portalDescription);
+
     }
 
     private void setUpVariables() {
@@ -89,10 +88,19 @@ public class MiniAdventure {
         Direction toPortal = new Direction("enter", portal, true, vocabulary);
         toPortal.addPreCondition(new EqualsCondition("wornRing", "true", variableProvider));
         location.addDirection(toPortal);
+        addCompassToSelf("north");
+        addCompassToSelf("east");
+        addCompassToSelf("south");
+        addCompassToSelf("west");
     }
 
-    private void setUpMoveCommands(Item anItem) {
-        GenericCommand command = new GenericCommand("take", new MoveAction(anItem, pocket), vocabulary);
+    private void addCompassToSelf(String aDirection) {
+        Direction exit = new Direction(aDirection, location, false, vocabulary);
+        location.addDirection(exit);
+    }
+
+    private void setUpTakeCommands(Item anItem) {
+        GenericCommand command = new GenericCommand("take", new MoveItemAction(anItem, pocket), vocabulary);
         anItem.addCommand(command);
     }
 
@@ -101,7 +109,7 @@ public class MiniAdventure {
         knife.setShortDescription("a small sharp knife");
         knife.setLongDescription("The knife is exceptionally sharp. Don't cut yourself!");
         setUpLookCommands(knife);
-        setUpMoveCommands(knife);
+        setUpTakeCommands(knife);
         location.add(knife);
 
         Item rabbit = new Item(new DescriptionProvider(SMALL_TEXT, "rabbit"), true);
@@ -109,14 +117,14 @@ public class MiniAdventure {
         GenericCommand cut = new GenericCommand("cut", new MessageAction("You cut the rabbit to pieces."), vocabulary);
         rabbit.addCommand(cut);
         setUpLookCommands(rabbit);
-        setUpMoveCommands(rabbit);
+        setUpTakeCommands(rabbit);
         location.add(rabbit);
 
         GenericCommand wear = new GenericCommand("wear", new MessageAction("You wear the ring."), vocabulary);
         wear.addFollowUpAction(new SetVariableAction("wornRing", "true", variableProvider));
         ring.addCommand(wear);
         setUpLookCommands(ring);
-        setUpMoveCommands(ring);
+        setUpTakeCommands(ring);
         location.add(ring);
 
         setUpLookCommands(location);
@@ -130,22 +138,6 @@ public class MiniAdventure {
     public MiniAdventure() {
         variableProvider = new VariableProvider();
         vocabulary = new Vocabulary();
-        parser = new Parser(vocabulary);
-
-        DescriptionProvider locationDescription = new DescriptionProvider("first", "location");
-        locationDescription.setShortDescription("You find yourself in a very eerie location.");
-        locationDescription.setLongDescription(
-                """
-                You find yourself in a very eerie location. Pitch black darkness stretches endlessly around you,
-                robbing you of any sense of direction.
-                Some strange mind must have created it. Suddenly, you notice a faint glowing portal!"""
-        );
-        location = new Location(locationDescription);
-
-        DescriptionProvider portalDescription = new DescriptionProvider("fading", "portal");
-        portalDescription.setShortDescription("a small portal.");
-        portalDescription.setLongDescription("The portal slowly fades away already, it looks like it closes soon!");
-        portal = new Location(portalDescription);
 
         // special items, not needed in real game
         pocket = new GenericContainer(new DescriptionProvider("pocket"), 3);
@@ -157,9 +149,16 @@ public class MiniAdventure {
     }
 
     private void setUpVocabulary() {
+        vocabulary.addWord("quit", Vocabulary.WordType.VERB);
+        vocabulary.addWord("inventory", Vocabulary.WordType.VERB);
+        vocabulary.addWord("north", Vocabulary.WordType.VERB);
+        vocabulary.addWord("east", Vocabulary.WordType.VERB);
+        vocabulary.addWord("south", Vocabulary.WordType.VERB);
+        vocabulary.addWord("west", Vocabulary.WordType.VERB);
         vocabulary.addWord("desc", Vocabulary.WordType.VERB);
         vocabulary.addSynonym("look", "desc");
         vocabulary.addSynonym("describe", "desc");
+
 
         vocabulary.addWord("knife", Vocabulary.WordType.NOUN);
 

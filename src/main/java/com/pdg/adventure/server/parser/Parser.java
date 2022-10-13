@@ -3,7 +3,8 @@ package com.pdg.adventure.server.parser;
 import com.pdg.adventure.server.support.Environment;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
-import java.io.InputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Parser {
@@ -13,11 +14,10 @@ public class Parser {
         vocabulary = aVocabulary;
     }
 
-    public CommandDescription getInput() {
+    public CommandDescription getInput(BufferedReader aReader) throws IOException {
         Environment.tell("What now? > ");
-        InputStream input = System.in;
-        String aciontThing = input.toString();
-        return handle(aciontThing);
+        String actionCommand = aReader.readLine();
+        return handle(actionCommand);
     }
 
     public CommandDescription handle(String anInput) {

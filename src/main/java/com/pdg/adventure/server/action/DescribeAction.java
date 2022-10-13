@@ -13,6 +13,6 @@ public class DescribeAction extends AbstractAction {
 
     @Override
     public void execute() {
-        Environment.tell(target.getLongDescription());
+        Environment.show(target);
     }
 }

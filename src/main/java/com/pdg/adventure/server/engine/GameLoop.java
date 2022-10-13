@@ -3,29 +3,38 @@ package com.pdg.adventure.server.engine;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.parser.Parser;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.server.support.Environment;
+
+import java.io.BufferedReader;
+import java.io.IOException;
 
 public class GameLoop {
-    private final Vocabulary vocabulary;
     private final Parser parser;
 
-    private Location currentLocation;
-
-    public GameLoop(Vocabulary aVocabulary, Location aLocation) {
-        vocabulary = aVocabulary;
-        currentLocation = aLocation;
-        parser = new Parser(vocabulary);
+    public GameLoop(Parser aParser) {
+        parser = aParser;
     }
 
-    public void run() {
-        //  game loop
+    public void run(BufferedReader aReader) {
         while (true) {
-            CommandDescription command = parser.getInput();
-            String verb = command.getVerb();
-            if ("quit".equals(verb)) {
+            Location currentLocation = Environment.getCurrentLocation();
+            try {
+                CommandDescription command = parser.getInput(aReader);
+                String verb = command.getVerb();
+                if ("quit".equals(verb)) {
+                    break;
+                }
+                if (currentLocation.applyCommand(command)) {
+                    if (currentLocation != Environment.getCurrentLocation()) {
+                        currentLocation = Environment.getCurrentLocation();
+                    }
+                } else {
+                    Environment.tell("You can't do that.");
+                }
+            } catch (IOException aE) {
+                Environment.tell(aE.getMessage());
                 break;
             }
-            currentLocation.applyCommand(command);
         }
     }
 }

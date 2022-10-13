@@ -20,7 +20,8 @@ public class Direction extends GenericCommand implements Describable {
         this(aCommand, aDestination, false, aVocabulary);
     }
 
-    public Direction(String aCommand, Location aDestination, boolean aFlagWhetherDestinationMustBeMentioned, Vocabulary aVocabulary) {
+    public Direction(String aCommand, Location aDestination,
+                     boolean aFlagWhetherDestinationMustBeMentioned, Vocabulary aVocabulary) {
         super(aCommand, null, aVocabulary);
         destination = aDestination;
         command = aCommand;
@@ -112,7 +113,8 @@ public class Direction extends GenericCommand implements Describable {
         final String adjective = aCommand.getAdjective();
         final String noun = aCommand.getNoun();
 
-        if (verb.equals(command) && noun.equals(destination.getNoun()) &&
+        if (verb.equals(command) &&
+                (noun.isEmpty() || noun.equals(getNoun())) &&
                 (adjective.isEmpty() || adjective.equals(getAdjective()))) {
             return execute();
         }

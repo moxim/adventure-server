@@ -41,7 +41,6 @@ public class Location extends Thing implements Visitable {
 
     public void addDirection(Direction aDirection) {
         directions.add(aDirection);
-        commandProvider.addCommand(aDirection);
     }
 
     public List<Direction> getDirections() {
@@ -63,8 +62,10 @@ public class Location extends Thing implements Visitable {
         final String adjective = aCommand.getAdjective();
         final String noun = aCommand.getNoun();
 
-        if (commandProvider.hasCommand(verb) && noun.equals(getNoun()) &&
-                (adjective.isEmpty() || adjective.equals(getAdjective()))) {
+        if (commandProvider.hasCommand(verb) &&
+                (noun.isEmpty() || noun.equals(getNoun())) &&
+                (adjective.isEmpty() || adjective.equals(getAdjective())))
+        {
             return commandProvider.applyCommand(verb);
         }
 
@@ -72,10 +73,10 @@ public class Location extends Thing implements Visitable {
             if (direction.applyCommand(aCommand)) {
                 return true;
             }
-
-            if (direction.getDestination().applyCommand(aCommand)) {
-                return true;
-            }
+//
+//            if (direction.getDestination().applyCommand(aCommand)) {
+//                return true;
+//            }
         }
 
         try {
