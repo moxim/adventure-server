@@ -2,7 +2,6 @@ package com.pdg.adventure.server.action;
 
 import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
-import com.pdg.adventure.server.support.Environment;
 
 public class MoveItemAction extends AbstractAction {
 
@@ -21,6 +20,7 @@ public class MoveItemAction extends AbstractAction {
             parentContainer.remove(target);
         }
         destination.add(target);
-        Environment.tell("You move the " + target.getShortDescription() + " into the " + destination.getShortDescription() + ".");
+//        Environment.tell("You move the " + target.getShortDescription() + " into the " + destination
+//        .getShortDescription() + ".");
     }
 }

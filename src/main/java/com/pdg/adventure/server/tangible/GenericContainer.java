@@ -2,7 +2,6 @@ package com.pdg.adventure.server.tangible;
 
 import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
-import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.exception.AlreadyPresentException;
 import com.pdg.adventure.server.exception.ContainerFullException;
 import com.pdg.adventure.server.exception.NotContainableException;
@@ -42,7 +41,7 @@ public class GenericContainer extends Item implements Container {
     }
 
     @Override
-    public boolean contains(Describable aThing) {
+    public boolean contains(Containable aThing) {
         for (Containable containable : contents) {
             if (containable.getShortDescription().equals(aThing.getShortDescription())) {
                 return true;

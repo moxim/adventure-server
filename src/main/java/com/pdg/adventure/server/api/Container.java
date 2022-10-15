@@ -15,5 +15,5 @@ public interface Container extends Describable {
 
     int getCurrentSize();
 
-    boolean contains(Describable aThing);
+    boolean contains(Containable aThing);
 }

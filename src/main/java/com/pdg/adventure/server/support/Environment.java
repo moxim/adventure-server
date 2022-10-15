@@ -4,12 +4,14 @@ import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.location.Direction;
 import com.pdg.adventure.server.location.Location;
+import com.pdg.adventure.server.tangible.GenericContainer;
 
 import java.util.List;
 
 public class Environment {
     public static final String EMPTY_STRING = "";
     public static Location currentLocation;
+    private static Container pocket;
 
     private Environment() {
         // don't instantiate me
@@ -85,5 +87,14 @@ public class Environment {
 
     public static Location getCurrentLocation() {
         return currentLocation;
+    }
+
+
+    public static void createPocket() {
+        pocket = new GenericContainer(new DescriptionProvider("pocket"), 3);
+    }
+
+    public static Container getPocket() {
+        return pocket;
     }
 }

@@ -23,7 +23,6 @@ public class Application
                 SpringApplication.run(Application.class, args)
 //        )
         ;
-
+//        MiniAdventure.main(args);
     }
-
 }

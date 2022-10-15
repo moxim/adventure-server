@@ -7,6 +7,7 @@ import com.pdg.adventure.server.engine.ItemIdentifier;
 import com.pdg.adventure.server.exception.ItemNotFoundException;
 import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.support.DescriptionProvider;
+import com.pdg.adventure.server.support.Environment;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.tangible.Thing;
@@ -62,6 +63,10 @@ public class Location extends Thing implements Visitable {
         final String adjective = aCommand.getAdjective();
         final String noun = aCommand.getNoun();
 
+        if (applyCommandInContainer(Environment.getPocket(), verb, adjective, noun)){
+            return true;
+        };
+
         if (commandProvider.hasCommand(verb) &&
                 (noun.isEmpty() || noun.equals(getNoun())) &&
                 (adjective.isEmpty() || adjective.equals(getAdjective())))
@@ -73,14 +78,17 @@ public class Location extends Thing implements Visitable {
             if (direction.applyCommand(aCommand)) {
                 return true;
             }
-//
 //            if (direction.getDestination().applyCommand(aCommand)) {
 //                return true;
 //            }
         }
 
+        return applyCommandInContainer(container, verb, adjective, noun);
+    }
+
+    private boolean applyCommandInContainer(Container aContainer, String verb, String adjective, String noun) {
         try {
-            final Containable item = ItemIdentifier.findItem(container, adjective, noun);
+            final Containable item = ItemIdentifier.findItem(aContainer, adjective, noun);
             return item.applyCommand(verb);
         } catch (ItemNotFoundException e) {
             return false;

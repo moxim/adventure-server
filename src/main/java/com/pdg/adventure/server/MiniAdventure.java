@@ -1,11 +1,10 @@
 package com.pdg.adventure.server;
 
-import com.pdg.adventure.server.action.DescribeAction;
-import com.pdg.adventure.server.action.MessageAction;
-import com.pdg.adventure.server.action.MoveItemAction;
-import com.pdg.adventure.server.action.SetVariableAction;
-import com.pdg.adventure.server.api.Container;
+import com.pdg.adventure.server.action.*;
+import com.pdg.adventure.server.conditional.CarriedCondition;
 import com.pdg.adventure.server.conditional.EqualsCondition;
+import com.pdg.adventure.server.conditional.OrCondition;
+import com.pdg.adventure.server.conditional.PresentCondition;
 import com.pdg.adventure.server.engine.GameLoop;
 import com.pdg.adventure.server.location.Direction;
 import com.pdg.adventure.server.location.Location;
@@ -15,7 +14,6 @@ import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.Environment;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
-import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.tangible.Thing;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
@@ -26,7 +24,6 @@ import java.io.InputStreamReader;
 public class MiniAdventure {
     private final VariableProvider variableProvider;
     private final Vocabulary vocabulary;
-    private final Container pocket;
     private final Item ring;
     private Location portal;
     private Location location;
@@ -62,7 +59,6 @@ public class MiniAdventure {
     }
 
     private void setUpLocations() {
-
         DescriptionProvider locationDescription = new DescriptionProvider("first", "location");
         locationDescription.setShortDescription("You find yourself in a very eerie location.");
         locationDescription.setLongDescription(
@@ -78,6 +74,8 @@ public class MiniAdventure {
         portalDescription.setLongDescription("The portal slowly fades away already, it looks like it closes soon!");
         portal = new Location(portalDescription);
 
+        Environment.createPocket();
+        Environment.setCurrentLocation(location);
     }
 
     private void setUpVariables() {
@@ -93,8 +91,14 @@ public class MiniAdventure {
     }
 
     private void setUpTakeCommands(Item anItem) {
-        GenericCommand command = new GenericCommand("take", new MoveItemAction(anItem, pocket), vocabulary);
-        anItem.addCommand(command);
+        GenericCommand takeCommand = new GenericCommand("take", new MoveItemAction(anItem, Environment.getPocket()),
+                vocabulary);
+        takeCommand.addPreCondition(new PresentCondition(anItem));
+        anItem.addCommand(takeCommand);
+        GenericCommand dropCommand = new GenericCommand("drop", new MoveItemAction(anItem,
+                Environment.getCurrentLocation().getContainer()), vocabulary);
+        dropCommand.addPreCondition(new CarriedCondition(anItem));
+        anItem.addCommand(dropCommand);
     }
 
     private void setUpItems(Location location) {
@@ -108,6 +112,11 @@ public class MiniAdventure {
         Item rabbit = new Item(new DescriptionProvider(SMALL_TEXT, "rabbit"), true);
         rabbit.setLongDescription("The rabbit looks very tasty!");
         GenericCommand cut = new GenericCommand("cut", new MessageAction("You cut the rabbit to pieces."), vocabulary);
+        PresentCondition knifePresent = new PresentCondition(knife);
+        CarriedCondition knifeCarried = new CarriedCondition(knife);
+        OrCondition presentOrCarried = new OrCondition(knifePresent, knifeCarried);
+        cut.addPreCondition(presentOrCarried);
+        cut.addFollowUpAction(new DestroyAction(rabbit, location.getContainer()));
         rabbit.addCommand(cut);
         setUpLookCommands(rabbit);
         setUpTakeCommands(rabbit);
@@ -133,7 +142,6 @@ public class MiniAdventure {
         vocabulary = new Vocabulary();
 
         // special items, not needed in real game
-        pocket = new GenericContainer(new DescriptionProvider("pocket"), 3);
         DescriptionProvider ringDescription = new DescriptionProvider("golden", "ring");
         ringDescription.setLongDescription("As you inspect the ring you notice the shape of a portal engraved in it.");
         ring = new Item(ringDescription, true);
@@ -159,17 +167,21 @@ public class MiniAdventure {
         vocabulary.addSynonym("look", "desc");
         vocabulary.addSynonym("l", "desc");
         vocabulary.addSynonym("describe", "desc");
+        vocabulary.addSynonym("examine", "desc");
+        vocabulary.addSynonym("inspect", "desc");
 
         vocabulary.addWord("knife", Vocabulary.WordType.NOUN);
 
         vocabulary.addWord("get", Vocabulary.WordType.VERB);
         vocabulary.addSynonym("take", "get");
+        vocabulary.addWord("drop", Vocabulary.WordType.VERB);
 
         vocabulary.addWord("open", Vocabulary.WordType.VERB);
         vocabulary.addWord("enter", Vocabulary.WordType.VERB);
         vocabulary.addWord("cut", Vocabulary.WordType.VERB);
         vocabulary.addWord("kill", Vocabulary.WordType.VERB);
         vocabulary.addWord("wear", Vocabulary.WordType.VERB);
+        vocabulary.addWord("remove", Vocabulary.WordType.VERB);
 
         vocabulary.addWord("rabbit", Vocabulary.WordType.NOUN);
         vocabulary.addSynonym("hare", "rabbit");
