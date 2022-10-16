@@ -6,8 +6,10 @@ import com.pdg.adventure.server.conditional.EqualsCondition;
 import com.pdg.adventure.server.conditional.OrCondition;
 import com.pdg.adventure.server.conditional.PresentCondition;
 import com.pdg.adventure.server.engine.GameLoop;
-import com.pdg.adventure.server.location.Direction;
+import com.pdg.adventure.server.location.GenericDirection;
 import com.pdg.adventure.server.location.Location;
+import com.pdg.adventure.server.parser.CommandDescription;
+import com.pdg.adventure.server.parser.DirectionCommand;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.Parser;
 import com.pdg.adventure.server.support.DescriptionProvider;
@@ -83,10 +85,20 @@ public class MiniAdventure {
     }
 
     private void setUpDirections() {
-        Direction toPortal = new Direction("enter", portal, true, vocabulary);
-        toPortal.addPreCondition(new EqualsCondition("wornRing", "true", variableProvider));
+        CommandDescription enterPortalCommandDescription = new CommandDescription("enter", portal);
+        DirectionCommand enterCommand = new DirectionCommand(enterPortalCommandDescription,
+                new MovePlayerAction(portal), vocabulary);
+        enterCommand.addPreCondition(new EqualsCondition("wornRing", "true", variableProvider));
+
+        GenericDirection toPortal = new GenericDirection(enterCommand, portal, true);
+
+        setUpLookCommands(toPortal);
         location.addDirection(toPortal);
-        Direction toLocation = new Direction("leave", location, false, vocabulary);
+
+        CommandDescription leavePortalCommandDescription = new CommandDescription("leave", location);
+        DirectionCommand leaveCommand = new DirectionCommand(leavePortalCommandDescription,
+                new MovePlayerAction(location), vocabulary);
+        GenericDirection toLocation = new GenericDirection(leaveCommand, location);
         portal.addDirection(toLocation);
     }
 

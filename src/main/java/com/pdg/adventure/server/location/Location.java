@@ -2,6 +2,7 @@ package com.pdg.adventure.server.location;
 
 import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
+import com.pdg.adventure.server.api.Direction;
 import com.pdg.adventure.server.api.Visitable;
 import com.pdg.adventure.server.engine.ItemIdentifier;
 import com.pdg.adventure.server.exception.ItemNotFoundException;
@@ -40,7 +41,7 @@ public class Location extends Thing implements Visitable {
         return container;
     }
 
-    public void addDirection(Direction aDirection) {
+    public void addDirection(GenericDirection aDirection) {
         directions.add(aDirection);
     }
 
@@ -75,7 +76,7 @@ public class Location extends Thing implements Visitable {
         }
 
         for (Direction direction : directions) {
-            if (direction.applyCommand(aCommand)) {
+            if (direction.applyCommand(verb)) {
                 return true;
             }
 //            if (direction.getDestination().applyCommand(aCommand)) {

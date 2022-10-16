@@ -1,5 +1,8 @@
 package com.pdg.adventure.server.location;
 
+import com.pdg.adventure.server.action.MovePlayerAction;
+import com.pdg.adventure.server.parser.CommandDescription;
+import com.pdg.adventure.server.parser.DirectionCommand;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 import org.junit.jupiter.api.Test;
@@ -14,13 +17,13 @@ class DirectionTest {
 
     private final Vocabulary vocabulary = new Vocabulary();
     {
-        vocabulary.addWord("enter", Vocabulary.WordType.VERB);
-        vocabulary.addWord("south", Vocabulary.WordType.VERB);
+        vocabulary.addWord("go", Vocabulary.WordType.VERB);
     }
-
-    private final Direction destination = new Direction("enter",
-            new Location(new DescriptionProvider(GLOWING_TXT,
-            PORTAL_TXT)), true, vocabulary);
+    private final Location destination = new Location(new DescriptionProvider(GLOWING_TXT, PORTAL_TXT));
+    private final CommandDescription directionDescription = new CommandDescription("go", destination);
+    private final DirectionCommand moveCommand = new DirectionCommand(directionDescription, new MovePlayerAction(destination),
+            vocabulary);
+    private final GenericDirection sut = new GenericDirection(moveCommand, destination, true);
 
     @Test
     void getDestination() {
@@ -29,8 +32,8 @@ class DirectionTest {
         // when
 
         // then
-        assertThat(destination.getDestination().getAdjective()).isEqualTo(GLOWING_TXT);
-        assertThat(destination.getDestination().getNoun()).isEqualTo(PORTAL_TXT);
+        assertThat(sut.getAdjective()).isEqualTo(GLOWING_TXT);
+        assertThat(sut.getNoun()).isEqualTo(PORTAL_TXT);
     }
 
     @Test
@@ -40,7 +43,7 @@ class DirectionTest {
         // when
 
         // then
-        assertThat(destination.getAdjective()).isEqualTo(GLOWING_TXT);
+        assertThat(sut.getAdjective()).isEqualTo(GLOWING_TXT);
     }
 
     @Test
@@ -50,7 +53,7 @@ class DirectionTest {
         // when
 
         // then
-        assertThat(destination.getNoun()).isEqualTo(PORTAL_TXT);
+        assertThat(sut.getNoun()).isEqualTo(PORTAL_TXT);
     }
 
     @Test
@@ -60,8 +63,8 @@ class DirectionTest {
         // when
 
         // then
-        assertThat(destination.getShortDescription()).contains(GLOWING_TXT);
-        assertThat(destination.getShortDescription()).contains(PORTAL_TXT);
+        assertThat(sut.getShortDescription()).contains(GLOWING_TXT);
+        assertThat(sut.getShortDescription()).contains(PORTAL_TXT);
     }
 
     @Test
@@ -71,14 +74,13 @@ class DirectionTest {
         // when
 
         // then
-        assertThat(destination.getLongDescription()).isEqualTo("You can enter the glowing portal");
+        assertThat(sut.getLongDescription()).isEqualTo("You can enter the glowing portal");
     }
 
     @Test
     void getLongDescriptionWithoutAdjective() {
         // given
-        Direction noAdj = new Direction("enter", new Location(new DescriptionProvider(PORTAL_TXT)), true,
-                vocabulary);
+        GenericDirection noAdj = new GenericDirection(moveCommand, destination, true);
 
         // when
 
@@ -90,8 +92,7 @@ class DirectionTest {
     @Test
     void getDescriptionsWithoutLocation() throws Exception {
         // given
-        Direction noAdj = new Direction("south", new Location(new DescriptionProvider(PORTAL_TXT)), false,
-                vocabulary);
+        GenericDirection noAdj = new GenericDirection(moveCommand, destination, false);
 
         // when
 

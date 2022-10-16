@@ -2,7 +2,7 @@ package com.pdg.adventure.server.support;
 
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.api.Describable;
-import com.pdg.adventure.server.location.Direction;
+import com.pdg.adventure.server.api.Direction;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.tangible.GenericContainer;
 
