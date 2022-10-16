@@ -54,10 +54,11 @@ public class MiniAdventure {
         setUpDirections();
         Environment.tell("You have places!");
 
+        Environment.createPocket();
+        Environment.setCurrentLocation(location);
+
         setUpItems(location);
         Environment.tell("You have items!");
-
-        Environment.setCurrentLocation(location);
     }
 
     private void setUpLocations() {
@@ -75,9 +76,6 @@ public class MiniAdventure {
         portalDescription.setShortDescription("You are in a small portal.");
         portalDescription.setLongDescription("The portal slowly fades away already, it looks like it closes soon!");
         portal = new Location(portalDescription);
-
-        Environment.createPocket();
-        Environment.setCurrentLocation(location);
     }
 
     private void setUpVariables() {
@@ -103,12 +101,10 @@ public class MiniAdventure {
     }
 
     private void setUpTakeCommands(Item anItem) {
-        GenericCommand takeCommand = new GenericCommand("take", new MoveItemAction(anItem, Environment.getPocket()),
-                vocabulary);
+        GenericCommand takeCommand = new GenericCommand("take", new TakeAction(anItem), vocabulary);
         takeCommand.addPreCondition(new PresentCondition(anItem));
         anItem.addCommand(takeCommand);
-        GenericCommand dropCommand = new GenericCommand("drop", new MoveItemAction(anItem,
-                Environment.getCurrentLocation().getContainer()), vocabulary);
+        GenericCommand dropCommand = new GenericCommand("drop", new DropAction(anItem), vocabulary);
         dropCommand.addPreCondition(new CarriedCondition(anItem));
         anItem.addCommand(dropCommand);
     }

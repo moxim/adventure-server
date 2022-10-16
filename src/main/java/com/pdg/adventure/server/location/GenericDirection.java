@@ -10,6 +10,7 @@ import com.pdg.adventure.server.tangible.Item;
 public class GenericDirection extends Item implements Direction {
 
     private final Location destination;
+    private final String verb;
     private final boolean destinationMustBeMentioned;
 
     public GenericDirection(DirectionCommand aCommand, Location aLocation) {
@@ -22,6 +23,7 @@ public class GenericDirection extends Item implements Direction {
         destinationMustBeMentioned = aFlagWhetherDestinationMustBeMentioned;
         this.addCommand(aCommand);
         destination = aCommand.getDestination();
+        verb = aCommand.getVerb();
     }
 
     public Location getDestination() {
@@ -47,14 +49,13 @@ public class GenericDirection extends Item implements Direction {
         if (destinationMustBeMentioned) {
             return ArticleProvider.prependUnknownArticle(constructDescriptionFromAdjectiveAndNoun());
         }
-        return constructDescriptionFromAdjectiveAndNoun();
+        return verb;
     }
 
-/*
     @Override
     public String getLongDescription() {
         if (destinationMustBeMentioned) {
-            String result = "You can " + command;
+            String result = "You can " + verb;
 
             String noun = destination.getNoun();
             if (!Environment.EMPTY_STRING.equals(noun)) {
@@ -63,9 +64,8 @@ public class GenericDirection extends Item implements Direction {
 
             result += constructDescriptionFromAdjectiveAndNoun();
 
-            return result;
+            return result + ".";
         }
-        return command;
+        return verb;
     }
- */
 }

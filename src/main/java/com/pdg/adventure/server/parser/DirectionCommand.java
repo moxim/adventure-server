@@ -6,13 +6,19 @@ import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 public class DirectionCommand extends GenericCommand {
     private final Location destination;
+    private final String verb;
 
     public DirectionCommand(CommandDescription aCommandDescription, MovePlayerAction anAction, Vocabulary aVocabulary) {
         super(aCommandDescription.getVerb(), anAction, aVocabulary);
         destination = anAction.getDestination();
+        verb = aCommandDescription.getVerb();
     }
 
     public Location getDestination() {
         return destination;
+    }
+
+    public String getVerb() {
+        return verb;
     }
 }
