@@ -17,10 +17,10 @@ class DirectionTest {
 
     private final Vocabulary vocabulary = new Vocabulary();
     {
-        vocabulary.addWord("go", Vocabulary.WordType.VERB);
+        vocabulary.addWord("enter", Vocabulary.WordType.VERB);
     }
     private final Location destination = new Location(new DescriptionProvider(GLOWING_TXT, PORTAL_TXT));
-    private final CommandDescription directionDescription = new CommandDescription("go", destination);
+    private final CommandDescription directionDescription = new CommandDescription("enter", destination);
     private final DirectionCommand moveCommand = new DirectionCommand(directionDescription, new MovePlayerAction(destination),
             vocabulary);
     private final GenericDirection sut = new GenericDirection(moveCommand, destination, true);
@@ -74,19 +74,23 @@ class DirectionTest {
         // when
 
         // then
-        assertThat(sut.getLongDescription()).isEqualTo("You can enter the glowing portal");
+        assertThat(sut.getLongDescription()).isEqualTo("You can enter the glowing portal.");
     }
 
     @Test
     void getLongDescriptionWithoutAdjective() {
         // given
+        Location destination = new Location(new DescriptionProvider(PORTAL_TXT));
+        CommandDescription directionDescription = new CommandDescription("enter", destination);
+        DirectionCommand moveCommand = new DirectionCommand(directionDescription, new MovePlayerAction(destination),
+            vocabulary);
         GenericDirection noAdj = new GenericDirection(moveCommand, destination, true);
 
         // when
 
         // then
         assertThat(noAdj.getShortDescription()).contains(PORTAL_TXT);
-        assertThat(noAdj.getLongDescription()).isEqualTo("You can enter the portal");
+        assertThat(noAdj.getLongDescription()).isEqualTo("You can enter the portal.");
     }
 
     @Test
@@ -97,7 +101,7 @@ class DirectionTest {
         // when
 
         // then
-        assertThat(noAdj.getShortDescription()).isEqualTo("south");
-        assertThat(noAdj.getLongDescription()).isEqualTo("south");
+        assertThat(noAdj.getShortDescription()).isEqualTo("enter");
+        assertThat(noAdj.getLongDescription()).isEqualTo("enter");
     }
 }

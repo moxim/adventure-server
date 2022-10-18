@@ -3,13 +3,16 @@ package com.pdg.adventure.server.support;
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.api.Direction;
+import com.pdg.adventure.server.engine.Workflow;
 import com.pdg.adventure.server.location.Location;
+import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.tangible.GenericContainer;
 
 import java.util.List;
 
 public class Environment {
     public static final String EMPTY_STRING = "";
+    private static Workflow workflow;
     public static Location currentLocation;
     private static Container pocket;
 
@@ -96,5 +99,25 @@ public class Environment {
 
     public static Container getPocket() {
         return pocket;
+    }
+
+    public static void setUpWorkflows() {
+        workflow = new Workflow();
+    }
+
+    public static Workflow getWorkflow() {
+        return workflow;
+    }
+
+    public static void preProcessCommands() {
+        workflow.preProcess();
+    }
+
+    public static void postProcessCommands() {
+        workflow.postProcess();
+    }
+
+    public static boolean alwaysProcessCommands(CommandDescription aCommand) {
+        return workflow.alwaysProcess(aCommand);
     }
 }

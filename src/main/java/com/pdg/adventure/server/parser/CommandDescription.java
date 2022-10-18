@@ -3,7 +3,7 @@ package com.pdg.adventure.server.parser;
 import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.support.Environment;
 
-public class CommandDescription {
+public class CommandDescription implements Comparable {
     private final String verb;
     private final String adjective;
     private final String noun;
@@ -45,5 +45,14 @@ public class CommandDescription {
     @Override
     public String toString() {
         return getDescription();
+    }
+
+    @Override
+    public int compareTo(Object o) {
+//        if (!(o instanceof CommandDescription)) {
+//            throw new IllegalArgumentException("Provided object is not of type CommandDescription");
+//        }
+        CommandDescription other = (CommandDescription)o;
+        return this.getDescription().compareTo(other.getDescription());
     }
 }

@@ -1,6 +1,7 @@
 package com.pdg.adventure.server;
 
 import com.pdg.adventure.server.action.*;
+import com.pdg.adventure.server.api.Command;
 import com.pdg.adventure.server.conditional.CarriedCondition;
 import com.pdg.adventure.server.conditional.EqualsCondition;
 import com.pdg.adventure.server.conditional.OrCondition;
@@ -59,6 +60,11 @@ public class MiniAdventure {
 
         setUpItems(location);
         Environment.tell("You have items!");
+
+        Environment.setUpWorkflows();
+        CommandDescription inventoryCommandDescription = new CommandDescription("inventory");
+        Command inventoryCommand = new GenericCommand("i", new InventoryAction(), vocabulary);
+        Environment.getWorkflow().addAlwaysCommand(inventoryCommandDescription, inventoryCommand);
     }
 
     private void setUpLocations() {
@@ -162,6 +168,7 @@ public class MiniAdventure {
         vocabulary.addWord("save", Vocabulary.WordType.VERB);
         vocabulary.addWord("load", Vocabulary.WordType.VERB);
         vocabulary.addWord("inventory", Vocabulary.WordType.VERB);
+        vocabulary.addSynonym("i", "inventory");
         vocabulary.addWord("north", Vocabulary.WordType.VERB);
         vocabulary.addSynonym("n", "north");
         vocabulary.addWord("east", Vocabulary.WordType.VERB);
