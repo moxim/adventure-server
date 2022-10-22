@@ -123,20 +123,34 @@ public class MiniAdventure {
         setUpTakeCommands(knife);
         location.add(knife);
 
+        Item pelt = new Item(new DescriptionProvider(SMALL_TEXT, "pelt"), true);
+        pelt.setLongDescription("You may sell it to a trader.");
+        setUpLookCommands(pelt);
+        setUpTakeCommands(pelt);
+
+        Item skinnedRabbit = new Item(new DescriptionProvider("skinned", "rabbit"), true);
+        skinnedRabbit.setLongDescription("You may cook it.");
+        setUpLookCommands(skinnedRabbit);
+        setUpTakeCommands(skinnedRabbit);
+
         Item rabbit = new Item(new DescriptionProvider(SMALL_TEXT, "rabbit"), true);
         rabbit.setLongDescription("The rabbit looks very tasty!");
-        GenericCommand cut = new GenericCommand("cut", new MessageAction("You cut the rabbit to pieces."), vocabulary);
+        GenericCommand cut = new GenericCommand("cut", new MessageAction("You skin the rabbit and are left " +
+                "with a rabbit pelt."), vocabulary);
         PresentCondition knifePresent = new PresentCondition(knife);
         CarriedCondition knifeCarried = new CarriedCondition(knife);
         OrCondition presentOrCarried = new OrCondition(knifePresent, knifeCarried);
         cut.addPreCondition(presentOrCarried);
         cut.addFollowUpAction(new DestroyAction(rabbit, location.getContainer()));
+        cut.addFollowUpAction(new CreateAction(pelt, location.getContainer()));
+        cut.addFollowUpAction(new CreateAction(skinnedRabbit, location.getContainer()));
         rabbit.addCommand(cut);
         setUpLookCommands(rabbit);
         setUpTakeCommands(rabbit);
         location.add(rabbit);
 
         GenericCommand wear = new GenericCommand("wear", new MessageAction("You wear the ring."), vocabulary);
+        wear.addPreCondition(new CarriedCondition(ring));
         wear.addFollowUpAction(new SetVariableAction("wornRing", "true", variableProvider));
         ring.addCommand(wear);
         setUpLookCommands(ring);
@@ -186,6 +200,7 @@ public class MiniAdventure {
         vocabulary.addSynonym("inspect", "desc");
 
         vocabulary.addWord("knife", Vocabulary.WordType.NOUN);
+        vocabulary.addWord("pelt", Vocabulary.WordType.NOUN);
 
         vocabulary.addWord("get", Vocabulary.WordType.VERB);
         vocabulary.addSynonym("take", "get");
@@ -204,6 +219,7 @@ public class MiniAdventure {
         vocabulary.addWord("ring", Vocabulary.WordType.NOUN);
 
         vocabulary.addWord("big", Vocabulary.WordType.ADJECTIVE);
+        vocabulary.addWord("skinned", Vocabulary.WordType.ADJECTIVE);
         vocabulary.addWord(SMALL_TEXT, Vocabulary.WordType.ADJECTIVE);
         vocabulary.addWord("golden", Vocabulary.WordType.ADJECTIVE);
 
