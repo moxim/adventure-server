@@ -28,7 +28,7 @@ public class MiniAdventure {
     private final Item ring;
     private Location portal;
     private Location location;
-    private Vocabulary vocabulary;
+    private final Vocabulary vocabulary;
 
     private static final String SMALL_TEXT = "small";
 
@@ -64,11 +64,6 @@ public class MiniAdventure {
         CommandDescription inventoryCommandDescription = new CommandDescription("inventory");
         GenericCommand inventoryCommand = new GenericCommand("i", new InventoryAction());
         Environment.getWorkflow().addAlwaysCommand(inventoryCommandDescription, inventoryCommand);
-
-        CommandDescription flowerCommandDescription = new CommandDescription("desc", "flower");
-        GenericCommand checkFlowerCommand = new GenericCommand(flowerCommandDescription, new MessageAction("The flower looks " +
-                "beautiful."));
-        Environment.getWorkflow().addAlwaysCommand(flowerCommandDescription, checkFlowerCommand);
     }
 
     private void setUpLocations() {
@@ -81,6 +76,11 @@ public class MiniAdventure {
                 Suddenly, you notice a faint glowing portal!"""
         );
         location = new Location(locationDescription);
+
+        CommandDescription flowerCommandDescription = new CommandDescription("desc", "flower");
+        GenericCommand checkFlowerCommand = new GenericCommand(flowerCommandDescription, new MessageAction("The flower looks " +
+                "beautiful."));
+        location.addCommand(checkFlowerCommand);
 
         DescriptionProvider portalDescription = new DescriptionProvider("fading", "portal");
         portalDescription.setShortDescription("You are in a small portal.");
@@ -121,7 +121,7 @@ public class MiniAdventure {
 
     private void setUpItems(Location location) {
         Item knife = new Item(new DescriptionProvider(SMALL_TEXT, "knife"), true);
-        knife.setShortDescription("a small sharp knife");
+        knife.setShortDescription("a small knife");
         knife.setLongDescription("The knife is exceptionally sharp. Don't cut yourself!");
         setUpLookCommands(knife);
         setUpTakeCommands(knife);
@@ -225,6 +225,7 @@ public class MiniAdventure {
         vocabulary.addSynonym("hare", "rabbit");
 
         vocabulary.addWord("ring", Vocabulary.WordType.NOUN);
+        vocabulary.addWord("flower", Vocabulary.WordType.NOUN);
 
         vocabulary.addWord("big", Vocabulary.WordType.ADJECTIVE);
         vocabulary.addWord("skinned", Vocabulary.WordType.ADJECTIVE);

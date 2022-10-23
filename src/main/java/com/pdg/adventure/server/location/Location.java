@@ -60,30 +60,19 @@ public class Location extends Thing implements Visitable {
     }
 
     public boolean applyCommand(CommandDescription aCommandDescription) {
-        final String verb = aCommandDescription.getVerb();
-        final String adjective = aCommandDescription.getAdjective();
-        final String noun = aCommandDescription.getNoun();
-
         if (applyCommandInContainer(Environment.getPocket(), aCommandDescription)){
             return true;
-        };
+        }
 
-        if (commandProvider.hasCommand(aCommandDescription.getDescription())
-//                &&
-//                (noun.isEmpty() || noun.equals(getNoun())) &&
-//                (adjective.isEmpty() || adjective.equals(getAdjective()))
-        )
+        if (commandProvider.hasCommand(aCommandDescription.getDescription()))
         {
             return commandProvider.applyCommand(aCommandDescription);
         }
 
         for (Direction direction : directions) {
-            if (direction.applyCommand(aCommandDescription)) {
+            if (direction.applyCommand(new CommandDescription(aCommandDescription.getVerb()))) {
                 return true;
             }
-//            if (direction.getDestination().applyCommand(aCommand)) {
-//                return true;
-//            }
         }
 
         return applyCommandInContainer(container, aCommandDescription);
@@ -93,7 +82,7 @@ public class Location extends Thing implements Visitable {
         try {
             final Containable item = ItemIdentifier.findItem(aContainer, aCommandDescription.getAdjective(),
                     aCommandDescription.getNoun());
-            return item.applyCommand(aCommandDescription);
+            return item.applyCommand(new CommandDescription(aCommandDescription.getVerb()));
         } catch (ItemNotFoundException e) {
             return false;
         }
