@@ -8,8 +8,9 @@ import java.util.Map;
  */
 public class Vocabulary {
     public static final String UNKNOWN_WORD_TEXT = "Word '%s' is not present, yet!";
+    public static final String EMPTY_STRING = "";
 
-    private Map<String, Word> words; // text -> synonym, eg. take -> Word(get, null, VERB)
+    private final Map<String, Word> words; // text -> synonym, eg. take -> Word(get, null, VERB)
     /*
       text   | synonym | type
       -------+---------+------
@@ -35,6 +36,14 @@ public class Vocabulary {
 
     public Word getSynonym(String aWord) {
         return words.get(aWord);
+    }
+
+    public String getSynonym(String aWord, WordType aType) {
+        Word word = getSynonym(aWord);
+        if (word.getType() != aType) {
+            return EMPTY_STRING;
+        }
+        return word.getText();
     }
 
     public void addWord(String aWord, WordType aType) {

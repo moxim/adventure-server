@@ -1,5 +1,7 @@
 package com.pdg.adventure.server.support;
 
+import com.pdg.adventure.server.vocabulary.Vocabulary;
+
 import javax.validation.constraints.NotNull;
 
 public class DescriptionProvider {
@@ -17,7 +19,7 @@ public class DescriptionProvider {
         validateParameters(aNoun);
         adjective = anAdjective;
         if (adjective == null) {
-            adjective = Environment.EMPTY_STRING;
+            adjective = Vocabulary.EMPTY_STRING;
         }
         noun = aNoun;
     }
@@ -38,7 +40,7 @@ public class DescriptionProvider {
 
     public String getShortDescription() {
         if (shortDescription == null) {
-            if (Environment.EMPTY_STRING.equals(adjective)) {
+            if (Vocabulary.EMPTY_STRING.equals(adjective)) {
                 shortDescription = noun;
             } else {
                 shortDescription = adjective + " " + noun;

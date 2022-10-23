@@ -2,6 +2,7 @@ package com.pdg.adventure.server.tangible;
 
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.location.Location;
+import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.VariableProvider;
@@ -25,16 +26,17 @@ class ThingTest {
 
         DescriptionProvider thingDescription = new DescriptionProvider("thing");
         Item item = new Item(thingDescription, true);
-        GenericCommand takeCommand = new GenericCommand("take", new MessageAction("Take-Command executed."), vocabulary);
+        CommandDescription commandDescription = new CommandDescription("take");
+        GenericCommand takeCommand = new GenericCommand(commandDescription, new MessageAction("Take-Command executed."));
 
         item.addCommand(takeCommand);
 
         // when
-        assertThat(item.applyCommand("take")).isEqualTo(true);
+        assertThat(item.applyCommand(commandDescription)).isEqualTo(true);
         item.removeCommand(takeCommand);
 
         // then
-        assertThat(item.applyCommand("take")).isEqualTo(false);
+        assertThat(item.applyCommand(commandDescription)).isEqualTo(false);
 
     }
 }

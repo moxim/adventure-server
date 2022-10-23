@@ -11,7 +11,6 @@ import com.pdg.adventure.server.tangible.GenericContainer;
 import java.util.List;
 
 public class Environment {
-    public static final String EMPTY_STRING = "";
     private static Workflow workflow;
     public static Location currentLocation;
     private static Container pocket;

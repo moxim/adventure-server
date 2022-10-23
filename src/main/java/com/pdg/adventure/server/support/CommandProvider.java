@@ -1,6 +1,8 @@
 package com.pdg.adventure.server.support;
 
 import com.pdg.adventure.server.api.Command;
+import com.pdg.adventure.server.parser.CommandChain;
+import com.pdg.adventure.server.parser.CommandDescription;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,14 +10,19 @@ import java.util.List;
 import java.util.Map;
 
 public class CommandProvider {
-    private final Map<String, Command> availableCommands;
+    private final Map<String, CommandChain> availableCommands;
 
     public CommandProvider() {
         availableCommands = new HashMap<>();
     }
 
     public void addCommand(Command aCommand) {
-        availableCommands.put(aCommand.getDescription(), aCommand);
+        CommandChain chain = availableCommands.get(aCommand.getDescription());
+        if (chain == null) {
+            chain = new CommandChain();
+        }
+        chain.addCommand(aCommand);
+        availableCommands.put(aCommand.getDescription(), chain);
     }
 
     public void removeCommand(Command aCommand) {
@@ -27,11 +34,15 @@ public class CommandProvider {
     }
 
     public List<Command> getCommands() {
-        return new ArrayList<>(availableCommands.values());
+        List<Command> commands = new ArrayList<>();
+        for (CommandChain chain : availableCommands.values()) {
+            commands.addAll(chain.getCommands());
+        }
+        return commands;
     }
 
-    public boolean applyCommand(String aCommand) {
-        Command command = availableCommands.get(aCommand);
+    public boolean applyCommand(CommandDescription aCommand) {
+        CommandChain command = availableCommands.get(aCommand.getDescription());
         if (command != null) {
             return command.execute();
         }

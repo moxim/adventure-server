@@ -59,24 +59,26 @@ public class Location extends Thing implements Visitable {
         hasBeenVisited = aFlagWhetherThisHasBeenSeen;
     }
 
-    public boolean applyCommand(CommandDescription aCommand) {
-        final String verb = aCommand.getVerb();
-        final String adjective = aCommand.getAdjective();
-        final String noun = aCommand.getNoun();
+    public boolean applyCommand(CommandDescription aCommandDescription) {
+        final String verb = aCommandDescription.getVerb();
+        final String adjective = aCommandDescription.getAdjective();
+        final String noun = aCommandDescription.getNoun();
 
-        if (applyCommandInContainer(Environment.getPocket(), verb, adjective, noun)){
+        if (applyCommandInContainer(Environment.getPocket(), aCommandDescription)){
             return true;
         };
 
-        if (commandProvider.hasCommand(verb) &&
-                (noun.isEmpty() || noun.equals(getNoun())) &&
-                (adjective.isEmpty() || adjective.equals(getAdjective())))
+        if (commandProvider.hasCommand(aCommandDescription.getDescription())
+//                &&
+//                (noun.isEmpty() || noun.equals(getNoun())) &&
+//                (adjective.isEmpty() || adjective.equals(getAdjective()))
+        )
         {
-            return commandProvider.applyCommand(verb);
+            return commandProvider.applyCommand(aCommandDescription);
         }
 
         for (Direction direction : directions) {
-            if (direction.applyCommand(verb)) {
+            if (direction.applyCommand(aCommandDescription)) {
                 return true;
             }
 //            if (direction.getDestination().applyCommand(aCommand)) {
@@ -84,13 +86,14 @@ public class Location extends Thing implements Visitable {
 //            }
         }
 
-        return applyCommandInContainer(container, verb, adjective, noun);
+        return applyCommandInContainer(container, aCommandDescription);
     }
 
-    private boolean applyCommandInContainer(Container aContainer, String verb, String adjective, String noun) {
+    private boolean applyCommandInContainer(Container aContainer, CommandDescription aCommandDescription) {
         try {
-            final Containable item = ItemIdentifier.findItem(aContainer, adjective, noun);
-            return item.applyCommand(verb);
+            final Containable item = ItemIdentifier.findItem(aContainer, aCommandDescription.getAdjective(),
+                    aCommandDescription.getNoun());
+            return item.applyCommand(aCommandDescription);
         } catch (ItemNotFoundException e) {
             return false;
         }

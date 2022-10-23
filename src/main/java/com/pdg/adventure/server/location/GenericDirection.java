@@ -4,8 +4,8 @@ import com.pdg.adventure.server.api.Direction;
 import com.pdg.adventure.server.parser.DirectionCommand;
 import com.pdg.adventure.server.support.ArticleProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.support.Environment;
 import com.pdg.adventure.server.tangible.Item;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 public class GenericDirection extends Item implements Direction {
 
@@ -33,12 +33,12 @@ public class GenericDirection extends Item implements Direction {
     private String constructDescriptionFromAdjectiveAndNoun() {
         String result = "";
         String adjective = destination.getAdjective();
-        if (!Environment.EMPTY_STRING.equals(adjective)) {
+        if (!Vocabulary.EMPTY_STRING.equals(adjective)) {
             result += destination.getAdjective() + " ";
         }
 
         String noun = destination.getNoun();
-        if (!Environment.EMPTY_STRING.equals(noun)) {
+        if (!Vocabulary.EMPTY_STRING.equals(noun)) {
             result += noun;
         }
         return result;
@@ -58,7 +58,7 @@ public class GenericDirection extends Item implements Direction {
             String result = "You can " + verb;
 
             String noun = destination.getNoun();
-            if (!Environment.EMPTY_STRING.equals(noun)) {
+            if (!Vocabulary.EMPTY_STRING.equals(noun)) {
                 result += " the ";
             }
 

@@ -3,13 +3,12 @@ package com.pdg.adventure.server.parser;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 class CommandDescriptionTest {
 
     CommandDescription sut = new CommandDescription("1", "2");
     CommandDescription one = new CommandDescription("1", "2");
-        CommandDescription three = new CommandDescription("3");
+    CommandDescription three = new CommandDescription("3");
 
     @Test
     void compareToLessOK() {
@@ -41,19 +40,4 @@ class CommandDescriptionTest {
         // then
         assertThat(three.compareTo(sut)).isGreaterThan(0);
     }
-
-    @Test
-    void compareToThrowsException() {
-        // given
-
-        // when
-
-        Throwable thrown = catchThrowable(() -> {sut.compareTo(1);});
-
-        // then
-        assertThat(thrown).isInstanceOf(ClassCastException.class);
-    }
-
-
-
 }

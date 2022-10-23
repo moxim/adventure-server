@@ -21,9 +21,9 @@ public class Parser {
     }
 
     public CommandDescription handle(String anInput) {
-        String verb = Environment.EMPTY_STRING;
-        String adjective = Environment.EMPTY_STRING;
-        String noun = Environment.EMPTY_STRING;
+        String verb = Vocabulary.EMPTY_STRING;
+        String adjective = Vocabulary.EMPTY_STRING;
+        String noun = Vocabulary.EMPTY_STRING;
         String lowerCaseInput = anInput.toLowerCase();
 
         try (
@@ -43,6 +43,7 @@ public class Parser {
                 }
             }
         }
+
         return new CommandDescription(verb, adjective, noun);
     }
 }

@@ -14,15 +14,14 @@ class DirectionTest {
 
     private static final String GLOWING_TXT = "glowing";
     private static final String PORTAL_TXT = "portal";
-
     private final Vocabulary vocabulary = new Vocabulary();
     {
         vocabulary.addWord("enter", Vocabulary.WordType.VERB);
     }
     private final Location destination = new Location(new DescriptionProvider(GLOWING_TXT, PORTAL_TXT));
     private final CommandDescription directionDescription = new CommandDescription("enter", destination);
-    private final DirectionCommand moveCommand = new DirectionCommand(directionDescription, new MovePlayerAction(destination),
-            vocabulary);
+    private final DirectionCommand moveCommand = new DirectionCommand(directionDescription,
+            new MovePlayerAction(destination));
     private final GenericDirection sut = new GenericDirection(moveCommand, destination, true);
 
     @Test
@@ -82,8 +81,7 @@ class DirectionTest {
         // given
         Location destination = new Location(new DescriptionProvider(PORTAL_TXT));
         CommandDescription directionDescription = new CommandDescription("enter", destination);
-        DirectionCommand moveCommand = new DirectionCommand(directionDescription, new MovePlayerAction(destination),
-            vocabulary);
+        DirectionCommand moveCommand = new DirectionCommand(directionDescription, new MovePlayerAction(destination));
         GenericDirection noAdj = new GenericDirection(moveCommand, destination, true);
 
         // when

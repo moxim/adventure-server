@@ -3,31 +3,36 @@ package com.pdg.adventure.server.parser;
 import com.pdg.adventure.server.api.Action;
 import com.pdg.adventure.server.api.Command;
 import com.pdg.adventure.server.api.PreCondition;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class GenericCommand implements Command {
-    private final String verb;
+//    private final String verb;
+    private final CommandDescription command;
     private final List<PreCondition> preConditions;
     private final List<Action> followUpActions;
     private final Action action;
     private final UUID id;
 
-    public GenericCommand(String aVerb, Action anAction, Vocabulary aVocabulary) {
-        Vocabulary.Word someWord = aVocabulary.getSynonym(aVerb);
-        verb = someWord.getText();
-        action = anAction;
-        id = UUID.randomUUID();
+    public GenericCommand(String aVerb, Action anAction) {
+        this(new CommandDescription(aVerb), anAction);
+    }
+
+    public GenericCommand(CommandDescription aCommand, Action anAction) {
+//        Vocabulary.Word someWord = aVocabulary.getSynonym(aVerb);
+//        verb = someWord.getText();
+        command = aCommand;
         preConditions = new ArrayList<>();
         followUpActions = new ArrayList<>();
+        action = anAction;
+        id = UUID.randomUUID();
     }
 
     @Override
     public String getDescription() {
-        return verb;
+        return command.getDescription();
     }
 
     @Override
@@ -82,6 +87,6 @@ public class GenericCommand implements Command {
     }
 
     public String toString() {
-        return verb + (action == null ? "" : "[" + action + "]");
+        return getDescription() + (action == null ? "" : "[" + action + "]");
     }
 }

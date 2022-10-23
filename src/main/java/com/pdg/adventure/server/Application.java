@@ -17,7 +17,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class Application
 // extends SpringBootServletInitializer      implements AppShellConfigurator
 {
-
     public static void main(String[] args) {
 //        LaunchUtil.launchBrowserInDevelopmentMode(
                 SpringApplication.run(Application.class, args)

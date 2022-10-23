@@ -1,10 +1,9 @@
 package com.pdg.adventure.server;
 
 import com.pdg.adventure.server.action.*;
-import com.pdg.adventure.server.api.Command;
 import com.pdg.adventure.server.conditional.CarriedCondition;
 import com.pdg.adventure.server.conditional.EqualsCondition;
-import com.pdg.adventure.server.conditional.OrCondition;
+import com.pdg.adventure.server.conditional.NotCondition;
 import com.pdg.adventure.server.conditional.PresentCondition;
 import com.pdg.adventure.server.engine.GameLoop;
 import com.pdg.adventure.server.location.GenericDirection;
@@ -26,15 +25,15 @@ import java.io.InputStreamReader;
 
 public class MiniAdventure {
     private final VariableProvider variableProvider;
-    private final Vocabulary vocabulary;
     private final Item ring;
     private Location portal;
     private Location location;
+    private Vocabulary vocabulary;
 
     private static final String SMALL_TEXT = "small";
 
     public static void main(String[] args) {
-        MiniAdventure game = new MiniAdventure();
+        MiniAdventure game = new MiniAdventure(new Vocabulary());
         game.setup();
         game.run();
     }
@@ -63,18 +62,23 @@ public class MiniAdventure {
 
         Environment.setUpWorkflows();
         CommandDescription inventoryCommandDescription = new CommandDescription("inventory");
-        Command inventoryCommand = new GenericCommand("i", new InventoryAction(), vocabulary);
+        GenericCommand inventoryCommand = new GenericCommand("i", new InventoryAction());
         Environment.getWorkflow().addAlwaysCommand(inventoryCommandDescription, inventoryCommand);
+
+        CommandDescription flowerCommandDescription = new CommandDescription("desc", "flower");
+        GenericCommand checkFlowerCommand = new GenericCommand(flowerCommandDescription, new MessageAction("The flower looks " +
+                "beautiful."));
+        Environment.getWorkflow().addAlwaysCommand(flowerCommandDescription, checkFlowerCommand);
     }
 
     private void setUpLocations() {
         DescriptionProvider locationDescription = new DescriptionProvider("first", "location");
-        locationDescription.setShortDescription("You find yourself in a very eerie location.");
+        locationDescription.setShortDescription("This is the first location.");
         locationDescription.setLongDescription(
                 """
-                You find yourself in a very eerie location. Pitch black darkness stretches endlessly around you,
-                robbing you of any sense of direction.
-                Some strange mind must have created it. Suddenly, you notice a faint glowing portal!"""
+                You find yourself in a field of lush grass and colourful flowers. It looks to beautiful to be true,
+                much more like a painting. Some creative mind must have created it.
+                Suddenly, you notice a faint glowing portal!"""
         );
         location = new Location(locationDescription);
 
@@ -91,7 +95,7 @@ public class MiniAdventure {
     private void setUpDirections() {
         CommandDescription enterPortalCommandDescription = new CommandDescription("enter", portal);
         DirectionCommand enterCommand = new DirectionCommand(enterPortalCommandDescription,
-                new MovePlayerAction(portal), vocabulary);
+                new MovePlayerAction(portal));
         enterCommand.addPreCondition(new EqualsCondition("wornRing", "true", variableProvider));
 
         GenericDirection toPortal = new GenericDirection(enterCommand, portal, true);
@@ -101,16 +105,16 @@ public class MiniAdventure {
 
         CommandDescription leavePortalCommandDescription = new CommandDescription("leave", location);
         DirectionCommand leaveCommand = new DirectionCommand(leavePortalCommandDescription,
-                new MovePlayerAction(location), vocabulary);
+                new MovePlayerAction(location));
         GenericDirection toLocation = new GenericDirection(leaveCommand, location);
         portal.addDirection(toLocation);
     }
 
     private void setUpTakeCommands(Item anItem) {
-        GenericCommand takeCommand = new GenericCommand("take", new TakeAction(anItem), vocabulary);
+        GenericCommand takeCommand = new GenericCommand("get", new TakeAction(anItem));
         takeCommand.addPreCondition(new PresentCondition(anItem));
         anItem.addCommand(takeCommand);
-        GenericCommand dropCommand = new GenericCommand("drop", new DropAction(anItem), vocabulary);
+        GenericCommand dropCommand = new GenericCommand("drop", new DropAction(anItem));
         dropCommand.addPreCondition(new CarriedCondition(anItem));
         anItem.addCommand(dropCommand);
     }
@@ -135,21 +139,25 @@ public class MiniAdventure {
 
         Item rabbit = new Item(new DescriptionProvider(SMALL_TEXT, "rabbit"), true);
         rabbit.setLongDescription("The rabbit looks very tasty!");
-        GenericCommand cut = new GenericCommand("cut", new MessageAction("You skin the rabbit and are left " +
-                "with a rabbit pelt."), vocabulary);
-        PresentCondition knifePresent = new PresentCondition(knife);
+        GenericCommand cutNotSuccessfully = new GenericCommand("cut", new MessageAction("You need a knife."));
         CarriedCondition knifeCarried = new CarriedCondition(knife);
-        OrCondition presentOrCarried = new OrCondition(knifePresent, knifeCarried);
-        cut.addPreCondition(presentOrCarried);
-        cut.addFollowUpAction(new DestroyAction(rabbit, location.getContainer()));
-        cut.addFollowUpAction(new CreateAction(pelt, location.getContainer()));
-        cut.addFollowUpAction(new CreateAction(skinnedRabbit, location.getContainer()));
-        rabbit.addCommand(cut);
+        NotCondition knifeNotCarried = new NotCondition(knifeCarried);
+        cutNotSuccessfully.addPreCondition(knifeNotCarried);
+        rabbit.addCommand(cutNotSuccessfully);
+
+        GenericCommand cutSuccessfully = new GenericCommand("cut", new MessageAction("You skin the rabbit and are left " +
+                "with a rabbit pelt."));
+        cutSuccessfully.addPreCondition(knifeCarried);
+        cutSuccessfully.addFollowUpAction(new DestroyAction(rabbit, location.getContainer()));
+        cutSuccessfully.addFollowUpAction(new CreateAction(pelt, location.getContainer()));
+        cutSuccessfully.addFollowUpAction(new CreateAction(skinnedRabbit, location.getContainer()));
+        rabbit.addCommand(cutSuccessfully);
+
         setUpLookCommands(rabbit);
         setUpTakeCommands(rabbit);
         location.add(rabbit);
 
-        GenericCommand wear = new GenericCommand("wear", new MessageAction("You wear the ring."), vocabulary);
+        GenericCommand wear = new GenericCommand("wear", new MessageAction("You wear the ring."));
         wear.addPreCondition(new CarriedCondition(ring));
         wear.addFollowUpAction(new SetVariableAction("wornRing", "true", variableProvider));
         ring.addCommand(wear);
@@ -162,12 +170,12 @@ public class MiniAdventure {
     }
 
     private void setUpLookCommands(Thing aThing) {
-        aThing.addCommand(new GenericCommand("look", new DescribeAction(aThing), vocabulary));
+        aThing.addCommand(new GenericCommand("desc", new DescribeAction(aThing)));
     }
 
-    public MiniAdventure() {
+    public MiniAdventure(Vocabulary aVocabulary) {
+        vocabulary = aVocabulary;
         variableProvider = new VariableProvider();
-        vocabulary = new Vocabulary();
 
         // special items, not needed in real game
         DescriptionProvider ringDescription = new DescriptionProvider("golden", "ring");

@@ -1,5 +1,7 @@
 package com.pdg.adventure.server.api;
 
+import com.pdg.adventure.server.parser.CommandDescription;
+
 import java.util.List;
 
 public interface Actionable {
@@ -10,5 +12,5 @@ public interface Actionable {
 
     void removeCommand(Command aCommand);
 
-    boolean applyCommand(String aVerb);
+    boolean applyCommand(CommandDescription aVerb);
 }

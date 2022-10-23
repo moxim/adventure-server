@@ -1,9 +1,9 @@
 package com.pdg.adventure.server.parser;
 
 import com.pdg.adventure.server.api.Describable;
-import com.pdg.adventure.server.support.Environment;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
 
-public class CommandDescription implements Comparable {
+public class CommandDescription implements Comparable<CommandDescription> {
     private final String verb;
     private final String adjective;
     private final String noun;
@@ -13,11 +13,11 @@ public class CommandDescription implements Comparable {
     }
 
     public CommandDescription(String aVerb) {
-        this(aVerb, Environment.EMPTY_STRING, Environment.EMPTY_STRING);
+        this(aVerb, Vocabulary.EMPTY_STRING, Vocabulary.EMPTY_STRING);
     }
 
     public CommandDescription(String aVerb, String aNoun) {
-        this(aVerb, Environment.EMPTY_STRING, aNoun);
+        this(aVerb, Vocabulary.EMPTY_STRING, aNoun);
     }
 
     public CommandDescription(String aVerb, String anAdjective, String aNoun) {
@@ -48,11 +48,7 @@ public class CommandDescription implements Comparable {
     }
 
     @Override
-    public int compareTo(Object o) {
-//        if (!(o instanceof CommandDescription)) {
-//            throw new IllegalArgumentException("Provided object is not of type CommandDescription");
-//        }
-        CommandDescription other = (CommandDescription)o;
-        return this.getDescription().compareTo(other.getDescription());
+    public int compareTo(CommandDescription o) {
+        return this.getDescription().compareTo(o.getDescription());
     }
 }
