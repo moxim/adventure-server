@@ -1,10 +1,10 @@
 package com.pdg.adventure.server;
 
 import com.pdg.adventure.server.action.*;
-import com.pdg.adventure.server.conditional.CarriedCondition;
-import com.pdg.adventure.server.conditional.EqualsCondition;
-import com.pdg.adventure.server.conditional.NotCondition;
-import com.pdg.adventure.server.conditional.PresentCondition;
+import com.pdg.adventure.server.condition.CarriedCondition;
+import com.pdg.adventure.server.condition.EqualsCondition;
+import com.pdg.adventure.server.condition.NotCondition;
+import com.pdg.adventure.server.condition.PresentCondition;
 import com.pdg.adventure.server.engine.GameLoop;
 import com.pdg.adventure.server.location.GenericDirection;
 import com.pdg.adventure.server.location.Location;

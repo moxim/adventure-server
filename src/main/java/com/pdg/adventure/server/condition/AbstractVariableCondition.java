@@ -1,4 +1,4 @@
-package com.pdg.adventure.server.conditional;
+package com.pdg.adventure.server.condition;
 
 import com.pdg.adventure.server.api.PreCondition;
 import com.pdg.adventure.server.support.VariableProvider;

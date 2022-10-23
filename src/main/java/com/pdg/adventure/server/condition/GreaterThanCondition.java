@@ -1,14 +1,14 @@
-package com.pdg.adventure.server.conditional;
+package com.pdg.adventure.server.condition;
 
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
-public class LowerThanCondition extends AbstractVariableCondition {
+public class GreaterThanCondition extends AbstractVariableCondition {
 
     private final String variableName;
     private final Object value;
 
-    public LowerThanCondition(String aVariableName, Number aValue, VariableProvider aVariableProvider) {
+    public GreaterThanCondition(String aVariableName, Number aValue, VariableProvider aVariableProvider) {
         super(aVariableProvider);
         variableName = aVariableName;
         value = aValue;
@@ -23,7 +23,7 @@ public class LowerThanCondition extends AbstractVariableCondition {
         try {
             Integer envVal = Integer.valueOf(envVariable.aValue());
             Integer iVal = Integer.valueOf(value.toString());
-            return envVal < iVal;
+            return envVal > iVal;
         } catch (NumberFormatException e) {
             return false;
         }

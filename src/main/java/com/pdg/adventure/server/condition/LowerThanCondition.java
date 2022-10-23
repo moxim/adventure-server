@@ -1,14 +1,14 @@
-package com.pdg.adventure.server.conditional;
+package com.pdg.adventure.server.condition;
 
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
-public class EqualsCondition extends AbstractVariableCondition  {
+public class LowerThanCondition extends AbstractVariableCondition {
 
     private final String variableName;
-    private final String value;
+    private final Object value;
 
-    public EqualsCondition(String aVariableName, String aValue, VariableProvider aVariableProvider) {
+    public LowerThanCondition(String aVariableName, Number aValue, VariableProvider aVariableProvider) {
         super(aVariableProvider);
         variableName = aVariableName;
         value = aValue;
@@ -20,6 +20,12 @@ public class EqualsCondition extends AbstractVariableCondition  {
         if (envVariable == null) {
             throw new IllegalArgumentException("Variable " + variableName + " does not exist!");
         }
-        return envVariable.aValue().equals(value);
+        try {
+            Integer envVal = Integer.valueOf(envVariable.aValue());
+            Integer iVal = Integer.valueOf(value.toString());
+            return envVal < iVal;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }
