@@ -2,8 +2,6 @@ package com.pdg.adventure.server.support;
 
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
-import javax.validation.constraints.NotNull;
-
 public class DescriptionProvider {
     public static final String NOUN_MISSING_MESSAGE = "The noun is mandatory.";
     private final String noun;
@@ -15,7 +13,7 @@ public class DescriptionProvider {
         this(null, aNoun);
     }
 
-    public DescriptionProvider(String anAdjective, @NotNull(message = NOUN_MISSING_MESSAGE) String aNoun) {
+    public DescriptionProvider(String anAdjective, String aNoun) {
         validateParameters(aNoun);
         adjective = anAdjective;
         if (adjective == null) {
