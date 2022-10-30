@@ -36,7 +36,7 @@ public class GenericContainer extends Item implements Container {
     }
 
     @Override
-    public int getCurrentSize() {
+    public int getSize() {
         return contents.size();
     }
 
@@ -48,6 +48,27 @@ public class GenericContainer extends Item implements Container {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return contents.isEmpty();
+    }
+
+    @Override
+    public String listContents() {
+        StringBuilder sb = new StringBuilder();
+
+        if (!isEmpty()) {
+            for (int i = 0; i < contents.size() - 1; i++) {
+                 sb.append(contents.get(i).getShortDescription()).append(", ").append(System.getProperty("line.separator"));
+             }
+             sb.append(contents.get(contents.size() - 1).getShortDescription()).append(".");
+         } else {
+             sb.append("nothing.");
+        }
+
+        return sb.toString();
     }
 
     @Override

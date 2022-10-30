@@ -19,7 +19,7 @@ public class GenericDirection extends Item implements Direction {
 
     public GenericDirection(DirectionCommand aCommand, Location aLocation,
                             boolean aFlagWhetherDestinationMustBeMentioned) {
-        super(new DescriptionProvider(aLocation.getAdjective(), aLocation.getNoun()), false);
+        super(new DescriptionProvider(aLocation.getAdjective(), aLocation.getNoun()), true);
         destinationMustBeMentioned = aFlagWhetherDestinationMustBeMentioned;
         this.addCommand(aCommand);
         destination = aCommand.getDestination();

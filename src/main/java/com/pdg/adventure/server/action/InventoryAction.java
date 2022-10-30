@@ -9,6 +9,7 @@ public class InventoryAction extends AbstractAction {
 
     @Override
     public void execute() {
-        Environment.showContents(Environment.getPocket(), "You carry:");
+        Environment.tell("You carry:");
+        Environment.tell(Environment.getPocket().listContents());
     }
 }

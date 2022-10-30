@@ -2,13 +2,10 @@ package com.pdg.adventure.server.support;
 
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.api.Describable;
-import com.pdg.adventure.server.api.Direction;
 import com.pdg.adventure.server.engine.Workflow;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.tangible.GenericContainer;
-
-import java.util.List;
 
 public class Environment {
     private static Workflow workflow;
@@ -30,44 +27,7 @@ public class Environment {
 
     public static void show(Location aLocation) {
         tell("");
-        tell(aLocation.getLongDescription());;
-        showDirections(aLocation);
-        showContents(aLocation, "You also see:");
-    }
-
-    private static void showDirections(Location aLocation) {
-        final List<Direction> directions = aLocation.getDirections();
-        if (!directions.isEmpty()) {
-            tell("Exits are:");
-            showShortDescriptions(directions);
-        } else {
-            tell("There are no obvious exits.");
-        }
-    }
-
-    public static void showContents(Location aLocation, String aMessageFormat) {
-        Container container = aLocation.getContainer();
-        showContents(container, aMessageFormat);
-    }
-
-    public static void showContents(Container container, String aMessageFormat) {
-        tell(String.format(aMessageFormat, container.getShortDescription()));
-        showShortDescriptions(container.getContents());
-    }
-
-    private static void showShortDescriptions(List<? extends Describable> items) {
-        if (items.isEmpty()) {
-            tell("nothing.");
-            return;
-        }
-        for (int i = 0; i < items.size() - 1; i++) {
-            tell(describe(items.get(i)) + ", ");
-        }
-        tell(describe(items.get(items.size() - 1)) + ".");
-    }
-
-    private static String describe(Describable anItem) {
-        return anItem.getShortDescription();
+        tell(aLocation.getLongDescription());
     }
 
     public static void tell(String aMessage) {
@@ -82,9 +42,8 @@ public class Environment {
         return currentLocation;
     }
 
-
     public static void createPocket() {
-        pocket = new GenericContainer(new DescriptionProvider("pocket"), 3);
+        pocket = new GenericContainer(new DescriptionProvider("pocket"), 5);
     }
 
     public static Container getPocket() {

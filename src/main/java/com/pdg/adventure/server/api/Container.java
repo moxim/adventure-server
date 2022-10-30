@@ -13,7 +13,11 @@ public interface Container extends Describable {
 
     int getMaxSize();
 
-    int getCurrentSize();
+    int getSize();
 
     boolean contains(Containable aThing);
+
+    boolean isEmpty();
+
+    String listContents();
 }

@@ -2,7 +2,6 @@ package com.pdg.adventure.server.location;
 
 import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
-import com.pdg.adventure.server.api.Direction;
 import com.pdg.adventure.server.api.Visitable;
 import com.pdg.adventure.server.engine.ItemIdentifier;
 import com.pdg.adventure.server.exception.ItemNotFoundException;
@@ -13,19 +12,18 @@ import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.tangible.Thing;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Location extends Thing implements Visitable {
 
     private final Container container;
-    private final List<Direction> directions;
+    private final Container directions;
     private boolean hasBeenVisited;
 
     public Location(DescriptionProvider aDescriptionProvider) {
         super(aDescriptionProvider);
         container = new GenericContainer(aDescriptionProvider, 99);
-        directions = new ArrayList<>();
+        directions = new GenericContainer(aDescriptionProvider, 99);
         hasBeenVisited = false; // explicit, but redundant
     }
 
@@ -45,8 +43,8 @@ public class Location extends Thing implements Visitable {
         directions.add(aDirection);
     }
 
-    public List<Direction> getDirections() {
-        return directions;
+    public List<Containable> getDirections() {
+        return container.getContents();
     }
 
     @Override
@@ -69,7 +67,7 @@ public class Location extends Thing implements Visitable {
             return commandProvider.applyCommand(aCommandDescription);
         }
 
-        for (Direction direction : directions) {
+        for (Containable direction : directions.getContents()) {
             if (direction.applyCommand(new CommandDescription(aCommandDescription.getVerb()))) {
                 return true;
             }
@@ -89,10 +87,28 @@ public class Location extends Thing implements Visitable {
     }
 
     public String getLongDescription() {
+        StringBuilder sb = new StringBuilder();
+
         if (!hasBeenVisited()) {
-            return super.getLongDescription();
+            sb.append(super.getLongDescription());
         } else {
-            return getShortDescription();
+            sb.append(getShortDescription());
         }
+
+        sb.append(System.getProperty("line.separator"));
+        if (!directions.isEmpty()) {
+            sb.append("Exits are:").append(System.getProperty("line.separator"));
+            sb.append(directions.listContents());
+        } else {
+            sb.append("There are no obvious exits.");
+        }
+
+        sb.append(System.getProperty("line.separator"));
+        if (!container.isEmpty()) {
+            sb.append("You also see:").append(System.getProperty("line.separator"));
+            sb.append(container.listContents());
+        }
+
+        return sb.toString();
     }
 }

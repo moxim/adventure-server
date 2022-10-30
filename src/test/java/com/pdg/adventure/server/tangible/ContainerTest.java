@@ -23,7 +23,7 @@ class ContainerTest {
 
         // then
         assertThat(sut.getContents()).isEmpty();
-        assertThat(sut.getCurrentSize()).isZero();
+        assertThat(sut.getSize()).isZero();
         assertThat(sut.getMaxSize()).isEqualTo(CONTAINER_MAX_SIZE);
     }
 
@@ -49,7 +49,7 @@ class ContainerTest {
         sut.add(new Item(descriptionProvider, true));
 
         // then
-        assertThat(sut.getCurrentSize()).isEqualTo(3);
+        assertThat(sut.getSize()).isEqualTo(3);
     }
 
     @Test
