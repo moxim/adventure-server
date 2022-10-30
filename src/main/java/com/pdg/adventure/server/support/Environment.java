@@ -112,11 +112,7 @@ public class Environment {
         workflow.preProcess();
     }
 
-    public static void postProcessCommands() {
-        workflow.postProcess();
-    }
-
-    public static boolean alwaysProcessCommands(CommandDescription aCommand) {
-        return workflow.alwaysProcess(aCommand);
+    public static boolean interceptCommands(CommandDescription aCommand) {
+        return workflow.interceptCommands(aCommand);
     }
 }

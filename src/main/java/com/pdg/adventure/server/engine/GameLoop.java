@@ -22,21 +22,17 @@ public class GameLoop {
                 Environment.preProcessCommands();
 
                 CommandDescription command = parser.getInput(aReader);
-                String verb = command.getVerb();
-                if ("quit".equals(verb)) {
-                    break;
-                }
-                if (!currentLocation.applyCommand(command) &&
-                    // Check commands that are independent of locations like inventory, save, quit aso.
-                    // Some of those may have been not available at a specific location, so check them after checking
-                    // them on locations.
-                    !Environment.alwaysProcessCommands(command)) {
+
+                // Check commands that are independent of locations like inventory, save, quit aso.
+                // Some of those may have been not available at a specific location, so check them after checking
+                // them on locations.
+                if (!Environment.interceptCommands(command) && !currentLocation.applyCommand(command)) {
                     Environment.tell("You can't do that.");
                 }
-
-                Environment.postProcessCommands();
-
             } catch (IOException aE) {
+                Environment.tell(aE.getMessage());
+                break;
+            } catch (RuntimeException aE) {
                 Environment.tell(aE.getMessage());
                 break;
             }

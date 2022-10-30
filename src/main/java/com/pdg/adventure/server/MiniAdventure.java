@@ -63,7 +63,12 @@ public class MiniAdventure {
         Environment.setUpWorkflows();
         CommandDescription inventoryCommandDescription = new CommandDescription("inventory");
         GenericCommand inventoryCommand = new GenericCommand("i", new InventoryAction());
-        Environment.getWorkflow().addAlwaysCommand(inventoryCommandDescription, inventoryCommand);
+        Environment.getWorkflow().addInterceptorCommand(inventoryCommandDescription, inventoryCommand);
+
+        CommandDescription quitCommandDescription = new CommandDescription("quit");
+        GenericCommand quitCommand = new GenericCommand("quit", new QuitAction());
+        Environment.getWorkflow().addInterceptorCommand(quitCommandDescription, quitCommand);
+
     }
 
     private void setUpLocations() {

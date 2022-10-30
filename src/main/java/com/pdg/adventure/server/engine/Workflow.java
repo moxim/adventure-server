@@ -8,49 +8,35 @@ import java.util.TreeMap;
 
 public class Workflow {
     private final Map<CommandDescription, Command> preCommands;
-    private final Map<CommandDescription, Command> postCommands;
-    private final Map<CommandDescription, Command> alwaysCommands;
+    private final Map<CommandDescription, Command> interceptorCommands;
 
     public Workflow() {
         preCommands = new TreeMap<>();
-        postCommands = new TreeMap<>();
-        alwaysCommands = new TreeMap<>()    ;
+        interceptorCommands = new TreeMap<>()    ;
     }
 
     public void addPreCommand(CommandDescription aCommandDescription, Command aCommand) {
         preCommands.put(aCommandDescription, aCommand);
     }
 
-    public void addPostCommand(CommandDescription aCommandDescription, Command aCommand) {
-        postCommands.put(aCommandDescription, aCommand);
-    }
-
-    public void addAlwaysCommand(CommandDescription aCommandDescription, Command aCommand) {
-        alwaysCommands.put(aCommandDescription, aCommand);
+    public void addInterceptorCommand(CommandDescription aCommandDescription, Command aCommand) {
+        interceptorCommands.put(aCommandDescription, aCommand);
     }
 
     public void removePreCommand(CommandDescription aCommandDescription, Command aCommand) {
         preCommands.remove(aCommandDescription, aCommand);
     }
 
-    public void removePostCommand(CommandDescription aCommandDescription, Command aCommand) {
-        postCommands.remove(aCommandDescription, aCommand);
-    }
-
-    public void removeAlwaysCommand(CommandDescription aCommandDescription, Command aCommand) {
-        alwaysCommands.remove(aCommandDescription, aCommand);
+    public void removeInterceptorCommand(CommandDescription aCommandDescription, Command aCommand) {
+        interceptorCommands.remove(aCommandDescription, aCommand);
     }
 
     public void preProcess() {
         process(preCommands);
     }
 
-    public void postProcess() {
-        process(postCommands);
-    }
-
-    public boolean alwaysProcess(CommandDescription aCommand) {
-        return applyCommand(alwaysCommands, aCommand);
+    public boolean interceptCommands(CommandDescription aCommand) {
+        return applyCommand(interceptorCommands, aCommand);
     }
 
     private boolean applyCommand(Map<CommandDescription, Command> aAlwaysCommands, CommandDescription aCommand) {
