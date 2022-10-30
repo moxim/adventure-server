@@ -68,7 +68,6 @@ public class DescriptionProvider {
         return "You see " + ArticleProvider.prependUnknownArticle(getLongDescription()) + ".";
     }
 
-
     public void setLongDescription(String aLongDescription) {
         longDescription = aLongDescription;
     }

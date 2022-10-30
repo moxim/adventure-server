@@ -20,8 +20,9 @@ public class Environment {
     }
 
     public static void show(Describable aThing) {
-        if (aThing instanceof Location) {
-            show((Location)aThing);
+        if (aThing instanceof Location location) {
+            location.setHasBeenVisited(false);
+            show(location);
         } else {
             tell(aThing.getLongDescription());
         }
@@ -29,7 +30,7 @@ public class Environment {
 
     public static void show(Location aLocation) {
         tell("");
-        showDescription(aLocation);
+        tell(aLocation.getLongDescription());;
         showDirections(aLocation);
         showContents(aLocation, "You also see:");
     }
@@ -69,22 +70,12 @@ public class Environment {
         return anItem.getShortDescription();
     }
 
-    private static void showDescription(Location aLocation) {
-        if (!aLocation.hasBeenVisited()) {
-            tell(aLocation.getLongDescription());
-            aLocation.setHasBeenVisited(true);
-        } else {
-            tell(aLocation.getShortDescription());
-        }
-    }
-
     public static void tell(String aMessage) {
         System.out.println(aMessage);
     }
 
     public static void setCurrentLocation(Location aDestination) {
         currentLocation = aDestination;
-        show(aDestination);
     }
 
     public static Location getCurrentLocation() {

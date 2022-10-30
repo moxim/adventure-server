@@ -15,7 +15,6 @@ import java.util.UUID;
 public class Thing implements Describable, Actionable {
 
     protected final CommandProvider commandProvider;
-
     private final DescriptionProvider descriptionProvider;
     private final UUID id;
 

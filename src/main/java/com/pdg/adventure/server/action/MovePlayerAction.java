@@ -13,6 +13,8 @@ public class MovePlayerAction extends AbstractAction {
     @Override
     public void execute() {
         Environment.setCurrentLocation(destination);
+        Environment.show(destination);
+        destination.setHasBeenVisited(true);
     }
 
     public Location getDestination() {

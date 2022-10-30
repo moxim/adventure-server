@@ -69,6 +69,7 @@ public class MiniAdventure {
         GenericCommand quitCommand = new GenericCommand("quit", new QuitAction());
         Environment.getWorkflow().addInterceptorCommand(quitCommandDescription, quitCommand);
 
+        new MovePlayerAction(location).execute();
     }
 
     private void setUpLocations() {

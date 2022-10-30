@@ -87,4 +87,12 @@ public class Location extends Thing implements Visitable {
             return false;
         }
     }
+
+    public String getLongDescription() {
+        if (!hasBeenVisited()) {
+            return super.getLongDescription();
+        } else {
+            return getShortDescription();
+        }
+    }
 }
