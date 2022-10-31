@@ -17,17 +17,7 @@ public class Environment {
     }
 
     public static void show(Describable aThing) {
-        if (aThing instanceof Location location) {
-            location.setHasBeenVisited(false);
-            show(location);
-        } else {
-            tell(aThing.getLongDescription());
-        }
-    }
-
-    public static void show(Location aLocation) {
-        tell("");
-        tell(aLocation.getLongDescription());
+        tell(aThing.getLongDescription());
     }
 
     public static void tell(String aMessage) {
@@ -43,7 +33,7 @@ public class Environment {
     }
 
     public static void createPocket() {
-        pocket = new GenericContainer(new DescriptionProvider("pocket"), 5);
+        pocket = new GenericContainer(new DescriptionProvider("your pocket"), 5);
     }
 
     public static Container getPocket() {

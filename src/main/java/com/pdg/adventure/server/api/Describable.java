@@ -8,4 +8,6 @@ public interface Describable extends Actionable {
     String getShortDescription();
 
     String getLongDescription();
+
+    String getEnrichedShortDescription();
 }

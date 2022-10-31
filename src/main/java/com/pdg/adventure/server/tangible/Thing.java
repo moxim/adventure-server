@@ -48,6 +48,11 @@ public class Thing implements Describable, Actionable {
         return descriptionProvider.getLongDescription();
     }
 
+    @Override
+    public String getEnrichedShortDescription() {
+        return descriptionProvider.getEnrichedShortDescription();
+    }
+
     public void setLongDescription(String aLongDescription) {
         descriptionProvider.setLongDescription(aLongDescription);
     }

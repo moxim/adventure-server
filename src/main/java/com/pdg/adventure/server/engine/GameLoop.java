@@ -29,11 +29,8 @@ public class GameLoop {
                 if (!Environment.interceptCommands(command) && !currentLocation.applyCommand(command)) {
                     Environment.tell("You can't do that.");
                 }
-            } catch (IOException aE) {
-                Environment.tell(aE.getMessage());
-                break;
-            } catch (RuntimeException aE) {
-                Environment.tell(aE.getMessage());
+            } catch (IOException | RuntimeException anException) {
+                Environment.tell(anException.getMessage());
                 break;
             }
         }

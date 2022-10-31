@@ -48,7 +48,7 @@ public class DescriptionProvider {
     }
 
     public String getEnrichedShortDescription() {
-        return ArticleProvider.prependUnknownArticle(getShortDescription());
+        return ArticleProvider.prependIndefiniteArticle(getShortDescription());
     }
 
     public void setShortDescription(String aShortDescription) {
@@ -60,10 +60,6 @@ public class DescriptionProvider {
             longDescription = getShortDescription();
         }
         return longDescription;
-    }
-
-    public String getEnrichedLongDescription() {
-        return "You see " + ArticleProvider.prependUnknownArticle(getLongDescription()) + ".";
     }
 
     public void setLongDescription(String aLongDescription) {

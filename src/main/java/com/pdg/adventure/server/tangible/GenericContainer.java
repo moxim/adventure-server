@@ -2,6 +2,7 @@ package com.pdg.adventure.server.tangible;
 
 import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
+import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.exception.AlreadyPresentException;
 import com.pdg.adventure.server.exception.ContainerFullException;
 import com.pdg.adventure.server.exception.NotContainableException;
@@ -14,9 +15,16 @@ public class GenericContainer extends Item implements Container {
 
     private final List<Containable> contents = new LinkedList<>();
     private int maxSize;
+    private final boolean holdsDirections;
 
     public GenericContainer(DescriptionProvider aDescriptionProvider, int aMaxSize) {
+        this(aDescriptionProvider, false, aMaxSize);
+    }
+
+    public GenericContainer(DescriptionProvider aDescriptionProvider,
+                            boolean aFlagWhetherItHoldsDirections, int aMaxSize) {
         super(aDescriptionProvider, false);
+        holdsDirections = aFlagWhetherItHoldsDirections;
         maxSize = aMaxSize;
     }
 
@@ -61,14 +69,21 @@ public class GenericContainer extends Item implements Container {
 
         if (!isEmpty()) {
             for (int i = 0; i < contents.size() - 1; i++) {
-                 sb.append(contents.get(i).getShortDescription()).append(", ").append(System.getProperty("line.separator"));
+                 sb.append(getDescription(contents.get(i))).append(", ").append(System.getProperty("line.separator"));
              }
-             sb.append(contents.get(contents.size() - 1).getShortDescription()).append(".");
+             sb.append(getDescription(contents.get(contents.size() - 1))).append(".");
          } else {
-             sb.append("nothing.");
+            sb.append("nothing.");
         }
 
         return sb.toString();
+    }
+
+    private String getDescription(Describable aThing) {
+        if (holdsDirections) {
+            return aThing.getShortDescription();
+        }
+        return aThing.getEnrichedShortDescription();
     }
 
     @Override

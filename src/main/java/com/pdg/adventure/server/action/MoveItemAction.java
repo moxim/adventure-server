@@ -22,8 +22,8 @@ public class MoveItemAction extends AbstractAction {
                 parentContainer.remove(target);
             }
             destination.add(target);
-            Environment.tell("You put the " + target.getShortDescription() + " into the " + destination
-            .getShortDescription() + ".");
+            Environment.tell("You put " + target.getEnrichedShortDescription() + " into " + destination
+            .getEnrichedShortDescription() + ".");
         } else {
             Environment.tell("The " + destination.getShortDescription() + " is full.");
         }

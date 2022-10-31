@@ -47,7 +47,7 @@ public class GenericDirection extends Item implements Direction {
     @Override
     public String getShortDescription() {
         if (destinationMustBeMentioned) {
-            return ArticleProvider.prependUnknownArticle(constructDescriptionFromAdjectiveAndNoun());
+            return ArticleProvider.prependIndefiniteArticle(constructDescriptionFromAdjectiveAndNoun());
         }
         return verb;
     }
