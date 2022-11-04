@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <java.version>17</java.version>
+        <java.version>18</java.version>
         <vaadin.version>23.1.6</vaadin.version>
         <maven.compiler.source>18</maven.compiler.source>
         <maven.compiler.target>18</maven.compiler.target>
@@ -221,11 +221,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.10.1</version>
-                <configuration>
-                    <source>18</source>
-                    <target>18</target>
-                    <compilerArgs>--enable-preview</compilerArgs>
-                </configuration>
             </plugin>
 
             <!--
