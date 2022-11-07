@@ -87,7 +87,9 @@ public class GenericContainer extends Item implements Container {
     }
 
     @Override
-    public void add(Containable anItem) {
+    public boolean add(Containable anItem) {
+        // TODO:
+        //   wrap these exceptions in an error type
         if (contents.contains(anItem)) {
             throw new AlreadyPresentException(anItem, this);
         }
@@ -98,7 +100,7 @@ public class GenericContainer extends Item implements Container {
             throw new ContainerFullException(this);
         }
         anItem.setParentContainer(this);
-        contents.add(anItem);
+        return contents.add(anItem);
     }
 
     @Override

@@ -11,6 +11,6 @@ public class PresentCondition implements PreCondition {
     }
 
     public boolean isValid() {
-        return Environment.getCurrentLocation().getContainer().contains(thing);
+        return Environment.getCurrentLocation().contains(thing);
     }
 }

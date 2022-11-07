@@ -23,7 +23,7 @@ public class MoveItemAction extends AbstractAction {
             }
             destination.add(target);
             Environment.tell("You put " + target.getEnrichedShortDescription() + " into " + destination
-            .getEnrichedShortDescription() + ".");
+            .getEnrichedBasicDescription() + ".");
         } else {
             Environment.tell("The " + destination.getShortDescription() + " is full.");
         }

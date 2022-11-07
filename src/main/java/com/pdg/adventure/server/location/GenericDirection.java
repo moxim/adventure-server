@@ -1,6 +1,7 @@
 package com.pdg.adventure.server.location;
 
 import com.pdg.adventure.server.api.Direction;
+import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.parser.DirectionCommand;
 import com.pdg.adventure.server.support.ArticleProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
@@ -10,20 +11,20 @@ import com.pdg.adventure.server.vocabulary.Vocabulary;
 public class GenericDirection extends Item implements Direction {
 
     private final Location destination;
-    private final String verb;
+    private final CommandDescription description;
     private final boolean destinationMustBeMentioned;
 
-    public GenericDirection(DirectionCommand aCommand, Location aLocation) {
-        this(aCommand, aLocation, false);
+    public GenericDirection(DirectionCommand aCommand) {
+        this(aCommand, false);
     }
 
-    public GenericDirection(DirectionCommand aCommand, Location aLocation,
+    public GenericDirection(DirectionCommand aCommand,
                             boolean aFlagWhetherDestinationMustBeMentioned) {
-        super(new DescriptionProvider(aLocation.getAdjective(), aLocation.getNoun()), true);
+        super(new DescriptionProvider(aCommand.getDestination().getAdjective(), aCommand.getDestination().getNoun()), true);
         destinationMustBeMentioned = aFlagWhetherDestinationMustBeMentioned;
-        this.addCommand(aCommand);
         destination = aCommand.getDestination();
-        verb = aCommand.getVerb();
+        description = aCommand.getCommandDescription();
+        this.addCommand(aCommand);
     }
 
     public Location getDestination() {
@@ -49,13 +50,13 @@ public class GenericDirection extends Item implements Direction {
         if (destinationMustBeMentioned) {
             return ArticleProvider.prependIndefiniteArticle(constructDescriptionFromAdjectiveAndNoun());
         }
-        return verb;
+        return description.getVerb();
     }
 
     @Override
     public String getLongDescription() {
         if (destinationMustBeMentioned) {
-            String result = "You can " + verb;
+            String result = "You may " + description.getVerb();
 
             String noun = destination.getNoun();
             if (!Vocabulary.EMPTY_STRING.equals(noun)) {
@@ -66,6 +67,6 @@ public class GenericDirection extends Item implements Direction {
 
             return result + ".";
         }
-        return verb;
+        return description.getVerb();
     }
 }

@@ -5,6 +5,10 @@ public interface Describable extends Actionable {
 
     String getNoun();
 
+    String getBasicDescription();
+
+    String getEnrichedBasicDescription();
+
     String getShortDescription();
 
     String getLongDescription();

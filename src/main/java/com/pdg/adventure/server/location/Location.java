@@ -26,20 +26,24 @@ public class Location extends Thing implements Visitable {
         hasBeenVisited = false; // explicit, but redundant
     }
 
-    public void add(Item anItem) {
-        container.add(anItem);
+    public boolean addItem(Item anItem) {
+        return container.add(anItem);
     }
 
-    public void remove(Item anItem) {
-        container.remove(anItem);
+    public boolean removeItem(Item anItem) {
+        return container.remove(anItem);
     }
 
     public Container getContainer() {
         return container;
     }
 
-    public void addDirection(Direction aDirection) {
-        directions.add(aDirection);
+    public boolean addDirection(Direction aDirection) {
+        return directions.add(aDirection);
+    }
+
+    public boolean removeDirection(Direction aDirection) {
+        return directions.remove(aDirection);
     }
 
     @Override
@@ -52,24 +56,24 @@ public class Location extends Thing implements Visitable {
         hasBeenVisited = aFlagWhetherThisHasBeenSeen;
     }
 
+    @Override
     public boolean applyCommand(CommandDescription aCommandDescription) {
-        if (applyCommandInContainer(Environment.getPocket(), aCommandDescription)){
+        // TODO:
+        //  bring these returns into one ExecutionSateType
+        if (commandProvider.applyCommand(aCommandDescription)) {
             return true;
-        }
-
-        if (commandProvider.hasCommand(aCommandDescription.getDescription()))
-        {
-            return commandProvider.applyCommand(aCommandDescription);
         }
 
        if (applyCommandInContainer(container, aCommandDescription)) {
            return true;
        }
 
-        for (Containable direction : directions.getContents()) {
-            if (direction.applyCommand(new CommandDescription(aCommandDescription.getVerb()))) {
-                return true;
-            }
+        if (applyCommandInContainer(directions, aCommandDescription)) {
+            return true;
+        }
+
+        if (applyCommandInContainer(Environment.getPocket(), aCommandDescription)) {
+            return true;
         }
 
         return false;
@@ -77,17 +81,17 @@ public class Location extends Thing implements Visitable {
 
     private boolean applyCommandInContainer(Container aContainer, CommandDescription aCommandDescription) {
         try {
-            final Containable item = ItemIdentifier.findItem(aContainer, aCommandDescription.getAdjective(),
-                    aCommandDescription.getNoun());
-            return item.applyCommand(new CommandDescription(aCommandDescription.getVerb()));
+            final Containable item = ItemIdentifier.findItem(aContainer, aCommandDescription);
+            return item.applyCommand(aCommandDescription);
         } catch (ItemNotFoundException e) {
             return false;
         }
     }
 
+    @Override
     public String getLongDescription() {
         StringBuilder sb = new StringBuilder();
-        sb.append(System.getProperty("line.separator"));
+        sb.append(System.getProperty(Environment.LF));
 
         if (!hasBeenVisited()) {
             sb.append(super.getLongDescription());
@@ -95,20 +99,24 @@ public class Location extends Thing implements Visitable {
             sb.append(getShortDescription());
         }
 
-        sb.append(System.getProperty("line.separator"));
+        sb.append(System.getProperty(Environment.LF));
         if (!directions.isEmpty()) {
-            sb.append("Exits are:").append(System.getProperty("line.separator"));
+            sb.append("Exits are:").append(System.getProperty(Environment.LF));
             sb.append(directions.listContents());
         } else {
             sb.append("There are no obvious exits.");
         }
 
-        sb.append(System.getProperty("line.separator"));
+        sb.append(System.getProperty(Environment.LF));
         if (!container.isEmpty()) {
-            sb.append("You also see:").append(System.getProperty("line.separator"));
+            sb.append("You also see:").append(System.getProperty(Environment.LF));
             sb.append(container.listContents());
         }
 
         return sb.toString();
+    }
+
+    public boolean contains(Containable anItem) {
+        return container.contains(anItem);
     }
 }

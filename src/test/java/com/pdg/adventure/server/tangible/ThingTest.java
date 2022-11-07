@@ -32,11 +32,11 @@ class ThingTest {
         item.addCommand(takeCommand);
 
         // when
-        assertThat(item.applyCommand(commandDescription)).isEqualTo(true);
+        assertThat(item.applyCommand(commandDescription)).isTrue();
         item.removeCommand(takeCommand);
 
         // then
-        assertThat(item.applyCommand(commandDescription)).isEqualTo(false);
+        assertThat(item.applyCommand(commandDescription)).isFalse();
 
     }
 }

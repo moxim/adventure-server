@@ -3,6 +3,7 @@ package com.pdg.adventure.server.support;
 import com.pdg.adventure.server.api.Command;
 import com.pdg.adventure.server.parser.CommandChain;
 import com.pdg.adventure.server.parser.CommandDescription;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CommandProvider {
-    private final Map<String, CommandChain> availableCommands;
+    private final Map<CommandDescription, CommandChain> availableCommands;
 
     public CommandProvider() {
         availableCommands = new HashMap<>();
@@ -29,7 +30,7 @@ public class CommandProvider {
         availableCommands.remove(aCommand.getDescription());
     }
 
-    public boolean hasCommand(String aCommand) {
+    public boolean hasCommand(CommandDescription aCommand) {
         return availableCommands.containsKey(aCommand);
     }
 
@@ -41,11 +42,37 @@ public class CommandProvider {
         return commands;
     }
 
-    public boolean applyCommand(CommandDescription aCommand) {
-        CommandChain command = availableCommands.get(aCommand.getDescription());
-        if (command != null) {
-            return command.execute();
+    public boolean applyCommand(CommandDescription aCommandDescription) {
+        CommandChain commandChain = find(aCommandDescription);
+        if (commandChain != null) {
+            return commandChain.execute();
         }
+        return false;
+    }
+
+    private CommandChain find(CommandDescription aCommandDescription) {
+        String verb = aCommandDescription.getVerb();
+        String adjective = aCommandDescription.getAdjective();
+        String noun = aCommandDescription.getNoun();
+
+        for (Map.Entry<CommandDescription, CommandChain> entry : availableCommands.entrySet()) {
+            CommandDescription description = entry.getKey();
+            if (description.getVerb().equals(verb) &&
+                    (description.getNoun().equals(noun) || Vocabulary.EMPTY_STRING.equals(noun)) &&
+                    (description.getAdjective().equals(adjective) || Vocabulary.EMPTY_STRING.equals(adjective))) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    public boolean hasVerb(String aVerb) {
+        for (CommandDescription description : availableCommands.keySet()) {
+            if (description.getVerb().equals(aVerb)) {
+                return true;
+            }
+        }
+        ;
         return false;
     }
 }

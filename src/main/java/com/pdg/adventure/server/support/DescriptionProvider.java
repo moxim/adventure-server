@@ -65,4 +65,17 @@ public class DescriptionProvider {
     public void setLongDescription(String aLongDescription) {
         longDescription = aLongDescription;
     }
+
+    public String getBasicDescription() {
+        String result = "";
+        if (!Vocabulary.EMPTY_STRING.equals(adjective)) {
+            result += adjective + " ";
+        }
+        result += noun;
+        return result;
+    }
+
+    public String getEnrichedBasicDescription() {
+        return ArticleProvider.prependDefiniteArticle(getBasicDescription());
+    }
 }

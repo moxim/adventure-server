@@ -5,7 +5,7 @@ import java.util.List;
 public interface Container extends Describable {
     List<Containable> getContents();
 
-    void add(Containable aThing);
+    boolean add(Containable aThing);
 
     boolean remove(Containable aThing);
 

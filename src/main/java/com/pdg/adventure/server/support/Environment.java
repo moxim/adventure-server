@@ -8,6 +8,9 @@ import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.tangible.GenericContainer;
 
 public class Environment {
+
+    public static final String LF = System.getProperty("line.separator");
+
     private static Workflow workflow;
     public static Location currentLocation;
     private static Container pocket;

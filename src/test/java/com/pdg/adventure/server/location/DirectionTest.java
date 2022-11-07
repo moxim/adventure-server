@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.location;
 
-import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.parser.DirectionCommand;
 import com.pdg.adventure.server.support.DescriptionProvider;
@@ -20,9 +19,8 @@ class DirectionTest {
     }
     private final Location destination = new Location(new DescriptionProvider(GLOWING_TXT, PORTAL_TXT));
     private final CommandDescription directionDescription = new CommandDescription("enter", destination);
-    private final DirectionCommand moveCommand = new DirectionCommand(directionDescription,
-            new MovePlayerAction(destination));
-    private final GenericDirection sut = new GenericDirection(moveCommand, destination, true);
+    private final DirectionCommand moveCommand = new DirectionCommand(directionDescription, destination);
+    private final GenericDirection sut = new GenericDirection(moveCommand, true);
 
     @Test
     void getDestination() {
@@ -73,7 +71,7 @@ class DirectionTest {
         // when
 
         // then
-        assertThat(sut.getLongDescription()).isEqualTo("You can enter the glowing portal.");
+        assertThat(sut.getLongDescription()).isEqualTo("You may enter the glowing portal.");
     }
 
     @Test
@@ -81,20 +79,20 @@ class DirectionTest {
         // given
         Location destination = new Location(new DescriptionProvider(PORTAL_TXT));
         CommandDescription directionDescription = new CommandDescription("enter", destination);
-        DirectionCommand moveCommand = new DirectionCommand(directionDescription, new MovePlayerAction(destination));
-        GenericDirection noAdj = new GenericDirection(moveCommand, destination, true);
+        DirectionCommand moveCommand = new DirectionCommand(directionDescription, destination);
+        GenericDirection noAdj = new GenericDirection(moveCommand, true);
 
         // when
 
         // then
         assertThat(noAdj.getShortDescription()).contains(PORTAL_TXT);
-        assertThat(noAdj.getLongDescription()).isEqualTo("You can enter the portal.");
+        assertThat(noAdj.getLongDescription()).isEqualTo("You may enter the portal.");
     }
 
     @Test
     void getDescriptionsWithoutLocation() throws Exception {
         // given
-        GenericDirection noAdj = new GenericDirection(moveCommand, destination, false);
+        GenericDirection noAdj = new GenericDirection(moveCommand, false);
 
         // when
 

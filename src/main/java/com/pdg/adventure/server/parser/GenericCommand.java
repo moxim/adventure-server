@@ -9,21 +9,14 @@ import java.util.List;
 import java.util.UUID;
 
 public class GenericCommand implements Command {
-//    private final String verb;
-    private final CommandDescription command;
+    private final CommandDescription commandDescription;
     private final List<PreCondition> preConditions;
     private final List<Action> followUpActions;
     private final Action action;
     private final UUID id;
 
-    public GenericCommand(String aVerb, Action anAction) {
-        this(new CommandDescription(aVerb), anAction);
-    }
-
-    public GenericCommand(CommandDescription aCommand, Action anAction) {
-//        Vocabulary.Word someWord = aVocabulary.getSynonym(aVerb);
-//        verb = someWord.getText();
-        command = aCommand;
+    public GenericCommand(CommandDescription aCommandDescription, Action anAction) {
+        commandDescription = aCommandDescription;
         preConditions = new ArrayList<>();
         followUpActions = new ArrayList<>();
         action = anAction;
@@ -31,8 +24,8 @@ public class GenericCommand implements Command {
     }
 
     @Override
-    public String getDescription() {
-        return command.getDescription();
+    public CommandDescription getDescription() {
+        return commandDescription;
     }
 
     @Override
@@ -87,6 +80,6 @@ public class GenericCommand implements Command {
     }
 
     public String toString() {
-        return getDescription() + (action == null ? "" : "[" + action + "]");
+        return commandDescription.getDescription() + (action == null ? "" : "[" + action + "]");
     }
 }

@@ -3,6 +3,7 @@ package com.pdg.adventure.server.engine;
 import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.exception.ItemNotFoundException;
+import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
@@ -13,20 +14,18 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 class ItemIdentifierTest {
 
-    private DescriptionProvider descriptionProvider = new DescriptionProvider("simple", "container");
-    private final Container container = new GenericContainer(descriptionProvider, 3);
+    private final Container container = new GenericContainer(new DescriptionProvider("simple", "container"), 3);
 
     @Test
     void findItem() {
         // given
-        String adjective = "";
-        String noun = "ring";
-        DescriptionProvider ringDescription = new DescriptionProvider(noun);
+        CommandDescription commandDescription = new CommandDescription("", "", "ring");
+        DescriptionProvider ringDescription = new DescriptionProvider(commandDescription.getNoun());
         Item ring = new Item(ringDescription, true);
         container.add(ring);
 
         // when
-        Containable item = ItemIdentifier.findItem(container, adjective, noun);
+        Containable item = ItemIdentifier.findItem(container, commandDescription);
 
         // then
         assertThat(item).isEqualTo(ring);
@@ -35,14 +34,13 @@ class ItemIdentifierTest {
     @Test
     void findFullyQualifiedItem() {
         // given
-        String adjective = "small";
-        String noun = "ring";
-        DescriptionProvider ringDescription = new DescriptionProvider(adjective, noun);
+        CommandDescription commandDescription = new CommandDescription("", "small", "ring");
+        DescriptionProvider ringDescription = new DescriptionProvider(commandDescription.getAdjective(), commandDescription.getNoun());
         Item ring = new Item(ringDescription, true);
         container.add(ring);
 
         // when
-        Containable item = ItemIdentifier.findItem(container, adjective, noun);
+        Containable item = ItemIdentifier.findItem(container, commandDescription);
 
         // then
         assertThat(item).isEqualTo(ring);
@@ -51,14 +49,13 @@ class ItemIdentifierTest {
     @Test
     void failToFindItem() {
         // given
-        String adjective = "small";
-        String noun = "ring";
-        DescriptionProvider ringDescription = new DescriptionProvider(noun);
+        CommandDescription commandDescription = new CommandDescription("", "small", "ring");
+        DescriptionProvider ringDescription = new DescriptionProvider(commandDescription.getNoun());
         Item ring = new Item(ringDescription, true);
         container.add(ring);
 
         // when
-        Throwable thrown = catchThrowable(() -> ItemIdentifier.findItem(container, adjective, noun));
+        Throwable thrown = catchThrowable(() -> ItemIdentifier.findItem(container, commandDescription));
 
         // then
         assertThat(thrown).isInstanceOf(ItemNotFoundException.class);
@@ -69,16 +66,15 @@ class ItemIdentifierTest {
     @Test
     void ambiguousItems() {
         // given
-        String adjective = "";
-        String noun = "ring";
-        DescriptionProvider ringDescription = new DescriptionProvider(noun);
+        CommandDescription commandDescription = new CommandDescription("", "", "ring");
+        DescriptionProvider ringDescription = new DescriptionProvider(commandDescription.getNoun());
         Item ring = new Item(ringDescription, true);
         container.add(ring);
         Item largeRing = new Item(ringDescription, true);
         container.add(largeRing);
 
         // when
-        Throwable thrown = catchThrowable( () -> ItemIdentifier.findItem(container, adjective, noun));
+        Throwable thrown = catchThrowable( () -> ItemIdentifier.findItem(container, commandDescription));
 
         // then
         assertThat(thrown).isInstanceOf(ItemNotFoundException.class);
@@ -93,9 +89,10 @@ class ItemIdentifierTest {
         container.add(ring);
         Item largeRing = new Item(new DescriptionProvider("large", noun), true);
         container.add(largeRing);
+        CommandDescription commandDescription = new CommandDescription("", "", noun);
 
         // when
-        Throwable thrown = catchThrowable( () -> ItemIdentifier.findItem(container, "", noun));
+        Throwable thrown = catchThrowable( () -> ItemIdentifier.findItem(container, commandDescription));
 
         // then
         assertThat(thrown).isInstanceOf(ItemNotFoundException.class);

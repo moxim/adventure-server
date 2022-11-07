@@ -1,8 +1,10 @@
 package com.pdg.adventure.server.api;
 
+import com.pdg.adventure.server.parser.CommandDescription;
+
 public interface Command {
 
-    String getDescription();
+    CommandDescription getDescription();
 
     boolean execute();
 

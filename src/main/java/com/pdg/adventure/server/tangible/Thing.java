@@ -35,6 +35,16 @@ public class Thing implements Describable, Actionable {
     }
 
     @Override
+    public String getBasicDescription() {
+        return descriptionProvider.getBasicDescription();
+    }
+
+    @Override
+    public String getEnrichedBasicDescription() {
+        return descriptionProvider.getEnrichedBasicDescription();
+    }
+
+    @Override
     public String getShortDescription() {
         return descriptionProvider.getShortDescription();
     }
@@ -59,6 +69,11 @@ public class Thing implements Describable, Actionable {
 
     public boolean applyCommand(CommandDescription aCommand) {
         return commandProvider.applyCommand(aCommand);
+    }
+
+    @Override
+    public boolean hasVerb(String aVerb) {
+        return commandProvider.hasVerb(aVerb);
     }
 
     @Override

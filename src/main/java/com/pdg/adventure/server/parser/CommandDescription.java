@@ -3,6 +3,8 @@ package com.pdg.adventure.server.parser;
 import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
+import java.util.Objects;
+
 public class CommandDescription implements Comparable<CommandDescription> {
     private final String verb;
     private final String adjective;
@@ -50,5 +52,23 @@ public class CommandDescription implements Comparable<CommandDescription> {
     @Override
     public int compareTo(CommandDescription o) {
         return this.getDescription().compareTo(o.getDescription());
+    }
+
+    @Override
+    public boolean equals(Object aO) {
+        if (this == aO) return true;
+        if (!(aO instanceof CommandDescription that)) return false;
+
+        if (!Objects.equals(verb, that.verb)) return false;
+        if (!Objects.equals(adjective, that.adjective)) return false;
+        return Objects.equals(noun, that.noun);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = verb != null ? verb.hashCode() : 0;
+        result = 31 * result + (adjective != null ? adjective.hashCode() : 0);
+        result = 31 * result + (noun != null ? noun.hashCode() : 0);
+        return result;
     }
 }
