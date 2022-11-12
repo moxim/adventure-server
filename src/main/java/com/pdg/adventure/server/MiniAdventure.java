@@ -263,7 +263,7 @@ public class MiniAdventure {
         vocabulary.addSynonym("hare", "rabbit");
 
         vocabulary.addWord("ring", Vocabulary.WordType.NOUN);
-        vocabulary.addWord("flower", Vocabulary.WordType.NOUN);
+        vocabulary.addWord("flowers", Vocabulary.WordType.NOUN);
 
         vocabulary.addWord("big", Vocabulary.WordType.ADJECTIVE);
         vocabulary.addWord("skinned", Vocabulary.WordType.ADJECTIVE);

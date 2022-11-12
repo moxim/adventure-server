@@ -3,6 +3,7 @@ package com.pdg.adventure.server.tangible;
 import com.pdg.adventure.server.api.Actionable;
 import com.pdg.adventure.server.api.Command;
 import com.pdg.adventure.server.api.Describable;
+import com.pdg.adventure.server.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.support.CommandProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
@@ -67,7 +68,7 @@ public class Thing implements Describable, Actionable {
         descriptionProvider.setLongDescription(aLongDescription);
     }
 
-    public boolean applyCommand(CommandDescription aCommand) {
+    public ExecutionResult applyCommand(CommandDescription aCommand) {
         return commandProvider.applyCommand(aCommand);
     }
 

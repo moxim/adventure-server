@@ -1,5 +1,7 @@
 package com.pdg.adventure.server.action;
 
+import com.pdg.adventure.server.api.ExecutionResult;
+import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
@@ -15,13 +17,19 @@ public class DecrementVariableAction extends AbstractVariableAction {
     }
 
     @Override
-    public void execute() {
+    public ExecutionResult execute() {
+        CommandExecutionResult result = new CommandExecutionResult();
         Variable envVariable = variableProvider.get(name);
         if (envVariable == null) {
-            throw new IllegalArgumentException("Variable " + name + " does not exist!");
+            // TODO
+            //  should this be an exception? it is not part of normal programm execution
+            result.setResultMessage("Variable " + name + " does not exist!");
+        } else {
+            Long envVal = Long.valueOf(envVariable.aValue());
+            Long iVal = Long.valueOf(value);
+            variableProvider.set(new Variable(name, String.valueOf(Long.valueOf(envVal - iVal))));
+            result.setExecutionState(ExecutionResult.State.SUCCESS);
         }
-        Long envVal = Long.valueOf(envVariable.aValue());
-        Long iVal = Long.valueOf(value);
-        variableProvider.set(new Variable(name, String.valueOf(Long.valueOf(envVal - iVal))));
+        return result;
     }
 }

@@ -1,5 +1,7 @@
 package com.pdg.adventure.server.action;
 
+import com.pdg.adventure.server.api.ExecutionResult;
+import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.Environment;
 
 public class MessageAction extends AbstractAction {
@@ -11,7 +13,10 @@ public class MessageAction extends AbstractAction {
     }
 
     @Override
-    public void execute() {
+    public ExecutionResult execute() {
+        // TODO
+        //  shouldn't we put the message into the result?
         Environment.tell(message);
+        return new CommandExecutionResult(ExecutionResult.State.SUCCESS);
     }
 }

@@ -1,5 +1,7 @@
 package com.pdg.adventure.server.condition;
 
+import com.pdg.adventure.server.api.ExecutionResult;
+import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
@@ -14,12 +16,15 @@ public class EqualsCondition extends AbstractVariableCondition  {
         value = aValue;
     }
 
+
     @Override
-    public boolean isValid() {
-        final Variable envVariable = variableProvider.get(variableName);
-        if (envVariable == null) {
-            throw new IllegalArgumentException("Variable " + variableName + " does not exist!");
-        }
-        return envVariable.aValue().equals(value);
+    public ExecutionResult check() {
+        ExecutionResult result = new CommandExecutionResult();
+        final Variable envVariable = getVariable(variableName);
+        if (envVariable.aValue().equals(value)) {
+            result.setExecutionState(ExecutionResult.State.SUCCESS);
+        };
+        return result;
     }
+
 }

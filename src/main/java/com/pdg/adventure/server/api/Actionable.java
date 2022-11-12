@@ -12,7 +12,7 @@ public interface Actionable {
 
     void removeCommand(Command aCommand);
 
-    boolean applyCommand(CommandDescription aVerb);
+    ExecutionResult applyCommand(CommandDescription aVerb);
 
     boolean hasVerb(String aVerb);
 }

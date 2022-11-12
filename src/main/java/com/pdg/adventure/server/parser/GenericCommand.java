@@ -2,6 +2,7 @@ package com.pdg.adventure.server.parser;
 
 import com.pdg.adventure.server.api.Action;
 import com.pdg.adventure.server.api.Command;
+import com.pdg.adventure.server.api.ExecutionResult;
 import com.pdg.adventure.server.api.PreCondition;
 
 import java.util.ArrayList;
@@ -29,32 +30,49 @@ public class GenericCommand implements Command {
     }
 
     @Override
-    public boolean execute() {
-        if (canFulfillPreconditions()) {
-            executeAction();
-            executeFollowupActions();
-            return true;
-        }
-        return false;
-    }
-
-    public void executeAction() {
-        action.execute();
-    }
-
-    private void executeFollowupActions() {
-        for (Action followUpAction : followUpActions) {
-            followUpAction.execute();
-        }
-    }
-
-    private boolean canFulfillPreconditions() {
-        for (PreCondition condition : preConditions) {
-            if (!condition.isValid()) {
-                return false;
+    public ExecutionResult execute() {
+        ExecutionResult result = checkPreconditions();
+        if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
+            ExecutionResult fromAction = action.execute();
+            setExecutionResult(result, fromAction);
+            if (fromAction.getExecutionState() == ExecutionResult.State.SUCCESS) {
+                ExecutionResult fromFollowupActions = executeFollowupActions();
+                if (fromFollowupActions.getExecutionState() == ExecutionResult.State.FAILURE) {
+                    setExecutionResult(result, fromFollowupActions);
+                }
             }
         }
-        return true;
+        return result;
+    }
+
+    private ExecutionResult executeFollowupActions() {
+        ExecutionResult result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
+        for (Action followUpAction : followUpActions) {
+            ExecutionResult tmp = followUpAction.execute();
+            if (tmp.getExecutionState() == ExecutionResult.State.FAILURE) {
+                setExecutionResult(result, tmp);
+                break;
+            }
+            result.add(tmp);
+        }
+        return result;
+    }
+
+    private ExecutionResult checkPreconditions() {
+        ExecutionResult result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
+        for (PreCondition condition : preConditions) {
+            ExecutionResult tmp = condition.check();
+            if (tmp.getExecutionState() == ExecutionResult.State.FAILURE) {
+                setExecutionResult(result, tmp);
+                break;
+            }
+        }
+        return result;
+    }
+
+    private void setExecutionResult(ExecutionResult aTarget, ExecutionResult aResult) {
+        aTarget.setExecutionState(aResult.getExecutionState());
+        aTarget.setResultMessage(aResult.getResultMessage());
     }
 
     @Override

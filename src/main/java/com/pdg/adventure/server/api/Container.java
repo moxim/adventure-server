@@ -5,9 +5,9 @@ import java.util.List;
 public interface Container extends Describable {
     List<Containable> getContents();
 
-    boolean add(Containable aThing);
+    ExecutionResult add(Containable aThing);
 
-    boolean remove(Containable aThing);
+    ExecutionResult remove(Containable aThing);
 
     void setMaxSize(int aMaxSize);
 

@@ -1,24 +1,23 @@
 package com.pdg.adventure.server.condition;
 
-import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.ExecutionResult;
 import com.pdg.adventure.server.api.PreCondition;
+import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.Environment;
 
-public class PresentCondition implements PreCondition {
-    private final Containable thing;
+public class PlayerAtCondition implements PreCondition {
+    private final Location location;
 
-    public PresentCondition(Containable aThing) {
-        thing = aThing;
+    public PlayerAtCondition(Location aLocation) {
+        location = aLocation;
     }
 
+    @Override
     public ExecutionResult check() {
         ExecutionResult result = new CommandExecutionResult();
-        if (Environment.getCurrentLocation().contains(thing)) {
+        if (Environment.getCurrentLocation().equals(location)) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
-        } else {
-            result.setResultMessage(String.format("There is no %s here.", thing));
         }
         return result;
     }

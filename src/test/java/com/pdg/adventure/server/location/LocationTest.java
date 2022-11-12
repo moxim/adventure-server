@@ -5,6 +5,7 @@ import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.parser.DirectionCommand;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.Item;
+import com.pdg.adventure.server.testhelper.TestSupporter;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -23,7 +24,7 @@ class LocationTest {
         // given
 
         // when
-        boolean success = sut.addItem(mouse);
+        boolean success = TestSupporter.addItemToBoolean(sut.getContainer(), mouse);
 
         // then
         assertThat(success).isTrue();
@@ -37,7 +38,7 @@ class LocationTest {
         assertThat(sut.contains(mouse)).isFalse();
 
         // when
-        boolean success = sut.removeItem(mouse);
+        boolean success = TestSupporter.removeItemToBoolean(sut.getContainer(), mouse);
 
         // then
         assertThat(success).isFalse();
@@ -50,7 +51,7 @@ class LocationTest {
         sut.addItem(mouse);
 
         // when
-        boolean success = sut.removeItem(mouse);
+        boolean success = TestSupporter.removeItemToBoolean(sut.getContainer(), mouse);
 
         // then
         assertThat(success).isTrue();

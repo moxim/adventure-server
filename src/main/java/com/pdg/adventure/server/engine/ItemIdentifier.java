@@ -2,6 +2,7 @@ package com.pdg.adventure.server.engine;
 
 import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
+import com.pdg.adventure.server.exception.AmbiguousCommandException;
 import com.pdg.adventure.server.exception.ItemNotFoundException;
 import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
@@ -32,7 +33,7 @@ public class ItemIdentifier {
         }
 
         if (foundItems.size() > 1) {
-            throw new ItemNotFoundException(String.format(TOO_MANY_MATCHES_TEXT, adjective, noun));
+            throw new AmbiguousCommandException(String.format(TOO_MANY_MATCHES_TEXT, adjective, noun));
         }
 
         if (foundItems.isEmpty()) {

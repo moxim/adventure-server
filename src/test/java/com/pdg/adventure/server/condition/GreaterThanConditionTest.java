@@ -2,6 +2,7 @@ package com.pdg.adventure.server.condition;
 
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
+import com.pdg.adventure.server.testhelper.TestSupporter;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +21,7 @@ class GreaterThanConditionTest {
         // when
 
         // then
-        assertThat(sut.isValid()).isTrue();
+        assertThat(TestSupporter.conditionToBoolean(sut)).isTrue();
     }
 
     @Test
@@ -29,10 +30,10 @@ class GreaterThanConditionTest {
         variableProvider.set(new Variable(varName, "wrongValue"));
 
         // when
-        Throwable thrown = catchThrowable(() -> sut.isValid());
+        Throwable thrown = catchThrowable(() -> sut.check());
 
         // then
-        assertThat(sut.isValid()).isFalse();
+        assertThat(TestSupporter.conditionToBoolean(sut)).isFalse();
     }
 
     @Test
@@ -43,6 +44,6 @@ class GreaterThanConditionTest {
         // when
 
         // then
-        assertThat(sut.isValid()).isFalse();
+        assertThat(TestSupporter.conditionToBoolean(sut)).isFalse();
     }
 }

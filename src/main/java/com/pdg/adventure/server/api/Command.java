@@ -6,7 +6,7 @@ public interface Command {
 
     CommandDescription getDescription();
 
-    boolean execute();
+    ExecutionResult execute();
 
     void addPreCondition(PreCondition aCondition);
 

@@ -6,6 +6,7 @@ import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.VariableProvider;
+import com.pdg.adventure.server.testhelper.TestSupporter;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 import org.junit.jupiter.api.Test;
 
@@ -32,11 +33,10 @@ class ThingTest {
         item.addCommand(takeCommand);
 
         // when
-        assertThat(item.applyCommand(commandDescription)).isTrue();
+        assertThat(TestSupporter.applyCommandToBoolean(item, commandDescription)).isTrue();
         item.removeCommand(takeCommand);
 
         // then
-        assertThat(item.applyCommand(commandDescription)).isFalse();
-
+        assertThat(TestSupporter.applyCommandToBoolean(item, commandDescription)).isFalse();
     }
 }

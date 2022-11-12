@@ -3,9 +3,8 @@ package com.pdg.adventure.server.tangible;
 import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.api.Describable;
-import com.pdg.adventure.server.exception.AlreadyPresentException;
-import com.pdg.adventure.server.exception.ContainerFullException;
-import com.pdg.adventure.server.exception.NotContainableException;
+import com.pdg.adventure.server.api.ExecutionResult;
+import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.DescriptionProvider;
 
 import java.util.LinkedList;
@@ -85,26 +84,32 @@ public class GenericContainer extends Item implements Container {
         }
         return aThing.getEnrichedShortDescription();
     }
+    public static final String ALREADY_PRESENT_TEXT = "%s is already present in the %s.";
+    public static final String CANNOT_PUT_TEXT = "You can't put the %s into the %s.";
+    public static final String ALREADY_FULL_TEXT = " is already full.";
 
     @Override
-    public boolean add(Containable anItem) {
-        // TODO:
-        //   wrap these exceptions in an error type
+    public ExecutionResult add(Containable anItem) {
+        ExecutionResult result = new CommandExecutionResult();
+
         if (contents.contains(anItem)) {
-            throw new AlreadyPresentException(anItem, this);
+            result.setResultMessage(String.format(ALREADY_PRESENT_TEXT, anItem, this));
+        } else if (!anItem.isContainable()) {
+            result.setResultMessage(String.format(CANNOT_PUT_TEXT, anItem, this));
+        } else if (contents.size() == maxSize) {
+            result.setResultMessage(String.format(ALREADY_FULL_TEXT, this));
+        } else {
+            anItem.setParentContainer(this);
+            contents.add(anItem);
+            result.setExecutionState(ExecutionResult.State.SUCCESS);
         }
-        if (!anItem.isContainable()) {
-            throw new NotContainableException(anItem, this);
-        }
-        if (contents.size() == maxSize) {
-            throw new ContainerFullException(this);
-        }
-        anItem.setParentContainer(this);
-        return contents.add(anItem);
+        return result;
     }
 
     @Override
-    public boolean remove(Containable anItem) {
-        return contents.remove(anItem);
+    public ExecutionResult remove(Containable anItem) {
+        ExecutionResult result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
+        contents.remove(anItem);
+        return result;
     }
 }

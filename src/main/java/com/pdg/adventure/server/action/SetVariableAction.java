@@ -1,5 +1,7 @@
 package com.pdg.adventure.server.action;
 
+import com.pdg.adventure.server.api.ExecutionResult;
+import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
@@ -15,7 +17,8 @@ public class SetVariableAction extends AbstractVariableAction {
     }
 
     @Override
-    public void execute() {
+    public ExecutionResult execute() {
         variableProvider.set(new Variable(name, value));
+        return new CommandExecutionResult(ExecutionResult.State.SUCCESS);
     }
 }

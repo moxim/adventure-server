@@ -1,7 +1,7 @@
 package com.pdg.adventure.server.api;
 
 public interface Action {
-    void execute();
+    ExecutionResult execute();
 
     String getName();
 }

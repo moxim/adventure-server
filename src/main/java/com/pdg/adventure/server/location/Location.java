@@ -1,12 +1,11 @@
 package com.pdg.adventure.server.location;
 
-import com.pdg.adventure.server.api.Containable;
-import com.pdg.adventure.server.api.Container;
-import com.pdg.adventure.server.api.Direction;
-import com.pdg.adventure.server.api.Visitable;
+import com.pdg.adventure.server.api.*;
 import com.pdg.adventure.server.engine.ItemIdentifier;
+import com.pdg.adventure.server.exception.AmbiguousCommandException;
 import com.pdg.adventure.server.exception.ItemNotFoundException;
 import com.pdg.adventure.server.parser.CommandDescription;
+import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.Environment;
 import com.pdg.adventure.server.tangible.GenericContainer;
@@ -26,11 +25,11 @@ public class Location extends Thing implements Visitable {
         hasBeenVisited = false; // explicit, but redundant
     }
 
-    public boolean addItem(Item anItem) {
+    public ExecutionResult addItem(Item anItem) {
         return container.add(anItem);
     }
 
-    public boolean removeItem(Item anItem) {
+    public ExecutionResult removeItem(Item anItem) {
         return container.remove(anItem);
     }
 
@@ -38,11 +37,11 @@ public class Location extends Thing implements Visitable {
         return container;
     }
 
-    public boolean addDirection(Direction aDirection) {
+    public ExecutionResult addDirection(Direction aDirection) {
         return directions.add(aDirection);
     }
 
-    public boolean removeDirection(Direction aDirection) {
+    public ExecutionResult removeDirection(Direction aDirection) {
         return directions.remove(aDirection);
     }
 
@@ -57,41 +56,50 @@ public class Location extends Thing implements Visitable {
     }
 
     @Override
-    public boolean applyCommand(CommandDescription aCommandDescription) {
+    public ExecutionResult applyCommand(CommandDescription aCommandDescription) {
         // TODO:
         //  bring these returns into one ExecutionSateType
-        if (commandProvider.applyCommand(aCommandDescription)) {
-            return true;
+        ExecutionResult result = commandProvider.applyCommand(aCommandDescription);
+        if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
+            return result;
         }
 
-       if (applyCommandInContainer(container, aCommandDescription)) {
-           return true;
+       result = applyCommandInContainer(container, aCommandDescription);
+       if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
+           return result;
        }
 
-        if (applyCommandInContainer(directions, aCommandDescription)) {
-            return true;
+        result = applyCommandInContainer(directions, aCommandDescription);
+        if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
+            return result;
         }
 
-        if (applyCommandInContainer(Environment.getPocket(), aCommandDescription)) {
-            return true;
+        result = applyCommandInContainer(Environment.getPocket(), aCommandDescription);
+        if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
+            return result;
         }
 
-        return false;
+        result.setResultMessage("You can't do that.");
+        return result;
     }
 
-    private boolean applyCommandInContainer(Container aContainer, CommandDescription aCommandDescription) {
+    private ExecutionResult applyCommandInContainer(Container aContainer, CommandDescription aCommandDescription) {
+        ExecutionResult result = new CommandExecutionResult();
         try {
             final Containable item = ItemIdentifier.findItem(aContainer, aCommandDescription);
-            return item.applyCommand(aCommandDescription);
+            result = item.applyCommand(aCommandDescription);
+        } catch (AmbiguousCommandException e) {
+            result.setResultMessage(e.getMessage());
         } catch (ItemNotFoundException e) {
-            return false;
+            result.setResultMessage(e.getMessage());
         }
+        return result;
     }
 
     @Override
     public String getLongDescription() {
         StringBuilder sb = new StringBuilder();
-        sb.append(System.getProperty(Environment.LF));
+        sb.append(System.lineSeparator());
 
         if (!hasBeenVisited()) {
             sb.append(super.getLongDescription());
@@ -99,17 +107,17 @@ public class Location extends Thing implements Visitable {
             sb.append(getShortDescription());
         }
 
-        sb.append(System.getProperty(Environment.LF));
+        sb.append(System.lineSeparator());
         if (!directions.isEmpty()) {
-            sb.append("Exits are:").append(System.getProperty(Environment.LF));
+            sb.append("Exits are:").append(System.lineSeparator());
             sb.append(directions.listContents());
         } else {
             sb.append("There are no obvious exits.");
         }
 
-        sb.append(System.getProperty(Environment.LF));
+        sb.append(System.lineSeparator());
         if (!container.isEmpty()) {
-            sb.append("You also see:").append(System.getProperty(Environment.LF));
+            sb.append("You also see:").append(System.lineSeparator());
             sb.append(container.listContents());
         }
 

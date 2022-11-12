@@ -5,6 +5,7 @@ import com.pdg.adventure.server.exception.AlreadyPresentException;
 import com.pdg.adventure.server.exception.ContainerFullException;
 import com.pdg.adventure.server.exception.NotContainableException;
 import com.pdg.adventure.server.support.DescriptionProvider;
+import com.pdg.adventure.server.testhelper.TestSupporter;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -74,7 +75,7 @@ class ContainerTest {
         // when
 
         // then
-        assertThat(sut.remove(new Item(descriptionProvider, false))).isFalse();
+        assertThat(TestSupporter.removeItemToBoolean(sut, new Item(descriptionProvider, false))).isFalse();
     }
 
     @Test
@@ -86,7 +87,7 @@ class ContainerTest {
         sut.add(item);
 
         // then
-        assertThat(sut.remove(item)).isTrue();
+        assertThat(TestSupporter.removeItemToBoolean(sut, item)).isTrue();
     }
 
     @Test
@@ -98,9 +99,7 @@ class ContainerTest {
         sut.add(item);
 
         // then
-        assertThatThrownBy(() ->
-                sut.add(item)
-        ).hasMessageContaining(AlreadyPresentException.ALREADY_PRESENT_TEXT);
+        assertThatThrownBy(() -> sut.add(item)).hasMessageContaining(AlreadyPresentException.ALREADY_PRESENT_TEXT);
 
     }
 }

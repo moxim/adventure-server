@@ -1,6 +1,7 @@
 package com.pdg.adventure.server.parser;
 
 import com.pdg.adventure.server.api.Command;
+import com.pdg.adventure.server.api.ExecutionResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,10 +21,15 @@ public class CommandChain {
         return new ArrayList<>(commands);
     }
 
-    public boolean execute() {
-        boolean result = false;
+    public ExecutionResult execute() {
+        ExecutionResult result = new CommandExecutionResult();
         for (Command command : commands) {
-            result |= command.execute();
+            ExecutionResult fromAction = command.execute();
+            result.setResultMessage(fromAction.getResultMessage());
+            if (fromAction.getExecutionState() == ExecutionResult.State.SUCCESS) {
+                result.setExecutionState(ExecutionResult.State.SUCCESS);
+                break;
+            }
         }
         return result;
     }

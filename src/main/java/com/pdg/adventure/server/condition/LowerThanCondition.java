@@ -1,5 +1,8 @@
 package com.pdg.adventure.server.condition;
 
+import com.pdg.adventure.server.api.ExecutionResult;
+import com.pdg.adventure.server.exception.ConfigurationException;
+import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
@@ -15,17 +18,24 @@ public class LowerThanCondition extends AbstractVariableCondition {
     }
 
     @Override
-    public boolean isValid() {
-        final Variable envVariable = variableProvider.get(variableName);
-        if (envVariable == null) {
-            throw new IllegalArgumentException("Variable " + variableName + " does not exist!");
-        }
+    public ExecutionResult check() {
+        ExecutionResult result = new CommandExecutionResult();
+        final Variable envVariable = getVariable(variableName);
+        int envVal = 0;
         try {
-            Integer envVal = Integer.valueOf(envVariable.aValue());
-            Integer iVal = Integer.valueOf(value.toString());
-            return envVal < iVal;
+            envVal = Integer.valueOf(envVariable.aValue());
         } catch (NumberFormatException e) {
-            return false;
+            throw new ConfigurationException("This variable does not contain a number: " + variableName);
         }
+        int iVal = 0;
+        try {
+            iVal = Integer.valueOf(value.toString());
+        } catch (NumberFormatException e) {
+            throw new ConfigurationException("This value is not a number: " + value);
+        }
+        if (envVal < iVal) {
+            result.setExecutionState(ExecutionResult.State.SUCCESS);
+        };
+        return result;
     }
 }

@@ -1,5 +1,7 @@
 package com.pdg.adventure.server.condition;
 
+import com.pdg.adventure.server.api.ExecutionResult;
+import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.VariableProvider;
 
 public class SameCondition extends AbstractVariableCondition {
@@ -14,7 +16,13 @@ public class SameCondition extends AbstractVariableCondition {
     }
 
     @Override
-    public boolean isValid() {
-        return variableProvider.get(variableNameOne).equals(variableProvider.get(variableNameTwo));
+    public ExecutionResult check() {
+        ExecutionResult result = new CommandExecutionResult();
+
+        if (variableProvider.get(variableNameOne).equals(variableProvider.get(variableNameTwo))) {
+            result.setExecutionState(ExecutionResult.State.SUCCESS);
+        };
+
+        return result;
     }
 }

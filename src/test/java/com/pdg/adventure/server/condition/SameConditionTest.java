@@ -2,6 +2,7 @@ package com.pdg.adventure.server.condition;
 
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
+import com.pdg.adventure.server.testhelper.TestSupporter;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -25,10 +26,10 @@ class SameConditionTest {
         SameCondition sut = new SameCondition("one", "oneToo", vp);
 
         // when
-        boolean ok = sut.isValid();
+        boolean ok = TestSupporter.conditionToBoolean(sut);
 
         // then
-        assertThat(ok).isEqualTo(false);
+        assertThat(ok).isFalse();
     }
 
     @Test
@@ -37,10 +38,10 @@ class SameConditionTest {
         SameCondition sut = new SameCondition("one", "two", vp);
 
         // when
-        boolean ok = sut.isValid();
+        boolean ok = TestSupporter.conditionToBoolean(sut);
 
         // then
-        assertThat(ok).isEqualTo(false);
+        assertThat(ok).isFalse();
     }
 
 }

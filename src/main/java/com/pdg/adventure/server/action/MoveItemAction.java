@@ -2,7 +2,8 @@ package com.pdg.adventure.server.action;
 
 import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
-import com.pdg.adventure.server.support.Environment;
+import com.pdg.adventure.server.api.ExecutionResult;
+import com.pdg.adventure.server.parser.CommandExecutionResult;
 
 public class MoveItemAction extends AbstractAction {
 
@@ -15,17 +16,22 @@ public class MoveItemAction extends AbstractAction {
     }
 
     @Override
-    public void execute() {
+    public ExecutionResult execute() {
+        ExecutionResult result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
         if (destination.getSize() < destination.getMaxSize()) {
             Container parentContainer = target.getParentContainer();
             if (parentContainer != null) {
-                parentContainer.remove(target);
+                result = parentContainer.remove(target);
             }
-            destination.add(target);
-            Environment.tell("You put " + target.getEnrichedShortDescription() + " into " + destination
-            .getEnrichedBasicDescription() + ".");
+            if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
+                result = destination.add(target);
+                result.setResultMessage("You put " + target.getEnrichedShortDescription() + " into " + destination
+                        .getEnrichedBasicDescription() + ".");
+            }
         } else {
-            Environment.tell("The " + destination.getShortDescription() + " is full.");
+            result.setExecutionState(ExecutionResult.State.FAILURE);
+            result.setResultMessage("The " + destination.getShortDescription() + " is full.");
         }
+        return result;
     }
 }

@@ -1,8 +1,10 @@
 package com.pdg.adventure.server.support;
 
 import com.pdg.adventure.server.api.Command;
+import com.pdg.adventure.server.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandChain;
 import com.pdg.adventure.server.parser.CommandDescription;
+import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.util.ArrayList;
@@ -42,12 +44,13 @@ public class CommandProvider {
         return commands;
     }
 
-    public boolean applyCommand(CommandDescription aCommandDescription) {
+    public ExecutionResult applyCommand(CommandDescription aCommandDescription) {
+        ExecutionResult result = new CommandExecutionResult();
         CommandChain commandChain = find(aCommandDescription);
         if (commandChain != null) {
             return commandChain.execute();
         }
-        return false;
+        return result;
     }
 
     private CommandChain find(CommandDescription aCommandDescription) {

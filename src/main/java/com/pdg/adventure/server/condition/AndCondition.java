@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.condition;
 
+import com.pdg.adventure.server.api.ExecutionResult;
 import com.pdg.adventure.server.api.PreCondition;
 
 public class AndCondition implements PreCondition {
@@ -13,7 +14,14 @@ public class AndCondition implements PreCondition {
     }
 
     @Override
-    public boolean isValid() {
-        return preCondition.isValid() && anotherPreCondition.isValid();
+    public ExecutionResult check() {
+        ExecutionResult result = preCondition.check();
+        if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
+            ExecutionResult rightResult = anotherPreCondition.check();
+            if (rightResult.getExecutionState() == ExecutionResult.State.FAILURE) {
+                result = rightResult;
+            }
+        }
+        return result;
     }
 }
