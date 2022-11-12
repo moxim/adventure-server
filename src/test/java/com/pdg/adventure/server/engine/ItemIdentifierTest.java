@@ -2,6 +2,7 @@ package com.pdg.adventure.server.engine;
 
 import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
+import com.pdg.adventure.server.exception.AmbiguousCommandException;
 import com.pdg.adventure.server.exception.ItemNotFoundException;
 import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.support.DescriptionProvider;
@@ -77,7 +78,7 @@ class ItemIdentifierTest {
         Throwable thrown = catchThrowable( () -> ItemIdentifier.findItem(container, commandDescription));
 
         // then
-        assertThat(thrown).isInstanceOf(ItemNotFoundException.class);
+        assertThat(thrown).isInstanceOf(AmbiguousCommandException.class);
         assertThat(thrown.getMessage()).contains("Too many");
     }
 
@@ -95,7 +96,7 @@ class ItemIdentifierTest {
         Throwable thrown = catchThrowable( () -> ItemIdentifier.findItem(container, commandDescription));
 
         // then
-        assertThat(thrown).isInstanceOf(ItemNotFoundException.class);
+        assertThat(thrown).isInstanceOf(AmbiguousCommandException.class);
         assertThat(thrown.getMessage()).contains("Too many");
     }
     

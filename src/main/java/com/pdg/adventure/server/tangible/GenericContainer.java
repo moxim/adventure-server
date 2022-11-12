@@ -84,20 +84,19 @@ public class GenericContainer extends Item implements Container {
         }
         return aThing.getEnrichedShortDescription();
     }
-    public static final String ALREADY_PRESENT_TEXT = "%s is already present in the %s.";
-    public static final String CANNOT_PUT_TEXT = "You can't put the %s into the %s.";
-    public static final String ALREADY_FULL_TEXT = " is already full.";
 
     @Override
     public ExecutionResult add(Containable anItem) {
         ExecutionResult result = new CommandExecutionResult();
+        String itemDescription = anItem.getEnrichedBasicDescription();
+        String containerDescription = anItem.getEnrichedBasicDescription();
 
         if (contents.contains(anItem)) {
-            result.setResultMessage(String.format(ALREADY_PRESENT_TEXT, anItem, this));
+            result.setResultMessage(String.format(ALREADY_PRESENT_TEXT, itemDescription, containerDescription));
         } else if (!anItem.isContainable()) {
-            result.setResultMessage(String.format(CANNOT_PUT_TEXT, anItem, this));
+            result.setResultMessage(String.format(CANNOT_PUT_TEXT, itemDescription, containerDescription));
         } else if (contents.size() == maxSize) {
-            result.setResultMessage(String.format(ALREADY_FULL_TEXT, this));
+            result.setResultMessage(String.format(ALREADY_FULL_TEXT, containerDescription));
         } else {
             anItem.setParentContainer(this);
             contents.add(anItem);
@@ -109,7 +108,11 @@ public class GenericContainer extends Item implements Container {
     @Override
     public ExecutionResult remove(Containable anItem) {
         ExecutionResult result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
-        contents.remove(anItem);
+        if (!contents.remove(anItem)) {
+            result.setResultMessage(String.format("There is no %s in %s.", anItem.getShortDescription(),
+                    getEnrichedBasicDescription()));
+            result.setExecutionState(ExecutionResult.State.FAILURE);
+        };
         return result;
     }
 }

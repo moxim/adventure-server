@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.condition;
 
+import com.pdg.adventure.server.exception.ConfigurationException;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.testhelper.TestSupporter;
@@ -33,7 +34,7 @@ class LowerThanConditionTest {
         Throwable thrown = catchThrowable(() -> sut.check());
 
         // then
-        assertThat(TestSupporter.conditionToBoolean(sut)).isFalse();
+        assertThat(thrown).isInstanceOf(ConfigurationException.class);
     }
 
     @Test

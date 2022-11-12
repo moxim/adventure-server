@@ -192,8 +192,6 @@ public class MiniAdventure {
         setUpTakeCommands(rabbit);
         location.addItem(rabbit);
 
-
-        // special items, not needed in real game
         DescriptionProvider ringDescription = new DescriptionProvider("golden", "ring");
         ringDescription.setLongDescription("As you inspect the ring you notice the shape of a portal engraved in it.");
         Item ring = new Item(ringDescription, true);

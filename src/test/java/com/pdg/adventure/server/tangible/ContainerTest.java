@@ -1,15 +1,12 @@
 package com.pdg.adventure.server.tangible;
 
 import com.pdg.adventure.server.api.Container;
-import com.pdg.adventure.server.exception.AlreadyPresentException;
-import com.pdg.adventure.server.exception.ContainerFullException;
-import com.pdg.adventure.server.exception.NotContainableException;
+import com.pdg.adventure.server.api.ExecutionResult;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.testhelper.TestSupporter;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ContainerTest {
     private static final int CONTAINER_MAX_SIZE = 3;
@@ -33,11 +30,10 @@ class ContainerTest {
         // given
 
         // when
+        ExecutionResult result = sut.add(new Item(descriptionProvider, false));
 
         // then
-        assertThatThrownBy(() ->
-                sut.add(new Item(descriptionProvider, false))
-        ).hasMessageContaining(NotContainableException.CANNOT_PUT_TEXT);
+        assertThat(result.getResultMessage()).contains("can't put");
     }
 
     @Test
@@ -56,16 +52,15 @@ class ContainerTest {
     @Test
     void cannotItemWhenContainerFull() {
         // given
+        sut.add(new Item(descriptionProvider, true));
+        sut.add(new Item(descriptionProvider, true));
+        sut.add(new Item(descriptionProvider, true));
 
         // when
-        sut.add(new Item(descriptionProvider, true));
-        sut.add(new Item(descriptionProvider, true));
-        sut.add(new Item(descriptionProvider, true));
+        ExecutionResult result = sut.add(new Item(descriptionProvider, true));
 
         // then
-        assertThatThrownBy(() ->
-                sut.add(new Item(descriptionProvider, true))
-        ).hasMessageContaining(ContainerFullException.ALREADY_FULL_TEXT);
+        assertThat(result.getResultMessage()).contains("already full");
     }
 
     @Test
@@ -73,9 +68,10 @@ class ContainerTest {
         // given
 
         // when
+        ExecutionResult result = sut.remove(new Item(descriptionProvider, true));
 
         // then
-        assertThat(TestSupporter.removeItemToBoolean(sut, new Item(descriptionProvider, false))).isFalse();
+        assertThat(result.getResultMessage()).contains("There is no");
     }
 
     @Test
@@ -94,12 +90,12 @@ class ContainerTest {
     void cannotAddPresentItem() {
         // given
         Item item = new Item(descriptionProvider, true);
-
-        // when
         sut.add(item);
 
-        // then
-        assertThatThrownBy(() -> sut.add(item)).hasMessageContaining(AlreadyPresentException.ALREADY_PRESENT_TEXT);
+        // when
+        ExecutionResult result = sut.add(item);
 
+        // then
+        assertThat(result.getResultMessage()).contains("already present");
     }
 }
