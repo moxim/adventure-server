@@ -10,13 +10,13 @@ import java.util.List;
 import java.util.UUID;
 
 public class GenericCommand implements Command {
-    private final CommandDescription commandDescription;
+    private final GenericCommandDescription commandDescription;
     private final List<PreCondition> preConditions;
     private final List<Action> followUpActions;
     private final Action action;
     private final UUID id;
 
-    public GenericCommand(CommandDescription aCommandDescription, Action anAction) {
+    public GenericCommand(GenericCommandDescription aCommandDescription, Action anAction) {
         commandDescription = aCommandDescription;
         preConditions = new ArrayList<>();
         followUpActions = new ArrayList<>();
@@ -25,7 +25,7 @@ public class GenericCommand implements Command {
     }
 
     @Override
-    public CommandDescription getDescription() {
+    public GenericCommandDescription getDescription() {
         return commandDescription;
     }
 

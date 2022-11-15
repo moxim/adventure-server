@@ -1,7 +1,5 @@
 package com.pdg.adventure.server.api;
 
-import com.pdg.adventure.server.parser.CommandDescription;
-
 import java.util.List;
 
 public interface Actionable {

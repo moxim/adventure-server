@@ -1,28 +1,29 @@
 package com.pdg.adventure.server.parser;
 
+import com.pdg.adventure.server.api.CommandDescription;
 import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.util.Objects;
 
-public class CommandDescription implements Comparable<CommandDescription> {
+public class GenericCommandDescription implements Comparable<GenericCommandDescription>, CommandDescription {
     private final String verb;
     private final String adjective;
     private final String noun;
 
-    public CommandDescription (String aVerb, Describable aNamedThing) {
+    public GenericCommandDescription(String aVerb, Describable aNamedThing) {
         this(aVerb, aNamedThing.getAdjective(), aNamedThing.getNoun());
     }
 
-    public CommandDescription(String aVerb) {
+    public GenericCommandDescription(String aVerb) {
         this(aVerb, Vocabulary.EMPTY_STRING, Vocabulary.EMPTY_STRING);
     }
 
-    public CommandDescription(String aVerb, String aNoun) {
+    public GenericCommandDescription(String aVerb, String aNoun) {
         this(aVerb, Vocabulary.EMPTY_STRING, aNoun);
     }
 
-    public CommandDescription(String aVerb, String anAdjective, String aNoun) {
+    public GenericCommandDescription(String aVerb, String anAdjective, String aNoun) {
         verb = aVerb;
         adjective = anAdjective;
         noun = aNoun;
@@ -50,14 +51,14 @@ public class CommandDescription implements Comparable<CommandDescription> {
     }
 
     @Override
-    public int compareTo(CommandDescription o) {
+    public int compareTo(GenericCommandDescription o) {
         return this.getDescription().compareTo(o.getDescription());
     }
 
     @Override
     public boolean equals(Object aO) {
         if (this == aO) return true;
-        if (!(aO instanceof CommandDescription that)) return false;
+        if (!(aO instanceof GenericCommandDescription that)) return false;
 
         if (!Objects.equals(verb, that.verb)) return false;
         if (!Objects.equals(adjective, that.adjective)) return false;

@@ -6,9 +6,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CommandDescriptionTest {
 
-    CommandDescription sut = new CommandDescription("1", "2");
-    CommandDescription one = new CommandDescription("1", "2");
-    CommandDescription three = new CommandDescription("3");
+    GenericCommandDescription sut = new GenericCommandDescription("1", "2");
+    GenericCommandDescription one = new GenericCommandDescription("1", "2");
+    GenericCommandDescription three = new GenericCommandDescription("3");
 
     @Test
     void compareToLessOK() {

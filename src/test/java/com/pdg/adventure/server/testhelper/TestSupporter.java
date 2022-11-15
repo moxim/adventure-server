@@ -4,7 +4,7 @@ import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.api.ExecutionResult;
 import com.pdg.adventure.server.api.PreCondition;
-import com.pdg.adventure.server.parser.CommandDescription;
+import com.pdg.adventure.server.parser.GenericCommandDescription;
 
 public class TestSupporter {
     private TestSupporter() {
@@ -26,7 +26,7 @@ public class TestSupporter {
         return executionResult.getExecutionState()== ExecutionResult.State.SUCCESS;
     }
 
-    public static boolean applyCommandToBoolean(Containable anItem, CommandDescription aCommandDescription) {
+    public static boolean applyCommandToBoolean(Containable anItem, GenericCommandDescription aCommandDescription) {
         final ExecutionResult executionResult = anItem.applyCommand(aCommandDescription);
         return executionResult.getExecutionState()== ExecutionResult.State.SUCCESS;
     }

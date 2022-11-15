@@ -1,6 +1,7 @@
 package com.pdg.adventure.server.location;
 
-import com.pdg.adventure.server.parser.CommandDescription;
+import com.pdg.adventure.server.action.MovePlayerAction;
+import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.DirectionCommand;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
@@ -18,8 +19,8 @@ class DirectionTest {
         vocabulary.addWord("enter", Vocabulary.WordType.VERB);
     }
     private final Location destination = new Location(new DescriptionProvider(GLOWING_TXT, PORTAL_TXT));
-    private final CommandDescription directionDescription = new CommandDescription("enter", destination);
-    private final DirectionCommand moveCommand = new DirectionCommand(directionDescription, destination);
+    private final GenericCommandDescription directionDescription = new GenericCommandDescription("enter", destination);
+    private final DirectionCommand moveCommand = new DirectionCommand(directionDescription, new MovePlayerAction(destination));
     private final GenericDirection sut = new GenericDirection(moveCommand, destination, true);
 
     @Test
@@ -78,8 +79,8 @@ class DirectionTest {
     void getLongDescriptionWithoutAdjective() {
         // given
         Location destination = new Location(new DescriptionProvider(PORTAL_TXT));
-        CommandDescription directionDescription = new CommandDescription("enter", destination);
-        DirectionCommand moveCommand = new DirectionCommand(directionDescription, destination);
+        GenericCommandDescription directionDescription = new GenericCommandDescription("enter", destination);
+        DirectionCommand moveCommand = new DirectionCommand(directionDescription, new MovePlayerAction(destination));
         GenericDirection noAdj = new GenericDirection(moveCommand, destination, true);
 
         // when

@@ -6,7 +6,7 @@ import com.pdg.adventure.server.condition.*;
 import com.pdg.adventure.server.engine.GameLoop;
 import com.pdg.adventure.server.location.GenericDirection;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.parser.CommandDescription;
+import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.DirectionCommand;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.Parser;
@@ -79,11 +79,11 @@ public class MiniAdventure {
         Environment.tell("You have items in places!");
 
         Environment.setUpWorkflows();
-        CommandDescription inventoryCommandDescription = new CommandDescription("inventory");
+        GenericCommandDescription inventoryCommandDescription = new GenericCommandDescription("inventory");
         GenericCommand inventoryCommand = new GenericCommand(inventoryCommandDescription, new InventoryAction());
         Environment.getWorkflow().addInterceptorCommand(inventoryCommandDescription, inventoryCommand);
 
-        CommandDescription quitCommandDescription = new CommandDescription("quit");
+        GenericCommandDescription quitCommandDescription = new GenericCommandDescription("quit");
         GenericCommand quitCommand = new GenericCommand(quitCommandDescription, new QuitAction());
         Environment.getWorkflow().addInterceptorCommand(quitCommandDescription, quitCommand);
 
@@ -102,7 +102,7 @@ public class MiniAdventure {
         location = new Location(locationDescription);
         setUpLookCommands(location);
 
-        CommandDescription flowerCommandDescription = new CommandDescription("desc", "flowers");
+        GenericCommandDescription flowerCommandDescription = new GenericCommandDescription("desc", "flowers");
         GenericCommand checkFlowerCommand = new GenericCommand(flowerCommandDescription, new MessageAction("The flowers look " +
                 "beautiful."));
         location.addCommand(checkFlowerCommand);
@@ -129,8 +129,8 @@ public class MiniAdventure {
     private void setUpDirections() {
         Item ring = (Item)itemHolder.findItemByShortDescription("golden", "ring");
 
-        CommandDescription enterPortalCommandDescription = new CommandDescription("enter", portal);
-        DirectionCommand enterPortalCommand = new DirectionCommand(enterPortalCommandDescription, portal);
+        GenericCommandDescription enterPortalCommandDescription = new GenericCommandDescription("enter", portal);
+        DirectionCommand enterPortalCommand = new DirectionCommand(enterPortalCommandDescription, new MovePlayerAction(portal));
         enterPortalCommand.addPreCondition(new WornCondition(ring));
 
         Command enterCommand2 = new GenericCommand(enterPortalCommandDescription,
@@ -143,31 +143,31 @@ public class MiniAdventure {
         setUpLookCommands(toPortal);
         location.addDirection(toPortal);
 
-        CommandDescription enterHouseCommandDescription = new CommandDescription("enter", house);
-        DirectionCommand enterHouseCommand = new DirectionCommand(enterHouseCommandDescription, house);
+        GenericCommandDescription enterHouseCommandDescription = new GenericCommandDescription("enter", house);
+        DirectionCommand enterHouseCommand = new DirectionCommand(enterHouseCommandDescription, new MovePlayerAction(house));
         GenericDirection toHouse = new GenericDirection(enterHouseCommand, house, true);
 
         setUpLookCommands(toHouse);
         location.addDirection(toHouse);
 
-        CommandDescription leavePortalCommandDescription = new CommandDescription("leave", location);
-        DirectionCommand leaveCommand = new DirectionCommand(leavePortalCommandDescription, location);
+        GenericCommandDescription leavePortalCommandDescription = new GenericCommandDescription("leave", location);
+        DirectionCommand leaveCommand = new DirectionCommand(leavePortalCommandDescription, new MovePlayerAction(location));
         GenericDirection toLocation = new GenericDirection(leaveCommand, location);
         portal.addDirection(toLocation);
 
-        CommandDescription leaveHouseCommandDescription = new CommandDescription("north", location);
-        leaveCommand = new DirectionCommand(leaveHouseCommandDescription, location);
+        GenericCommandDescription leaveHouseCommandDescription = new GenericCommandDescription("north", location);
+        leaveCommand = new DirectionCommand(leaveHouseCommandDescription, new MovePlayerAction(location));
         toLocation = new GenericDirection(leaveCommand, location);
         house.addDirection(toLocation);
     }
 
     private void setUpTakeCommands(Item anItem) {
-        CommandDescription getCommandDescription = new CommandDescription("get", anItem.getAdjective(), anItem.getNoun());
+        GenericCommandDescription getCommandDescription = new GenericCommandDescription("get", anItem.getAdjective(), anItem.getNoun());
         GenericCommand takeCommand = new GenericCommand(getCommandDescription, new TakeAction(anItem));
         takeCommand.addPreCondition(new PresentCondition(anItem));
         anItem.addCommand(takeCommand);
 
-        CommandDescription dropCommandDescription = new CommandDescription("drop", anItem.getAdjective(), anItem.getNoun());
+        GenericCommandDescription dropCommandDescription = new GenericCommandDescription("drop", anItem.getAdjective(), anItem.getNoun());
         GenericCommand dropAndRemoveCommand = new GenericCommand(dropCommandDescription, new DropAction(anItem));
         dropAndRemoveCommand.addPreCondition(new WornCondition(anItem));
         dropAndRemoveCommand.addFollowUpAction(new RemoveAction(anItem));
@@ -193,7 +193,7 @@ public class MiniAdventure {
         itemHolder.add(knife);
         knife.setShortDescription("a small knife");
         knife.setLongDescription("The knife is exceptionally sharp. Don't cut yourself!");
-        GenericCommand getNotSuccessful = new GenericCommand(new CommandDescription("get", knife), new MessageAction(
+        GenericCommand getNotSuccessful = new GenericCommand(new GenericCommandDescription("get", knife), new MessageAction(
                 "The knife is too sharp! You need to wear some gloves."));
         PreCondition glovesWorn = new WornCondition((gloves));
         NotCondition glovesNotWorn = new NotCondition(glovesWorn);
@@ -218,14 +218,14 @@ public class MiniAdventure {
         Item rabbit = new Item(new DescriptionProvider(SMALL_TEXT, "rabbit"), true);
         itemHolder.add(rabbit);
         rabbit.setLongDescription("The rabbit looks very tasty!");
-        GenericCommand cutNotSuccessfully = new GenericCommand(new CommandDescription("cut", rabbit),
+        GenericCommand cutNotSuccessfully = new GenericCommand(new GenericCommandDescription("cut", rabbit),
                 new MessageAction("You need a knife."));
         CarriedCondition knifeCarried = new CarriedCondition(knife);
         NotCondition knifeNotCarried = new NotCondition(knifeCarried);
         cutNotSuccessfully.addPreCondition(knifeNotCarried);
         rabbit.addCommand(cutNotSuccessfully);
 
-        GenericCommand cutSuccessfully = new GenericCommand(new CommandDescription("cut", rabbit), new MessageAction(
+        GenericCommand cutSuccessfully = new GenericCommand(new GenericCommandDescription("cut", rabbit), new MessageAction(
                 "You skin the rabbit and are left with a rabbit pelt."));
         cutSuccessfully.addPreCondition(knifeCarried);
         cutSuccessfully.addFollowUpAction(new CreateAction(pelt, rabbit));
@@ -264,17 +264,17 @@ public class MiniAdventure {
 
     private void setUpWearCommands(Item anItem) {
         anItem.setIsWearable(true);
-        GenericCommand wear = new GenericCommand(new CommandDescription("wear", anItem), new WearAction(anItem));
+        GenericCommand wear = new GenericCommand(new GenericCommandDescription("wear", anItem), new WearAction(anItem));
         PreCondition carriedCondition = new CarriedCondition(anItem);
         wear.addPreCondition(carriedCondition);
         anItem.addCommand(wear);
-        GenericCommand remove = new GenericCommand(new CommandDescription("remove", anItem), new RemoveAction(anItem));
+        GenericCommand remove = new GenericCommand(new GenericCommandDescription("remove", anItem), new RemoveAction(anItem));
         remove.addPreCondition(carriedCondition);
         anItem.addCommand(remove);
     }
 
     private void setUpLookCommands(Thing aThing) {
-        aThing.addCommand(new GenericCommand(new CommandDescription("desc", aThing.getAdjective(), aThing.getNoun()),
+        aThing.addCommand(new GenericCommand(new GenericCommandDescription("desc", aThing.getAdjective(), aThing.getNoun()),
                 new DescribeAction(aThing)));
     }
 

@@ -38,11 +38,7 @@ public class DescriptionProvider {
 
     public String getShortDescription() {
         if (shortDescription == null) {
-            if (Vocabulary.EMPTY_STRING.equals(adjective)) {
-                shortDescription = noun;
-            } else {
-                shortDescription = adjective + " " + noun;
-            }
+            shortDescription = getBasicDescription();
         }
         return shortDescription;
     }

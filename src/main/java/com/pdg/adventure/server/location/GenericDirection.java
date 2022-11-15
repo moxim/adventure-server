@@ -1,8 +1,8 @@
 package com.pdg.adventure.server.location;
 
 import com.pdg.adventure.server.api.Command;
+import com.pdg.adventure.server.api.CommandDescription;
 import com.pdg.adventure.server.api.Direction;
-import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.support.ArticleProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.Item;
@@ -25,10 +25,6 @@ public class GenericDirection extends Item implements Direction {
         destination = aDestination;
         description = aCommand.getDescription();
         this.addCommand(aCommand);
-    }
-
-    public Location getDestination() {
-        return destination;
     }
 
     private String constructDescriptionFromAdjectiveAndNoun() {

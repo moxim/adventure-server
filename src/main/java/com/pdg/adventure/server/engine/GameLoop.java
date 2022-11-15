@@ -3,7 +3,7 @@ package com.pdg.adventure.server.engine;
 import com.pdg.adventure.server.api.ExecutionResult;
 import com.pdg.adventure.server.exception.QuitException;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.parser.CommandDescription;
+import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.Parser;
 import com.pdg.adventure.server.support.Environment;
 
@@ -23,7 +23,7 @@ public class GameLoop {
             try {
                 Environment.preProcessCommands();
 
-                CommandDescription command = parser.getInput(aReader);
+                GenericCommandDescription command = parser.getInput(aReader);
                 // Check commands that are independent of locations like inventory, save, quit aso.
                 if (!Environment.interceptCommands(command)) {
                     ExecutionResult result = currentLocation.applyCommand(command);

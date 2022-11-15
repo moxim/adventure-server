@@ -1,33 +1,33 @@
 package com.pdg.adventure.server.engine;
 
 import com.pdg.adventure.server.api.Command;
-import com.pdg.adventure.server.parser.CommandDescription;
+import com.pdg.adventure.server.parser.GenericCommandDescription;
 
 import java.util.Map;
 import java.util.TreeMap;
 
 public class Workflow {
-    private final Map<CommandDescription, Command> preCommands;
-    private final Map<CommandDescription, Command> interceptorCommands;
+    private final Map<GenericCommandDescription, Command> preCommands;
+    private final Map<GenericCommandDescription, Command> interceptorCommands;
 
     public Workflow() {
         preCommands = new TreeMap<>();
         interceptorCommands = new TreeMap<>()    ;
     }
 
-    public void addPreCommand(CommandDescription aCommandDescription, Command aCommand) {
+    public void addPreCommand(GenericCommandDescription aCommandDescription, Command aCommand) {
         preCommands.put(aCommandDescription, aCommand);
     }
 
-    public void addInterceptorCommand(CommandDescription aCommandDescription, Command aCommand) {
+    public void addInterceptorCommand(GenericCommandDescription aCommandDescription, Command aCommand) {
         interceptorCommands.put(aCommandDescription, aCommand);
     }
 
-    public void removePreCommand(CommandDescription aCommandDescription, Command aCommand) {
+    public void removePreCommand(GenericCommandDescription aCommandDescription, Command aCommand) {
         preCommands.remove(aCommandDescription, aCommand);
     }
 
-    public void removeInterceptorCommand(CommandDescription aCommandDescription, Command aCommand) {
+    public void removeInterceptorCommand(GenericCommandDescription aCommandDescription, Command aCommand) {
         interceptorCommands.remove(aCommandDescription, aCommand);
     }
 
@@ -35,11 +35,11 @@ public class Workflow {
         process(preCommands);
     }
 
-    public boolean interceptCommands(CommandDescription aCommand) {
+    public boolean interceptCommands(GenericCommandDescription aCommand) {
         return applyCommand(interceptorCommands, aCommand);
     }
 
-    private boolean applyCommand(Map<CommandDescription, Command> aAlwaysCommands, CommandDescription aCommand) {
+    private boolean applyCommand(Map<GenericCommandDescription, Command> aAlwaysCommands, GenericCommandDescription aCommand) {
         Command command = aAlwaysCommands.get(aCommand);
         if (command != null) {
             command.execute();
@@ -48,8 +48,8 @@ public class Workflow {
         return false;
     }
 
-    private void process(Map<CommandDescription, Command> commands) {
-        for (Map.Entry<CommandDescription, Command> commandEntry : commands.entrySet()) {
+    private void process(Map<GenericCommandDescription, Command> commands) {
+        for (Map.Entry<GenericCommandDescription, Command> commandEntry : commands.entrySet()) {
             commandEntry.getValue().execute();
         }
     }

@@ -15,7 +15,7 @@ class ParserTest {
         Parser parser = new Parser(vocabulary);
 
         // when
-        CommandDescription command = parser.handle("hello, I am your trusty parser");
+        GenericCommandDescription command = parser.handle("hello, I am your trusty parser");
 
         // then
         assertThat(command.getVerb()).isEmpty();

@@ -2,7 +2,7 @@ package com.pdg.adventure.server.tangible;
 
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.parser.CommandDescription;
+import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.VariableProvider;
@@ -27,7 +27,7 @@ class ThingTest {
 
         DescriptionProvider thingDescription = new DescriptionProvider("thing");
         Item item = new Item(thingDescription, true);
-        CommandDescription commandDescription = new CommandDescription("take");
+        GenericCommandDescription commandDescription = new GenericCommandDescription("take");
         GenericCommand takeCommand = new GenericCommand(commandDescription, new MessageAction("Take-Command executed."));
 
         item.addCommand(takeCommand);

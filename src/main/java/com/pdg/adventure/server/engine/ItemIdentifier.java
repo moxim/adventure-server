@@ -1,10 +1,10 @@
 package com.pdg.adventure.server.engine;
 
+import com.pdg.adventure.server.api.CommandDescription;
 import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.exception.AmbiguousCommandException;
 import com.pdg.adventure.server.exception.ItemNotFoundException;
-import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.util.ArrayList;

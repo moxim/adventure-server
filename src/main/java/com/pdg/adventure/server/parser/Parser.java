@@ -14,13 +14,13 @@ public class Parser {
         vocabulary = aVocabulary;
     }
 
-    public CommandDescription getInput(BufferedReader aReader) throws IOException {
+    public GenericCommandDescription getInput(BufferedReader aReader) throws IOException {
         Environment.tell("What now? > ");
         String actionCommand = aReader.readLine();
         return handle(actionCommand);
     }
 
-    public CommandDescription handle(String anInput) {
+    public GenericCommandDescription handle(String anInput) {
         String verb = Vocabulary.EMPTY_STRING;
         String adjective = Vocabulary.EMPTY_STRING;
         String noun = Vocabulary.EMPTY_STRING;
@@ -44,6 +44,6 @@ public class Parser {
             }
         }
 
-        return new CommandDescription(verb, adjective, noun);
+        return new GenericCommandDescription(verb, adjective, noun);
     }
 }

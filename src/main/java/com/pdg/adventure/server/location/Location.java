@@ -4,7 +4,6 @@ import com.pdg.adventure.server.api.*;
 import com.pdg.adventure.server.engine.ItemIdentifier;
 import com.pdg.adventure.server.exception.AmbiguousCommandException;
 import com.pdg.adventure.server.exception.ItemNotFoundException;
-import com.pdg.adventure.server.parser.CommandDescription;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.Environment;

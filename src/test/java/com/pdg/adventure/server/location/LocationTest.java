@@ -1,7 +1,7 @@
 package com.pdg.adventure.server.location;
 
 import com.pdg.adventure.server.api.Direction;
-import com.pdg.adventure.server.parser.CommandDescription;
+import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.Item;
@@ -17,7 +17,7 @@ class LocationTest {
     private final Location sut = new Location(new DescriptionProvider("small", "perch"));
     private final Item mouse = new Item(new DescriptionProvider("mouse"), true);
     private final Direction direction = new GenericDirection(
-        new GenericCommand(new CommandDescription("loop"), null), sut);
+        new GenericCommand(new GenericCommandDescription("loop"), null), sut);
 
     @Test
     void addItem() {

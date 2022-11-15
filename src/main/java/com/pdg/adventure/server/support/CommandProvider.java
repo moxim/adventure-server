@@ -1,9 +1,10 @@
 package com.pdg.adventure.server.support;
 
 import com.pdg.adventure.server.api.Command;
+import com.pdg.adventure.server.api.CommandDescription;
 import com.pdg.adventure.server.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandChain;
-import com.pdg.adventure.server.parser.CommandDescription;
+import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
@@ -32,7 +33,7 @@ public class CommandProvider {
         availableCommands.remove(aCommand.getDescription());
     }
 
-    public boolean hasCommand(CommandDescription aCommand) {
+    public boolean hasCommand(GenericCommandDescription aCommand) {
         return availableCommands.containsKey(aCommand);
     }
 
