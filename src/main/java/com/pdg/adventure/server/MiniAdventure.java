@@ -11,7 +11,7 @@ import com.pdg.adventure.server.parser.DirectionCommand;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.Parser;
 import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.support.Environment;
+import com.pdg.adventure.server.engine.Environment;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;

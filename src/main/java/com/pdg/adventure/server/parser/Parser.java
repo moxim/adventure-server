@@ -1,6 +1,6 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.server.support.Environment;
+import com.pdg.adventure.server.engine.Environment;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.io.BufferedReader;

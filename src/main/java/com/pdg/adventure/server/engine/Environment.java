@@ -1,17 +1,16 @@
-package com.pdg.adventure.server.support;
+package com.pdg.adventure.server.engine;
 
+import com.pdg.adventure.server.api.CommandDescription;
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.api.Describable;
-import com.pdg.adventure.server.engine.Workflow;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.api.CommandDescription;
 
 public class Environment {
 
     public static final String LF = System.getProperty("line.separator");
 
     private static Workflow workflow;
-    public static Location currentLocation;
+    private static Location currentLocation;
     private static Container pocket;
 
     private Environment() {

@@ -5,7 +5,6 @@ import com.pdg.adventure.server.exception.QuitException;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.Parser;
-import com.pdg.adventure.server.support.Environment;
 
 import java.io.BufferedReader;
 import java.io.IOException;

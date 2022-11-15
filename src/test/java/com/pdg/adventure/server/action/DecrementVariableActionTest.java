@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.action;
 
-import com.pdg.adventure.server.support.Environment;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 import org.junit.jupiter.api.Test;

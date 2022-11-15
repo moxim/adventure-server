@@ -6,7 +6,7 @@ import com.pdg.adventure.server.exception.AmbiguousCommandException;
 import com.pdg.adventure.server.exception.ItemNotFoundException;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.support.Environment;
+import com.pdg.adventure.server.engine.Environment;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.tangible.Thing;

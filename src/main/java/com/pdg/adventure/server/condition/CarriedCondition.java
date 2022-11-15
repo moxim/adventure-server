@@ -4,7 +4,7 @@ import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.ExecutionResult;
 import com.pdg.adventure.server.api.PreCondition;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
-import com.pdg.adventure.server.support.Environment;
+import com.pdg.adventure.server.engine.Environment;
 
 public class CarriedCondition implements PreCondition {
 
