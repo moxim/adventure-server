@@ -61,7 +61,7 @@ public class Thing implements Describable, Actionable {
 
     @Override
     public String getEnrichedShortDescription() {
-        return descriptionProvider.getEnrichedShortDescription();
+        return descriptionProvider.getEnrichedShortDescription(getShortDescription());
     }
 
     public void setLongDescription(String aLongDescription) {

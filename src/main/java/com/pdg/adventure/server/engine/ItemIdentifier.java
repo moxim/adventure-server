@@ -29,7 +29,7 @@ public class ItemIdentifier {
 
         if (foundItems.isEmpty() && Vocabulary.EMPTY_STRING.equals(noun)) {
             String verb = aCommandDescription.getVerb();
-            addItemByVerb(items, foundItems, verb);
+            addItemByVerbAlone(items, foundItems, verb);
         }
 
         if (foundItems.size() > 1) {
@@ -43,7 +43,7 @@ public class ItemIdentifier {
         return foundItems.get(0);
     }
 
-    private static void addItemByVerb(List<Containable> items, List<Containable> aFoundItems, String aVerb) {
+    private static void addItemByVerbAlone(List<Containable> items, List<Containable> aFoundItems, String aVerb) {
          for (Containable item : items) {
             if (item.hasVerb(aVerb)) {
                 aFoundItems.add(item);

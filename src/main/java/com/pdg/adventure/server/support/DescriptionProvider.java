@@ -47,8 +47,8 @@ public class DescriptionProvider {
         return shortDescription;
     }
 
-    public String getEnrichedShortDescription() {
-        return ArticleProvider.prependIndefiniteArticle(getShortDescription());
+    public String getEnrichedShortDescription(String aDescription) {
+        return ArticleProvider.prependIndefiniteArticle(aDescription);
     }
 
     public void setShortDescription(String aShortDescription) {

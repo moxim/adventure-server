@@ -1,26 +1,24 @@
 package com.pdg.adventure.server.condition;
 
-import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.ExecutionResult;
 import com.pdg.adventure.server.api.PreCondition;
+import com.pdg.adventure.server.api.Wearable;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
-import com.pdg.adventure.server.support.Environment;
 
-public class CarriedCondition implements PreCondition {
+public class WornCondition implements PreCondition {
+    private final Wearable thing;
 
-    private final Containable item;
-
-    public CarriedCondition(Containable anItem) {
-        item = anItem;
+    public WornCondition(Wearable aThing) {
+        thing = aThing;
     }
 
     @Override
     public ExecutionResult check() {
         ExecutionResult result = new CommandExecutionResult();
-        if (Environment.getPocket().contains(item)) {
+        if (thing.isWorn()) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         } else {
-            result.setResultMessage("You don't have a " + item.getShortDescription());
+            result.setResultMessage(String.format("You are not wearing %s.", thing.getEnrichedBasicDescription()));
         }
         return result;
     }

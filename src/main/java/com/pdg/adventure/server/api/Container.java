@@ -24,4 +24,6 @@ public interface Container extends Describable {
     boolean isEmpty();
 
     String listContents();
+
+    Containable findItemByShortDescription(String anAdjective, String aNoun);
 }

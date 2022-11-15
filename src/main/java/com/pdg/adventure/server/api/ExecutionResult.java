@@ -14,4 +14,8 @@ public interface ExecutionResult {
     void setResultMessage(String aResultMessage);
 
     void add(ExecutionResult anExecutionResult);
+
+    boolean hasCommandMatched();
+
+    void setCommandHasMatched();
 }

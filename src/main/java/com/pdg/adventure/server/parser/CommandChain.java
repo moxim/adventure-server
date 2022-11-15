@@ -24,11 +24,12 @@ public class CommandChain {
     public ExecutionResult execute() {
         ExecutionResult result = new CommandExecutionResult();
         for (Command command : commands) {
-            ExecutionResult fromAction = command.execute();
-            result.setResultMessage(fromAction.getResultMessage());
-            if (fromAction.getExecutionState() == ExecutionResult.State.SUCCESS) {
-                result.setExecutionState(ExecutionResult.State.SUCCESS);
-                break;
+            if(result.getExecutionState() != ExecutionResult.State.SUCCESS) {
+                ExecutionResult fromAction = command.execute();
+                result.setResultMessage(fromAction.getResultMessage());
+                if (fromAction.getExecutionState() == ExecutionResult.State.SUCCESS) {
+                    result.setExecutionState(ExecutionResult.State.SUCCESS);
+                }
             }
         }
         return result;

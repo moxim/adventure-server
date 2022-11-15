@@ -48,7 +48,8 @@ public class CommandProvider {
         ExecutionResult result = new CommandExecutionResult();
         CommandChain commandChain = find(aCommandDescription);
         if (commandChain != null) {
-            return commandChain.execute();
+            result = commandChain.execute();
+            result.setCommandHasMatched();
         }
         return result;
     }
@@ -75,7 +76,6 @@ public class CommandProvider {
                 return true;
             }
         }
-        ;
         return false;
     }
 }

@@ -64,19 +64,25 @@ public class Location extends Thing implements Visitable {
             return result;
         }
 
-       result = applyCommandInContainer(container, aCommandDescription);
-       if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
-           return result;
-       }
-
-        result = applyCommandInContainer(directions, aCommandDescription);
-        if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
-            return result;
+        if (!result.hasCommandMatched()) {
+            result = applyCommandInContainer(container, aCommandDescription);
+            if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
+                return result;
+            }
         }
 
-        result = applyCommandInContainer(Environment.getPocket(), aCommandDescription);
-        if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
-            return result;
+        if (!result.hasCommandMatched()) {
+            result = applyCommandInContainer(directions, aCommandDescription);
+            if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
+                return result;
+            }
+        }
+
+        if (!result.hasCommandMatched()) {
+            result = applyCommandInContainer(Environment.getPocket(), aCommandDescription);
+            if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
+                return result;
+            }
         }
 
         result.setResultMessage("You can't do that.");

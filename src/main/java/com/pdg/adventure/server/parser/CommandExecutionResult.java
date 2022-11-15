@@ -9,8 +9,8 @@ import java.util.List;
 public class CommandExecutionResult implements ExecutionResult {
     private State executionState;
     private String resultMessage;
-
-    List<ExecutionResult> otherResults;
+    private boolean commandHasMatched;
+    private List<ExecutionResult> otherResults;
 
     // TODO
     //  check where these c'tors are used, replace with c'tor (state, msg), e.g. c'tor(FAILURE, "I don't understand")
@@ -22,6 +22,16 @@ public class CommandExecutionResult implements ExecutionResult {
         executionState = aSuccessState;
         resultMessage = Vocabulary.EMPTY_STRING;
         otherResults = new ArrayList<>();
+        commandHasMatched = false;
+    }
+
+    public void setCommandHasMatched() {
+        commandHasMatched = true;
+    }
+
+    @Override
+    public boolean hasCommandMatched() {
+        return commandHasMatched;
     }
 
     public void setExecutionState(State anExecutionState) {
@@ -49,5 +59,10 @@ public class CommandExecutionResult implements ExecutionResult {
 
     public List<ExecutionResult> getOtherResults() {
         return otherResults;
+    }
+
+    @Override
+    public String toString() {
+        return executionState + " [" + resultMessage + "]";
     }
 }

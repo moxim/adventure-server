@@ -6,6 +6,7 @@ import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.DescriptionProvider;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -49,12 +50,22 @@ public class GenericContainer extends Item implements Container {
 
     @Override
     public boolean contains(Containable aThing) {
+        Containable thing = findItemByShortDescription(aThing.getAdjective(), aThing.getNoun());
+        return thing != null;
+    }
+
+    @Override
+    public Containable findItemByShortDescription(String anAdjective, String aNoun) {
+        Containable result = null;
         for (Containable containable : contents) {
-            if (containable.getShortDescription().equals(aThing.getShortDescription())) {
-                return true;
+            if (containable.getNoun().equals(aNoun)) {
+                if (Vocabulary.EMPTY_STRING.equals(anAdjective) || containable.getAdjective().equals(anAdjective)) {
+                    result = containable;
+                    break;
+                }
             }
         }
-        return false;
+        return result;
     }
 
     @Override

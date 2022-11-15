@@ -20,7 +20,7 @@ class DirectionTest {
     private final Location destination = new Location(new DescriptionProvider(GLOWING_TXT, PORTAL_TXT));
     private final CommandDescription directionDescription = new CommandDescription("enter", destination);
     private final DirectionCommand moveCommand = new DirectionCommand(directionDescription, destination);
-    private final GenericDirection sut = new GenericDirection(moveCommand, true);
+    private final GenericDirection sut = new GenericDirection(moveCommand, destination, true);
 
     @Test
     void getDestination() {
@@ -80,7 +80,7 @@ class DirectionTest {
         Location destination = new Location(new DescriptionProvider(PORTAL_TXT));
         CommandDescription directionDescription = new CommandDescription("enter", destination);
         DirectionCommand moveCommand = new DirectionCommand(directionDescription, destination);
-        GenericDirection noAdj = new GenericDirection(moveCommand, true);
+        GenericDirection noAdj = new GenericDirection(moveCommand, destination, true);
 
         // when
 
@@ -92,7 +92,7 @@ class DirectionTest {
     @Test
     void getDescriptionsWithoutLocation() throws Exception {
         // given
-        GenericDirection noAdj = new GenericDirection(moveCommand, false);
+        GenericDirection noAdj = new GenericDirection(moveCommand, destination, false);
 
         // when
 
