@@ -1,7 +1,7 @@
 package com.pdg.adventure.server.tangible;
 
 import com.pdg.adventure.server.api.*;
-import com.pdg.adventure.server.support.CommandProvider;
+import com.pdg.adventure.server.parser.CommandProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
 
 import java.util.ArrayList;

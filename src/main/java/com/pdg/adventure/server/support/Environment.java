@@ -4,7 +4,7 @@ import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.api.Describable;
 import com.pdg.adventure.server.engine.Workflow;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.parser.GenericCommandDescription;
+import com.pdg.adventure.server.api.CommandDescription;
 
 public class Environment {
 
@@ -54,7 +54,7 @@ public class Environment {
         workflow.preProcess();
     }
 
-    public static boolean interceptCommands(GenericCommandDescription aCommand) {
+    public static boolean interceptCommands(CommandDescription aCommand) {
         return workflow.interceptCommands(aCommand);
     }
 }

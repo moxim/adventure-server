@@ -6,7 +6,7 @@ import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.util.Objects;
 
-public class GenericCommandDescription implements Comparable<GenericCommandDescription>, CommandDescription {
+public class GenericCommandDescription implements Comparable<CommandDescription>, CommandDescription {
     private final String verb;
     private final String adjective;
     private final String noun;
@@ -51,7 +51,7 @@ public class GenericCommandDescription implements Comparable<GenericCommandDescr
     }
 
     @Override
-    public int compareTo(GenericCommandDescription o) {
+    public int compareTo(CommandDescription o) {
         return this.getDescription().compareTo(o.getDescription());
     }
 
