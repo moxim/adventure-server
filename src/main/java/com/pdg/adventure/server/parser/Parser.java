@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.server.engine.Environment;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.io.BufferedReader;
@@ -15,7 +14,6 @@ public class Parser {
     }
 
     public GenericCommandDescription getInput(BufferedReader aReader) throws IOException {
-        Environment.tell("What now? > ");
         String actionCommand = aReader.readLine();
         return handle(actionCommand);
     }
