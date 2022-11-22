@@ -7,8 +7,6 @@ import com.pdg.adventure.server.location.Location;
 
 public class Environment {
 
-    public static final String LF = System.getProperty("line.separator");
-
     private static Workflow workflow;
     private static Location currentLocation;
     private static Container pocket;
