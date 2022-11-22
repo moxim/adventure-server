@@ -2,16 +2,15 @@ package com.pdg.adventure.server.engine;
 
 import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
-import com.pdg.adventure.server.exception.AmbiguousCommandException;
-import com.pdg.adventure.server.exception.ItemNotFoundException;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 class ItemIdentifierTest {
 
@@ -26,10 +25,10 @@ class ItemIdentifierTest {
         container.add(ring);
 
         // when
-        Containable item = ItemIdentifier.findItem(container, commandDescription);
+        List<Containable> items = ItemIdentifier.findItems(container, commandDescription);
 
         // then
-        assertThat(item).isEqualTo(ring);
+        assertThat(items).contains(ring);
     }
 
     @Test
@@ -41,10 +40,10 @@ class ItemIdentifierTest {
         container.add(ring);
 
         // when
-        Containable item = ItemIdentifier.findItem(container, commandDescription);
+        List<Containable> items = ItemIdentifier.findItems(container, commandDescription);
 
         // then
-        assertThat(item).isEqualTo(ring);
+        assertThat(items).contains(ring);
     }
 
     @Test
@@ -56,11 +55,10 @@ class ItemIdentifierTest {
         container.add(ring);
 
         // when
-        Throwable thrown = catchThrowable(() -> ItemIdentifier.findItem(container, commandDescription));
+        List<Containable> items = ItemIdentifier.findItems(container, commandDescription);
 
         // then
-        assertThat(thrown).isInstanceOf(ItemNotFoundException.class);
-        assertThat(thrown.getMessage()).contains("not found");
+        assertThat(items).isEmpty();
 
     }
 
@@ -75,11 +73,10 @@ class ItemIdentifierTest {
         container.add(largeRing);
 
         // when
-        Throwable thrown = catchThrowable( () -> ItemIdentifier.findItem(container, commandDescription));
+        List<Containable> items = ItemIdentifier.findItems(container, commandDescription);
 
         // then
-        assertThat(thrown).isInstanceOf(AmbiguousCommandException.class);
-        assertThat(thrown.getMessage()).contains("Too many");
+        assertThat(items).size().isGreaterThan(1);
     }
 
     @Test
@@ -93,11 +90,10 @@ class ItemIdentifierTest {
         GenericCommandDescription commandDescription = new GenericCommandDescription("", "", noun);
 
         // when
-        Throwable thrown = catchThrowable( () -> ItemIdentifier.findItem(container, commandDescription));
+        List<Containable> items = ItemIdentifier.findItems(container, commandDescription);
 
         // then
-        assertThat(thrown).isInstanceOf(AmbiguousCommandException.class);
-        assertThat(thrown.getMessage()).contains("Too many");
+        assertThat(items).size().isGreaterThan(1);
     }
     
     
