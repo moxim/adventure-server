@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ItemIdentifier {
-    private static final String ITEM_NOT_FOUND_TEXT = "Item '%s %s' not found";
-    private static final String TOO_MANY_MATCHES_TEXT = "Too many matches for '%s %s'";
 
     private ItemIdentifier() {
         // don't instantiate me
