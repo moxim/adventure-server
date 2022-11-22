@@ -53,7 +53,6 @@ public class GenericCommand implements Command {
                 setExecutionResult(result, tmp);
                 break;
             }
-            result.add(tmp);
         }
         return result;
     }

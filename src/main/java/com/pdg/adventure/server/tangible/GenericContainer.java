@@ -121,7 +121,7 @@ public class GenericContainer extends Item implements Container {
             result.setResultMessage(String.format("There is no %s in %s.", anItem.getShortDescription(),
                     getEnrichedBasicDescription()));
             result.setExecutionState(ExecutionResult.State.FAILURE);
-        };
+        }
         return result;
     }
 

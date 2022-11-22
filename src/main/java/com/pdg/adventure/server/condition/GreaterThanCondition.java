@@ -21,13 +21,13 @@ public class GreaterThanCondition extends AbstractVariableCondition {
     public ExecutionResult check() {
         ExecutionResult result = new CommandExecutionResult();
         final Variable envVariable = getVariable(variableName);
-        int envVal = 0;
+        int envVal;
         try {
             envVal = Integer.parseInt(envVariable.aValue());
         } catch (NumberFormatException e) {
             throw new ConfigurationException("This variable does not contain a number: " + variableName);
         }
-        int iVal = 0;
+        int iVal;
         try {
             iVal = Integer.parseInt(value.toString());
         } catch (NumberFormatException e) {
