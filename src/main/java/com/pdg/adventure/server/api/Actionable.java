@@ -13,4 +13,6 @@ public interface Actionable {
     ExecutionResult applyCommand(CommandDescription aVerb);
 
     boolean hasVerb(String aVerb);
+
+    List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription);
 }

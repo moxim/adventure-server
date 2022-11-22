@@ -57,10 +57,6 @@ public class CommandExecutionResult implements ExecutionResult {
         otherResults.add(anExecutionResult);
     }
 
-    public List<ExecutionResult> getOtherResults() {
-        return otherResults;
-    }
-
     @Override
     public String toString() {
         return executionState + " [" + resultMessage + "]";

@@ -2,6 +2,7 @@ package com.pdg.adventure.server.engine;
 
 import com.pdg.adventure.server.api.Command;
 import com.pdg.adventure.server.api.CommandDescription;
+import com.pdg.adventure.server.api.ExecutionResult;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 
 import java.util.Map;
@@ -47,7 +48,8 @@ public class Workflow {
 
     private void process(Map<CommandDescription, Command> commands) {
         for (Map.Entry<CommandDescription, Command> commandEntry : commands.entrySet()) {
-            commandEntry.getValue().execute();
+            ExecutionResult result = commandEntry.getValue().execute();
+            Environment.tell(result.getResultMessage());
         }
     }
 }

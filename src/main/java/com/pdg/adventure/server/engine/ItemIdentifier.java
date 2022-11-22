@@ -19,28 +19,36 @@ public class ItemIdentifier {
     }
 
     public static Containable findItem(Container aContainer, CommandDescription aCommandDescription) {
-        List<Containable> items = aContainer.getContents();
-        List<Containable> foundItems = new ArrayList<>();
+
+        List<Containable> foundItems = findItems(aContainer, aCommandDescription);
+        if (foundItems.size() == 1) {
+            return foundItems.get(0);
+        }
 
         String noun = aCommandDescription.getNoun();
         String adjective = aCommandDescription.getAdjective();
 
+        if (foundItems.size() > 1) {
+            throw new AmbiguousCommandException(String.format(TOO_MANY_MATCHES_TEXT, adjective, noun));
+        }
+
+        // no items found
+        throw new ItemNotFoundException(String.format(ITEM_NOT_FOUND_TEXT, adjective, noun));
+    }
+
+    public static List<Containable> findItems(Container aContainer, CommandDescription aCommandDescription) {
+        String noun = aCommandDescription.getNoun();
+        String adjective = aCommandDescription.getAdjective();
+
+        List<Containable> items = aContainer.getContents();
+        List<Containable> foundItems = new ArrayList<>();
         addItemByName(items, foundItems, noun, adjective);
 
         if (foundItems.isEmpty() && Vocabulary.EMPTY_STRING.equals(noun)) {
             String verb = aCommandDescription.getVerb();
             addItemByVerbAlone(items, foundItems, verb);
         }
-
-        if (foundItems.size() > 1) {
-            throw new AmbiguousCommandException(String.format(TOO_MANY_MATCHES_TEXT, adjective, noun));
-        }
-
-        if (foundItems.isEmpty()) {
-            throw new ItemNotFoundException(String.format(ITEM_NOT_FOUND_TEXT, adjective, noun));
-        }
-
-        return foundItems.get(0);
+        return foundItems;
     }
 
     private static void addItemByVerbAlone(List<Containable> items, List<Containable> aFoundItems, String aVerb) {

@@ -21,7 +21,7 @@ public class SameCondition extends AbstractVariableCondition {
 
         if (variableProvider.get(variableNameOne).equals(variableProvider.get(variableNameTwo))) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
-        };
+        }
 
         return result;
     }

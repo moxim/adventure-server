@@ -1,6 +1,7 @@
 package com.pdg.adventure.server.parser;
 
 import com.pdg.adventure.server.api.Command;
+import com.pdg.adventure.server.api.CommandChain;
 import com.pdg.adventure.server.api.CommandDescription;
 import com.pdg.adventure.server.api.ExecutionResult;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
@@ -11,16 +12,16 @@ import java.util.List;
 import java.util.Map;
 
 public class CommandProvider {
-    private final Map<CommandDescription, CommandChain> availableCommands;
+    private final Map<CommandDescription, GenericCommandChain> availableCommands;
 
     public CommandProvider() {
         availableCommands = new HashMap<>();
     }
 
     public void addCommand(Command aCommand) {
-        CommandChain chain = availableCommands.get(aCommand.getDescription());
+        GenericCommandChain chain = availableCommands.get(aCommand.getDescription());
         if (chain == null) {
-            chain = new CommandChain();
+            chain = new GenericCommandChain();
         }
         chain.addCommand(aCommand);
         availableCommands.put(aCommand.getDescription(), chain);
@@ -36,7 +37,7 @@ public class CommandProvider {
 
     public List<Command> getCommands() {
         List<Command> commands = new ArrayList<>();
-        for (CommandChain chain : availableCommands.values()) {
+        for (GenericCommandChain chain : availableCommands.values()) {
             commands.addAll(chain.getCommands());
         }
         return commands;
@@ -44,28 +45,30 @@ public class CommandProvider {
 
     public ExecutionResult applyCommand(CommandDescription aCommandDescription) {
         ExecutionResult result = new CommandExecutionResult();
-        CommandChain commandChain = find(aCommandDescription);
-        if (commandChain != null) {
-            result = commandChain.execute();
+        List<CommandChain> commandChain = getMatchingCommandChain(aCommandDescription);
+        for (CommandChain chain : commandChain) {
+            result = chain.execute();
             result.setCommandHasMatched();
         }
         return result;
     }
 
-    private CommandChain find(CommandDescription aCommandDescription) {
+    public List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription) {
         String verb = aCommandDescription.getVerb();
         String adjective = aCommandDescription.getAdjective();
         String noun = aCommandDescription.getNoun();
 
-        for (Map.Entry<CommandDescription, CommandChain> entry : availableCommands.entrySet()) {
+        List<CommandChain> result = new ArrayList<>();
+        for (Map.Entry<CommandDescription, GenericCommandChain> entry : availableCommands.entrySet()) {
             CommandDescription description = entry.getKey();
             if (description.getVerb().equals(verb) &&
                     (description.getNoun().equals(noun) || Vocabulary.EMPTY_STRING.equals(noun)) &&
                     (description.getAdjective().equals(adjective) || Vocabulary.EMPTY_STRING.equals(adjective))) {
-                return entry.getValue();
+                result.add(entry.getValue());
             }
         }
-        return null;
+
+        return result;
     }
 
     public boolean hasVerb(String aVerb) {

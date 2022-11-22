@@ -18,7 +18,7 @@ public class PresentCondition implements PreCondition {
         if (Environment.getCurrentLocation().contains(thing)) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         } else {
-            result.setResultMessage(String.format("There is no %s here.", thing));
+            result.setResultMessage(String.format("There is no %s here.", thing.getNoun()));
         }
         return result;
     }

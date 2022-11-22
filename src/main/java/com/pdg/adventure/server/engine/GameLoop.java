@@ -5,6 +5,7 @@ import com.pdg.adventure.server.exception.QuitException;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.Parser;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,7 +18,8 @@ public class GameLoop {
     }
 
     public void run(BufferedReader aReader) {
-        while (true) {
+        boolean endLoop = true;
+        while (endLoop) {
             Location currentLocation = Environment.getCurrentLocation();
             try {
                 Environment.preProcessCommands();
@@ -26,14 +28,16 @@ public class GameLoop {
                 // Check commands that are independent of locations like inventory, save, quit aso.
                 if (!Environment.interceptCommands(command)) {
                     ExecutionResult result = currentLocation.applyCommand(command);
-                    Environment.tell(result.getResultMessage());
+                    if (!Vocabulary.EMPTY_STRING.equals(result.getResultMessage())) {
+                        Environment.tell(result.getResultMessage());
+                    }
                 }
             } catch (QuitException anException) {
                 Environment.tell(anException.getMessage());
-                break;
+                endLoop = false;
             } catch (IOException | RuntimeException anException) {
                 anException.printStackTrace();
-                break;
+                endLoop = false;
             }
         }
     }

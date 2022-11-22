@@ -35,7 +35,7 @@ public class LowerThanCondition extends AbstractVariableCondition {
         }
         if (envVal < iVal) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
-        };
+        }
         return result;
     }
 }

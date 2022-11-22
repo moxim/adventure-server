@@ -41,6 +41,7 @@ public class GenericCommandDescription implements Comparable<CommandDescription>
         return noun;
     }
 
+    @Override
     public String getDescription() {
         return verb + "_" + adjective + "_" + noun;
     }

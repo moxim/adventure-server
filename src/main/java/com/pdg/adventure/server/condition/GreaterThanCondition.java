@@ -23,19 +23,19 @@ public class GreaterThanCondition extends AbstractVariableCondition {
         final Variable envVariable = getVariable(variableName);
         int envVal = 0;
         try {
-            envVal = Integer.valueOf(envVariable.aValue());
+            envVal = Integer.parseInt(envVariable.aValue());
         } catch (NumberFormatException e) {
             throw new ConfigurationException("This variable does not contain a number: " + variableName);
         }
         int iVal = 0;
         try {
-            iVal = Integer.valueOf(value.toString());
+            iVal = Integer.parseInt(value.toString());
         } catch (NumberFormatException e) {
             throw new ConfigurationException("This value is not a number: " + value);
         }
         if (envVal > iVal) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
-        };
+        }
         return result;
     }
 }

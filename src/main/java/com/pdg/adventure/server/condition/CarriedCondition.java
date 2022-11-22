@@ -20,7 +20,7 @@ public class CarriedCondition implements PreCondition {
         if (Environment.getPocket().contains(item)) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         } else {
-            result.setResultMessage("You don't have a " + item.getShortDescription());
+            result.setResultMessage(String.format("You don't have a %s.", item.getShortDescription()));
         }
         return result;
     }

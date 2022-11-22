@@ -17,7 +17,7 @@ class CommandDescriptionTest {
         // when
 
         // then
-        assertThat(sut.compareTo(three)).isLessThan(0);
+        assertThat(sut.compareTo(three)).isNegative();
     }
 
     @Test
@@ -27,7 +27,7 @@ class CommandDescriptionTest {
         // when
 
         // then
-        assertThat(sut.compareTo(one)).isEqualTo(0);
+        assertThat(sut.compareTo(one)).isZero();
     }
 
 
@@ -38,6 +38,6 @@ class CommandDescriptionTest {
         // when
 
         // then
-        assertThat(three.compareTo(sut)).isGreaterThan(0);
+        assertThat(three.compareTo(sut)).isPositive();
     }
 }

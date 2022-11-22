@@ -100,9 +100,9 @@ public class MiniAdventure {
         locationDescription.setShortDescription("This is the first location.");
         locationDescription.setLongDescription(
                 """
-                You find yourself in a field of lush grass and colourful flowers surrounding a small hut. It looks too 
-                beautiful to be true, much more like a painting.
-                Suddenly, you notice a glowing portal!"""
+                        You find yourself in a field of lush grass and colourful flowers surrounding a small hut. It looks too 
+                        beautiful to be true, much more like a painting.
+                        Suddenly, you notice a glowing portal!"""
         );
         location = new Location(locationDescription);
         setUpLookCommands(location);
@@ -132,7 +132,7 @@ public class MiniAdventure {
     }
 
     private void setUpDirections() {
-        Item ring = (Item)itemHolder.findItemByShortDescription("golden", "ring");
+        Item ring = (Item) itemHolder.findItemByShortDescription("golden", "ring");
 
         GenericCommandDescription enterPortalCommandDescription = new GenericCommandDescription("enter", portal);
         DirectionCommand enterPortalCommand = new DirectionCommand(enterPortalCommandDescription, new MovePlayerAction(portal));
@@ -167,19 +167,27 @@ public class MiniAdventure {
     }
 
     private void setUpTakeCommands(Item anItem) {
-        GenericCommandDescription getCommandDescription = new GenericCommandDescription("get", anItem.getAdjective(), anItem.getNoun());
+        GenericCommandDescription getCommandDescription = new GenericCommandDescription("get", anItem);
+        GenericCommand takeFailCommand = new GenericCommand(getCommandDescription,
+                new MessageAction(String.format("You already carry %s.", anItem.getEnrichedBasicDescription())));
+        takeFailCommand.addPreCondition(new CarriedCondition(anItem));
+        anItem.addCommand(takeFailCommand);
+
         GenericCommand takeCommand = new GenericCommand(getCommandDescription, new TakeAction(anItem));
+        takeCommand.addPreCondition(new NotCondition(new CarriedCondition(anItem)));
         takeCommand.addPreCondition(new PresentCondition(anItem));
         anItem.addCommand(takeCommand);
 
-        GenericCommandDescription dropCommandDescription = new GenericCommandDescription("drop", anItem.getAdjective(), anItem.getNoun());
+        GenericCommandDescription dropCommandDescription = new GenericCommandDescription("drop", anItem);
         GenericCommand dropAndRemoveCommand = new GenericCommand(dropCommandDescription, new DropAction(anItem));
-        dropAndRemoveCommand.addPreCondition(new WornCondition(anItem));
+        PreCondition wornCondition = new WornCondition(anItem);
+        dropAndRemoveCommand.addPreCondition(wornCondition);
         dropAndRemoveCommand.addFollowUpAction(new RemoveAction(anItem));
         anItem.addCommand(dropAndRemoveCommand);
 
         GenericCommand dropCommand = new GenericCommand(dropCommandDescription, new DropAction(anItem));
-        dropAndRemoveCommand.addPreCondition(new NotCondition(new WornCondition(anItem)));
+        dropCommand.addPreCondition(new NotCondition(wornCondition));
+        dropCommand.addPreCondition(new CarriedCondition(anItem));
         anItem.addCommand(dropCommand);
     }
 
@@ -255,7 +263,7 @@ public class MiniAdventure {
     }
 
     private void setUpItemsInHut(Location aLocation) {
-        Item gloves = (Item)itemHolder.findItemByShortDescription("", "gloves");
+        Item gloves = (Item) itemHolder.findItemByShortDescription("", "gloves");
         aLocation.addItem(gloves);
     }
 
@@ -279,7 +287,7 @@ public class MiniAdventure {
     }
 
     private void setUpLookCommands(Thing aThing) {
-        aThing.addCommand(new GenericCommand(new GenericCommandDescription("desc", aThing.getAdjective(), aThing.getNoun()),
+        aThing.addCommand(new GenericCommand(new GenericCommandDescription("describe", aThing.getAdjective(), aThing.getNoun()),
                 new DescribeAction(aThing)));
     }
 
@@ -298,12 +306,12 @@ public class MiniAdventure {
         vocabulary.addWord("west", Vocabulary.WordType.VERB);
         vocabulary.addSynonym("w", "west");
         vocabulary.addWord("leave", Vocabulary.WordType.VERB);
-        vocabulary.addWord("desc", Vocabulary.WordType.VERB);
-        vocabulary.addSynonym("look", "desc");
-        vocabulary.addSynonym("l", "desc");
-        vocabulary.addSynonym("describe", "desc");
-        vocabulary.addSynonym("examine", "desc");
-        vocabulary.addSynonym("inspect", "desc");
+        vocabulary.addWord("describe", Vocabulary.WordType.VERB);
+        vocabulary.addSynonym("look", "describe");
+        vocabulary.addSynonym("l", "describe");
+        vocabulary.addSynonym("desc", "describe");
+        vocabulary.addSynonym("examine", "describe");
+        vocabulary.addSynonym("inspect", "describe");
 
         vocabulary.addWord("knife", Vocabulary.WordType.NOUN);
         vocabulary.addWord("pelt", Vocabulary.WordType.NOUN);

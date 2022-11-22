@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public class Thing implements Describable, Actionable {
 
-    protected final CommandProvider commandProvider;
+    private final CommandProvider commandProvider;
     private final DescriptionProvider descriptionProvider;
     private final UUID id;
 
@@ -71,6 +71,11 @@ public class Thing implements Describable, Actionable {
     @Override
     public boolean hasVerb(String aVerb) {
         return commandProvider.hasVerb(aVerb);
+    }
+
+    @Override
+    public List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription) {
+        return commandProvider.getMatchingCommandChain(aCommandDescription);
     }
 
     @Override

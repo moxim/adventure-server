@@ -6,9 +6,6 @@ import com.pdg.adventure.server.engine.Environment;
 
 public class InventoryAction extends AbstractAction {
 
-    public InventoryAction() {
-    }
-
     @Override
     public ExecutionResult execute() {
         Environment.tell("You carry:");

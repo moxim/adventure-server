@@ -14,7 +14,7 @@ public class NotCondition implements PreCondition {
 
     @Override
     public ExecutionResult check() {
-        ExecutionResult result =                wrappedCondition.check();
+        ExecutionResult result = wrappedCondition.check();
         result.setResultMessage("");
         if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
             result.setExecutionState(ExecutionResult.State.FAILURE);

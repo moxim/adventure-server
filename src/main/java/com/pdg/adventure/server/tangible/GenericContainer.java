@@ -1,13 +1,12 @@
 package com.pdg.adventure.server.tangible;
 
-import com.pdg.adventure.server.api.Containable;
-import com.pdg.adventure.server.api.Container;
-import com.pdg.adventure.server.api.Describable;
-import com.pdg.adventure.server.api.ExecutionResult;
+import com.pdg.adventure.server.api.*;
+import com.pdg.adventure.server.engine.ItemIdentifier;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -58,11 +57,10 @@ public class GenericContainer extends Item implements Container {
     public Containable findItemByShortDescription(String anAdjective, String aNoun) {
         Containable result = null;
         for (Containable containable : contents) {
-            if (containable.getNoun().equals(aNoun)) {
-                if (Vocabulary.EMPTY_STRING.equals(anAdjective) || containable.getAdjective().equals(anAdjective)) {
-                    result = containable;
-                    break;
-                }
+            if (containable.getNoun().equals(aNoun) &&
+                    (Vocabulary.EMPTY_STRING.equals(anAdjective) || containable.getAdjective().equals(anAdjective))) {
+                result = containable;
+                break;
             }
         }
         return result;
@@ -124,6 +122,17 @@ public class GenericContainer extends Item implements Container {
                     getEnrichedBasicDescription()));
             result.setExecutionState(ExecutionResult.State.FAILURE);
         };
+        return result;
+    }
+
+    @Override
+    public List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription) {
+        final List<Containable> items = ItemIdentifier.findItems(this, aCommandDescription);
+        List<CommandChain> result = new ArrayList<>();
+        for (Containable item : items) {
+            final List<CommandChain> commandChain = item.getMatchingCommandChain(aCommandDescription);
+                result.addAll(commandChain);
+        }
         return result;
     }
 }

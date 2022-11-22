@@ -1,15 +1,16 @@
 package com.pdg.adventure.server.location;
 
 import com.pdg.adventure.server.api.*;
-import com.pdg.adventure.server.engine.ItemIdentifier;
-import com.pdg.adventure.server.exception.AmbiguousCommandException;
-import com.pdg.adventure.server.exception.ItemNotFoundException;
+import com.pdg.adventure.server.engine.Environment;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.engine.Environment;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.tangible.Thing;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Location extends Thing implements Visitable {
 
@@ -56,49 +57,42 @@ public class Location extends Thing implements Visitable {
 
     @Override
     public ExecutionResult applyCommand(CommandDescription aCommandDescription) {
-        // TODO:
-        //  bring these returns into one ExecutionSateType
-        ExecutionResult result = commandProvider.applyCommand(aCommandDescription);
-        if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
-            return result;
+
+        List<CommandChain> availableCommandChains = getCommandChains(aCommandDescription);
+
+        ExecutionResult result = new CommandExecutionResult();
+        if (availableCommandChains.isEmpty()) {
+            result.setResultMessage("You can't do that.");
+        } else if (availableCommandChains.size() > 1) {
+            result.setResultMessage(String.format("What do you want to %s?", aCommandDescription.getVerb()));
+        } else {
+            result = availableCommandChains.get(0).execute();
         }
 
-        if (!result.hasCommandMatched()) {
-            result = applyCommandInContainer(container, aCommandDescription);
-            if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
-                return result;
+        if (result.getExecutionState()== ExecutionResult.State.FAILURE) {
+            if (Vocabulary.EMPTY_STRING.equals(result.getResultMessage())) {
+                result.setResultMessage("You can't do that.");
+            }
+        } else {
+            if (Vocabulary.EMPTY_STRING.equals(result.getResultMessage())) {
+                result.setResultMessage("OK.");
             }
         }
 
-        if (!result.hasCommandMatched()) {
-            result = applyCommandInContainer(directions, aCommandDescription);
-            if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
-                return result;
-            }
-        }
-
-        if (!result.hasCommandMatched()) {
-            result = applyCommandInContainer(Environment.getPocket(), aCommandDescription);
-            if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
-                return result;
-            }
-        }
-
-        result.setResultMessage("You can't do that.");
         return result;
     }
 
-    private ExecutionResult applyCommandInContainer(Container aContainer, CommandDescription aCommandDescription) {
-        ExecutionResult result = new CommandExecutionResult();
-        try {
-            final Containable item = ItemIdentifier.findItem(aContainer, aCommandDescription);
-            result = item.applyCommand(aCommandDescription);
-        } catch (AmbiguousCommandException e) {
-            result.setResultMessage(e.getMessage());
-        } catch (ItemNotFoundException e) {
-            result.setResultMessage(e.getMessage());
-        }
-        return result;
+    private List<CommandChain> getCommandChains(CommandDescription aCommandDescription) {
+        List<CommandChain> availableCommands = new ArrayList<>();
+        List<CommandChain> chain = getMatchingCommandChain(aCommandDescription);
+        availableCommands.addAll(chain);
+        chain = container.getMatchingCommandChain(aCommandDescription);
+        availableCommands.addAll(chain);
+        chain = directions.getMatchingCommandChain(aCommandDescription);
+        availableCommands.addAll(chain);
+        chain = Environment.getPocket().getMatchingCommandChain(aCommandDescription);
+        availableCommands.addAll(chain);
+        return availableCommands;
     }
 
     @Override
