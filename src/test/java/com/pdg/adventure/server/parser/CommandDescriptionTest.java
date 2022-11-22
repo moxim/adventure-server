@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CommandDescriptionTest {
 
-    GenericCommandDescription sut = new GenericCommandDescription("1", "2");
-    GenericCommandDescription one = new GenericCommandDescription("1", "2");
+    GenericCommandDescription two = new GenericCommandDescription("1", "2");
+    GenericCommandDescription anotherTwo = new GenericCommandDescription("1", "2");
     GenericCommandDescription three = new GenericCommandDescription("3");
 
     @Test
@@ -17,7 +17,7 @@ class CommandDescriptionTest {
         // when
 
         // then
-        assertThat(sut.compareTo(three)).isNegative();
+        assertThat(two).isLessThan(three);
     }
 
     @Test
@@ -27,7 +27,7 @@ class CommandDescriptionTest {
         // when
 
         // then
-        assertThat(sut.compareTo(one)).isZero();
+        assertThat(two).isEqualByComparingTo(anotherTwo);
     }
 
 
@@ -38,6 +38,6 @@ class CommandDescriptionTest {
         // when
 
         // then
-        assertThat(three.compareTo(sut)).isPositive();
+        assertThat(three).isGreaterThan(two);
     }
 }
