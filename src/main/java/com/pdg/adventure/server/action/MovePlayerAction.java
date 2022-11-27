@@ -15,9 +15,10 @@ public class MovePlayerAction extends AbstractAction {
     @Override
     public ExecutionResult execute() {
         Environment.setCurrentLocation(destination);
-        Environment.show(destination);
+        ExecutionResult result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
+        result.setResultMessage(destination.getLongDescription());
         destination.setHasBeenVisited(true);
-        return new CommandExecutionResult(ExecutionResult.State.SUCCESS);
+        return result;
     }
 
     public Location getDestination() {

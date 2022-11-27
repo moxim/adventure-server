@@ -3,6 +3,7 @@ package com.pdg.adventure.server.engine;
 import com.pdg.adventure.server.api.Command;
 import com.pdg.adventure.server.api.CommandDescription;
 import com.pdg.adventure.server.api.ExecutionResult;
+import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 
 import java.util.Map;
@@ -37,13 +38,13 @@ public class Workflow {
         process(preCommands);
     }
 
-    public boolean interceptCommands(CommandDescription aCommand) {
+    public ExecutionResult interceptCommands(CommandDescription aCommand) {
+        ExecutionResult result = new CommandExecutionResult();
         Command command = interceptorCommands.get(aCommand);
         if (command != null) {
-            command.execute();
-            return true;
+            result = command.execute();
         }
-        return false;
+        return result;
     }
 
     private void process(Map<CommandDescription, Command> commands) {

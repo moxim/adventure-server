@@ -6,7 +6,7 @@ import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.util.Objects;
 
-public class GenericCommandDescription implements Comparable<CommandDescription>, CommandDescription {
+public class GenericCommandDescription implements CommandDescription {
     private final String verb;
     private final String adjective;
     private final String noun;

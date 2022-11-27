@@ -79,6 +79,14 @@ public class MiniAdventure {
         Environment.tell("You have items in places!");
 
         Environment.setUpWorkflows();
+        setUpWorkflowCommands();
+
+        // start on location "1"
+        ExecutionResult result = new MovePlayerAction(location).execute();
+        Environment.tell(result.getResultMessage());
+    }
+
+    private static void setUpWorkflowCommands() {
         GenericCommandDescription inventoryCommandDescription = new GenericCommandDescription("inventory");
         GenericCommand inventoryCommand = new GenericCommand(inventoryCommandDescription, new InventoryAction());
         Environment.getWorkflow().addInterceptorCommand(inventoryCommandDescription, inventoryCommand);
@@ -87,12 +95,19 @@ public class MiniAdventure {
         GenericCommand quitCommand = new GenericCommand(quitCommandDescription, new QuitAction());
         Environment.getWorkflow().addInterceptorCommand(quitCommandDescription, quitCommand);
 
-        GenericCommandDescription anyCommandDescription = new GenericCommandDescription("*");
+        GenericCommandDescription lookCommandDescription = new GenericCommandDescription("describe");
+        GenericCommand lookCommand = new GenericCommand(lookCommandDescription,
+                new DescribeAction(() -> {
+                    Environment.getCurrentLocation().setHasBeenVisited(false);
+                    String  result = Environment.getCurrentLocation().getLongDescription();
+                    Environment.getCurrentLocation().setHasBeenVisited(true);
+                    return result;
+                }));
+        Environment.getWorkflow().addInterceptorCommand(lookCommandDescription, lookCommand);
+
+        GenericCommandDescription anyCommandDescription = new GenericCommandDescription("}", "}", "}");
         GenericCommand anyCommand = new GenericCommand(anyCommandDescription, new MessageAction("What now? > "));
         Environment.getWorkflow().addPreCommand(anyCommandDescription, anyCommand);
-
-        // start on location "1"
-        new MovePlayerAction(location).execute();
     }
 
     private void setUpLocations() {
@@ -100,9 +115,9 @@ public class MiniAdventure {
         locationDescription.setShortDescription("This is the first location.");
         locationDescription.setLongDescription(
                 """
-                        You find yourself in a field of lush grass and colourful flowers surrounding a small hut. It looks too 
-                        beautiful to be true, much more like a painting.
-                        Suddenly, you notice a glowing portal!"""
+                You find yourself in a field of lush grass and colourful flowers surrounding a small hut. It looks too
+                beautiful to be true, much more like a painting.
+                Suddenly, you notice a glowing portal!"""
         );
         location = new Location(locationDescription);
         setUpLookCommands(location);
@@ -287,8 +302,8 @@ public class MiniAdventure {
     }
 
     private void setUpLookCommands(Thing aThing) {
-        aThing.addCommand(new GenericCommand(new GenericCommandDescription("describe", aThing.getAdjective(), aThing.getNoun()),
-                new DescribeAction(aThing)));
+        aThing.addCommand(new GenericCommand(new GenericCommandDescription("describe", aThing),
+            new DescribeAction(() -> aThing.getLongDescription())));
     }
 
     private void setUpVocabulary() {

@@ -26,11 +26,12 @@ public class GameLoop {
 
                 GenericCommandDescription command = parser.getInput(aReader);
                 // Check commands that are independent of locations like inventory, save, quit aso.
-                if (!Environment.interceptCommands(command)) {
-                    ExecutionResult result = currentLocation.applyCommand(command);
-                    if (!Vocabulary.EMPTY_STRING.equals(result.getResultMessage())) {
-                        Environment.tell(result.getResultMessage());
-                    }
+                ExecutionResult result = Environment.interceptCommands(command);
+                if (result.getExecutionState() == ExecutionResult.State.FAILURE) {
+                    result = currentLocation.applyCommand(command);
+                }
+                if (!Vocabulary.EMPTY_STRING.equals(result.getResultMessage())) {
+                    Environment.tell(result.getResultMessage());
                 }
             } catch (QuitException anException) {
                 Environment.tell(anException.getMessage());
