@@ -14,6 +14,7 @@
         <vaadin.version>23.1.6</vaadin.version>
         <maven.compiler.source>18</maven.compiler.source>
         <maven.compiler.target>18</maven.compiler.target>
+        <snakeyaml.version>1.33</snakeyaml.version>
     </properties>
 
     <parent>
@@ -142,6 +143,12 @@
 <!--            <version>4.4.0</version>-->
 <!--            <scope>test</scope>-->
 <!--        </dependency>-->
+
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>${snakeyaml.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
