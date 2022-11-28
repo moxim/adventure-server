@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 
 // TODO
 //  get rid of ugly casts
+//  find them with \(\b[A-Z][A-Za-z0-9]*?\b\)
 
 public class MiniAdventure {
     private final VariableProvider variableProvider;
@@ -95,15 +96,19 @@ public class MiniAdventure {
         GenericCommand quitCommand = new GenericCommand(quitCommandDescription, new QuitAction());
         Environment.getWorkflow().addInterceptorCommand(quitCommandDescription, quitCommand);
 
+        Action lookLocationAction = new DescribeAction(() -> {
+            Environment.getCurrentLocation().setHasBeenVisited(false);
+            String  result = Environment.getCurrentLocation().getLongDescription();
+            Environment.getCurrentLocation().setHasBeenVisited(true);
+            return result;
+        });
         GenericCommandDescription lookCommandDescription = new GenericCommandDescription("describe");
-        GenericCommand lookCommand = new GenericCommand(lookCommandDescription,
-                new DescribeAction(() -> {
-                    Environment.getCurrentLocation().setHasBeenVisited(false);
-                    String  result = Environment.getCurrentLocation().getLongDescription();
-                    Environment.getCurrentLocation().setHasBeenVisited(true);
-                    return result;
-                }));
+        GenericCommand lookCommand = new GenericCommand(lookCommandDescription, lookLocationAction);
         Environment.getWorkflow().addInterceptorCommand(lookCommandDescription, lookCommand);
+
+        GenericCommandDescription lookCommandDescription2 = new GenericCommandDescription("describe", "here");
+        GenericCommand lookCommand2 = new GenericCommand(lookCommandDescription2, lookLocationAction);
+        Environment.getWorkflow().addInterceptorCommand(lookCommandDescription2, lookCommand2);
 
         GenericCommandDescription anyCommandDescription = new GenericCommandDescription("}", "}", "}");
         GenericCommand anyCommand = new GenericCommand(anyCommandDescription, new MessageAction("What now? > "));
@@ -303,7 +308,7 @@ public class MiniAdventure {
 
     private void setUpLookCommands(Thing aThing) {
         aThing.addCommand(new GenericCommand(new GenericCommandDescription("describe", aThing),
-            new DescribeAction(() -> aThing.getLongDescription())));
+            new DescribeAction(aThing::getLongDescription)));
     }
 
     private void setUpVocabulary() {
@@ -361,6 +366,6 @@ public class MiniAdventure {
         vocabulary.addWord("hut", Vocabulary.WordType.NOUN);
         vocabulary.addSynonym("house", "hut");
         vocabulary.addWord("gloves", Vocabulary.WordType.NOUN);
+        vocabulary.addWord("here", Vocabulary.WordType.NOUN);
     }
-
 }
