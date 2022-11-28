@@ -127,7 +127,7 @@ public class MiniAdventure {
         location = new Location(locationDescription);
         setUpLookCommands(location);
 
-        GenericCommandDescription flowerCommandDescription = new GenericCommandDescription("desc", "flowers");
+        GenericCommandDescription flowerCommandDescription = new GenericCommandDescription("describe", "flowers");
         GenericCommand checkFlowerCommand = new GenericCommand(flowerCommandDescription, new MessageAction("The flowers look " +
                 "beautiful."));
         location.addCommand(checkFlowerCommand);
