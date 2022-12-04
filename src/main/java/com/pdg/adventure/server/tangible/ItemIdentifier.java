@@ -1,4 +1,4 @@
-package com.pdg.adventure.server.engine;
+package com.pdg.adventure.server.tangible;
 
 import com.pdg.adventure.server.api.CommandDescription;
 import com.pdg.adventure.server.api.Containable;

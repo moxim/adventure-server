@@ -1,16 +1,13 @@
-package com.pdg.adventure.server.engine;
+package com.pdg.adventure.server.tangible;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.server.api.Containable;
 import com.pdg.adventure.server.api.Container;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.tangible.GenericContainer;
-import com.pdg.adventure.server.tangible.Item;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class ItemIdentifierTest {
 

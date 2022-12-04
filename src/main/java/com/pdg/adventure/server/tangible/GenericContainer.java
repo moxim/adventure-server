@@ -1,7 +1,6 @@
 package com.pdg.adventure.server.tangible;
 
 import com.pdg.adventure.server.api.*;
-import com.pdg.adventure.server.engine.ItemIdentifier;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
