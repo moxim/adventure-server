@@ -4,16 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.pdg</groupId>
-    <artifactId>adventureBuilder</artifactId>
+    <groupId>com.pdg-software.adventureBuilder</groupId>
+    <artifactId>server</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
-        <java.version>18</java.version>
-        <vaadin.version>23.1.6</vaadin.version>
-        <maven.compiler.source>18</maven.compiler.source>
-        <maven.compiler.target>18</maven.compiler.target>
+        <java.version>19</java.version>
         <snakeyaml.version>1.33</snakeyaml.version>
     </properties>
 
@@ -34,20 +31,6 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-<!--        <repository>-->
-<!--            <id>vaadin-prereleases</id>-->
-<!--            <url>-->
-<!--                https://maven.vaadin.com/vaadin-prereleases/-->
-<!--            </url>-->
-<!--        </repository>-->
-<!--        &lt;!&ndash; Repository used by many Vaadin add-ons &ndash;&gt;-->
-<!--        <repository>-->
-<!--            <id>Vaadin Directory</id>-->
-<!--            <url>https://maven.vaadin.com/vaadin-addons</url>-->
-<!--            <snapshots>-->
-<!--                <enabled>false</enabled>-->
-<!--            </snapshots>-->
-<!--        </repository>-->
     </repositories>
 
     <pluginRepositories>
@@ -59,56 +42,24 @@
                 <enabled>false</enabled>
             </snapshots>
         </pluginRepository>
-<!--        <pluginRepository>-->
-<!--            <id>vaadin-prereleases</id>-->
-<!--            <url>-->
-<!--                https://maven.vaadin.com/vaadin-prereleases/-->
-<!--            </url>-->
-<!--        </pluginRepository>-->
     </pluginRepositories>
 
     <dependencyManagement>
         <dependencies>
-<!--            <dependency>-->
-<!--                <groupId>com.vaadin</groupId>-->
-<!--                <artifactId>vaadin-bom</artifactId>-->
-<!--                <version>${vaadin.version}</version>-->
-<!--                <type>pom</type>-->
-<!--                <scope>import</scope>-->
-<!--            </dependency>-->
-            <dependency>
-                <groupId>org.dizitart</groupId>
-                <artifactId>nitrite</artifactId>
-                <version>3.4.4</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
-<!--        <dependency>-->
-<!--            <groupId>com.vaadin</groupId>-->
-<!--            &lt;!&ndash; Replace artifactId with vaadin-core to use only free components &ndash;&gt;-->
-<!--            <artifactId>vaadin</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>com.vaadin</groupId>-->
-<!--            <artifactId>vaadin-spring-boot-starter</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.vaadin.artur</groupId>-->
-<!--            <artifactId>a-vaadin-helper</artifactId>-->
-<!--            <version>1.7.1</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-validation</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-devtools</artifactId>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
@@ -118,30 +69,6 @@
 <!--        <dependency>-->
 <!--            <groupId>org.dizitart</groupId>-->
 <!--            <artifactId>nitrite</artifactId>-->
-<!--        </dependency>-->
-
-<!--        <dependency>-->
-<!--            <groupId>com.vaadin</groupId>-->
-<!--            <artifactId>vaadin-testbench</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-        <!-- Include JUnit 4 support for TestBench and others -->
-<!--        <dependency>-->
-<!--            <groupId>org.junit.vintage</groupId>-->
-<!--            <artifactId>junit-vintage-engine</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.hamcrest</groupId>-->
-<!--                    <artifactId>hamcrest-core</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>io.github.bonigarcia</groupId>-->
-<!--            <artifactId>webdrivermanager</artifactId>-->
-<!--            <version>4.4.0</version>-->
-<!--            <scope>test</scope>-->
 <!--        </dependency>-->
 
         <dependency>
@@ -162,6 +89,7 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -216,67 +144,31 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.7.5</version>
                 <!-- Clean build and startup time for Vaadin apps sometimes may exceed
                      the default Spring Boot's 30sec timeout.  -->
                 <configuration>
+                    <jvmArguments>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5195</jvmArguments>
                     <wait>500</wait>
                     <maxAttempts>240</maxAttempts>
                 </configuration>
             </plugin>
+
+<!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.10.1</version>
             </plugin>
-
+-->
             <!--
                 Take care of synchronizing java dependencies and imports in
                 package.json and main.js files.
                 It also creates webpack.config.js if not exists yet.
             -->
-<!--            <plugin>-->
-<!--                <groupId>com.vaadin</groupId>-->
-<!--                <artifactId>vaadin-maven-plugin</artifactId>-->
-<!--                <version>${vaadin.version}</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <goals>-->
-<!--                            <goal>prepare-frontend</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
         </plugins>
     </build>
 
     <profiles>
-<!--        <profile>-->
-<!--            &lt;!&ndash; Production mode is activated using -Pproduction &ndash;&gt;-->
-<!--            <id>production</id>-->
-<!--            <build>-->
-<!--                <plugins>-->
-<!--                    <plugin>-->
-<!--                        <groupId>com.vaadin</groupId>-->
-<!--                        <artifactId>vaadin-maven-plugin</artifactId>-->
-<!--                        <version>${vaadin.version}</version>-->
-<!--                        <executions>-->
-<!--                            <execution>-->
-<!--                                <goals>-->
-<!--                                    <goal>build-frontend</goal>-->
-<!--                                </goals>-->
-<!--                                <phase>compile</phase>-->
-<!--                            </execution>-->
-<!--                        </executions>-->
-<!--                        <configuration>-->
-<!--                            <productionMode>true</productionMode>-->
-<!--                            <pnpmEnable>false</pnpmEnable>-->
-<!--                        </configuration>-->
-<!--                    </plugin>-->
-<!--                </plugins>-->
-<!--            </build>-->
-<!--        </profile>-->
-
         <profile>
             <id>it</id>
             <build>

@@ -6,7 +6,7 @@ class ApplicationTest {
     @Test
     void checkSpringSetup() throws Exception {
         // given
-        Application.main(new String[]{"", ""});
+        AdventureBuilderServer.main(new String[]{"", ""});
 
         // when
 
