@@ -1,9 +1,9 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.server.api.Command;
-import com.pdg.adventure.server.api.CommandChain;
-import com.pdg.adventure.server.api.CommandDescription;
-import com.pdg.adventure.server.api.ExecutionResult;
+import com.pdg.adventure.api.Command;
+import com.pdg.adventure.api.CommandChain;
+import com.pdg.adventure.api.CommandDescription;
+import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.util.ArrayList;

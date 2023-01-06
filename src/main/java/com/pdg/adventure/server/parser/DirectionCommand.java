@@ -1,6 +1,6 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.server.api.Action;
+import com.pdg.adventure.api.Action;
 
 public class DirectionCommand extends GenericCommand {
 

@@ -1,7 +1,7 @@
 package com.pdg.adventure.server.condition;
 
-import com.pdg.adventure.server.api.ExecutionResult;
-import com.pdg.adventure.server.api.PreCondition;
+import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.api.PreCondition;
 
 public class AndCondition implements PreCondition {
 

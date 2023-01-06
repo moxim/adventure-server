@@ -1,6 +1,6 @@
 package com.pdg.adventure.server.engine;
 
-import com.pdg.adventure.server.api.ExecutionResult;
+import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.exception.QuitException;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.GenericCommandDescription;

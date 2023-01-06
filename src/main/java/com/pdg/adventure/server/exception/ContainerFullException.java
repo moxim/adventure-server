@@ -1,6 +1,6 @@
 package com.pdg.adventure.server.exception;
 
-import com.pdg.adventure.server.api.Container;
+import com.pdg.adventure.api.Container;
 
 public class ContainerFullException extends RuntimeException {
     public static final String ALREADY_FULL_TEXT = " is already full.";

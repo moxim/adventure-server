@@ -1,6 +1,6 @@
 package com.pdg.adventure.server.action;
 
-import com.pdg.adventure.server.api.ExecutionResult;
+import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 
 public class MessageAction extends AbstractAction {

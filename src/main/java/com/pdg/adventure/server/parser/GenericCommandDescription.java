@@ -1,7 +1,7 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.server.api.CommandDescription;
-import com.pdg.adventure.server.api.Describable;
+import com.pdg.adventure.api.CommandDescription;
+import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.util.Objects;

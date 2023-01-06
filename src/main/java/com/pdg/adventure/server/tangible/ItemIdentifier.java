@@ -1,8 +1,8 @@
 package com.pdg.adventure.server.tangible;
 
-import com.pdg.adventure.server.api.CommandDescription;
-import com.pdg.adventure.server.api.Containable;
-import com.pdg.adventure.server.api.Container;
+import com.pdg.adventure.api.CommandDescription;
+import com.pdg.adventure.api.Containable;
+import com.pdg.adventure.api.Container;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.util.ArrayList;

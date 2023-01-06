@@ -1,7 +1,11 @@
 package com.pdg.adventure.server;
 
+import com.pdg.adventure.api.Action;
+import com.pdg.adventure.api.Command;
+import com.pdg.adventure.api.Container;
+import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.api.PreCondition;
 import com.pdg.adventure.server.action.*;
-import com.pdg.adventure.server.api.*;
 import com.pdg.adventure.server.condition.*;
 import com.pdg.adventure.server.engine.GameLoop;
 import com.pdg.adventure.server.location.GenericDirection;

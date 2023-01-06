@@ -1,8 +1,8 @@
 package com.pdg.adventure.server.engine;
 
-import com.pdg.adventure.server.api.Command;
-import com.pdg.adventure.server.api.CommandDescription;
-import com.pdg.adventure.server.api.ExecutionResult;
+import com.pdg.adventure.api.Command;
+import com.pdg.adventure.api.CommandDescription;
+import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 

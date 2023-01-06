@@ -1,8 +1,8 @@
 package com.pdg.adventure.server.location;
 
-import com.pdg.adventure.server.api.Command;
-import com.pdg.adventure.server.api.CommandDescription;
-import com.pdg.adventure.server.api.Direction;
+import com.pdg.adventure.api.Command;
+import com.pdg.adventure.api.CommandDescription;
+import com.pdg.adventure.api.Direction;
 import com.pdg.adventure.server.support.ArticleProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.Item;

@@ -1,9 +1,9 @@
 package com.pdg.adventure.server.engine;
 
-import com.pdg.adventure.server.api.CommandDescription;
-import com.pdg.adventure.server.api.Container;
-import com.pdg.adventure.server.api.Describable;
-import com.pdg.adventure.server.api.ExecutionResult;
+import com.pdg.adventure.api.CommandDescription;
+import com.pdg.adventure.api.Container;
+import com.pdg.adventure.api.Describable;
+import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.location.Location;
 
 public class Environment {

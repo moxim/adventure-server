@@ -1,9 +1,9 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.server.api.Action;
-import com.pdg.adventure.server.api.Command;
-import com.pdg.adventure.server.api.ExecutionResult;
-import com.pdg.adventure.server.api.PreCondition;
+import com.pdg.adventure.api.Action;
+import com.pdg.adventure.api.Command;
+import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.api.PreCondition;
 
 import java.util.ArrayList;
 import java.util.List;

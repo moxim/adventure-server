@@ -1,6 +1,6 @@
 package com.pdg.adventure.server.location;
 
-import com.pdg.adventure.server.api.Direction;
+import com.pdg.adventure.api.Direction;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.support.DescriptionProvider;

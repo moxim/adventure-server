@@ -2,8 +2,8 @@ package com.pdg.adventure.server.tangible;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.pdg.adventure.server.api.Containable;
-import com.pdg.adventure.server.api.Container;
+import com.pdg.adventure.api.Containable;
+import com.pdg.adventure.api.Container;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import java.util.List;

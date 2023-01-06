@@ -1,9 +1,9 @@
 package com.pdg.adventure.server.testhelper;
 
-import com.pdg.adventure.server.api.Containable;
-import com.pdg.adventure.server.api.Container;
-import com.pdg.adventure.server.api.ExecutionResult;
-import com.pdg.adventure.server.api.PreCondition;
+import com.pdg.adventure.api.Containable;
+import com.pdg.adventure.api.Container;
+import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.api.PreCondition;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 
 public class TestSupporter {

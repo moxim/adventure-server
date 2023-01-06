@@ -1,6 +1,6 @@
 package com.pdg.adventure.server.action;
 
-import com.pdg.adventure.server.api.Action;
+import com.pdg.adventure.api.Action;
 
 public abstract class AbstractAction implements Action {
 

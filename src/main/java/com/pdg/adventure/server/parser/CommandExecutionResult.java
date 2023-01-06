@@ -1,6 +1,6 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.server.api.ExecutionResult;
+import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 public class CommandExecutionResult implements ExecutionResult {
