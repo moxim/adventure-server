@@ -1,31 +1,50 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.api.Action;
-import com.pdg.adventure.api.Command;
-import com.pdg.adventure.api.ExecutionResult;
-import com.pdg.adventure.api.PreCondition;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.pdg.adventure.api.*;
+
 public class GenericCommand implements Command {
-    private final GenericCommandDescription commandDescription;
+    private final CommandDescription commandDescription;
     private final List<PreCondition> preConditions;
     private final List<Action> followUpActions;
     private final Action action;
-    private final UUID id;
+    private String id;
 
-    public GenericCommand(GenericCommandDescription aCommandDescription, Action anAction) {
+    public GenericCommand(CommandDescription aCommandDescription, Action anAction) {
         commandDescription = aCommandDescription;
         preConditions = new ArrayList<>();
         followUpActions = new ArrayList<>();
         action = anAction;
-        id = UUID.randomUUID();
+        id = UUID.randomUUID().toString();
     }
 
     @Override
-    public GenericCommandDescription getDescription() {
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(String anId) {
+        id = anId;
+    }
+
+    public Action getAction() {return action;}
+
+    @Override
+    public List<PreCondition> getPreconditions() {
+        return preConditions;
+    }
+
+    @Override
+    public List<Action> getFollowUpActions() {
+    return followUpActions;
+    }
+
+    @Override
+    public CommandDescription getDescription() {
         return commandDescription;
     }
 

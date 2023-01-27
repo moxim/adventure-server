@@ -1,22 +1,36 @@
 package com.pdg.adventure.server.parser;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.pdg.adventure.api.Command;
 import com.pdg.adventure.api.CommandChain;
 import com.pdg.adventure.api.ExecutionResult;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class GenericCommandChain implements CommandChain {
     private final List<Command> commands;
+    private String id;
 
     public GenericCommandChain() {
         commands = new ArrayList<>();
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String anId) {
+        id = anId;
+    }
+
     @Override
     public void addCommand(Command aCommand) {
         commands.add(aCommand);
+    }
+
+    @Override
+    public void removeCommand(Command aCommand) {
+        commands.remove(aCommand);
     }
 
     @Override

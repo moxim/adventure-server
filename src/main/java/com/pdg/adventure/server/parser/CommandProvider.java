@@ -1,25 +1,37 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.api.Command;
-import com.pdg.adventure.api.CommandChain;
-import com.pdg.adventure.api.CommandDescription;
-import com.pdg.adventure.api.ExecutionResult;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CommandProvider {
-    private final Map<CommandDescription, GenericCommandChain> availableCommands;
+import com.pdg.adventure.api.*;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
+
+public class CommandProvider implements Ided {
+    private final Map<CommandDescription, CommandChain> availableCommands;
+    private String id;
 
     public CommandProvider() {
         availableCommands = new HashMap<>();
     }
 
+    public Map<CommandDescription, CommandChain> getAvailableCommands() {
+        return availableCommands;
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(String anId) {
+        id = anId;
+    }
+
     public void addCommand(Command aCommand) {
-        GenericCommandChain chain = availableCommands.get(aCommand.getDescription());
+        CommandChain chain = availableCommands.get(aCommand.getDescription());
         if (chain == null) {
             chain = new GenericCommandChain();
         }
@@ -37,7 +49,7 @@ public class CommandProvider {
 
     public List<Command> getCommands() {
         List<Command> commands = new ArrayList<>();
-        for (GenericCommandChain chain : availableCommands.values()) {
+        for (CommandChain chain : availableCommands.values()) {
             commands.addAll(chain.getCommands());
         }
         return commands;
@@ -59,7 +71,7 @@ public class CommandProvider {
         String noun = aCommandDescription.getNoun();
 
         List<CommandChain> result = new ArrayList<>();
-        for (Map.Entry<CommandDescription, GenericCommandChain> entry : availableCommands.entrySet()) {
+        for (Map.Entry<CommandDescription, CommandChain> entry : availableCommands.entrySet()) {
             CommandDescription description = entry.getKey();
             if (description.getVerb().equals(verb) &&
                     (description.getNoun().equals(noun) || Vocabulary.EMPTY_STRING.equals(noun)) &&

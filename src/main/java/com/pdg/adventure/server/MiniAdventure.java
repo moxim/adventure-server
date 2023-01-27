@@ -1,30 +1,31 @@
 package com.pdg.adventure.server;
 
-import com.pdg.adventure.api.Action;
-import com.pdg.adventure.api.Command;
-import com.pdg.adventure.api.Container;
-import com.pdg.adventure.api.ExecutionResult;
-import com.pdg.adventure.api.PreCondition;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+import com.pdg.adventure.api.*;
 import com.pdg.adventure.server.action.*;
-import com.pdg.adventure.server.condition.*;
+import com.pdg.adventure.server.condition.CarriedCondition;
+import com.pdg.adventure.server.condition.NotCondition;
+import com.pdg.adventure.server.condition.PresentCondition;
+import com.pdg.adventure.server.condition.WornCondition;
+import com.pdg.adventure.server.engine.ContainerSupplier;
+import com.pdg.adventure.server.engine.Environment;
 import com.pdg.adventure.server.engine.GameLoop;
+import com.pdg.adventure.server.engine.MessageConsumer;
 import com.pdg.adventure.server.location.GenericDirection;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.DirectionCommand;
 import com.pdg.adventure.server.parser.GenericCommand;
+import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.Parser;
 import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.engine.Environment;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.tangible.Thing;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 // TODO
 //  get rid of ugly casts
@@ -69,6 +70,8 @@ public class MiniAdventure {
         setUpVariables();
         Environment.tell("You have variables!");
 
+        setUpPocket();
+
         setUpItems();
         Environment.tell("You have items!");
 
@@ -93,7 +96,8 @@ public class MiniAdventure {
 
     private static void setUpWorkflowCommands() {
         GenericCommandDescription inventoryCommandDescription = new GenericCommandDescription("inventory");
-        GenericCommand inventoryCommand = new GenericCommand(inventoryCommandDescription, new InventoryAction());
+        GenericCommand inventoryCommand = new GenericCommand(inventoryCommandDescription, new InventoryAction(
+                new MessageConsumer(), new ContainerSupplier(Environment.getPocket())));
         Environment.getWorkflow().addInterceptorCommand(inventoryCommandDescription, inventoryCommand);
 
         GenericCommandDescription quitCommandDescription = new GenericCommandDescription("quit");
@@ -128,7 +132,7 @@ public class MiniAdventure {
                 beautiful to be true, much more like a painting.
                 Suddenly, you notice a glowing portal!"""
         );
-        location = new Location(locationDescription);
+        location = new Location(locationDescription, new ContainerSupplier(pocket));
         setUpLookCommands(location);
 
         GenericCommandDescription flowerCommandDescription = new GenericCommandDescription("describe", "flowers");
@@ -139,15 +143,17 @@ public class MiniAdventure {
         DescriptionProvider portalDescription = new DescriptionProvider("fading", "portal");
         portalDescription.setShortDescription("You are in a small portal.");
         portalDescription.setLongDescription("The portal slowly fades away already, it looks like it closes soon!");
-        portal = new Location(portalDescription);
+        portal = new Location(portalDescription, new ContainerSupplier(pocket));
         setUpLookCommands(portal);
 
         DescriptionProvider houseDescription = new DescriptionProvider(SMALL_TEXT, "hut");
         houseDescription.setShortDescription("You are in a small brick hut.");
         houseDescription.setLongDescription("This is a small hut made of bricks. There is nothing in here.");
-        house = new Location(houseDescription);
+        house = new Location(houseDescription, new ContainerSupplier(pocket));
         setUpLookCommands(house);
+    }
 
+    private void setUpPocket() {
         pocket = new GenericContainer(new DescriptionProvider("your pocket"), 5);
     }
 

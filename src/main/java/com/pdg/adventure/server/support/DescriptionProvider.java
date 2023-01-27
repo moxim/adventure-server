@@ -1,9 +1,11 @@
 package com.pdg.adventure.server.support;
 
+import com.pdg.adventure.api.Ided;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
-public class DescriptionProvider {
+public class DescriptionProvider implements Ided {
     public static final String NOUN_MISSING_MESSAGE = "The noun is mandatory.";
+    private String id;
     private final String noun;
     private String adjective;
     private String shortDescription;
@@ -30,6 +32,10 @@ public class DescriptionProvider {
 
     public String getAdjective() {
         return adjective;
+    }
+
+    public void setAdjective(String anAdjective) {
+        adjective = anAdjective;
     }
 
     public String getNoun() {
@@ -73,5 +79,15 @@ public class DescriptionProvider {
 
     public String getEnrichedBasicDescription() {
         return ArticleProvider.prependDefiniteArticle(getBasicDescription());
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(String anId) {
+        id = anId;
     }
 }

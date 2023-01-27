@@ -1,29 +1,33 @@
 package com.pdg.adventure.server.tangible;
 
-import com.pdg.adventure.api.Actionable;
-import com.pdg.adventure.api.Command;
-import com.pdg.adventure.api.CommandChain;
-import com.pdg.adventure.api.CommandDescription;
-import com.pdg.adventure.api.Describable;
-import com.pdg.adventure.api.ExecutionResult;
-import com.pdg.adventure.server.parser.CommandProvider;
-import com.pdg.adventure.server.support.DescriptionProvider;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-public class Thing implements Describable, Actionable {
+import com.pdg.adventure.api.*;
+import com.pdg.adventure.server.parser.CommandProvider;
+import com.pdg.adventure.server.support.DescriptionProvider;
 
-    private final CommandProvider commandProvider;
+public class Thing implements Describable, Actionable {
     private final DescriptionProvider descriptionProvider;
-    private final UUID id;
+    private CommandProvider commandProvider;
+    private String id;
 
     public Thing(DescriptionProvider aDescriptionProvider) {
         commandProvider = new CommandProvider();
         descriptionProvider = aDescriptionProvider;
-        id = UUID.randomUUID();
+        id = UUID.randomUUID().toString();
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(String anId) {
+        id = anId;
     }
 
     @Override
@@ -96,6 +100,18 @@ public class Thing implements Describable, Actionable {
     @Override
     public void removeCommand(Command aCommand) {
         commandProvider.removeCommand(aCommand);
+    }
+
+    public DescriptionProvider getDescriptionProvider() {
+        return descriptionProvider;
+    }
+
+    public void setCommandProvider(CommandProvider aCommandProvider) {
+        commandProvider = aCommandProvider;
+    }
+
+    public CommandProvider getCommandProvider() {
+        return commandProvider;
     }
 
     @Override

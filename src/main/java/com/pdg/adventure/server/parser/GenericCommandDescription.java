@@ -1,12 +1,14 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.api.CommandDescription;
-import com.pdg.adventure.api.Describable;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
-
 import java.util.Objects;
 
-public class GenericCommandDescription implements CommandDescription {
+import com.pdg.adventure.api.CommandDescription;
+import com.pdg.adventure.api.Describable;
+import com.pdg.adventure.api.Ided;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
+
+public class GenericCommandDescription implements CommandDescription, Ided {
+    private String id;
     private final String verb;
     private final String adjective;
     private final String noun;
@@ -27,6 +29,16 @@ public class GenericCommandDescription implements CommandDescription {
         verb = aVerb;
         adjective = anAdjective;
         noun = aNoun;
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(String anId) {
+        id = anId;
     }
 
     public String getVerb() {

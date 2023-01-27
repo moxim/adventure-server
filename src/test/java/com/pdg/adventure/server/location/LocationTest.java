@@ -1,20 +1,24 @@
 package com.pdg.adventure.server.location;
 
-import com.pdg.adventure.api.Direction;
-import com.pdg.adventure.server.parser.GenericCommandDescription;
-import com.pdg.adventure.server.parser.GenericCommand;
-import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.tangible.Item;
-import com.pdg.adventure.server.testhelper.TestSupporter;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+
+import com.pdg.adventure.api.Container;
+import com.pdg.adventure.api.Direction;
+import com.pdg.adventure.server.engine.ContainerSupplier;
+import com.pdg.adventure.server.parser.GenericCommand;
+import com.pdg.adventure.server.parser.GenericCommandDescription;
+import com.pdg.adventure.server.support.DescriptionProvider;
+import com.pdg.adventure.server.tangible.GenericContainer;
+import com.pdg.adventure.server.tangible.Item;
+import com.pdg.adventure.server.testhelper.TestSupporter;
 
 class LocationTest {
 
-    private final Location sut = new Location(new DescriptionProvider("small", "perch"));
+    private Container pocket = new GenericContainer(new DescriptionProvider("your pocket"), 5);
+    private final Location sut = new Location(new DescriptionProvider("small", "perch"), new ContainerSupplier(pocket));
     private final Item mouse = new Item(new DescriptionProvider("mouse"), true);
     private final Direction direction = new GenericDirection(
         new GenericCommand(new GenericCommandDescription("loop"), null), sut);

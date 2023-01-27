@@ -1,13 +1,10 @@
 package com.pdg.adventure.server.location;
 
-import com.pdg.adventure.api.CommandChain;
-import com.pdg.adventure.api.CommandDescription;
-import com.pdg.adventure.api.Containable;
-import com.pdg.adventure.api.Container;
-import com.pdg.adventure.api.Direction;
-import com.pdg.adventure.api.ExecutionResult;
-import com.pdg.adventure.api.Visitable;
-import com.pdg.adventure.server.engine.Environment;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
+
+import com.pdg.adventure.api.*;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
@@ -15,19 +12,18 @@ import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.tangible.Thing;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Location extends Thing implements Visitable {
 
     private final Container container;
     private final Container directions;
     private boolean hasBeenVisited;
+    private final Supplier<Container> pocketSupplier;
 
-    public Location(DescriptionProvider aDescriptionProvider) {
+    public Location(DescriptionProvider aDescriptionProvider, Supplier<Container> aPocketSupplier) {
         super(aDescriptionProvider);
         container = new GenericContainer(aDescriptionProvider, 99);
         directions = new GenericContainer(aDescriptionProvider, true, 99);
+        pocketSupplier = aPocketSupplier;
         hasBeenVisited = false; // explicit, but redundant
     }
 
@@ -96,7 +92,7 @@ public class Location extends Thing implements Visitable {
         availableCommands.addAll(chain);
         chain = directions.getMatchingCommandChain(aCommandDescription);
         availableCommands.addAll(chain);
-        chain = Environment.getPocket().getMatchingCommandChain(aCommandDescription);
+        chain = pocketSupplier.get().getMatchingCommandChain(aCommandDescription);
         availableCommands.addAll(chain);
         return availableCommands;
     }
