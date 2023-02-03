@@ -2,12 +2,14 @@ package com.pdg.adventure.server.action;
 
 import com.pdg.adventure.api.Containable;
 import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.server.storage.messages.MessagesHolder;
 
 public class DestroyAction extends AbstractAction {
 
     private final Containable thing;
 
-    public DestroyAction(Containable aThing) {
+    public DestroyAction(Containable aThing, MessagesHolder aMessagesHolder) {
+        super(aMessagesHolder);
         thing = aThing;
     }
 
@@ -17,7 +19,7 @@ public class DestroyAction extends AbstractAction {
         if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
             // TODO
             //  really do this?
-            result.setResultMessage("The " + thing.getShortDescription() + " evaporates into thin air.");
+            result.setResultMessage(String.format(messagesHolder.getMessage("-11"), thing.getShortDescription()));
         }
         return result;
     }

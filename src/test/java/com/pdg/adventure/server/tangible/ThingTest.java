@@ -9,6 +9,7 @@ import com.pdg.adventure.server.engine.ContainerSupplier;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
+import com.pdg.adventure.server.storage.messages.MessagesHolder;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.testhelper.TestSupporter;
@@ -32,7 +33,8 @@ class ThingTest {
         DescriptionProvider thingDescription = new DescriptionProvider("thing");
         Item item = new Item(thingDescription, true);
         GenericCommandDescription commandDescription = new GenericCommandDescription("take");
-        GenericCommand takeCommand = new GenericCommand(commandDescription, new MessageAction("Take-Command executed."));
+        GenericCommand takeCommand = new GenericCommand(commandDescription, new MessageAction("Take-Command executed.",
+                                                                                              new MessagesHolder()));
 
         item.addCommand(takeCommand);
 

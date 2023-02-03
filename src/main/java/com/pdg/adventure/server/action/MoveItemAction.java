@@ -4,13 +4,15 @@ import com.pdg.adventure.api.Containable;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
+import com.pdg.adventure.server.storage.messages.MessagesHolder;
 
 public class MoveItemAction extends AbstractAction {
 
     private final Containable target;
     private final Container destination;
 
-    public MoveItemAction(Containable aTarget, Container aDestination) {
+    public MoveItemAction(Containable aTarget, Container aDestination, MessagesHolder aMessagesHolder) {
+        super(aMessagesHolder);
         target = aTarget;
         destination = aDestination;
     }
@@ -25,12 +27,13 @@ public class MoveItemAction extends AbstractAction {
             }
             if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
                 result = destination.add(target);
-                result.setResultMessage("You put " + target.getEnrichedShortDescription() + " into " + destination
-                        .getEnrichedBasicDescription() + ".");
+                result.setResultMessage(
+                        String.format(messagesHolder.getMessage("-9"), target.getEnrichedShortDescription(),
+                                      destination.getEnrichedBasicDescription()));
             }
         } else {
             result.setExecutionState(ExecutionResult.State.FAILURE);
-            result.setResultMessage("The " + destination.getShortDescription() + " is full.");
+            result.setResultMessage(String.format(messagesHolder.getMessage("-8"), destination.getShortDescription()));
         }
         return result;
     }

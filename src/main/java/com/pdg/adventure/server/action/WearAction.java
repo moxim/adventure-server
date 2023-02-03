@@ -3,11 +3,13 @@ package com.pdg.adventure.server.action;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.api.Wearable;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
+import com.pdg.adventure.server.storage.messages.MessagesHolder;
 
 public class WearAction extends AbstractAction {
     private final Wearable thing;
 
-    public WearAction(Wearable aThing) {
+    public WearAction(Wearable aThing, MessagesHolder aMessagesHolder) {
+        super(aMessagesHolder);
         thing = aThing;
     }
 
@@ -18,7 +20,8 @@ public class WearAction extends AbstractAction {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
             thing.setIsWorn(true);
         } else {
-            result.setResultMessage("You can't wear " + thing.getEnrichedBasicDescription() + ".");
+            result.setResultMessage(String.format(messagesHolder.getMessage("-6"),
+                                    thing.getEnrichedBasicDescription()));
         }
         return result;
     }

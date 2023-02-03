@@ -2,6 +2,7 @@ package com.pdg.adventure.server.action;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
+import com.pdg.adventure.server.storage.messages.MessagesHolder;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
@@ -10,8 +11,9 @@ public class SetVariableAction extends AbstractVariableAction {
     private final String name;
     private final String value;
 
-    public SetVariableAction(String aName, String aValue, VariableProvider aVariableProvider) {
-        super(aVariableProvider);
+    public SetVariableAction(String aName, String aValue, VariableProvider aVariableProvider,
+                             MessagesHolder aMessagesHolder) {
+        super(aVariableProvider, aMessagesHolder);
         name = aName;
         value = aValue;
     }

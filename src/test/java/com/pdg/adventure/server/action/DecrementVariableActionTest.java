@@ -1,16 +1,17 @@
 package com.pdg.adventure.server.action;
 
-import com.pdg.adventure.server.support.Variable;
-import com.pdg.adventure.server.support.VariableProvider;
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import org.junit.jupiter.api.Test;
+
+import com.pdg.adventure.server.storage.messages.MessagesHolder;
+import com.pdg.adventure.server.support.Variable;
+import com.pdg.adventure.server.support.VariableProvider;
 
 class DecrementVariableActionTest {
     private static final String varName = "t";
     private final VariableProvider variableProvider = new VariableProvider();
-    private DecrementVariableAction sut = new DecrementVariableAction(varName, "1", variableProvider);
+    private DecrementVariableAction sut = new DecrementVariableAction(varName, "1", variableProvider, new MessagesHolder());
 
     @Test
     void executeWithAlphaString() {

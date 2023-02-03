@@ -9,6 +9,7 @@ import com.pdg.adventure.server.engine.ContainerSupplier;
 import com.pdg.adventure.server.engine.Environment;
 import com.pdg.adventure.server.parser.DirectionCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
+import com.pdg.adventure.server.storage.messages.MessagesHolder;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
@@ -20,17 +21,20 @@ class DirectionTest {
     private static final String GLOWING_TXT = "glowing";
     private static final String PORTAL_TXT = "portal";
     private final Vocabulary vocabulary = new Vocabulary();
+
     {
         vocabulary.addWord("enter", Word.Type.VERB);
     }
 
-    private Container pocket = new GenericContainer(new DescriptionProvider("your pocket"), 5);
+    private final Container pocket = new GenericContainer(new DescriptionProvider("your pocket"), 5);
 
-    private final Location destination = new Location(new DescriptionProvider(GLOWING_TXT, PORTAL_TXT),
-                                                      new ContainerSupplier(pocket));
+    private final Location destination =
+            new Location(new DescriptionProvider(GLOWING_TXT, PORTAL_TXT), new ContainerSupplier(pocket));
     private final GenericCommandDescription directionDescription = new GenericCommandDescription("enter", destination);
-    private final DirectionCommand moveCommand =
-            new DirectionCommand(directionDescription, new MovePlayerAction(destination, Environment::setCurrentLocation));
+    private final DirectionCommand moveCommand = new DirectionCommand(directionDescription,
+                                                                      new MovePlayerAction(destination,
+                                                                                           Environment::setCurrentLocation,
+                                                                                           new MessagesHolder()));
     private final GenericDirection sut = new GenericDirection(moveCommand, destination, true);
 
     @Test
@@ -88,11 +92,11 @@ class DirectionTest {
     @Test
     void getLongDescriptionWithoutAdjective() {
         // given
-        Location destination =
-                new Location(new DescriptionProvider(PORTAL_TXT), new ContainerSupplier(pocket));
+        Location destination = new Location(new DescriptionProvider(PORTAL_TXT), new ContainerSupplier(pocket));
         GenericCommandDescription directionDescription = new GenericCommandDescription("enter", destination);
         DirectionCommand moveCommand = new DirectionCommand(directionDescription, new MovePlayerAction(destination,
-                                                                                                       Environment::setCurrentLocation));
+                                                                                                       Environment::setCurrentLocation,
+                                                                                                       new MessagesHolder()));
         GenericDirection noAdj = new GenericDirection(moveCommand, destination, true);
 
         // when
