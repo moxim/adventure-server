@@ -1,6 +1,8 @@
 package com.pdg.adventure.server.parser;
 
 import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.server.vocabulary.Word;
+
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,7 +13,7 @@ class ParserTest {
     void getInput() {
         // given
         Vocabulary vocabulary = new Vocabulary();
-        vocabulary.addWord("PaRsEr", Vocabulary.WordType.NOUN);
+        vocabulary.addWord("PaRsEr", Word.Type.NOUN);
         Parser parser = new Parser(vocabulary);
 
         // when

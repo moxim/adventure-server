@@ -10,26 +10,26 @@ class VocabularyTest {
     @Test
     void addSimpleWord() {
         // given
-        sut.addWord("take", Vocabulary.WordType.VERB);
+        sut.addWord("take", Word.Type.VERB);
 
         // when
 
         // then
         assertThat(sut.getSynonym("take").getText()).isEqualTo("take");
-        assertThat(sut.getSynonym("take").getType()).isEqualTo(Vocabulary.WordType.VERB);
+        assertThat(sut.getSynonym("take").getType()).isEqualTo(Word.Type.VERB);
     }
 
     @Test
     void addWordForSynonym() {
         // given
-        sut.addWord("take", Vocabulary.WordType.VERB);
+        sut.addWord("take", Word.Type.VERB);
 
         // when
         sut.addSynonym("get", "take");
 
         // then
-        assertThat(sut.getType("take")).isEqualTo(Vocabulary.WordType.VERB);
-        assertThat(sut.getType("get")).isEqualTo(Vocabulary.WordType.VERB);
+        assertThat(sut.getType("take")).isEqualTo(Word.Type.VERB);
+        assertThat(sut.getType("get")).isEqualTo(Word.Type.VERB);
         assertThat(sut.getSynonym("get").getText()).isEqualTo("take");
     }
 }

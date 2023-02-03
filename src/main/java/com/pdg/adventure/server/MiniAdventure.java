@@ -26,6 +26,7 @@ import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.tangible.Thing;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.server.vocabulary.Word;
 
 // TODO
 //  get rid of ugly casts
@@ -343,60 +344,60 @@ public class MiniAdventure {
     }
 
     private void setUpVocabulary() {
-        vocabulary.addWord("quit", Vocabulary.WordType.VERB);
-        vocabulary.addWord("save", Vocabulary.WordType.VERB);
-        vocabulary.addWord("load", Vocabulary.WordType.VERB);
-        vocabulary.addWord("inventory", Vocabulary.WordType.VERB);
+        vocabulary.addWord("quit", Word.Type.VERB);
+        vocabulary.addWord("save", Word.Type.VERB);
+        vocabulary.addWord("load", Word.Type.VERB);
+        vocabulary.addWord("inventory", Word.Type.VERB);
         vocabulary.addSynonym("i", "inventory");
-        vocabulary.addWord("north", Vocabulary.WordType.VERB);
+        vocabulary.addWord("north", Word.Type.VERB);
         vocabulary.addSynonym("n", "north");
-        vocabulary.addWord("east", Vocabulary.WordType.VERB);
+        vocabulary.addWord("east", Word.Type.VERB);
         vocabulary.addSynonym("e", "east");
-        vocabulary.addWord("south", Vocabulary.WordType.VERB);
+        vocabulary.addWord("south", Word.Type.VERB);
         vocabulary.addSynonym("s", "south");
-        vocabulary.addWord("west", Vocabulary.WordType.VERB);
+        vocabulary.addWord("west", Word.Type.VERB);
         vocabulary.addSynonym("w", "west");
-        vocabulary.addWord("leave", Vocabulary.WordType.VERB);
-        vocabulary.addWord("describe", Vocabulary.WordType.VERB);
+        vocabulary.addWord("leave", Word.Type.VERB);
+        vocabulary.addWord("describe", Word.Type.VERB);
         vocabulary.addSynonym("look", "describe");
         vocabulary.addSynonym("l", "describe");
         vocabulary.addSynonym("desc", "describe");
         vocabulary.addSynonym("examine", "describe");
         vocabulary.addSynonym("inspect", "describe");
 
-        vocabulary.addWord("knife", Vocabulary.WordType.NOUN);
-        vocabulary.addWord("pelt", Vocabulary.WordType.NOUN);
+        vocabulary.addWord("knife", Word.Type.NOUN);
+        vocabulary.addWord("pelt", Word.Type.NOUN);
 
-        vocabulary.addWord("get", Vocabulary.WordType.VERB);
+        vocabulary.addWord("get", Word.Type.VERB);
         vocabulary.addSynonym("take", "get");
-        vocabulary.addWord("drop", Vocabulary.WordType.VERB);
+        vocabulary.addWord("drop", Word.Type.VERB);
 
-        vocabulary.addWord("open", Vocabulary.WordType.VERB);
-        vocabulary.addWord("enter", Vocabulary.WordType.VERB);
+        vocabulary.addWord("open", Word.Type.VERB);
+        vocabulary.addWord("enter", Word.Type.VERB);
         vocabulary.addSynonym("go", "enter");
 
-        vocabulary.addWord("cut", Vocabulary.WordType.VERB);
+        vocabulary.addWord("cut", Word.Type.VERB);
         vocabulary.addSynonym("kill", "cut");
         vocabulary.addSynonym("stab", "cut");
 
-        vocabulary.addWord("wear", Vocabulary.WordType.VERB);
-        vocabulary.addWord("remove", Vocabulary.WordType.VERB);
+        vocabulary.addWord("wear", Word.Type.VERB);
+        vocabulary.addWord("remove", Word.Type.VERB);
 
-        vocabulary.addWord("rabbit", Vocabulary.WordType.NOUN);
+        vocabulary.addWord("rabbit", Word.Type.NOUN);
         vocabulary.addSynonym("hare", "rabbit");
 
-        vocabulary.addWord("ring", Vocabulary.WordType.NOUN);
-        vocabulary.addWord("flowers", Vocabulary.WordType.NOUN);
+        vocabulary.addWord("ring", Word.Type.NOUN);
+        vocabulary.addWord("flowers", Word.Type.NOUN);
 
-        vocabulary.addWord("big", Vocabulary.WordType.ADJECTIVE);
-        vocabulary.addWord("skinned", Vocabulary.WordType.ADJECTIVE);
-        vocabulary.addWord(SMALL_TEXT, Vocabulary.WordType.ADJECTIVE);
-        vocabulary.addWord("golden", Vocabulary.WordType.ADJECTIVE);
+        vocabulary.addWord("big", Word.Type.ADJECTIVE);
+        vocabulary.addWord("skinned", Word.Type.ADJECTIVE);
+        vocabulary.addWord(SMALL_TEXT, Word.Type.ADJECTIVE);
+        vocabulary.addWord("golden", Word.Type.ADJECTIVE);
 
-        vocabulary.addWord("portal", Vocabulary.WordType.NOUN);
-        vocabulary.addWord("hut", Vocabulary.WordType.NOUN);
+        vocabulary.addWord("portal", Word.Type.NOUN);
+        vocabulary.addWord("hut", Word.Type.NOUN);
         vocabulary.addSynonym("house", "hut");
-        vocabulary.addWord("gloves", Vocabulary.WordType.NOUN);
-        vocabulary.addWord("here", Vocabulary.WordType.NOUN);
+        vocabulary.addWord("gloves", Word.Type.NOUN);
+        vocabulary.addWord("here", Word.Type.NOUN);
     }
 }

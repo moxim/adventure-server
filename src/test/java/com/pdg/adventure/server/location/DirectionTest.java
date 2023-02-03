@@ -12,6 +12,7 @@ import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.server.vocabulary.Word;
 
 
 class DirectionTest {
@@ -20,7 +21,7 @@ class DirectionTest {
     private static final String PORTAL_TXT = "portal";
     private final Vocabulary vocabulary = new Vocabulary();
     {
-        vocabulary.addWord("enter", Vocabulary.WordType.VERB);
+        vocabulary.addWord("enter", Word.Type.VERB);
     }
 
     private Container pocket = new GenericContainer(new DescriptionProvider("your pocket"), 5);

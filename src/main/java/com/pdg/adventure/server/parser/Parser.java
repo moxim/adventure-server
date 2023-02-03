@@ -1,10 +1,11 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.server.vocabulary.Vocabulary;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Scanner;
+
+import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.server.vocabulary.Word;
 
 public class Parser {
     private final Vocabulary vocabulary;
@@ -28,7 +29,7 @@ public class Parser {
         Scanner scanner = new Scanner(lowerCaseInput)) {
             while (scanner.hasNext()) {
                 String token = scanner.next();
-                Vocabulary.Word word = vocabulary.getSynonym(token);
+                Word word = vocabulary.getSynonym(token);
                 if (word == null) {
                     // don't know this word
                     continue;

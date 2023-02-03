@@ -31,14 +31,14 @@ public class Vocabulary {
         if (synonym == null) {
             throw new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, aSynonym));
         }
-        addWord(aNewWord, synonym);
+        addSynonymForWord(aNewWord, synonym);
     }
 
     public Word getSynonym(String aWord) {
         return words.get(aWord);
     }
 
-    public String getSynonym(String aWord, WordType aType) {
+    public String getSynonym(String aWord, Word.Type aType) {
         Word word = getSynonym(aWord);
         if (word.getType() != aType) {
             return EMPTY_STRING;
@@ -46,21 +46,21 @@ public class Vocabulary {
         return word.getText();
     }
 
-    public void addWord(String aWord, WordType aType) {
+    public void addWord(String aWord, Word.Type aType) {
         Word word = new Word(aWord.toLowerCase(), aType);
         addWord(word);
     }
 
     public void addWord(Word aWord) {
-        addWord(aWord.getText(), aWord);
+        addSynonymForWord(aWord.getText(), aWord);
     }
 
-    private void addWord(String aText, Word aWord) {
+    private void addSynonymForWord(String aText, Word aWord) {
         String lowerText = aText.toLowerCase();
         words.put(lowerText, aWord);
     }
 
-    public WordType getType(String aWord) {
+    public Word.Type getType(String aWord) {
         Word synonym = words.get(aWord);
         if (synonym == null) {
             throw new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, aWord));
@@ -68,32 +68,4 @@ public class Vocabulary {
         return synonym.getType();
     }
 
-    public static class Word {
-        private final String text;
-        private final WordType type;
-
-        private Word(String aText, WordType aType) {
-            text = aText;
-            type = aType;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public WordType getType() {
-            return type;
-        }
-
-        @Override
-        public String toString() {
-                return text + "[" + type + "]";
-            }
-    }
-
-    public enum WordType {
-        VERB,
-        NOUN,
-        ADJECTIVE
-    }
 }

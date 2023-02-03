@@ -13,12 +13,13 @@ import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.testhelper.TestSupporter;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.server.vocabulary.Word;
 
 class ThingTest {
     private final VariableProvider variableProvider = new VariableProvider();
     private final Vocabulary vocabulary = new Vocabulary();
     {
-        vocabulary.addWord("take", Vocabulary.WordType.VERB);
+        vocabulary.addWord("take", Word.Type.VERB);
     }
     private Container pocket = new GenericContainer(new DescriptionProvider("your pocket"), 5);
 
