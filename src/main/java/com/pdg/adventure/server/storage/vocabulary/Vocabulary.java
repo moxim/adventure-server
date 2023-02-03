@@ -1,4 +1,4 @@
-package com.pdg.adventure.server.vocabulary;
+package com.pdg.adventure.server.storage.vocabulary;
 
 import java.util.HashMap;
 import java.util.Map;

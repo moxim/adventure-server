@@ -8,7 +8,7 @@ import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

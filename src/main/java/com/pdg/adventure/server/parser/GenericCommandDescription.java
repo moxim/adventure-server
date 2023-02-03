@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.api.Ided;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
 
 public class GenericCommandDescription implements CommandDescription, Ided {
     private String id;

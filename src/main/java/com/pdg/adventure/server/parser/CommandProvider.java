@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.pdg.adventure.api.*;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
 
 public class CommandProvider implements Ided {
     private final Map<CommandDescription, CommandChain> availableCommands;

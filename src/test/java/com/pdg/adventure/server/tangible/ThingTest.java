@@ -13,8 +13,8 @@ import com.pdg.adventure.server.storage.messages.MessagesHolder;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.testhelper.TestSupporter;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
-import com.pdg.adventure.server.vocabulary.Word;
+import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
+import com.pdg.adventure.server.storage.vocabulary.Word;
 
 class ThingTest {
     private final VariableProvider variableProvider = new VariableProvider();

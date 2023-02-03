@@ -6,7 +6,7 @@ import com.pdg.adventure.api.Direction;
 import com.pdg.adventure.server.support.ArticleProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.Item;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
 
 public class GenericDirection extends Item implements Direction {
 

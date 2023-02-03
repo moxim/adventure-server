@@ -1,7 +1,7 @@
 package com.pdg.adventure.server.support;
 
 import com.pdg.adventure.api.Ided;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
 
 public class DescriptionProvider implements Ided {
     public static final String NOUN_MISSING_MESSAGE = "The noun is mandatory.";

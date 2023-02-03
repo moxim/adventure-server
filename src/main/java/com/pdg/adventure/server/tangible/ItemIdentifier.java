@@ -3,7 +3,7 @@ package com.pdg.adventure.server.tangible;
 import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.api.Containable;
 import com.pdg.adventure.api.Container;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -12,8 +12,8 @@ import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.storage.messages.MessagesHolder;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
-import com.pdg.adventure.server.vocabulary.Word;
+import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
+import com.pdg.adventure.server.storage.vocabulary.Word;
 
 
 class DirectionTest {

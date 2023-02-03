@@ -1,7 +1,7 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.server.vocabulary.Vocabulary;
-import com.pdg.adventure.server.vocabulary.Word;
+import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
+import com.pdg.adventure.server.storage.vocabulary.Word;
 
 import org.junit.jupiter.api.Test;
 
