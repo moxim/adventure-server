@@ -9,4 +9,5 @@ import com.pdg.adventure.model.basics.BasicData;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class TakeActionData extends BasicData {
     private String thingId;
+    private String containerProviderId; // TODO: this does not work
 }
