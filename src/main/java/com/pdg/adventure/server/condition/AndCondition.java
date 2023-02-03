@@ -3,7 +3,7 @@ package com.pdg.adventure.server.condition;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.api.PreCondition;
 
-public class AndCondition implements PreCondition {
+public class AndCondition extends AbstractCondition {
 
     private final PreCondition preCondition;
     private final PreCondition anotherPreCondition;

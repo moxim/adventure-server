@@ -1,4 +1,4 @@
-package com.pdg.adventure.model.condition;
+package com.pdg.adventure.model.action;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -7,7 +7,7 @@ import com.pdg.adventure.model.basics.BasicData;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class AndConditionData extends BasicData {
-    private String preConditionId;
-    private String anotherPreConditionId;
+public class DecrementVariableActionData extends BasicData {
+    private String name;
+    private String value;
 }

@@ -6,7 +6,7 @@ import com.pdg.adventure.api.PreCondition;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 
-public class ItemAtCondition implements PreCondition {
+public class ItemAtCondition extends AbstractCondition {
     private final Location location;
     private final Containable thing;
 

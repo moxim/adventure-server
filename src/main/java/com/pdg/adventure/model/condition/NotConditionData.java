@@ -7,7 +7,6 @@ import com.pdg.adventure.model.basics.BasicData;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class AndConditionData extends BasicData {
+public class NotConditionData extends BasicData {
     private String preConditionId;
-    private String anotherPreConditionId;
 }

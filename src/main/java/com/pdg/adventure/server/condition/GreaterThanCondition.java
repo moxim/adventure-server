@@ -9,7 +9,7 @@ import com.pdg.adventure.server.support.VariableProvider;
 public class GreaterThanCondition extends AbstractVariableCondition {
 
     private final String variableName;
-    private final Object value;
+    private final Number value;
 
     public GreaterThanCondition(String aVariableName, Number aValue, VariableProvider aVariableProvider) {
         super(aVariableProvider);

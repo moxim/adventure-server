@@ -6,7 +6,7 @@ import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.engine.Environment;
 
-public class PlayerAtCondition implements PreCondition {
+public class PlayerAtCondition extends AbstractCondition {
     private final Location location;
 
     public PlayerAtCondition(Location aLocation) {

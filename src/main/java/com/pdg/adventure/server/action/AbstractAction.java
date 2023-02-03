@@ -2,7 +2,7 @@ package com.pdg.adventure.server.action;
 
 import com.pdg.adventure.api.Action;
 
-public abstract class AbstractAction implements Action {
+public abstract class AbstractAction extends IdedAction implements Action {
 
     @Override
     public String getName() {

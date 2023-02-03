@@ -6,7 +6,7 @@ import com.pdg.adventure.api.PreCondition;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.engine.Environment;
 
-public class CarriedCondition implements PreCondition {
+public class CarriedCondition extends AbstractCondition {
 
     private final Containable item;
 

@@ -3,7 +3,7 @@ package com.pdg.adventure.server.condition;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.api.PreCondition;
 
-public class NotCondition implements PreCondition {
+public class NotCondition extends AbstractCondition {
 
     private final PreCondition wrappedCondition;
 

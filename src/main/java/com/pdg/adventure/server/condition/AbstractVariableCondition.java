@@ -1,11 +1,10 @@
 package com.pdg.adventure.server.condition;
 
-import com.pdg.adventure.api.PreCondition;
 import com.pdg.adventure.server.exception.ConfigurationException;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
-public abstract class AbstractVariableCondition implements PreCondition {
+public abstract class AbstractVariableCondition extends AbstractCondition {
     protected final VariableProvider variableProvider;
 
     AbstractVariableCondition(VariableProvider aVariableProvider) {

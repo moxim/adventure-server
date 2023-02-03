@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.engine.ContainerSupplier;
+import com.pdg.adventure.server.engine.Environment;
 import com.pdg.adventure.server.parser.DirectionCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.support.DescriptionProvider;
@@ -28,7 +29,7 @@ class DirectionTest {
                                                       new ContainerSupplier(pocket));
     private final GenericCommandDescription directionDescription = new GenericCommandDescription("enter", destination);
     private final DirectionCommand moveCommand =
-            new DirectionCommand(directionDescription, new MovePlayerAction(destination));
+            new DirectionCommand(directionDescription, new MovePlayerAction(destination, Environment::setCurrentLocation));
     private final GenericDirection sut = new GenericDirection(moveCommand, destination, true);
 
     @Test
@@ -89,7 +90,8 @@ class DirectionTest {
         Location destination =
                 new Location(new DescriptionProvider(PORTAL_TXT), new ContainerSupplier(pocket));
         GenericCommandDescription directionDescription = new GenericCommandDescription("enter", destination);
-        DirectionCommand moveCommand = new DirectionCommand(directionDescription, new MovePlayerAction(destination));
+        DirectionCommand moveCommand = new DirectionCommand(directionDescription, new MovePlayerAction(destination,
+                                                                                                       Environment::setCurrentLocation));
         GenericDirection noAdj = new GenericDirection(moveCommand, destination, true);
 
         // when

@@ -1,11 +1,10 @@
 package com.pdg.adventure.server.condition;
 
 import com.pdg.adventure.api.ExecutionResult;
-import com.pdg.adventure.api.PreCondition;
 import com.pdg.adventure.api.Wearable;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 
-public class WornCondition implements PreCondition {
+public class WornCondition extends AbstractCondition {
     private final Wearable thing;
 
     public WornCondition(Wearable aThing) {

@@ -7,7 +7,7 @@ import com.pdg.adventure.model.basics.BasicData;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class AndConditionData extends BasicData {
-    private String preConditionId;
-    private String anotherPreConditionId;
+public class ItemAtConditionData extends BasicData {
+    private String locationId;
+    private String thingId;
 }
