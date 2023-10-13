@@ -1,7 +1,9 @@
 package com.pdg.adventure.server.support;
 
+import java.util.UUID;
+
 import com.pdg.adventure.api.Ided;
-import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 public class DescriptionProvider implements Ided {
     public static final String NOUN_MISSING_MESSAGE = "The noun is mandatory.";
@@ -22,6 +24,7 @@ public class DescriptionProvider implements Ided {
             adjective = Vocabulary.EMPTY_STRING;
         }
         noun = aNoun;
+        id = UUID.randomUUID().toString();
     }
 
     private void validateParameters(String aNoun) {
@@ -89,5 +92,16 @@ public class DescriptionProvider implements Ided {
     @Override
     public void setId(String anId) {
         id = anId;
+    }
+
+    @Override
+    public String toString() {
+        return "DescriptionProvider{" +
+                "id='" + id + '\'' +
+                ", noun='" + noun + '\'' +
+                ", adjective='" + adjective + '\'' +
+                ", shortDescription='" + shortDescription + '\'' +
+                ", longDescription='" + longDescription + '\'' +
+                '}';
     }
 }

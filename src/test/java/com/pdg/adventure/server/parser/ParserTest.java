@@ -1,7 +1,7 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
-import com.pdg.adventure.server.storage.vocabulary.Word;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.model.Word;
 
 import org.junit.jupiter.api.Test;
 
@@ -13,11 +13,11 @@ class ParserTest {
     void getInput() {
         // given
         Vocabulary vocabulary = new Vocabulary();
-        vocabulary.addWord("PaRsEr", Word.Type.NOUN);
+        vocabulary.addNewWord("PaRsEr", Word.Type.NOUN);
         Parser parser = new Parser(vocabulary);
 
         // when
-        GenericCommandDescription command = parser.handle("hello, I am your trusty parser");
+        GenericCommandDescription command = parser.handle("hello, parser I am your trusty parser");
 
         // then
         assertThat(command.getVerb()).isEmpty();

@@ -60,7 +60,19 @@ public class Item extends Thing implements Containable, Wearable {
         return parentContainer;
     }
 
+    @Override
     public void setParentContainer(Container aParentContainer) {
         parentContainer = aParentContainer;
+    }
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "isContainable=" + isContainable +
+                ", parentContainer (Id)=" + (parentContainer == null ? "null" : parentContainer.getId()) +
+                ", isWearable=" + isWearable +
+                ", isWorn=" + isWorn +
+                ", " + super.toString() +
+                '}';
     }
 }

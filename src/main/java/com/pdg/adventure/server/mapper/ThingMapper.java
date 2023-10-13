@@ -9,7 +9,7 @@ public abstract class ThingMapper {
     }
 
     public static Thing mapFrom(ThingData aThingData) {
-        Thing result = new Thing(DescriptionMapper.map(aThingData.getDescriptionData()));
+        Thing result = new Thing(DescriptionMapper.mapToBO(aThingData.getDescriptionData()));
         result.setId(aThingData.getId());
         result.setCommandProvider(CommandProviderMapper.map(aThingData.getCommandProviderData()));
         return result;
@@ -18,7 +18,7 @@ public abstract class ThingMapper {
     public static ThingData mapFrom(Thing aThing) {
         ThingData result = new ThingData();
         result.setId(aThing.getId());
-        result.setDescriptionData(DescriptionMapper.map(aThing.getDescriptionProvider()));
+        result.setDescriptionData(DescriptionMapper.mapToDO(aThing.getDescriptionProvider()));
         result.setCommandProviderData(CommandProviderMapper.map(aThing.getCommandProvider()));
         return result;
     }

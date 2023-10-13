@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.vocabulary;
 
+import com.pdg.adventure.model.Word;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,7 +11,7 @@ class VocabularyTest {
     @Test
     void addSimpleWord() {
         // given
-        sut.addWord("take", Word.Type.VERB);
+        sut.addNewWord("take", Word.Type.VERB);
 
         // when
 
@@ -22,7 +23,7 @@ class VocabularyTest {
     @Test
     void addWordForSynonym() {
         // given
-        sut.addWord("take", Word.Type.VERB);
+        sut.addNewWord("take", Word.Type.VERB);
 
         // when
         sut.addSynonym("get", "take");

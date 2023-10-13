@@ -1,11 +1,12 @@
 package com.pdg.adventure.server.parser;
 
-import java.util.Objects;
-
 import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.api.Ided;
-import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
+
+import java.util.Objects;
+import java.util.UUID;
 
 public class GenericCommandDescription implements CommandDescription, Ided {
     private String id;
@@ -29,6 +30,7 @@ public class GenericCommandDescription implements CommandDescription, Ided {
         verb = aVerb;
         adjective = anAdjective;
         noun = aNoun;
+        id = UUID.randomUUID().toString();
     }
 
     @Override
@@ -51,11 +53,6 @@ public class GenericCommandDescription implements CommandDescription, Ided {
 
     public String getNoun() {
         return noun;
-    }
-
-    @Override
-    public String getDescription() {
-        return verb + "_" + adjective + "_" + noun;
     }
 
     @Override

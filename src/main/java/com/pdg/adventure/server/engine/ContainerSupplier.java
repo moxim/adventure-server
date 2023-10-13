@@ -1,8 +1,8 @@
 package com.pdg.adventure.server.engine;
 
-import java.util.function.Supplier;
-
 import com.pdg.adventure.api.Container;
+
+import java.util.function.Supplier;
 
 public class ContainerSupplier implements Supplier<Container> {
 

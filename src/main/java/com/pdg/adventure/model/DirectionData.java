@@ -2,11 +2,15 @@ package com.pdg.adventure.model;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
+@ToString(callSuper = true)
 public class DirectionData extends ItemData {
-    private LocationData destinationData;
+    @DBRef
+    private LocationData destinationData = new LocationData();
     private boolean destinationMustBeMentioned;
-    //    private CommandDescriptionData commandDescriptionData;
+    private CommandData commandData = new CommandData();
 }

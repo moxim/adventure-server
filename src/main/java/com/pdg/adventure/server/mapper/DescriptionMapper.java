@@ -8,7 +8,7 @@ public abstract class DescriptionMapper {
         // don't instantiate me
     }
 
-    public static DescriptionData map(DescriptionProvider aDescriptionProvider) {
+    public static DescriptionData mapToDO(DescriptionProvider aDescriptionProvider) {
         DescriptionData result = new DescriptionData();
         result.setId(aDescriptionProvider.getId());
         result.setNoun(aDescriptionProvider.getNoun());
@@ -18,7 +18,7 @@ public abstract class DescriptionMapper {
         return result;
     }
 
-    public static DescriptionProvider map(DescriptionData aDescriptionData) {
+    public static DescriptionProvider mapToBO(DescriptionData aDescriptionData) {
         DescriptionProvider result = new DescriptionProvider(aDescriptionData.getNoun());
         result.setId(aDescriptionData.getId());
         result.setAdjective(aDescriptionData.getAdjective());

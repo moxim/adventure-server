@@ -1,14 +1,14 @@
 package com.pdg.adventure.server.engine;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.exception.QuitException;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.Parser;
-import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
+
+import java.io.BufferedReader;
+import java.io.IOException;
 
 public class GameLoop {
     private final Parser parser;

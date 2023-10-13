@@ -1,33 +1,33 @@
 package com.pdg.adventure.server.location;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Supplier;
-
 import com.pdg.adventure.api.*;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.tangible.Thing;
-import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
 
-public class Location extends Thing implements Visitable {
+import java.util.ArrayList;
+import java.util.List;
+
+public class Location extends Thing implements Visitable, HasLight {
 
     private final Container container;
     private final Container directions;
     private boolean hasBeenVisited;
-    private final Supplier<Container> pocketSupplier;
+    private final Container pocket;
+    private int lumen;
 
-    public Location(DescriptionProvider aDescriptionProvider, Supplier<Container> aPocketSupplier) {
+    public Location(DescriptionProvider aDescriptionProvider, Container aPocket) {
         super(aDescriptionProvider);
         container = new GenericContainer(aDescriptionProvider, 99);
-        directions = new GenericContainer(aDescriptionProvider, true, 99);
-        pocketSupplier = aPocketSupplier;
+        directions = new GenericContainer(aDescriptionProvider, true, 9999);
+        pocket = aPocket;
         hasBeenVisited = false; // explicit, but redundant
     }
 
-    public ExecutionResult addItem(Item anItem) {
+    public ExecutionResult addItem(Containable anItem) {
         return container.add(anItem);
     }
 
@@ -92,7 +92,7 @@ public class Location extends Thing implements Visitable {
         availableCommands.addAll(chain);
         chain = directions.getMatchingCommandChain(aCommandDescription);
         availableCommands.addAll(chain);
-        chain = pocketSupplier.get().getMatchingCommandChain(aCommandDescription);
+        chain = pocket.getMatchingCommandChain(aCommandDescription);
         availableCommands.addAll(chain);
         return availableCommands;
     }
@@ -125,7 +125,28 @@ public class Location extends Thing implements Visitable {
         return sb.toString();
     }
 
-    public boolean contains(Containable anItem) {
+    public boolean contains(Item anItem) {
         return container.contains(anItem);
+    }
+
+    @Override
+    public String toString() {
+        return "Location{" +
+                "container=" + container +
+                ", directions=" + directions +
+                ", hasBeenVisited=" + hasBeenVisited +
+                ", pocket=" + pocket +
+                ", " + super.toString() +
+                '}';
+    }
+
+    @Override
+    public void setLight(int aLumenValue) {
+        lumen = aLumenValue;
+    }
+
+    @Override
+    public int getLight() {
+        return 0;
     }
 }

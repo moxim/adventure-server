@@ -1,18 +1,24 @@
 package com.pdg.adventure.model;
 
-import java.util.LinkedList;
-import java.util.List;
-
+import com.pdg.adventure.model.basics.BasicData;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 
-import com.pdg.adventure.model.basics.BasicData;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class AdventureData extends BasicData {
-    private ContainerData playerPocket = new ContainerData();
-    private List<LocationData> locationDataList = new LinkedList<>();
-    private BasicData currentLocationId = new BasicData();
-    // WorkflowData workFlow;
+    private String title ="";
+    private ItemContainerData playerPocket = new ItemContainerData();
+    @DBRef(lazy = false)
+//    @CascadeSave
+    private Set<LocationData> locationData = new HashSet<>();
+    private String currentLocationId = "";
+    private Vocabulary vocabulary = new Vocabulary();
+    // WorkflowData workFlow = new WorkflowData();
+    private String notes = ""; // to outline a story or whatever
 }

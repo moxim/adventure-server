@@ -1,14 +1,11 @@
 package com.pdg.adventure.server.tangible;
 
-import com.pdg.adventure.api.CommandChain;
-import com.pdg.adventure.api.CommandDescription;
-import com.pdg.adventure.api.Containable;
-import com.pdg.adventure.api.Container;
-import com.pdg.adventure.api.Describable;
-import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.api.*;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -16,9 +13,12 @@ import java.util.List;
 
 public class GenericContainer extends Item implements Container {
 
-    private final List<Containable> contents = new LinkedList<>();
+    @Getter
+    @Setter
     private int maxSize;
+
     private final boolean holdsDirections;
+    private List<Containable> contents;
 
     public GenericContainer(DescriptionProvider aDescriptionProvider, int aMaxSize) {
         this(aDescriptionProvider, false, aMaxSize);
@@ -27,23 +27,19 @@ public class GenericContainer extends Item implements Container {
     public GenericContainer(DescriptionProvider aDescriptionProvider,
                             boolean aFlagWhetherItHoldsDirections, int aMaxSize) {
         super(aDescriptionProvider, false);
-        holdsDirections = aFlagWhetherItHoldsDirections;
         maxSize = aMaxSize;
+        holdsDirections = aFlagWhetherItHoldsDirections;
+        contents = new LinkedList<>();
     }
 
     @Override
     public List<Containable> getContents() {
-        return contents;
+        return new ArrayList<>(contents);
     }
 
     @Override
-    public int getMaxSize() {
-        return maxSize;
-    }
-
-    @Override
-    public void setMaxSize(int aMaxSize) {
-        maxSize = aMaxSize;
+    public void setContents(List<Containable> aContainableList) {
+        contents = new ArrayList<>(aContainableList);
     }
 
     @Override
@@ -91,6 +87,11 @@ public class GenericContainer extends Item implements Container {
         return sb.toString();
     }
 
+    @Override
+    public boolean isHoldingDirections() {
+        return holdsDirections;
+    }
+
     private String getDescription(Describable aThing) {
         if (holdsDirections) {
             return aThing.getShortDescription();
@@ -102,7 +103,7 @@ public class GenericContainer extends Item implements Container {
     public ExecutionResult add(Containable anItem) {
         ExecutionResult result = new CommandExecutionResult();
         String itemDescription = anItem.getEnrichedBasicDescription();
-        String containerDescription = anItem.getEnrichedBasicDescription();
+        String containerDescription = getEnrichedBasicDescription();
 
         if (contents.contains(anItem)) {
             result.setResultMessage(String.format(ALREADY_PRESENT_TEXT, itemDescription, containerDescription));
@@ -138,5 +139,15 @@ public class GenericContainer extends Item implements Container {
                 result.addAll(commandChain);
         }
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "GenericContainer{" +
+                "maxSize=" + maxSize +
+                ", holdsDirections=" + holdsDirections +
+                ", contents=" + contents +
+                ", " + super.toString() +
+                '}';
     }
 }

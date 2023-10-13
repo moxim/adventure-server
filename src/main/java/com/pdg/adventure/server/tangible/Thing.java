@@ -126,8 +126,18 @@ public class Thing implements Describable, Actionable {
         return Objects.hash(id);
     }
 
+//    @Override
+//    public String toString() {
+//        return getShortDescription();
+//    }
+
+
     @Override
     public String toString() {
-        return getShortDescription();
+        return "Thing{" +
+                "descriptionProvider=" + descriptionProvider +
+                ", commandProvider=" + commandProvider +
+                ", id='" + id + '\'' +
+                '}';
     }
 }

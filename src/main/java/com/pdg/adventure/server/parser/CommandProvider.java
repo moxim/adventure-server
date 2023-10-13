@@ -1,12 +1,9 @@
 package com.pdg.adventure.server.parser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.pdg.adventure.api.*;
-import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 public class CommandProvider implements Ided {
     private final Map<CommandDescription, CommandChain> availableCommands;
@@ -14,6 +11,7 @@ public class CommandProvider implements Ided {
 
     public CommandProvider() {
         availableCommands = new HashMap<>();
+        id = UUID.randomUUID().toString();
     }
 
     public Map<CommandDescription, CommandChain> getAvailableCommands() {
@@ -90,5 +88,13 @@ public class CommandProvider implements Ided {
             }
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return "CommandProvider{" +
+                "availableCommands=" + availableCommands +
+                ", id='" + id + '\'' +
+                '}';
     }
 }

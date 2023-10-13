@@ -1,16 +1,15 @@
 package com.pdg.adventure.server.condition;
 
-import com.pdg.adventure.api.Containable;
 import com.pdg.adventure.api.ExecutionResult;
-import com.pdg.adventure.api.PreCondition;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
+import com.pdg.adventure.server.tangible.Item;
 
 public class ItemAtCondition extends AbstractCondition {
     private final Location location;
-    private final Containable thing;
+    private final Item thing;
 
-    public ItemAtCondition(Containable aThing, Location aLocation) {
+    public ItemAtCondition(Item aThing, Location aLocation) {
         thing = aThing;
         location = aLocation;
     }

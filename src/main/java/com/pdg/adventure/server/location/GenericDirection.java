@@ -6,12 +6,16 @@ import com.pdg.adventure.api.Direction;
 import com.pdg.adventure.server.support.ArticleProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.Item;
-import com.pdg.adventure.server.storage.vocabulary.Vocabulary;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
+import lombok.Getter;
 
 public class GenericDirection extends Item implements Direction {
 
+    @Getter
     private final Location destination;
     private final CommandDescription description;
+
+    @Getter
     private final boolean destinationMustBeMentioned;
 
     public GenericDirection(Command aCommand, Location aDestination) {
@@ -24,7 +28,7 @@ public class GenericDirection extends Item implements Direction {
         destinationMustBeMentioned = aFlagWhetherDestinationMustBeMentioned;
         destination = aDestination;
         description = aCommand.getDescription();
-        this.addCommand(aCommand);
+        addCommand(aCommand);
     }
 
     private String constructDescriptionFromAdjectiveAndNoun() {
@@ -64,5 +68,10 @@ public class GenericDirection extends Item implements Direction {
             return result + ".";
         }
         return description.getVerb();
+    }
+
+    public Command getCommand() {
+        // TODO: really??
+        return getCommands().get(0);
     }
 }

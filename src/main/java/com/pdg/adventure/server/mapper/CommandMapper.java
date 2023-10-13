@@ -12,7 +12,7 @@ public abstract class CommandMapper {
         // don't instantiate me
     }
 
-    public static Command map(CommandData aCommandData) {
+    public static Command mapToBO(CommandData aCommandData) {
         CommandDescription description = CommandDescriptionMapper.map(aCommandData.getCommandDescription());
         Command result = new GenericCommand(description, aCommandData.getAction());
         result.setId(aCommandData.getId());
@@ -26,7 +26,7 @@ public abstract class CommandMapper {
         return result;
     }
 
-    public static CommandData map(Command aCommand) {
+    public static CommandData mapToBO(Command aCommand) {
         CommandData result = new CommandData();
         result.setId(aCommand.getId());
         result.setCommandDescription(CommandDescriptionMapper.map(aCommand.getDescription()));

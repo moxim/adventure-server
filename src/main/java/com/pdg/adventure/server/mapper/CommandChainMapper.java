@@ -18,7 +18,7 @@ public abstract class CommandChainMapper {
         CommandChain result = new GenericCommandChain();
         result.setId(aData.getId());
         for (CommandData commandData : aData.getCommands()) {
-            final Command command = CommandMapper.map(commandData);
+            final Command command = CommandMapper.mapToBO(commandData);
             result.addCommand(command);
         }
         return result;
@@ -29,7 +29,7 @@ public abstract class CommandChainMapper {
         result.setId(aData.getId());
         List<CommandData> commandList = new ArrayList<>(aData.getCommands().size());
         for (Command command : aData.getCommands()) {
-            final CommandData commandData = CommandMapper.map(command);
+            final CommandData commandData = CommandMapper.mapToBO(command);
             commandList.add(commandData);
         }
         result.setCommands(commandList);

@@ -2,6 +2,7 @@ package com.pdg.adventure.server.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import com.pdg.adventure.api.Command;
 import com.pdg.adventure.api.CommandChain;
@@ -13,6 +14,7 @@ public class GenericCommandChain implements CommandChain {
 
     public GenericCommandChain() {
         commands = new ArrayList<>();
+        id = UUID.randomUUID().toString();
     }
 
     public String getId() {

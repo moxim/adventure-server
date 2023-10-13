@@ -1,17 +1,17 @@
 package com.pdg.adventure.server.action;
 
-import com.pdg.adventure.api.Containable;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.storage.messages.MessagesHolder;
+import com.pdg.adventure.server.tangible.Item;
 
 public class MoveItemAction extends AbstractAction {
 
-    private final Containable target;
+    private final Item target;
     private final Container destination;
 
-    public MoveItemAction(Containable aTarget, Container aDestination, MessagesHolder aMessagesHolder) {
+    public MoveItemAction(Item aTarget, Container aDestination, MessagesHolder aMessagesHolder) {
         super(aMessagesHolder);
         target = aTarget;
         destination = aDestination;

@@ -1,0 +1,52 @@
+# this is not a json file, I know
+
+Current location:
+Location{
+    container=GenericContainer{
+    contents=[], maxSize=99, holdsDirections=false,
+      Item{
+        isContainable=false, parentContainer=null, isWearable=false, isWorn=false,
+        Thing{
+          descriptionProvider=DescriptionProvider{
+            id='1', noun='noun_1', adjective='adjective_1', shortDescription='short_desc_1', longDescription='long_desc_1'
+          },
+          commandProvider=CommandProvider{
+            availableCommands={}, id='null'
+          }, id='7f938533-bc42-46a6-9664-5f421ded5f60'
+        }
+      }
+    }, directions=GenericContainer{
+      contents=[], maxSize=99, holdsDirections=true,
+      Item{
+        isContainable=false, parentContainer=null, isWearable=false, isWorn=false,
+        Thing{
+          descriptionProvider=DescriptionProvider{
+            id='1', noun='noun_1', adjective='adjective_1', shortDescription='short_desc_1', longDescription='long_desc_1'
+          },
+          commandProvider=CommandProvider{
+            availableCommands={}, id='null'
+          }, id='242d5765-00a7-491f-85ab-f90b8a265092'
+        }
+      }
+    }, hasBeenVisited=false, pocket=GenericContainer{
+      contents=[], maxSize=0, holdsDirections=false,
+      Item{
+        isContainable=false, parentContainer=null, isWearable=false, isWorn=false,
+        Thing{
+          descriptionProvider=DescriptionProvider{
+            id='1_Container', noun='noun_1_Container', adjective='adjective_1_Container', shortDescription='short_desc_1_Container', longDescription='long_desc_1_Container'
+          },
+          commandProvider=CommandProvider{
+            availableCommands={}, id='null'
+          }, id='1'
+        }
+      }
+    },
+    Thing{
+      descriptionProvider=DescriptionProvider{
+        id='1', noun='noun_1', adjective='adjective_1', shortDescription='short_desc_1', longDescription='long_desc_1'
+      }, commandProvider=CommandProvider{
+      availableCommands={}, id='null'
+    }, id='1'
+  }
+}

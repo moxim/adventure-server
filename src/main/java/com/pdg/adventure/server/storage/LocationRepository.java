@@ -1,7 +1,10 @@
 package com.pdg.adventure.server.storage;
 
-import com.pdg.adventure.server.location.Location;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
-public interface LocationRepository extends MongoRepository<Location, String> {
+import com.pdg.adventure.model.LocationData;
+
+@Repository
+public interface LocationRepository extends MongoRepository<LocationData, String> {
 }
