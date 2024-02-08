@@ -2,11 +2,14 @@ package com.pdg.adventure.server.storage;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.support.MapperProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,12 +18,19 @@ import java.util.UUID;
 public class AdventureService {
     private final AdventureRepository adventureRepository;
     private final LocationRepository locationRepository;
+    private final WordRepository wordRepository;
+    private final VocabularyReporitory vocabularyRepository;
 
     @Autowired
     public AdventureService(LocationRepository aLocationRepository,
-                            AdventureRepository anAdventureRepository, MapperProvider aMappingProvider) {
+                            AdventureRepository anAdventureRepository,
+                            WordRepository aWordRepository,
+                            VocabularyReporitory aVocabularyRepository,
+                            MapperProvider aMappingProvider) {
         locationRepository = aLocationRepository;
         adventureRepository = anAdventureRepository;
+        wordRepository = aWordRepository;
+        vocabularyRepository = aVocabularyRepository;
     }
 
     public LocationData findLocationById(@Nonnull String id) {
@@ -48,7 +58,23 @@ public class AdventureService {
     }
 
     public void saveAdventureData(AdventureData anAdventure) {
+        preProcess(anAdventure);
         adventureRepository.save(anAdventure);
+    }
+
+    public void saveVocabularyData(VocabularyData aVocabularyData) {
+        vocabularyRepository.save(aVocabularyData);
+    }
+
+    public void saveWordData(Collection<Word> aNumberOfWords) {
+        wordRepository.saveAll(aNumberOfWords);
+    }
+
+    private void preProcess(AdventureData anAdventure) {
+//        final Set<Word> words = anAdventure.getWords();
+//        words.clear();
+//        final Vocabulary vocabulary = anAdventure.getVocabulary();
+//        words.addAll(vocabulary.getWords());
     }
 
     public AdventureData findAdventureById(String anId) {
@@ -65,6 +91,10 @@ public class AdventureService {
     }
 
     private void postProcess(AdventureData anAdventureData) {
+//        Vocabulary vocabulary = new Vocabulary();
+//        anAdventureData.setVocabulary(vocabulary);
+//        vocabulary.putWords(anAdventureData.getWords());
+//
 //        final Vocabulary vocabulary = anAdventureData.getVocabulary();
 //        final Collection<Word> allWords = vocabulary.getWords();
 //        for (Word word : allWords) {
@@ -85,5 +115,11 @@ public class AdventureService {
 
     public void deleteAdventure(String anId) {
         adventureRepository.deleteById(anId);
+    }
+
+    public void deleteWord(String id) {wordRepository.deleteById(id);}
+
+    public void deleteVocabulary(String id) {
+        vocabularyRepository.deleteById(id);
     }
 }

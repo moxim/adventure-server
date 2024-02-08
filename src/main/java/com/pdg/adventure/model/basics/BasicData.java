@@ -13,4 +13,9 @@ public class BasicData implements Ided {
     @Id
     @EqualsAndHashCode.Include
     private String id = UUID.randomUUID().toString();
+
+//    @Override
+//    public String toString() {
+//        return this.getClass().getSimpleName() + "[" + id + "]";
+//    }
 }

@@ -1,5 +1,6 @@
 package com.pdg.adventure.server;
 
+import com.pdg.adventure.AdventureBuilderServer;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 

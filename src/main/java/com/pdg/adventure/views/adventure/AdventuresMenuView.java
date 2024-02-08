@@ -23,21 +23,24 @@ import java.util.List;
 import java.util.Optional;
 
 @PageTitle("Your World Of Adventures")
-@Route(value = "adventures", layout = AdventuresMainLayout.class)
-@RouteAlias(value = "", layout = AdventuresMainLayout.class)
+@RouteAlias(value = "adventures", layout = AdventuresMainLayout.class)
+@Route(value = "", layout = AdventuresMainLayout.class)
+//@PermitAll
 public class AdventuresMenuView extends VerticalLayout {
 
     private transient final AdventureService adventureService;
-    private String targetAdventureId;
 
+    private String targetAdventureId;
     private Button runAdventure;
 
     @Autowired
     public AdventuresMenuView(AdventureService anAdventureService) {
+
+        setSizeFull();
+
         adventureService = anAdventureService;
 
-        Button create = new Button("Create Adventure", e -> UI.getCurrent().navigate(AdventureEditorView.class,
-                                                 new RouteParameters("adventureId", "new")));
+        Button create = new Button("Create Adventure", e -> UI.getCurrent().navigate(AdventureEditorView.class));
         //<theme-editor-local-classname>
         create.addClassName("adventures-menu-view-button-1");
 
@@ -85,8 +88,7 @@ public class AdventuresMenuView extends VerticalLayout {
         AdventuresMenuView.AdventureDataContextMenu contextMenu = new AdventuresMenuView.AdventureDataContextMenu(grid);
 
         Div gridContainer = new Div(grid);
-        gridContainer.setWidth("100%");
-        gridContainer.setHeight("100%");
+        gridContainer.setSizeFull();
         return gridContainer;
     }
 
@@ -131,6 +133,13 @@ public class AdventuresMenuView extends VerticalLayout {
                         (ListDataProvider<AdventureData>) target.getDataProvider();
                 dataProvider.getItems().remove(adventure);
                 dataProvider.refreshAll();
+                adventure.getLocationData().keySet().stream().forEach(locationId -> {
+                    adventureService.deleteLocation(locationId);
+                });
+                adventure.getVocabularyData().getWords().stream().forEach(word -> {
+                    adventureService.deleteWord(word.getId());
+                });
+                adventureService.deleteVocabulary(adventure.getVocabularyData().getId());
                 adventureService.deleteAdventure(adventure.getId());
             }));
         }

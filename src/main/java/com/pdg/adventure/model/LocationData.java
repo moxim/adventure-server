@@ -2,23 +2,34 @@ package com.pdg.adventure.model;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.HashSet;
 import java.util.Set;
 
+@Document
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-@ToString(callSuper = true)
+//@ToString(callSuper = true)
 public class LocationData extends ThingData {
     @DBRef(lazy = true)
     private AdventureData adventure;
-    @DBRef
+    @DBRef(lazy = true)
     private ItemContainerData itemContainerData = new ItemContainerData();
-    @DBRef
+//    @DBRef
     private Set<DirectionData> directionsData = new HashSet<>();
 
     private boolean hasBeenVisited;
     private int lumen= 50;
+
+    @Override
+    public String toString() {
+        return "LocationData{" +
+                "id=" + getId() +
+                "adventureId=" + adventure.getId() +
+                "itemContainerDataId=" + itemContainerData.getId() +
+//                super.toString() +
+                "}";
+    }
 }

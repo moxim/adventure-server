@@ -1,6 +1,8 @@
 package com.pdg.adventure.api;
 
-public interface Ided {
+import java.io.Serializable;
+
+public interface Ided extends Serializable {
 
     String getId();
 

@@ -2,11 +2,14 @@ package com.pdg.adventure.views.locations;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.storage.AdventureService;
-import com.pdg.adventure.views.PaperSlider;
 import com.pdg.adventure.views.adventure.AdventuresMainLayout;
 import com.pdg.adventure.views.commands.CommandsMenuView;
+import com.pdg.adventure.views.components.VocabularyPicker;
 import com.pdg.adventure.views.directions.DirectionsMenuView;
+import com.pdg.adventure.views.support.ViewSupporter;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -23,74 +26,97 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 
+import static com.pdg.adventure.model.Word.Type.ADJECTIVE;
+import static com.pdg.adventure.model.Word.Type.NOUN;
+
 @Route(value = "adventures/:adventureId/locations/:locationId/edit", layout = LocationsMainLayout.class)
+@RouteAlias(value = "adventures/:adventureId/locations/new", layout = LocationsMainLayout.class)
 public class LocationEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
-    private transient final AdventureService adventureService;
-    private final Binder<LocationData> binder;
+    private static final String LOCATION_ID = "locationId";
+    private static final String ADVENTURE_ID = "adventureId";
+    private static final int DEFAULT_EXITS = 1;
+    private static final int MIN_LUMEN = 0;
+    private static final int MAX_LUMEN = 100;
+    private static final int LUMEN_STEP = 1;
+
+    private final transient AdventureService adventureService;
+    private final Binder<LocationViewModel> binder;
+    private VocabularyPicker noun;
+    private VocabularyPicker adjective;
 
     private Button saveButton;
+    private Button resetButton;
     private String pageTitle;
 
-    private LocationData locationData;
-    private AdventureData adventureData;
+    private transient String locationId;
+    private transient LocationData locationData;
+    private transient LocationViewModel lvm;
+    private transient AdventureData adventureData;
+    private transient VocabularyData vocabularyData;
 
     @Autowired
     public LocationEditorView(AdventureService anAdventureService) {
 
+        setSizeFull();
+
         adventureService = anAdventureService;
-        binder = new Binder<>(LocationData.class);
+        binder = new Binder<>(LocationViewModel.class);
+
+        locationData = new LocationData();
+        locationId = locationData.getId();
 
         saveButton = new Button("Save");
-        saveButton.addClickListener(e -> {
-            validateSave(locationData);
-        });
+        saveButton.addClickListener(e -> validateSave(lvm));
 
         TextField locationIdTF = getLocationIdTF();
         TextField adventureIdTF = getAdventureIdTF();
-        TextField noun = getNounTextField();
-        TextField adjective = getAdjectiveTextField();
+
+        noun = getWordBox("Noun", "The main theme of this location.");
+        adjective = getWordBox( "Adjective", "The qualifier for this location.");
+    
         TextArea shortDescription = getShortDescTextArea();
         TextArea longDescription = getLongDescTextArea();
         IntegerField lumen = getLumenField();
-        Button resetButton = new Button("Reset", event -> binder.readBean(locationData));
+        IntegerField exits = getExitsField();
+        resetButton = new Button("Reset", event -> {
+            binder.readBean(lvm);
+        });
+        resetButton.setEnabled(false);
 
-        // PaperSlider lumen = getSlider();
-        // Slider lumen = new Slider();
+        binder.addStatusChangeListener(event -> {
+            boolean isValid = event.getBinder().isValid();
+            boolean hasChanges = event.getBinder().hasChanges();
 
-        HorizontalLayout h1 = new HorizontalLayout(noun, adjective);
-        HorizontalLayout h2 = new HorizontalLayout(lumen);
+            saveButton.setEnabled(hasChanges && isValid);
+            resetButton.setEnabled(hasChanges);
+        });
+
+        HorizontalLayout h1 = new HorizontalLayout(adjective, noun);
+        HorizontalLayout h2 = new HorizontalLayout(lumen, exits);
 
         VerticalLayout hl = new VerticalLayout(h1, h2);
 
         Button manageCommands = new Button("Manage Commands", event -> UI.getCurrent().navigate(CommandsMenuView.class,
-            new RouteParameters(
-                new RouteParam("locationId", locationData.getId()),
-                new RouteParam("adventureId", adventureIdTF.getValue()))
-            )
-        );
+                new RouteParameters(
+                        new RouteParam(LOCATION_ID, locationData.getId()),
+                        new RouteParam(ADVENTURE_ID, adventureData.getId()))
+        ));
 
         Button manageItems = new Button("Manage Items");
         manageItems.setEnabled(false);
 
         Button manageExits = new Button("Manage Exits", event -> UI.getCurrent().navigate(DirectionsMenuView.class,
-             new RouteParameters(
-                new RouteParam("locationId", locationData.getId()),
-                new RouteParam("adventureId", adventureIdTF.getValue()))
-            ).ifPresent(e -> e.setData(adventureData, locationData))
-        );
+                new RouteParameters(
+                        new RouteParam(LOCATION_ID, locationData.getId()),
+                        new RouteParam(ADVENTURE_ID, adventureData.getId()))
+        ).ifPresent(e -> e.setData(adventureData, locationData)));
 
         Button backButton = new Button("Back", event ->
-        {
-//            AdventureData adventureData = adventureService.findAdventureById(adventureIdTF.getValue());
-            UI.getCurrent().navigate(LocationsMenuView.class).ifPresent(
-                    editor -> editor.setAdventureData(adventureData));
-        });
-        //                        ,
-//                        new RouteParameters(
-//                                new RouteParam("adventureId", adventureIdTF.getValue()))
-//                )
-//        );
+                UI.getCurrent().navigate(LocationsMenuView.class).ifPresent(
+                        editor -> editor.setAdventureData(adventureData)));
+        backButton.addClickShortcut(Key.ESCAPE);
+
         add(backButton);
 
         setMargin(true);
@@ -100,68 +126,62 @@ public class LocationEditorView extends VerticalLayout
         HorizontalLayout idRow = new HorizontalLayout(locationIdTF, adventureIdTF);
         HorizontalLayout mainRow = new HorizontalLayout(resetButton, backButton, saveButton);
         add(idRow, hl, shortDescription, longDescription, commandRow, mainRow);
+
+        pageTitle = "666";
+    }
+
+    private IntegerField getExitsField() {
+        IntegerField field = new IntegerField("Number of exits");
+        field.setReadOnly(true);
+        binder.bind(field, LocationViewModel::getDefaultExits, null);
+        return field;
     }
 
     private IntegerField getLumenField() {
         IntegerField field = new IntegerField("Lighting (Lumen)");
-        field.setMax(100);
-        field.setMin(0);
-        field.setStep(1);
-        field.setTooltipText("Set the lighting of this location. (100 = max, 0 = total darkness)");
+        field.setMax(MAX_LUMEN);
+        field.setMin(MIN_LUMEN);
+        field.setStep(LUMEN_STEP);
+        field.setTooltipText("Set the lighting of this location. (" + MAX_LUMEN + " = max, " + MIN_LUMEN + " = total darkness)");
         field.setValueChangeMode(ValueChangeMode.EAGER);
         field.addValueChangeListener(event -> checkIfSaveAvailable());
-        binder.bind(field, LocationData::getLumen, LocationData::setLumen);
+        binder.bind(field, LocationViewModel::getLumen, LocationViewModel::setLumen);
         return field;
     }
 
-    private PaperSlider getSlider() {
-        final PaperSlider slider = new PaperSlider();
-        //        slider.setValue(50);
-        slider.setMax(100);
-        return slider;
-    }
-
     private TextField getLocationIdTF() {
-        TextField locationIdTF = new TextField("Location ID");
-        locationIdTF.setReadOnly(true);
-        binder.bind(locationIdTF, LocationData::getId, LocationData::setId);
-        return locationIdTF;
+        TextField field = new TextField("Location ID");
+        field.setReadOnly(true);
+        binder.bindReadOnly(field, LocationViewModel::getId);
+        return field;
     }
 
     private TextField getAdventureIdTF() {
-        TextField adventureIdTF = new TextField("Adventure ID");
-        adventureIdTF.setReadOnly(true);
-        binder.bind(adventureIdTF, locationData -> locationData.getAdventure().getId(),
-                    (locationData, adventureId) -> locationData.getAdventure().setId(adventureId));
-        return adventureIdTF;
+        TextField field = new TextField("Adventure ID");
+        field.setReadOnly(true);
+        binder.bindReadOnly(field, LocationViewModel::getAdventureId);
+        return field;
     }
 
-//    private String getAdventuerId() {
-//        return locationData.getAdventureId().getId();
-//    }
-
-    public void loadLocation(String aLocationId) {
-        locationData = adventureService.findLocationById(aLocationId);
-    }
-
-    private void validateSave(LocationData aLocationData) {
+    private void validateSave(LocationViewModel aLocationViewModel) {
         try {
-            binder.writeBean(aLocationData);
+            binder.writeBean(aLocationViewModel);
 
-            BinderValidationStatus<LocationData> status = binder.validate();
+            BinderValidationStatus<LocationViewModel> status = binder.validate();
 
             if (status.hasErrors()) {
                 throw new RuntimeException("Status Error: " + status.getValidationErrors());
             }
 
-            if (aLocationData.getDescriptionData().getNoun().isEmpty()) {
+            if (aLocationViewModel.getNoun() == null) {
                 throw new RuntimeException("Alles Mist");
             }
 
-            if (adventureData.getLocationData().add(aLocationData)) {
+            adventureData.getLocationData().put(aLocationViewModel.getId(), aLocationViewModel.getData());
+//            if () {
                 adventureService.saveAdventureData(adventureData);
-            }
-            adventureService.saveLocationData((aLocationData));
+//            }
+            adventureService.saveLocationData((aLocationViewModel.getData()));
 
             saveButton.setEnabled(false);
         } catch (ValidationException e) {
@@ -179,8 +199,8 @@ public class LocationEditorView extends VerticalLayout
         field.setTooltipText("If left empty, this will be derived from the short description.");
         field.setValueChangeMode(ValueChangeMode.EAGER);
         field.addValueChangeListener(event -> checkIfSaveAvailable());
-        binder.bind(field, aLocationData -> aLocationData.getDescriptionData().getLongDescription(),
-                    (aLocationData, description) -> aLocationData.getDescriptionData().setLongDescription(description));
+        binder.bind(field, LocationViewModel::getLongDescription,
+                LocationViewModel::setLongDescription);
         return field;
     }
 
@@ -192,67 +212,37 @@ public class LocationEditorView extends VerticalLayout
         field.setTooltipText("If left empty, this will be derived from the provided noun and verb.");
         field.setValueChangeMode(ValueChangeMode.EAGER);
         field.addValueChangeListener(event -> checkIfSaveAvailable());
-        binder.bind(field, aLocationData -> aLocationData.getDescriptionData().getShortDescription(),
-                    (aLocationData, description) -> aLocationData.getDescriptionData()
-                                                                 .setShortDescription(description));
+        binder.bind(field, LocationViewModel::getShortDescription,
+                LocationViewModel::setShortDescription);
         return field;
     }
 
-    private TextField getAdjectiveTextField() {
-        TextField field = new TextField("Adjective");
-        field.setTooltipText("The qualifier for this location.");
-        field.setValueChangeMode(ValueChangeMode.EAGER);
-        field.addValueChangeListener(event -> checkIfSaveAvailable());
-        binder.bind(field, aLocationData -> aLocationData.getDescriptionData().getAdjective(),
-                    (aLocationData, anAdjective) -> aLocationData.getDescriptionData().setAdjective(anAdjective));
-        return field;
-    }
-
-    private TextField getNounTextField() {
-        TextField field = new TextField("Noun");
-        field.setTooltipText("The main theme of this location.");
-        //        noun.setRequired(true);
-        //        Label nounStatus = new Label();
-        //        nounStatus.getStyle().setColor(SolidColor.RED);
-        field.setValueChangeMode(ValueChangeMode.EAGER);
-        binder.forField(field).asRequired("You must provide a noun.");
-        binder.forField(field).bind(aLocationData -> aLocationData.getDescriptionData().getNoun(),
-                    (aLocationData, aNoun) -> aLocationData.getDescriptionData().setNoun(aNoun));
-        field.addValueChangeListener(event -> checkIfSaveAvailable());
-        return field;
+    private VocabularyPicker getWordBox(String label, String tooltipText) {
+        VocabularyPicker wordBox = new VocabularyPicker(label);
+        wordBox.setTooltipText(tooltipText);
+        wordBox.addValueChangeListener(e -> checkIfSaveAvailable());
+        return wordBox;
     }
 
     private void checkIfSaveAvailable() {
         if (binder.validate().isOk()) {
-            saveButton.setEnabled(!binder.getBean().getDescriptionData().getNoun().isEmpty());
+            final boolean isNounEmpty = noun.isEmpty();
+            // TODO: see if we can use the binder instead
+            //  binder.getBean().getNoun().getText().isEmpty();
+            saveButton.setEnabled(!isNounEmpty);
         }
+        resetButton.setEnabled(false);
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<String> locId = event.getRouteParameters().get("locationId");
-        if (locId.isPresent()) {
-            setUpLoading(locId.get());
+        final Optional<String> optionalLocationId = event.getRouteParameters().get(LOCATION_ID);
+        if (optionalLocationId.isPresent()) {
+            locationId = optionalLocationId.get();
+            pageTitle = "Edit Location #" + locationId;
         } else {
-            setUpNewEdit();
+            pageTitle = "New Location";
         }
-
-        Optional<String> advId = event.getRouteParameters().get("adventureId");
-        adventureData = adventureService.findAdventureById(advId.get());
-        locationData.setAdventure(adventureData);
-
-        binder.setBean(locationData);
-        saveButton.setEnabled(false);
-    }
-
-    private void setUpNewEdit() {
-        locationData = new LocationData();
-        pageTitle = "New Location #" + locationData.getId();
-    }
-
-    private void setUpLoading(String aLocationId) {
-        loadLocation(aLocationId);
-        pageTitle = "Edit Location #" + aLocationId;
     }
 
     @Override
@@ -267,5 +257,22 @@ public class LocationEditorView extends VerticalLayout
 
     public void setAdventureData(AdventureData anAdventureData) {
         adventureData = anAdventureData;
+        locationData = adventureData.getLocationData().get(locationId);
+        if (locationData == null) {
+            locationData = new LocationData();
+        }
+        locationData.setAdventure(adventureData);
+        vocabularyData = adventureData.getVocabularyData();
+        noun.populate(vocabularyData.getWords(NOUN));
+        adjective.populate(vocabularyData.getWords(ADJECTIVE));
+        lvm = new LocationViewModel(locationData);
+
+        ViewSupporter.bindField(binder, adjective, ADJECTIVE);
+        ViewSupporter.bindField(binder, noun, NOUN);
+
+        binder.readBean(lvm);
+
+        saveButton.setEnabled(false);
     }
+
 }

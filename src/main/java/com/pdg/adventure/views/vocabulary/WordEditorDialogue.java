@@ -1,8 +1,9 @@
 package com.pdg.adventure.views.vocabulary;
 
+import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -16,7 +17,6 @@ import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 
@@ -26,16 +26,18 @@ import java.util.List;
 
 public class WordEditorDialogue {
 
-    private final Vocabulary vocabulary;
-    private final Binder<Word> binder;
-    private final List<GuiListener> guiListeners;
-    private final List<SaveListener> saveListeners;
-
     private RadioButtonGroup<Word.Type> typeSelector;
     private ComboBox<Word> synonyms;
     private TextField wordName;
-    private Word currentWord;
     private Button saveButton;
+
+    private final Binder<Word> binder;
+
+    private final VocabularyData vocabularyData;
+    private transient Word currentWord;
+
+    private transient final List<GuiListener> guiListeners;
+    private transient final List<SaveListener> saveListeners;
 
     public enum EditType {
         EDIT("Edit"),
@@ -48,8 +50,8 @@ public class WordEditorDialogue {
         }
     }
 
-    public WordEditorDialogue(Vocabulary aVocabulary) {
-        vocabulary = aVocabulary;
+    public WordEditorDialogue(VocabularyData aVocabulary) {
+        vocabularyData = aVocabulary;
         binder = new Binder<>(Word.class);
         guiListeners = new ArrayList<>();
         saveListeners = new ArrayList<>();
@@ -73,16 +75,21 @@ public class WordEditorDialogue {
     }
 
     public void open(EditType anEditType, DescribableWordAdapter aWordWrapper) {
-        if (aWordWrapper != null) { // when editing
-            currentWord = aWordWrapper.getWord();
-            wordName.setValue(currentWord.getText());
-            typeSelector.setValue(currentWord.getType());
-            Word synonym = currentWord.getSynonym();
-            if (synonym != null) {
-                synonyms.setValue(synonym);
+        switch (anEditType) {
+            case EDIT: {
+                currentWord = aWordWrapper.getWord();
+                wordName.setValue(currentWord.getText());
+                typeSelector.setValue(currentWord.getType());
+                Word synonym = currentWord.getSynonym();
+                if (synonym != null) {
+                    synonyms.setValue(synonym);
+                }
+                break;
             }
-        } else {
-            currentWord = new Word("", Word.Type.NOUN);
+            case NEW: {
+                currentWord = new Word("", Word.Type.NOUN);
+                break;
+            }
         }
 
 //                    binder.readBean(currentWord);
@@ -113,17 +120,13 @@ public class WordEditorDialogue {
     }
 
     private void createSynonymSelector() {
-        ComboBox.ItemFilter<Word> wordItemFilter = (word, filterString) -> {
-            String typeName = word.getType().name();
-            return typeName.startsWith(filterString.toUpperCase());
-        };
-
+        ComboBox.ItemFilter<Word> wordItemFilter = WordFilter.filterByTypeOrText();
         synonyms = new ComboBox<>("Synonyms");
-        synonyms.setItems(wordItemFilter, vocabulary.getWords());
+        synonyms.setItems(wordItemFilter, vocabularyData.getWords());
         synonyms.setItemLabelGenerator(Word::getText);
         synonyms.addValueChangeListener(e -> validateIfSave());
         synonyms.setHelperText("A synonym has precedence over a type.");
-        synonyms.setTooltipText("You may filter on a word's type.");
+        synonyms.setTooltipText("You may filter on a word's type or text.");
     }
 
     private void createWordField() {
@@ -149,16 +152,19 @@ public class WordEditorDialogue {
     }
 
     private void validateIfSave() {
-        try {
-            binder.writeBean(currentWord);
+//        try {
+//            binder.writeBean(currentWord);
             if (!(typeSelector.getValue() == null && synonyms.getValue() == null)) {
                 saveButton.setEnabled(!wordName.isInvalid());
                 // saveButton.setEnabled(binder.isValid());
                 // saveButton.setEnabled(false);
+//                if (synonyms.getValue() != null) {
+//                    currentWord.setSynonym(synonyms.getValue());
+//                }
             }
-        } catch (ValidationException e) {
-            throw new RuntimeException(e);
-        }
+//        } catch (ValidationException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     private Component createDialogFooter(Dialog dialog) {
@@ -166,11 +172,13 @@ public class WordEditorDialogue {
             dialog.close();
             notifyListeners(false);
         });
+        cancelButton.addClickShortcut(Key.ESCAPE);
+
         saveButton.addClickListener(e -> {
             if (synonyms.getValue() == null) {
-                vocabulary.addNewWord(wordName.getValue(), typeSelector.getValue());
+                vocabularyData.addNewWord(wordName.getValue(), typeSelector.getValue());
             } else {
-                vocabulary.addSynonymForWord(wordName.getValue(), synonyms.getValue());
+                vocabularyData.addSynonymForWord(wordName.getValue(), synonyms.getValue());
             }
             dialog.close();
             notifyListeners(true);
@@ -185,6 +193,7 @@ public class WordEditorDialogue {
         saveButton = new Button("Save");
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         saveButton.setEnabled(false);
+        saveButton.addClickShortcut(Key.ENTER);
     }
 
     private void notifyListeners(boolean aFlagWhetherTheyShouldSaveAndUpdadeTheirGUI) {

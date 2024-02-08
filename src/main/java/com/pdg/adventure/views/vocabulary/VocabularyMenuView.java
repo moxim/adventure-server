@@ -1,11 +1,12 @@
 package com.pdg.adventure.views.vocabulary;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.views.adventure.AdventureEditorView;
 import com.pdg.adventure.views.support.GridProvider;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -33,7 +34,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
 
     private transient final AdventureService adventureService;
     private AdventureData adventureData;
-    private Vocabulary vocabulary;
+    private VocabularyData vocabularyData;
 
 //    private final String pageTitle = "";
     private Button create;
@@ -45,6 +46,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     @Autowired
     public VocabularyMenuView(AdventureService anAdventureService) {
         adventureService = anAdventureService;
+        setSizeFull();
         createGUI();
     }
 
@@ -64,8 +66,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         searchField.setValueChangeMode(ValueChangeMode.EAGER);
 
         gridContainer = new Div();
-        gridContainer.setWidth("100%");
-        gridContainer.setHeight("100%");
+        gridContainer.setSizeFull();
         VerticalLayout rightSide = new VerticalLayout(searchField, gridContainer);
         return rightSide;
     }
@@ -80,12 +81,14 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
                             new RouteParam("adventureId", adventureData.getId()))
             );
         });
+        back.addClickShortcut(Key.ESCAPE);
+
         VerticalLayout vl = new VerticalLayout(create, edit, back);
         return vl;
     }
 
     private void createWordInfoDialog(WordEditorDialogue.EditType anEditType, DescribableWordAdapter aWord) {
-        WordEditorDialogue dialogue = new WordEditorDialogue(vocabulary);
+        WordEditorDialogue dialogue = new WordEditorDialogue(vocabularyData);
         dialogue.addGuiListener(this);
         dialogue.addSaveListener(this);
         dialogue.open(anEditType, aWord);
@@ -93,41 +96,26 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
 
 
     private void fillGUI() {
-        vocabulary = adventureData.getVocabulary();
+        vocabularyData = adventureData.getVocabularyData();
         gridContainer.removeAll();
-        SerializablePredicate<DescribableWordAdapter> filter = (aWord) -> {
-            String searchTerm = searchField.getValue().trim();
-            if (searchTerm.isEmpty()) {
-                return true;
-            }
-            Word word = aWord.getWord();
-            Word synonym = word.getSynonym();
-            boolean matchesText = matchesTerm(word.getText(), searchTerm);
-            boolean matchesType = matchesTerm(word.getType().name(), searchTerm);
-            boolean matchesSynonym = synonym == null ? false : matchesTerm(synonym.getText(), searchTerm);
-            boolean matchesId = matchesTerm(word.getId(), searchTerm);
-            return matchesText || matchesType || matchesSynonym || matchesId;
-        };
-        gridContainer.add(getVocabularyGrid(vocabulary, searchField, filter));
+        SerializablePredicate<DescribableWordAdapter> filter = WordFilter.filterByTypeTextOrSynonym(searchField);
+        gridContainer.add(getVocabularyGrid(vocabularyData, searchField, filter));
     }
 
-    private boolean matchesTerm(String value, String searchTerm) {
-        return value.toLowerCase().contains(searchTerm.toLowerCase());
-    }
-
-    private Grid<DescribableWordAdapter> getVocabularyGrid(Vocabulary aVocabulary, TextField aSearchField, SerializablePredicate<DescribableWordAdapter> aFilter) {
+    private Grid<DescribableWordAdapter> getVocabularyGrid(VocabularyData aVocabularyData, TextField aSearchField, SerializablePredicate<DescribableWordAdapter> aFilter) {
         GridProvider<DescribableWordAdapter> gridProvider = new GridProvider<>(DescribableWordAdapter.class);
         gridProvider.addColumn(DescribableWordAdapter::getType, "Type");
-        gridProvider.addColumn(DescribableWordAdapter::getSynonym, "Synoym");
+        gridProvider.addColumn(DescribableWordAdapter::getSynonym, "Synonym");
         Grid<DescribableWordAdapter> grid = gridProvider.getGrid();
+        grid.setWidth("500px");
+        grid.setHeight("500px");
 
         List<DescribableWordAdapter> wordList = new ArrayList<>();
-        for (Word word : aVocabulary.getWords()) {
+        for (Word word : aVocabularyData.getWords()) {
             wordList.add(new DescribableWordAdapter(word));
         }
         final GridListDataView<DescribableWordAdapter> dataView = grid.setItems(wordList);
         aSearchField.addValueChangeListener(e -> dataView.refreshAll());
-
         dataView.addFilter(aFilter);
 
         gridProvider.addItemDoubleClickListener(e -> {
@@ -150,6 +138,8 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     @Override
     public void persistData() {
         adventureService.saveAdventureData(adventureData);
+        adventureService.saveWordData(adventureData.getVocabularyData().getWords());
+        adventureService.saveVocabularyData(adventureData.getVocabularyData());
     }
 
 //    @Override

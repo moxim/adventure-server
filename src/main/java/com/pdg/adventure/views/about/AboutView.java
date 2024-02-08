@@ -20,8 +20,8 @@ public class AboutView extends VerticalLayout {
         img.setWidth("300px");
         add(img);
 
-        add(new H2("@ PDG Software 2022"));
-        add(new Paragraph("It’s a place where you can grow your imagination 🤗"));
+        add(new H2("@ PDG Software 2022 - 2024"));
+        add(new Paragraph("The place where your imagination can run wild! 🤗"));
 
         setSizeFull();
         setJustifyContentMode(JustifyContentMode.CENTER);

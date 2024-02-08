@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -28,7 +29,7 @@ public class AdventureMapper { // extends Mapper<AdventureData, Adventure>{
         adventure.setId((anAdventureData.getId()));
         adventure.setTitle(anAdventureData.getTitle());
         LocationMapper locationMapper = mapperProvider.getMapper(LocationMapper.class);
-        Set<LocationData> locationDataList = anAdventureData.getLocationData();
+        Set<LocationData> locationDataList = new HashSet<>(anAdventureData.getLocationData().values());
         List<Location> locationList = locationMapper.mapToBOs(List.copyOf(locationDataList));
         adventure.setLocations(locationList);
         adventure.setCurrentLocationId(anAdventureData.getCurrentLocationId());
@@ -46,7 +47,7 @@ public class AdventureMapper { // extends Mapper<AdventureData, Adventure>{
         adventureData.setCurrentLocationId(anAdventure.getCurrentLocationId());
         LocationMapper locationMapper = mapperProvider.getMapper(LocationMapper.class);
         List<LocationData> locationDataList = locationMapper.mapToDOs(anAdventure.getLocations());
-        adventureData.setLocationData(Set.copyOf(locationDataList));
+//        adventureData.setLocationData(List.copyOf(locationDataList));
         ItemContainerMapper containerMapper = mapperProvider.getMapper(ItemContainerMapper.class);
         adventureData.setPlayerPocket(containerMapper.mapToDO(anAdventure.getPocket()));
 //        DirectionContainerMapper directionContainerMapper = mapperProvider.getMapper(DirectionContainerMapper.class);

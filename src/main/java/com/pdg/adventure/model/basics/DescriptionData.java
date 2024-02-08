@@ -6,6 +6,6 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class DescriptionData extends BasicDescriptionData {
-    private String shortDescription;
-    private String longDescription;
+    private String shortDescription = "";
+    private String longDescription = "";
 }

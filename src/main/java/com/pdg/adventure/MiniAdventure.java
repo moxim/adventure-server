@@ -1,4 +1,4 @@
-package com.pdg.adventure.server;
+package com.pdg.adventure;
 
 import com.pdg.adventure.api.*;
 import com.pdg.adventure.server.action.*;

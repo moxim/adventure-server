@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>Offline | Adventrue Builder</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: sans-serif;
+            color: #555;
+        }
+
+        .content {
+            width: 80%;
+        }
+
+        .offline-image {
+            width: 200px;
+            margin: 4em 0px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="content">
+    <img src="./images/adventure.png" alt="Adventure Builder is offline" class="offline-image"/>
+    <h1>Offline :-(</h1>
+    <p>You are not connected to the Adventure Builder server. Get back online to continue using this app.</p>
+</div>
+<script>
+    window.addEventListener('online', () => window.location.reload());
+</script>
+</body>
+</html>

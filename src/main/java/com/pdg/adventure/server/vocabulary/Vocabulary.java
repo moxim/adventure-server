@@ -10,9 +10,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO: have each word type in a separate map?
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @ToString(callSuper = true)
 public class Vocabulary extends BasicData implements Ided {
+    // TODO: remove, as it has been moved to VocabularyData
     public static final String UNKNOWN_WORD_TEXT = "Word '%s' is not present, yet!";
     public static final String EMPTY_STRING = "";
 
@@ -32,12 +34,14 @@ public class Vocabulary extends BasicData implements Ided {
         allWords = new HashMap<>();
     }
 
+    // TODO: remove, as it has been moved to VocabularyData
     public void addNewWord(String aWord, Word.Type aType) {
         String lowerText = aWord.toLowerCase();
         Word newWord = new Word(lowerText, aType);
         allWords.put(lowerText, newWord);
     }
 
+    // TODO: remove, as it has been moved to VocabularyData
     public void addSynonym(String aNewWord, String aSynonym) {
         String lowerSynonym = aSynonym.toLowerCase();
         Word synonym = allWords.get(lowerSynonym);
@@ -47,7 +51,8 @@ public class Vocabulary extends BasicData implements Ided {
         addSynonymForWord(aNewWord, synonym);
     }
 
-    public void addSynonymForWord(String aText, Word aWord) {
+    // TODO: remove, as it has been moved to VocabularyData
+    private void addSynonymForWord(String aText, Word aWord) {
         String lowerText = aText.toLowerCase();
         Word newWord = new Word(lowerText, aWord);
         allWords.put(lowerText, newWord);
@@ -81,7 +86,15 @@ public class Vocabulary extends BasicData implements Ided {
         return word.getType();
     }
 
-    public Collection<Word> getWords() {
+    // TODO: remove, as it has been moved to VocabularyData
+    private Collection<Word> getWords() {
         return allWords.values();
+    }
+
+    public void putWords(Collection<Word> aWords) {
+        allWords.clear();
+        for (Word word : aWords) {
+            allWords.put(word.getText(), word);
+        }
     }
 }

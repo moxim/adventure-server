@@ -1,11 +1,12 @@
 package com.pdg.adventure.views.directions;
 
-import com.pdg.adventure.model.*;
-import com.pdg.adventure.model.basics.CommandDescriptionData;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.DirectionData;
+import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.views.adventure.AdventuresMainLayout;
 import com.pdg.adventure.views.locations.LocationEditorView;
 import com.pdg.adventure.views.support.ViewSupporter;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -15,51 +16,42 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Route(value = "adventures/:adventureId/locations/:locationId/directions", layout = AdventuresMainLayout.class)
 public class DirectionsMenuView extends VerticalLayout
-        implements HasDynamicTitle, BeforeEnterObserver
-{
-    private transient final AdventureService adventureService;
-    private final Binder<DirectionData> binder;
-
-    private Grid<CommandDescriptionData> grid;
+        implements HasDynamicTitle, BeforeEnterObserver {
+    private static final String LOCATION_ID_TEXT = "locationId";
+    private static final String ADVENTURE_ID = "adventureId";
+    private transient AdventureData adventureData;
+    private transient LocationData locationData;
 
     private String pageTitle;
-    private AdventureData adventureData;
-    private LocationData locationData;
-    private DirectionData directionData;
-
+    private Grid<DirectionData> grid;
     private Button create;
-    private Button edit;
     private TextField searchField;
     private Button backButton;
 
-    @Autowired
-    public DirectionsMenuView(AdventureService anAdventureService) {
-        adventureService = anAdventureService;
-        binder = new Binder<>(DirectionData.class);
+    public DirectionsMenuView() {
+        setSizeFull();
 
-        backButton = new Button("Back", event -> {
-            UI.getCurrent().navigate(LocationEditorView.class,
-                                     new RouteParameters(
-                            new RouteParam("adventureId", adventureData.getId()),
-                            new RouteParam("locationId", locationData.getId())
-                            )
-            );
-        });
+        backButton = new Button("Back", event -> UI.getCurrent().navigate(LocationEditorView.class,
+                new RouteParameters(
+                        new RouteParam(ADVENTURE_ID, adventureData.getId()),
+                        new RouteParam(LOCATION_ID_TEXT, locationData.getId()))
+        ).ifPresent(e -> e.setAdventureData(adventureData))
+        );
+        backButton.addClickShortcut(Key.ESCAPE);
 
-        create = new Button("Create Exit", e -> {
-            UI.getCurrent().navigate(DirectionEditorView.class
-            ).ifPresent(editor -> editor.setData(locationData, adventureData));
-        });
+        create = new Button("Create Exit", e -> UI.getCurrent().navigate(DirectionEditorView.class,
+                new RouteParameters(
+                        new RouteParam(ADVENTURE_ID, adventureData.getId()),
+                        new RouteParam(LOCATION_ID_TEXT, locationData.getId()))
+        ).ifPresent(editor -> editor.setData(locationData, adventureData)));
 
         VerticalLayout leftSide = new VerticalLayout(create, backButton);
 
@@ -71,10 +63,13 @@ public class DirectionsMenuView extends VerticalLayout
         searchField.setValueChangeMode(ValueChangeMode.EAGER);
 
         Div gridContainer = new Div();
+        gridContainer.setSizeFull();
+
         grid = getGrid();
+        grid.setWidth("500px");
+        grid.setHeight("500px");
+
         gridContainer.add(grid);
-        gridContainer.setHeight("100%");
-        gridContainer.setWidth("100%");
 
         VerticalLayout rightSide = new VerticalLayout(searchField, gridContainer);
 
@@ -86,13 +81,27 @@ public class DirectionsMenuView extends VerticalLayout
         add(jumpRow);
     }
 
-    private Grid<CommandDescriptionData> getGrid() {
-        Grid<CommandDescriptionData> grid = new Grid<>(CommandDescriptionData.class, false);
-        grid.addColumn(ViewSupporter::formatId).setHeader("Id").setAutoWidth(true).setFlexGrow(0);
-        grid.addColumn(CommandDescriptionData::getVerb).setHeader("Verb").setAutoWidth(true);
-//        grid.addColumn(CommandChain::getTitle).setHeader("Title").setSortable(true)
-//            .setAutoWidth(true);
-        return grid;
+    private Grid<DirectionData> getGrid() {
+        Grid<DirectionData> directionGrid = new Grid<>(DirectionData.class, false);
+//        directionGrid.setSizeFull();
+        directionGrid.addColumn(ViewSupporter::formatId).setHeader("Id").setAutoWidth(true).setFlexGrow(0);
+        directionGrid.addColumn(directionData ->
+                ViewSupporter.formatDescription(directionData.getCommandData().getCommandDescription())
+        ).setHeader("Command");
+        directionGrid.addColumn(directionData ->
+                ViewSupporter.formatDescription(directionData.getDestinationData().getDescriptionData())
+        ).setHeader("Location");
+        directionGrid.addColumn(directionData -> ViewSupporter.formatId(directionData.getDestinationData())).setHeader("LocationId)");
+
+        directionGrid.addItemDoubleClickListener(e ->
+                UI.getCurrent().navigate(DirectionEditorView.class,
+                        new RouteParameters(
+                                new RouteParam(ADVENTURE_ID, adventureData.getId()),
+                                new RouteParam(LOCATION_ID_TEXT, locationData.getId()),
+                                new RouteParam("directionId", e.getItem().getId()))
+                ).ifPresent(editor -> editor.setData(locationData, adventureData)));
+
+        return directionGrid;
     }
 
     @Override
@@ -102,26 +111,25 @@ public class DirectionsMenuView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<String> locId = event.getRouteParameters().get("locationId");
-        pageTitle = "Directions for location #" + locId;
-
-
-//        saveButton.setEnabled(false);
+        Optional<String> locId = event.getRouteParameters().get(LOCATION_ID_TEXT);
+        if (locId.isPresent()) {
+            final String locationId = locId.get();
+            pageTitle = "Directions for location #" + locationId;
+        } else {
+            pageTitle = "Directions";
+        }
     }
 
-    private void fillGrid(CommandProviderData commandProviderData) {
-        final Map<CommandDescriptionData, CommandChainData> availableCommands = commandProviderData.getAvailableCommands();
-        grid.setItems(availableCommands.keySet());
+    private void fillGrid(Set<DirectionData> directionData) {
+        grid.setItems(directionData);
     }
 
     public void setData(AdventureData anAdventureData, LocationData aLocationData) {
         adventureData = anAdventureData;
         locationData = aLocationData;
 
-//        final ItemContainerData directionsData = locationData.getDirectionsData();
+        final Set<DirectionData> directionsData = locationData.getDirectionsData();
 
-        binder.setBean(directionData);
-
-        fillGrid(locationData.getCommandProviderData());
+        fillGrid(directionsData);
     }
 }

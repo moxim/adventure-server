@@ -48,7 +48,7 @@ public class AdventureAppLayout extends AppLayout {
         DrawerToggle toggle = new DrawerToggle();
         toggle.getElement().setAttribute("aria-label", "Menu toggle");
 
-        Image img = new Image("images/adventure.jpg", aTitle);
+        Image img = new Image("images/adventure.png", aTitle);
         img.setWidth("30px");
 
         HorizontalLayout header = new HorizontalLayout(toggle, img, viewTitle);

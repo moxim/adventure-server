@@ -65,7 +65,7 @@ public class DescribableWordAdapter implements Describable {
 
     public String getSynonym() {
         if (word == null || word.getSynonym() == null) {
-            return "<- self";
+            return "";
         }
         Word synonym = word.getSynonym();
         return synonym.getText();

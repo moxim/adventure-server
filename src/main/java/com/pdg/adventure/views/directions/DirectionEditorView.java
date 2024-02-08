@@ -1,16 +1,15 @@
 package com.pdg.adventure.views.directions;
 
-import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.CommandData;
-import com.pdg.adventure.model.DirectionData;
-import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basics.CommandDescriptionData;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.views.adventure.AdventuresMainLayout;
 import com.pdg.adventure.views.commands.CommandsMenuView;
 import com.pdg.adventure.views.support.ViewSupporter;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -20,19 +19,22 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.data.selection.SelectionListener;
 import com.vaadin.flow.router.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Predicate;
 
-@Route(value = "adventures/:adventureId/locations/:locationId/direction/edit", layout = DirectionsMainLayout.class)
-@RouteAlias(value = "adventures/directions",  layout = DirectionsMainLayout.class)
+import static com.pdg.adventure.model.Word.Type.*;
+
+@Route(value = "adventures/:adventureId/locations/:locationId/direction/:directionId/edit", layout = DirectionsMainLayout.class)
+@RouteAlias(value = "adventures/:adventureId/locations/:locationId/direction/new",  layout = DirectionsMainLayout.class)
 public class DirectionEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
-    private transient final AdventureService adventureService;
+    private static final String ADVENTURE_ID = "adventureId";
+
+    private final transient AdventureService adventureService;
     private final Binder<DirectionData> binder;
 
     private final Button saveButton;
@@ -42,21 +44,23 @@ public class DirectionEditorView extends VerticalLayout
     private final TextField locationIdTF;
     private final TextField adventureIdTF;
 
-    private final TextField verbTF;
-    private final TextField nounTF;
-    private final TextField adjectiveTF;
+    private final ComboBox<String> verbEntry;
+    private final ComboBox<String> nounEntry;
+    private final ComboBox<String> adjectiveEntry;
     private final TextArea shortDescriptionTA;
     private final TextArea longDescriptionTA;
 
-    private final Grid<LocationData> grid = new Grid<>();
+    private final Grid<LocationData> grid;
 
-    private DirectionData directionData;
-    private LocationData locationData;
-    private AdventureData adventureData;
-
+    private transient AdventureData adventureData;
+    private transient VocabularyData vocabulary;
+    private transient LocationData locationData;
+    private transient DirectionData directionData;
+    private transient Optional<LocationData> targetLocation;
+    private transient String directionId;
 
     // TODO:
-    //  - select target location (detination) through grid(?)
+    //  - select target location (destination) through grid(?)
     @Autowired
     public DirectionEditorView(AdventureService anAdventureService) {
 
@@ -64,28 +68,39 @@ public class DirectionEditorView extends VerticalLayout
         binder = new Binder<>(DirectionData.class);
 
         saveButton = new Button("Save");
-        saveButton.addClickListener(e -> {
-            validateSave(directionData);
-        });
+        saveButton.addClickListener(e -> validateSave(directionData));
 
         directionIdTF = getDirectionIdTF();
         locationIdTF = getLocationIdTF();
         adventureIdTF = getAdventureIdTF();
 
-        verbTF = getVerbTextField();
-        nounTF = getNounTextField();
-        adjectiveTF = getAdjectiveTextField();
+        verbEntry = getVerbTextField();
+        nounEntry = getNounTextField();
+        adjectiveEntry = getAdjectiveTextField();
         shortDescriptionTA = getShortDescTextArea();
         longDescriptionTA = getLongDescTextArea();
 
+        targetLocation = Optional.empty();
+
         Button resetButton = new Button("Reset", event -> binder.readBean(directionData));
+
+        grid = new Grid<>();
+        SelectionListener<Grid<LocationData>, LocationData> listener  = selectionEvent -> {
+            targetLocation = selectionEvent.getFirstSelectedItem();
+            if (targetLocation.isEmpty()) {
+                return;
+            }
+            directionData.setDestinationData(targetLocation.get());
+            checkIfSaveAvailable();
+        };
+        grid.addSelectionListener(listener);
 
         Div gridContainer = new Div();
         gridContainer.add(grid);
         gridContainer.setWidth("100%");
         gridContainer.setHeight("100%");
 
-        HorizontalLayout hlTop = new HorizontalLayout(verbTF, adjectiveTF, nounTF);
+        HorizontalLayout hlTop = new HorizontalLayout(verbEntry, adjectiveEntry, nounEntry);
         VerticalLayout vlBottom = new VerticalLayout(gridContainer);
 
         VerticalLayout hl = new VerticalLayout(hlTop, vlBottom);
@@ -94,23 +109,24 @@ public class DirectionEditorView extends VerticalLayout
                 UI.getCurrent().navigate(CommandsMenuView.class,
                         new RouteParameters(
                                 new RouteParam("locationId", locationData.getId()),
-                                new RouteParam("adventureId", adventureData.getId()))
+                                new RouteParam(ADVENTURE_ID, adventureData.getId()))
                 )
         );
         Button backButton = new Button("Back", event ->
                 UI.getCurrent().navigate(DirectionsMenuView.class,
                     new RouteParameters(
-                            new RouteParam("adventureId", adventureData.getId()),
+                            new RouteParam(ADVENTURE_ID, adventureData.getId()),
                             new RouteParam("locationId", locationData.getId()))
                     ).ifPresent(e -> e.setData(adventureData, locationData))
         );
+        backButton.addClickShortcut(Key.ESCAPE);
         add(backButton);
 
         setMargin(true);
         setPadding(true);
 
         HorizontalLayout commandRow = new HorizontalLayout(manageCommands);
-        HorizontalLayout idRow = new HorizontalLayout(locationIdTF, adventureIdTF);
+        HorizontalLayout idRow = new HorizontalLayout(directionIdTF, locationIdTF, adventureIdTF);
         HorizontalLayout mainRow = new HorizontalLayout(resetButton, backButton, saveButton);
         add(idRow, hl, shortDescriptionTA, longDescriptionTA, commandRow, mainRow);
     }
@@ -123,18 +139,18 @@ public class DirectionEditorView extends VerticalLayout
     }
 
     private TextField getLocationIdTF() {
-        TextField locationIdTF = new TextField("Location ID");
-        locationIdTF.setReadOnly(true);
-        return locationIdTF;
+        TextField field = new TextField("Location ID");
+        field.setReadOnly(true);
+        return field;
     }
 
     private TextField getAdventureIdTF() {
-        TextField adventureIdTF = new TextField("Adventure ID");
-        adventureIdTF.setReadOnly(true);
-        return adventureIdTF;
+        TextField field = new TextField("Adventure ID");
+        field.setReadOnly(true);
+        return field;
     }
 
-//    private String getAdventuerId() {
+//    private String getAdventureId() {
 //        return locationData.getAdventureId().getId();
 //    }
 
@@ -143,41 +159,24 @@ public class DirectionEditorView extends VerticalLayout
 //    }
 
     private void validateSave(DirectionData aDirectionData) {
-        try {
-            BinderValidationStatus<DirectionData> status = binder.validate();
+        binder.setBean(aDirectionData);
 
-            if (status.hasErrors()) {
-                throw new RuntimeException("Status Error: " + status.getValidationErrors());
-            }
+        BinderValidationStatus<DirectionData> status = binder.validate();
 
-            binder.writeBean(aDirectionData);
-
-            CommandData commandData = aDirectionData.getCommandData();
-            if (commandData.getCommandDescription().getVerb().isEmpty()) {
-                throw new RuntimeException("Alles Mist");
-            }
-
-            DirectionData localData = new DirectionData();
-            binder.readBean(localData);
-            System.out.println(localData);
-
-            final Set<DirectionData> directionsData = locationData.getDirectionsData();
-            System.out.println(locationData);
-            CommandDescriptionData cdd = commandData.getCommandDescription();
-            System.out.println(aDirectionData);
-            System.out.println(commandData.getCommandDescription().getNoun());
-
-//            locationData.getDirectionsData().getCommandProviderData().getAvailableCommands().put(cdd, null);
-
-//            directionsData.setCommandProviderData(aDirectionData.getCommandDescriptionData());
-
-            adventureService.saveLocationData(locationData);
-            saveButton.setEnabled(false);
-        } catch (ValidationException e) {
-            e.printStackTrace();
-        } catch (RuntimeException e) {
-            e.printStackTrace();
+        if (status.hasErrors()) {
+            throw new RuntimeException("Status Error: " + status.getValidationErrors());
         }
+
+        CommandData commandData = aDirectionData.getCommandData();
+        if (commandData.getCommandDescription().getVerb() == null) {
+            throw new RuntimeException("666 - Holy crap!");
+        }
+
+        final Set<DirectionData> directionsData = locationData.getDirectionsData();
+        directionsData.add(aDirectionData);
+
+        adventureService.saveLocationData(locationData);
+        saveButton.setEnabled(false);
     }
 
     private TextArea getLongDescTextArea() {
@@ -186,10 +185,6 @@ public class DirectionEditorView extends VerticalLayout
         field.setMinHeight("200px");
         field.setMaxHeight("350px");
         field.setTooltipText("If left empty, this will be derived from the short description.");
-        field.setValueChangeMode(ValueChangeMode.EAGER);
-        field.addValueChangeListener(event -> checkIfSaveAvailable());
-        binder.bind(field, aDirectionData -> aDirectionData.getDescriptionData().getLongDescription(),
-                    (aDirectionData, description) -> aDirectionData.getDescriptionData().setLongDescription(description));
         return field;
     }
 
@@ -199,53 +194,44 @@ public class DirectionEditorView extends VerticalLayout
         field.setMinHeight("100px");
         field.setMaxHeight("150px");
         field.setTooltipText("If left empty, this will be derived from the provided noun and verb.");
-        field.setValueChangeMode(ValueChangeMode.EAGER);
-        field.addValueChangeListener(event -> checkIfSaveAvailable());
-        binder.bind(field, aDirectionData -> aDirectionData.getDescriptionData().getShortDescription(),
-                    (aDirectionData, description) -> aDirectionData.getDescriptionData()
-                                                                 .setShortDescription(description));
         return field;
     }
 
-    private TextField getAdjectiveTextField() {
-        TextField field = new TextField("Adjective");
+    private ComboBox<String> getAdjectiveTextField() {
+        ComboBox<String> field = new ComboBox<>("Adjective");
         field.setTooltipText("The qualifier for this direction.");
-        field.setValueChangeMode(ValueChangeMode.EAGER);
-        field.addValueChangeListener(event -> checkIfSaveAvailable());
-        binder.bind(field, aDirectionData -> aDirectionData.getCommandData().getCommandDescription().getAdjective(),
-                    (aDirectionData, anAdjective) -> aDirectionData.getCommandData().getCommandDescription().setAdjective(anAdjective));
         return field;
     }
 
-    private TextField getNounTextField() {
-        TextField field = new TextField("Noun");
+    private ComboBox<String> getNounTextField() {
+        ComboBox<String> field = new ComboBox<>("Noun");
         field.setTooltipText("The noun for this direction.");
-        field.setValueChangeMode(ValueChangeMode.EAGER);
-        field.addValueChangeListener(event -> checkIfSaveAvailable());
-        binder.bind(field, aDirectionData -> aDirectionData.getCommandData().getCommandDescription().getNoun(),
-                    (aDirectionData, anNoun) -> aDirectionData.getCommandData().getCommandDescription().setNoun(anNoun));
         return field;
     }
 
-    private TextField getVerbTextField() {
-        TextField field = new TextField("Verb");
+    private ComboBox<String> getVerbTextField() {
+        ComboBox<String> field = new ComboBox<>("Verb");
+        field.setHelperText("Provide at least a verb and a location to set up a direction.");
         field.setTooltipText("The main theme of this direction.");
-        //        noun.setRequired(true);
-        //        Label nounStatus = new Label();
-        //        nounStatus.getStyle().setColor(SolidColor.RED);
-        field.setValueChangeMode(ValueChangeMode.EAGER);
-        binder.forField(field).asRequired("You must provide a verb.");
-        binder.forField(field).bind(aDirectionData -> aDirectionData.getCommandData().getCommandDescription().getVerb(),
-                    (aDirectionData, aVerb) -> aDirectionData.getCommandData().getCommandDescription().setVerb(aVerb));
-        field.addValueChangeListener(event -> checkIfSaveAvailable());
+        field.setOpened(true);
+        field.addValueChangeListener(event -> {
+            if (event.getValue() != null) {
+                checkIfSaveAvailable();
+            }
+        });
         return field;
     }
+
 
     private void checkIfSaveAvailable() {
+        try {
+            binder.writeBean(directionData);
+        } catch (ValidationException e) {
+            throw new RuntimeException(e);
+        }
+        Word verb = directionData.getCommandData().getCommandDescription().getVerb();
         if (binder.validate().isOk()) {
-            String verb = directionData.getCommandData().getCommandDescription().getVerb();
-            // TODO: also check that the target location is not null
-            saveButton.setEnabled(verb != null && !verb.isEmpty());
+            saveButton.setEnabled(targetLocation.isPresent() && verb != null && !verb.getText().isBlank());
         } else {
             BinderValidationStatus<DirectionData> status = binder.validate();
             System.out.println("Validate is not OK");
@@ -255,38 +241,25 @@ public class DirectionEditorView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<String> directionId = event.getRouteParameters().get("directionId");
-        if (directionId.isPresent()) {
-            setUpLoading(directionId.get());
-            setUpGUI();
+        Optional<String> providedDirectionId = event.getRouteParameters().get("directionId");
+        if (providedDirectionId.isPresent()) {
+            setUpLoading(providedDirectionId.get());
         } else {
             setUpNewEdit();
         }
-
-        Optional<String> advId = event.getRouteParameters().get("adventureId");
-//        adventureData = adventureService.findAdventureById(advId.get());
-//        locationData.setAdventureId(advId.get());
-
-        directionIdTF.setValue(directionData.getId());
         binder.setBean(directionData);
-        saveButton.setEnabled(false);
-    }
 
-    private void setUpGUI() {
-        verbTF.setValue(directionData.getCommandData().getCommandDescription().getVerb());
-        adjectiveTF.setValue(directionData.getCommandData().getCommandDescription().getAdjective());
-        nounTF.setValue(directionData.getCommandData().getCommandDescription().getNoun());
-        shortDescriptionTA.setValue(directionData.getDescriptionData().getShortDescription());
-        longDescriptionTA.setValue(directionData.getDescriptionData().getLongDescription());
+        saveButton.setEnabled(false);
     }
 
     private void setUpNewEdit() {
         directionData = new DirectionData();
-        pageTitle = "New Direction #" + directionData.getId();
+        directionId = directionData.getId();
+        pageTitle = "New Direction";
     }
 
     private void setUpLoading(String aDirectionId) {
-//        loadDirection(aDirectionId);
+        directionId = aDirectionId;
         pageTitle = "Edit Direction #" + aDirectionId;
     }
 
@@ -302,22 +275,73 @@ public class DirectionEditorView extends VerticalLayout
 
     public void setData(LocationData aLocationData, AdventureData anAdventureData) {
         locationData = aLocationData;
-        locationIdTF.setValue(locationData.getId());
-        adventureIdTF.setValue(locationData.getAdventure().getId());
         adventureData = anAdventureData;
+        locationIdTF.setValue(locationData.getId());
+        adventureIdTF.setValue(adventureData.getId());
+        vocabulary = adventureData.getVocabularyData();
+
+        if (directionData == null) {
+            directionData = locationData.getDirectionsData().stream().filter(direction -> direction.getId().equals(directionId)).findFirst().orElseThrow();
+        }
 
         fillGUI();
     }
 
     private void fillGUI() {
-        List<LocationData> locations = List.copyOf(adventureData.getLocationData());
+        Predicate<? super LocationData> predicate = aLocationData -> !(aLocationData.getId().equals(locationData.getId()));
+        List<LocationData> locations = List.copyOf(adventureData.getLocationData().values().
+                stream().toList().stream().filter(predicate).toList());
 
         grid.setItems(locations);
         grid.addColumn(ViewSupporter::formatId).setHeader("Id").setAutoWidth(true).setFlexGrow(0);
         grid.addColumn(ViewSupporter::formatDescription).setHeader("Short Description").setSortable(true)
                 .setAutoWidth(true);
 
+        List<String> verbs = new ArrayList<>();
+        List<String> adjectives = new ArrayList<>();
+        List<String> nouns = new ArrayList<>();
+
+        for (Word word : vocabulary.getWords()) {
+            switch(word.getType()) {
+                case NOUN -> nouns.add(word.getText());
+                case ADJECTIVE -> adjectives.add(word.getText());
+                case VERB -> verbs.add(word.getText());
+            }
+        }
+
+        verbEntry.setItems(verbs);
+        nounEntry.setItems(nouns);
+        adjectiveEntry.setItems(adjectives);
+
+        locationIdTF.setHelperText(locationData.getDescriptionData().getShortDescription());
+        directionIdTF.setValue(directionData.getId());
+
+        setUpGUI();
+        setUpBindings();
+
         checkIfSaveAvailable();
+    }
+
+    private void setUpGUI() {
+        CommandDescriptionData commandDescriptionData = directionData.getCommandData().getCommandDescription();
+        verbEntry.setValue(ViewSupporter.getWordText(ViewSupporter.getWord(commandDescriptionData, VERB)));
+        adjectiveEntry.setValue(ViewSupporter.getWordText(ViewSupporter.getWord(commandDescriptionData, ADJECTIVE)));
+        nounEntry.setValue(ViewSupporter.getWordText(ViewSupporter.getWord(commandDescriptionData, NOUN)));
+        shortDescriptionTA.setValue(directionData.getDescriptionData().getShortDescription());
+        longDescriptionTA.setValue(directionData.getDescriptionData().getLongDescription());
+        grid.select(directionData.getDestinationData());
+    }
+
+    private void setUpBindings() {
+        binder.forField(verbEntry).asRequired("You must provide a verb.");
+        ViewSupporter.bindField(binder, verbEntry, vocabulary, VERB, directionData.getCommandData().getCommandDescription());
+        ViewSupporter.bindField(binder, nounEntry, vocabulary, ADJECTIVE, directionData.getCommandData().getCommandDescription());
+        ViewSupporter.bindField(binder, adjectiveEntry, vocabulary, NOUN, directionData.getCommandData().getCommandDescription());
+        binder.bind(longDescriptionTA, aDirectionData -> aDirectionData.getDescriptionData().getLongDescription(),
+                    (aDirectionData, description) -> aDirectionData.getDescriptionData().setLongDescription(description));
+        binder.bind(shortDescriptionTA, aDirectionData -> aDirectionData.getDescriptionData().getShortDescription(),
+                    (aDirectionData, description) -> aDirectionData.getDescriptionData()
+                                                                 .setShortDescription(description));
     }
 
     public void setDirectionData(DirectionData aDirectionData) {

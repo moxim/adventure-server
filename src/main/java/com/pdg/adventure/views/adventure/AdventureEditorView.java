@@ -3,7 +3,9 @@ package com.pdg.adventure.views.adventure;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.views.locations.LocationsMenuView;
+import com.pdg.adventure.views.support.ViewSupporter;
 import com.pdg.adventure.views.vocabulary.VocabularyMenuView;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -19,11 +21,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Optional;
 
 @Route(value = "adventures/:adventureId/edit", layout = AdventuresMainLayout.class)
+@RouteAlias(value = "adventures/new", layout = AdventuresMainLayout.class)
 public class AdventureEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
 
     private final Button saveButton = new Button("Save");
     private final Button testButton = new Button("Test");
+    private final TextField startLocation;
     private String pageTitle;
 
     private final Binder<AdventureData> binder;
@@ -69,16 +73,27 @@ public class AdventureEditorView extends VerticalLayout
 
         TextField adventureIdTF = getAdventureIdTF();
         TextField title = getTitleField();
+        startLocation = getStartLocationField();
+        HorizontalLayout titleStartRow = new HorizontalLayout(adventureIdTF, title, startLocation);
         TextArea longDescription = getNotesArea();
 
         setMargin(true);
         setPadding(true);
 
         final HorizontalLayout editRow = new HorizontalLayout(editVocabularyButton, editLocationsButton, workflowButton);
-        final HorizontalLayout testSaveRow = new HorizontalLayout(testButton, saveButton);
 
-        add(adventureIdTF, title, longDescription, editRow, testSaveRow);
+        Button backButton = new Button("Back", event -> UI.getCurrent().navigate(AdventuresMenuView.class));
+        backButton.addClickShortcut(Key.ESCAPE);
+        final HorizontalLayout testSaveRow = new HorizontalLayout(backButton, testButton, saveButton);
+
+        add(titleStartRow, longDescription, editRow, testSaveRow);
         setHorizontalComponentAlignment(Alignment.CENTER, testButton, saveButton);
+    }
+
+    private TextField getStartLocationField() {
+        TextField field = new TextField("Start Location");
+        field.setReadOnly(true);
+        return field;
     }
 
     private TextField getAdventureIdTF() {
@@ -91,6 +106,7 @@ public class AdventureEditorView extends VerticalLayout
 
     public void loadAdventure(String aLocationId) {
         adventureData = adventureService.findAdventureById(aLocationId);
+        startLocation.setValue(ViewSupporter.getLocationsShortedDescription(adventureData.getLocationData().get(adventureData.getCurrentLocationId())));
         binder.setBean(adventureData);
     }
 
@@ -146,7 +162,7 @@ public class AdventureEditorView extends VerticalLayout
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         Optional<String> adventureId = event.getRouteParameters().get("adventureId");
-        if (adventureId.isPresent() && !adventureId.equals("new")) {
+        if (adventureId.isPresent()) {
             setUpLoading(adventureId.get());
         } else {
             setUpNewEdit();
@@ -157,7 +173,7 @@ public class AdventureEditorView extends VerticalLayout
     private void setUpNewEdit() {
         adventureData = new AdventureData();
         binder.setBean(adventureData);
-        pageTitle = "New Adventure #" + adventureData.getId();
+        pageTitle = "A new adventure awaits!";
     }
 
     private void setUpLoading(String anAdventureId) {

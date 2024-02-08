@@ -44,9 +44,9 @@ public class TestSupporter {
     public static CommandDescriptionData createCommandDescriptionData(String anId) {
         CommandDescriptionData result = new CommandDescriptionData();
         result.setId(anId);
-        result.setVerb(anId + "_verb");
-        result.setAdjective(anId + "_adjective");
-        result.setNoun(anId + "_noun");
+//        result.setVerb(anId + "_verb");
+//        result.setAdjective(anId + "_adjective");
+//        result.setNoun(anId + "_noun");
         return result;
     }
 }

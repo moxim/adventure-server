@@ -13,6 +13,9 @@ import org.github.legioth.imagemap.ImageMap;
 public class LocationMapView extends FormLayout {
 
     public LocationMapView() {
+        
+        setSizeFull();
+
         Div div = new Div();
         ImageMap imageMap =
 //                new ImageMap("https://thelordsofmidnight.com/blog/wp-content/uploads/2012/12/overview_map"

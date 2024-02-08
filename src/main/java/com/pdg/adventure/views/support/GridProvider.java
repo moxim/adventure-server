@@ -18,9 +18,11 @@ public class GridProvider<T extends Describable> {
 
     public GridProvider(Class<T> clazz) {
         grid = new Grid<>(clazz, false);
-        grid.addColumn(ViewSupporter::formatId).setHeader("Id").setAutoWidth(true).setFlexGrow(0);
-        grid.addColumn(ViewSupporter::formatDescription).setHeader("Short Description").setSortable(true)
-                .setAutoWidth(true);
+        grid.setSizeFull();
+        grid.addColumn(ViewSupporter::formatId).setHeader("Id");//.setAutoWidth(true).setFlexGrow(0);
+        grid.addColumn(ViewSupporter::formatDescription).setHeader("Short Description").setSortable(true);
+//                .setAutoWidth(true);
+        grid.getColumns().forEach(column -> column.setAutoWidth(true));
         grid.setWidth("500px");
         grid.setHeight("500px");
         grid.addThemeVariants(GridVariant.LUMO_WRAP_CELL_CONTENT);

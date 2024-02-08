@@ -2,13 +2,12 @@ package com.pdg.adventure.server.parser;
 
 import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.api.Describable;
-import com.pdg.adventure.api.Ided;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.util.Objects;
 import java.util.UUID;
 
-public class GenericCommandDescription implements CommandDescription, Ided {
+public class GenericCommandDescription implements CommandDescription {
     private String id;
     private final String verb;
     private final String adjective;
