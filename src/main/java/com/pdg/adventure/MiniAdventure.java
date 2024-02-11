@@ -219,6 +219,12 @@ public class MiniAdventure {
         house.addDirection(toLocation);
     }
 
+    private void setUpTakeCommands(Item anItem, MessageAction aMessageAction) {
+        GenericCommandDescription getCommandDescription = new GenericCommandDescription("get", anItem);
+        GenericCommand takeFailCommand = new GenericCommand(getCommandDescription, aMessageAction);
+        anItem.addCommand(takeFailCommand);
+    }
+
     private void setUpTakeCommands(Item anItem) {
         GenericCommandDescription getCommandDescription = new GenericCommandDescription("get", anItem);
         GenericCommand takeFailCommand = new GenericCommand(getCommandDescription, new MessageAction(
@@ -313,6 +319,7 @@ public class MiniAdventure {
         cutSuccessfully.addFollowUpAction(new DestroyAction(rabbit, allMessages));
         rabbit.addCommand(cutSuccessfully);
         setUpLookCommands(rabbit);
+        setUpTakeCommands(rabbit, new MessageAction(allMessages.getMessage("22"), allMessages));
 
         // ring
         DescriptionProvider ringDescription = new DescriptionProvider("golden", "ring");
@@ -394,6 +401,7 @@ public class MiniAdventure {
         allMessages.addMessage("19", "You may sell it to a trader, but that is part of a different adventure.");
         allMessages.addMessage("20", "You may cook it, but that is part of a different adventure");
         allMessages.addMessage("21", "The rabbit looks very tasty!");
+        allMessages.addMessage("22", "The rabbit hops away.");
     }
 
     private void setUpVocabulary() {
