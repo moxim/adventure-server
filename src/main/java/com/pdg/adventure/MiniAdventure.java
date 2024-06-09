@@ -50,8 +50,8 @@ public class MiniAdventure {
     private static final String SMALL_TEXT = "small";
 
     public static void main(String[] args) {
-        MiniAdventure game = new MiniAdventure(new Vocabulary(), new HashMap<>(4), new MessagesHolder(),
-                                               new GenericContainer(new DescriptionProvider("all items"), 9999));
+        final MiniAdventure game = new MiniAdventure(new Vocabulary(), new HashMap<>(4), new MessagesHolder(),
+                                                     new GenericContainer(new DescriptionProvider("all items"), 9999));
         game.setup();
         game.run();
     }
@@ -107,6 +107,12 @@ public class MiniAdventure {
     }
 
     private void setUpWorkflowCommands() {
+        GenericCommandDescription helpCommandDescription = new GenericCommandDescription("help");
+        GenericCommand helpCommand = new GenericCommand(helpCommandDescription, new MessageAction("""
+                Look around, take items, wear items, drop items, enter locations, leave locations, describe locations.
+                Or quit.""", allMessages));
+        Environment.getWorkflow().addInterceptorCommand(helpCommandDescription, helpCommand);
+
         GenericCommandDescription inventoryCommandDescription = new GenericCommandDescription("inventory");
         GenericCommand inventoryCommand = new GenericCommand(inventoryCommandDescription,
                                                              new InventoryAction(new MessageConsumer(),
@@ -406,6 +412,8 @@ public class MiniAdventure {
 
     private void setUpVocabulary() {
         allWords.addNewWord("quit", Word.Type.VERB);
+        allWords.addSynonym("exit", "quit");
+        allWords.addSynonym("bye", "quit");
         allWords.addNewWord("save", Word.Type.VERB);
         allWords.addNewWord("load", Word.Type.VERB);
         allWords.addNewWord("inventory", Word.Type.VERB);
@@ -463,5 +471,7 @@ public class MiniAdventure {
         allWords.addNewWord("gloves", Word.Type.NOUN);
 
         allWords.addNewWord("here", Word.Type.NOUN);
+
+        allWords.addNewWord("help", Word.Type.VERB);
     }
 }
