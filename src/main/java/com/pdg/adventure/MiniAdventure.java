@@ -28,6 +28,7 @@ import com.pdg.adventure.model.Word;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 // TODO
@@ -39,6 +40,8 @@ public class MiniAdventure {
     private Location portal;
     private Location location;
     private Location house;
+    private Map<String, Location> allLocations = new HashMap<>();
+
     private Container pocket;
 
     // these hold everything
@@ -63,10 +66,19 @@ public class MiniAdventure {
         allMessages = aBagOfAllMessages;
         allItems = anItemContainer;
         variableProvider = new VariableProvider();
-        new MessageAction(allMessages.getMessage("4"), allMessages).execute();
     }
 
-    private void run() {
+    void run() {
+        System.out.println(new MessageAction(allMessages.getMessage("4"), allMessages).execute());
+        allWords.addNewWord("quit", Word.Type.VERB);
+        allWords.addSynonym("exit", "quit");
+        allWords.addSynonym("bye", "quit");
+        allWords.addNewWord("describe", Word.Type.VERB);
+        allWords.addSynonym("look", "describe");
+        allWords.addNewWord("help", Word.Type.VERB);
+
+        setUpWorkflowCommands();
+
         GameLoop gameLoop = new GameLoop(new Parser(allWords));
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         gameLoop.run(reader);
@@ -109,7 +121,7 @@ public class MiniAdventure {
     private void setUpWorkflowCommands() {
         GenericCommandDescription helpCommandDescription = new GenericCommandDescription("help");
         GenericCommand helpCommand = new GenericCommand(helpCommandDescription, new MessageAction("""
-                Look around, take items, wear items, drop items, enter locations, leave locations, describe locations.
+                Look around, examine items, take or drop items, maybe wear items, enter or leave locations.
                 Or quit.""", allMessages));
         Environment.getWorkflow().addInterceptorCommand(helpCommandDescription, helpCommand);
 
@@ -126,9 +138,10 @@ public class MiniAdventure {
         Environment.getWorkflow().addInterceptorCommand(quitCommandDescription, quitCommand);
 
         Action lookLocationAction = new DescribeAction(() -> {
-            Environment.getCurrentLocation().setHasBeenVisited(false);
+            long timesVisited = 0;
+            Environment.getCurrentLocation().setTimesVisited(timesVisited);
             String result = Environment.getCurrentLocation().getLongDescription();
-            Environment.getCurrentLocation().setHasBeenVisited(true);
+            Environment.getCurrentLocation().setTimesVisited(timesVisited++);
             return result;
         }, allMessages);
         GenericCommandDescription lookCommandDescription = new GenericCommandDescription("describe");
@@ -169,6 +182,11 @@ public class MiniAdventure {
         houseDescription.setLongDescription(allMessages.getMessage("11"));
         house = new Location(houseDescription, pocket);
         setUpLookCommands(house);
+
+
+        allLocations.put("1", location);
+        allLocations.put("2", portal);
+        allLocations.put("3", house);
     }
 
     private void setUpPocket() {
@@ -383,6 +401,10 @@ public class MiniAdventure {
         allMessages.addMessage("-7", "You can't remove %s.");
         allMessages.addMessage("-6", "You can't wear %s.");
 
+        allMessages.addMessage("-2", "I don't understand, please rephrase.");
+        allMessages.addMessage("-1", "You can't do that.");
+        allMessages.addMessage("0", "OK.");
+
         allMessages.addMessage("1", "As you inspect the ring you notice the shape of a portal engraved in it.");
         allMessages.addMessage("2", "You skin the rabbit and are left with a rabbit pelt.");
         allMessages.addMessage("3", "You need a knife.");
@@ -473,5 +495,11 @@ public class MiniAdventure {
         allWords.addNewWord("here", Word.Type.NOUN);
 
         allWords.addNewWord("help", Word.Type.VERB);
+    }
+
+    public void setLocations(List<Location> locations) {
+        for (Location location : locations) {
+            allLocations.put(location.getId(), location);
+        }
     }
 }

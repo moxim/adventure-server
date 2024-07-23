@@ -104,8 +104,8 @@ public class AdventureEditorView extends VerticalLayout
         return field;
     }
 
-    public void loadAdventure(String aLocationId) {
-        adventureData = adventureService.findAdventureById(aLocationId);
+    public void loadAdventure(String aAdventureId) {
+        adventureData = adventureService.findAdventureById(aAdventureId);
         startLocation.setValue(ViewSupporter.getLocationsShortedDescription(adventureData.getLocationData().get(adventureData.getCurrentLocationId())));
         binder.setBean(adventureData);
     }

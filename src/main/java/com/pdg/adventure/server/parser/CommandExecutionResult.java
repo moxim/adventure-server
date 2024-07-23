@@ -1,7 +1,7 @@
 package com.pdg.adventure.server.parser;
 
 import com.pdg.adventure.api.ExecutionResult;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.model.VocabularyData;
 
 public class CommandExecutionResult implements ExecutionResult {
     private State executionState;
@@ -16,7 +16,7 @@ public class CommandExecutionResult implements ExecutionResult {
 
     public CommandExecutionResult(State aSuccessState) {
         executionState = aSuccessState;
-        resultMessage = Vocabulary.EMPTY_STRING;
+        resultMessage = VocabularyData.EMPTY_STRING;
         commandHasMatched = false;
     }
 

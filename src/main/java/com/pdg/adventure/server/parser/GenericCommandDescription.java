@@ -2,7 +2,7 @@ package com.pdg.adventure.server.parser;
 
 import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.api.Describable;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.model.VocabularyData;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -18,11 +18,11 @@ public class GenericCommandDescription implements CommandDescription {
     }
 
     public GenericCommandDescription(String aVerb) {
-        this(aVerb, Vocabulary.EMPTY_STRING, Vocabulary.EMPTY_STRING);
+        this(aVerb, VocabularyData.EMPTY_STRING, VocabularyData.EMPTY_STRING);
     }
 
     public GenericCommandDescription(String aVerb, String aNoun) {
-        this(aVerb, Vocabulary.EMPTY_STRING, aNoun);
+        this(aVerb, VocabularyData.EMPTY_STRING, aNoun);
     }
 
     public GenericCommandDescription(String aVerb, String anAdjective, String aNoun) {

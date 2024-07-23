@@ -17,4 +17,8 @@ buildNumber.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
 
+# Vaadin und node_modules
 node_modules/
+/src/main/dev-bundle/
+/frontend/generated/
+/vite.generated.ts

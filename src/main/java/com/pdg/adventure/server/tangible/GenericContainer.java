@@ -1,9 +1,9 @@
 package com.pdg.adventure.server.tangible;
 
 import com.pdg.adventure.api.*;
+import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -58,7 +58,7 @@ public class GenericContainer extends Item implements Container {
         Containable result = null;
         for (Containable containable : contents) {
             if (containable.getNoun().equals(aNoun) &&
-                    (Vocabulary.EMPTY_STRING.equals(anAdjective) || containable.getAdjective().equals(anAdjective))) {
+                    (VocabularyData.EMPTY_STRING.equals(anAdjective) || containable.getAdjective().equals(anAdjective))) {
                 result = containable;
                 break;
             }

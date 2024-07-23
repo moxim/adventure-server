@@ -53,6 +53,7 @@ public class Environment {
     }
 
     public static ExecutionResult interceptCommands(CommandDescription aCommand) {
-        return workflow.interceptCommands(aCommand);
+        ExecutionResult result = workflow.interceptCommands(aCommand);
+        return result;
     }
 }

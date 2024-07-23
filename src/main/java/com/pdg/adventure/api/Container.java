@@ -28,4 +28,5 @@ public interface Container extends Actionable {
     boolean isHoldingDirections();
 
     Containable findItemByShortDescription(String anAdjective, String aNoun);
+
 }

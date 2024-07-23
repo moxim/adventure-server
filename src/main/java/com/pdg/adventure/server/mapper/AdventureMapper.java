@@ -1,57 +1,59 @@
 package com.pdg.adventure.server.mapper;
 
+import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.Adventure;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.storage.messages.MessagesHolder;
-import com.pdg.adventure.server.support.MapperProvider;
+import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-@Component
-public class AdventureMapper { // extends Mapper<AdventureData, Adventure>{
+@Service
+public class AdventureMapper implements Mapper<AdventureData, Adventure> {
 
-    private final MapperProvider mapperProvider;
+    private final MapperSupporter mapperSupporter;
 
-    public AdventureMapper(@Autowired MapperProvider aMapperProvider) {
-        mapperProvider = aMapperProvider;
+    public AdventureMapper(MapperSupporter aMapperSupporter) {
+        mapperSupporter = aMapperSupporter;
     }
 
     public Adventure mapToBO(AdventureData anAdventureData) {
-        Adventure adventure = new Adventure(new Vocabulary(), new HashMap<>(4), new MessagesHolder(), new HashMap<>());
+        final VocabularyMapper vocabularyMapper = mapperSupporter.getMapper(VocabularyMapper.class);
+        final Vocabulary vocabulary = vocabularyMapper.mapToBO(anAdventureData.getVocabularyData());
+        Adventure adventure = new Adventure(vocabulary, new HashMap<>(4), new MessagesHolder(), new HashMap<>());
         adventure.setId((anAdventureData.getId()));
         adventure.setTitle(anAdventureData.getTitle());
-        LocationMapper locationMapper = mapperProvider.getMapper(LocationMapper.class);
+        LocationMapper locationMapper = mapperSupporter.getMapper(LocationMapper.class);
         Set<LocationData> locationDataList = new HashSet<>(anAdventureData.getLocationData().values());
         List<Location> locationList = locationMapper.mapToBOs(List.copyOf(locationDataList));
         adventure.setLocations(locationList);
         adventure.setCurrentLocationId(anAdventureData.getCurrentLocationId());
-        ItemContainerMapper containerMapper = mapperProvider.getMapper(ItemContainerMapper.class);
+        ItemContainerMapper containerMapper = mapperSupporter.getMapper(ItemContainerMapper.class);
         adventure.setPocket(containerMapper.mapToBO(anAdventureData.getPlayerPocket()));
-//        DirectionContainerMapper directionContainerMapper = mapperProvider.getMapper(DirectionContainerMapper.class);
-//        adventure.setPocket(directionContainerMapper.mapToBO(anAdventureData.getPlayerPocket()));
         return adventure;
     }
 
     public AdventureData mapToDO(Adventure anAdventure) {
+        final Vocabulary vocabulary = anAdventure.getVocabulary();
+        final VocabularyMapper vocabularyMapper = mapperSupporter.getMapper(VocabularyMapper.class);
+        final VocabularyData vocabularyData = vocabularyMapper.mapToDO(vocabulary);
         AdventureData adventureData = new AdventureData();
+        adventureData.setVocabularyData(vocabularyData);
         adventureData.setId(anAdventure.getId());
         adventureData.setTitle(anAdventure.getTitle());
         adventureData.setCurrentLocationId(anAdventure.getCurrentLocationId());
-        LocationMapper locationMapper = mapperProvider.getMapper(LocationMapper.class);
+        LocationMapper locationMapper = mapperSupporter.getMapper(LocationMapper.class);
         List<LocationData> locationDataList = locationMapper.mapToDOs(anAdventure.getLocations());
-//        adventureData.setLocationData(List.copyOf(locationDataList));
-        ItemContainerMapper containerMapper = mapperProvider.getMapper(ItemContainerMapper.class);
+        Map<String, LocationData> adventureDataLocations = new HashMap<>();
+        locationDataList.forEach(locationData -> adventureDataLocations.put(locationData.getId(), locationData));
+        adventureData.setLocationData(adventureDataLocations);
+        ItemContainerMapper containerMapper = mapperSupporter.getMapper(ItemContainerMapper.class);
         adventureData.setPlayerPocket(containerMapper.mapToDO(anAdventure.getPocket()));
-//        DirectionContainerMapper directionContainerMapper = mapperProvider.getMapper(DirectionContainerMapper.class);
-//        adventureData.setPlayerPocket(directionContainerMapper.mapToDO(anAdventure.getPocket()));
         return adventureData;
     }
 }

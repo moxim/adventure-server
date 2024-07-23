@@ -1,0 +1,32 @@
+{
+    _id: 'af198f13-452a-433e-9619-8a3320d18791',
+    title: 'A1',
+    playerPocket: {
+        _id: '205aa827-7079-40f6-84d9-e58cc58ea9a1',
+        contents: [],
+        maxSize: 0,
+        holdingDirections: false,
+        isContainable: false,
+        isWearable: false,
+        isWorn: false,
+        descriptionData: {
+            _id: '479a7caf-7d48-4a30-864b-6e40addc343a',
+            shortDescription: '',
+            longDescription: '',
+            adjective: DBRef('undefined', '7726883b-5e5a-41f3-aa0d-6f727c608e58'),
+            noun: DBRef('undefined', '33be0689-5a5b-4fd7-b929-4a68431dfb48')
+        },
+        commandProviderData: {
+            _id: 'f1ee4ef6-cb85-4a25-b15b-ef65414ccc5f',
+            availableCommands: {}
+        }
+    },
+    locationData: {
+        'f05080ee-560e-47e7-b95b-ae098180257c': DBRef('undefined', 'f05080ee-560e-47e7-b95b-ae098180257c'),
+        '7e6bb687-2cf0-4263-9aa5-2a15345bc78d': DBRef('undefined', '7e6bb687-2cf0-4263-9aa5-2a15345bc78d')
+    },
+    currentLocationId: 'f05080ee-560e-47e7-b95b-ae098180257c',
+    vocabularyData: DBRef('undefined', 'eea6c752-2a16-4702-ba88-13c92541dcd4'),
+    notes: 'Quick one.',
+    _class: 'com.pdg.adventure.model.AdventureData'
+}

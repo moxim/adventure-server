@@ -23,7 +23,10 @@ import com.vaadin.flow.data.selection.SelectionListener;
 import com.vaadin.flow.router.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import static com.pdg.adventure.model.Word.Type.*;
@@ -59,8 +62,6 @@ public class DirectionEditorView extends VerticalLayout
     private transient Optional<LocationData> targetLocation;
     private transient String directionId;
 
-    // TODO:
-    //  - select target location (destination) through grid(?)
     @Autowired
     public DirectionEditorView(AdventureService anAdventureService) {
 
@@ -150,14 +151,6 @@ public class DirectionEditorView extends VerticalLayout
         return field;
     }
 
-//    private String getAdventureId() {
-//        return locationData.getAdventureId().getId();
-//    }
-
-//    public void loadDirection(String aDirectionId) {
-//        directionData = adventureService.findLocationById(aDirectionId);
-//    }
-
     private void validateSave(DirectionData aDirectionData) {
         binder.setBean(aDirectionData);
 
@@ -167,10 +160,16 @@ public class DirectionEditorView extends VerticalLayout
             throw new RuntimeException("Status Error: " + status.getValidationErrors());
         }
 
-        CommandData commandData = aDirectionData.getCommandData();
+        CommandData//<MovePlayerActionData>
+                commandData = aDirectionData.getCommandData();
         if (commandData.getCommandDescription().getVerb() == null) {
             throw new RuntimeException("666 - Holy crap!");
         }
+
+        // TODO: fill this in
+//        final MovePlayerActionData movePlayerActionData = new MovePlayerActionData();
+//        movePlayerActionData.setLocationId(aDirectionData.getDestinationData().getId());
+//        commandData.setAction(movePlayerActionData);
 
         final Set<DirectionData> directionsData = locationData.getDirectionsData();
         directionsData.add(aDirectionData);
@@ -213,7 +212,6 @@ public class DirectionEditorView extends VerticalLayout
         ComboBox<String> field = new ComboBox<>("Verb");
         field.setHelperText("Provide at least a verb and a location to set up a direction.");
         field.setTooltipText("The main theme of this direction.");
-        field.setOpened(true);
         field.addValueChangeListener(event -> {
             if (event.getValue() != null) {
                 checkIfSaveAvailable();

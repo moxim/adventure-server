@@ -55,7 +55,7 @@ public class AdventureAppLayout extends AppLayout {
 
         header.setId("header");
         header.getThemeList().set("dark", true);
-        header.setWidthFull();
+        header.setSizeFull();
         header.setSpacing(false);
         header.setAlignItems(FlexComponent.Alignment.CENTER);
 

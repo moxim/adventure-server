@@ -1,38 +1,52 @@
 package com.pdg.adventure.server.mapper;
 
-import java.util.Map;
-
 import com.pdg.adventure.api.CommandChain;
 import com.pdg.adventure.api.CommandDescription;
+import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.CommandChainData;
 import com.pdg.adventure.model.CommandProviderData;
 import com.pdg.adventure.model.basics.CommandDescriptionData;
 import com.pdg.adventure.server.parser.CommandProvider;
+import com.pdg.adventure.server.support.MapperSupporter;
+import org.springframework.stereotype.Service;
 
-public abstract class CommandProviderMapper {
-    private CommandProviderMapper() {
-        // don't instantiate me
+import java.util.Map;
+
+@Service
+public class CommandProviderMapper implements Mapper<CommandProviderData, CommandProvider> {
+
+    private final MapperSupporter mapperSupporter;
+
+    public CommandProviderMapper(MapperSupporter aMapperSupporter) {
+        mapperSupporter = aMapperSupporter;
     }
 
-    public static CommandProvider map(CommandProviderData aData) {
+    @Override
+    public CommandProvider mapToBO(CommandProviderData aData) {
         CommandProvider result = new CommandProvider();
         result.setId(aData.getId());
+        final CommandChainMapper commandChainMapper = mapperSupporter.getMapper(CommandChainMapper.class);
+        final CommandDescriptionMapper commandDescriptionMapper = mapperSupporter.getMapper(CommandDescriptionMapper.class);
         for (Map.Entry<CommandDescriptionData, CommandChainData> entry : aData.getAvailableCommands().entrySet()) {
-            final CommandDescription description = CommandDescriptionMapper.map(entry.getKey());
-            final CommandChain commandChain = CommandChainMapper.map(entry.getValue());
+            final CommandDescription description = commandDescriptionMapper.mapToBO(entry.getKey());
+            final CommandChain commandChain = commandChainMapper.mapToBO(entry.getValue());
             result.getAvailableCommands().put(description, commandChain);
         }
         return result;
     }
 
-    public static CommandProviderData map(CommandProvider aData) {
+    @Override
+    public CommandProviderData mapToDO(CommandProvider aData) {
         CommandProviderData result = new CommandProviderData();
         result.setId(aData.getId());
+        final CommandChainMapper commandChainMapper = mapperSupporter.getMapper(CommandChainMapper.class);
+        final CommandDescriptionMapper commandDescriptionMapper = mapperSupporter.getMapper(CommandDescriptionMapper.class);
         for (Map.Entry<CommandDescription, CommandChain> entry : aData.getAvailableCommands().entrySet()) {
-            final CommandDescriptionData descriptionData = CommandDescriptionMapper.map(entry.getKey());
-            final CommandChainData chainData = CommandChainMapper.map(entry.getValue());
+            final CommandDescriptionData descriptionData = commandDescriptionMapper.mapToDO(entry.getKey());
+            final CommandChainData chainData = commandChainMapper.mapToDO(entry.getValue());
             result.getAvailableCommands().put(descriptionData, chainData);
         }
         return result;
     }
+
 }

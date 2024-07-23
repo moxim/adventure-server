@@ -22,31 +22,20 @@ public class Word extends BasicData {
     }
 
     public Word(String aText, Word aSynonym) {
-        text = aText;
-        Word syn = findRoot(aSynonym);
+        text = aText.toLowerCase();
+        Word syn = aSynonym.getSynonym();
         if (syn != null) {
             synonym = syn;
-            type = synonym.getType();
+        } else {
+            synonym = aSynonym;
         }
+        type = aSynonym.getType();
     }
 
     public Word(String aText, Type aType) {
         text = aText;
         type = aType;
         synonym = null;
-    }
-
-    private Word findRoot(Word aWord) {
-        if (null == aWord) {
-            return null;
-        }
-        Word result = aWord; // word is not null, we just checked
-        Word oSyn = aWord.getSynonym();
-        while (oSyn != null) {
-            result = oSyn;
-            oSyn = oSyn.getSynonym();
-        }
-        return result;
     }
 
     public enum Type {

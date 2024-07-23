@@ -60,7 +60,7 @@ public class Adventure implements Ided {
         for (Location location : aLocationList) {
             locationMap.put(location.getId(), location);
         }
-        currentLocationId = aLocationList.get(0).getId();
+        currentLocationId = aLocationList.getFirst().getId();
     }
 
     public List<Location> getLocations() {
@@ -89,6 +89,10 @@ public class Adventure implements Ided {
 
     public GenericContainer getPocket() {
         return pocket;
+    }
+
+    public Vocabulary getVocabulary() {
+        return allWords;
     }
 
     @Override

@@ -1,5 +1,10 @@
 package com.pdg.adventure.server.storage;
 
+import com.pdg.adventure.api.Container;
+import com.pdg.adventure.server.location.Location;
+import com.pdg.adventure.server.mapper.LocationMapper;
+import com.pdg.adventure.server.support.DescriptionProvider;
+import com.pdg.adventure.server.tangible.GenericContainer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,12 +13,6 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import com.pdg.adventure.api.Container;
-import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.mapper.LocationMapper;
-import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.tangible.GenericContainer;
 
 @Testcontainers
 @DataMongoTest

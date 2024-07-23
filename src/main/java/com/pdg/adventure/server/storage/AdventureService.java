@@ -4,8 +4,7 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
-import com.pdg.adventure.server.support.MapperProvider;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.pdg.adventure.server.support.MapperSupporter;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
@@ -21,12 +20,12 @@ public class AdventureService {
     private final WordRepository wordRepository;
     private final VocabularyReporitory vocabularyRepository;
 
-    @Autowired
+//    @Autowired
     public AdventureService(LocationRepository aLocationRepository,
                             AdventureRepository anAdventureRepository,
                             WordRepository aWordRepository,
                             VocabularyReporitory aVocabularyRepository,
-                            MapperProvider aMappingProvider) {
+                            MapperSupporter aMappingService) {
         locationRepository = aLocationRepository;
         adventureRepository = anAdventureRepository;
         wordRepository = aWordRepository;

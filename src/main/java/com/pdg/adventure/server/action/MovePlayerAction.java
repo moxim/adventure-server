@@ -1,11 +1,11 @@
 package com.pdg.adventure.server.action;
 
-import java.util.function.Consumer;
-
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.storage.messages.MessagesHolder;
+
+import java.util.function.Consumer;
 
 public class MovePlayerAction extends AbstractAction {
     private final Location destination;
@@ -23,7 +23,7 @@ public class MovePlayerAction extends AbstractAction {
         currentLocationHolder.accept(destination);
         ExecutionResult result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
         result.setResultMessage(destination.getLongDescription());
-        destination.setHasBeenVisited(true);
+        destination.setTimesVisited(destination.getTimesVisited() + 1);
         return result;
     }
 }

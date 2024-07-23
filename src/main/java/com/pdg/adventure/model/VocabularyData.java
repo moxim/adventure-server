@@ -17,43 +17,69 @@ import java.util.function.Supplier;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class VocabularyData extends BasicData {
     public static final String UNKNOWN_WORD_TEXT = "Word '%s' is not present, yet!";
+    public static final String PRESENT_WORD_HAS_DIFFERENT_TYPE_TEXT = "Word '%s' is already present, but has a synonym of different type!";
     public static final String EMPTY_STRING = "";
 
     @DBRef
-    private Map<String, Word> words = new HashMap<>();
+    private Map<String, Word> words;
+
+    boolean simple = false; // TODO: delete this
+
+//    @PersistenceInstantiator
+    public VocabularyData() {
+        this(new HashMap<>());
+    }
+
+    public VocabularyData(Map<String, Word> words) {
+        this.words = words;
+    }
 
     public void addNewWord(String aWord, Word.Type aType) {
         String lowerText = aWord.toLowerCase();
-//        Word newWord = createWord(lowerText, () -> new Word(lowerText, aType));
-        Word newWord = words.get(lowerText);
-        if (newWord == null) {
-            newWord = new Word(lowerText, aType);
-            words.put(lowerText, newWord);
+        if (simple) {
+            Word newWord = createWord(lowerText, () -> new Word(lowerText, aType));
         } else {
-            // TODO: can this ever happen? if so, then check if the type is the same
-            newWord.setType(aType);
+            Word newWord = words.get(lowerText);
+            if (newWord == null) {
+                newWord = new Word(lowerText, aType);
+                words.put(lowerText, newWord);
+            } else {
+                if (newWord.getSynonym() == null) {
+                    newWord.setType(aType);
+                } else if (newWord.getType() != aType) {
+                    // if the word is already present, it must have the same type, or it won't match its synonym
+                    throw new IllegalArgumentException(String.format(PRESENT_WORD_HAS_DIFFERENT_TYPE_TEXT, aWord));
+                }
+            }
         }
     }
 
-    public void addSynonym(String aNewWord, String aSynonym) {
-        String lowerSynonym = aSynonym.toLowerCase();
-        Word synonym = words.get(lowerSynonym);
-        if (synonym == null) {
-            throw new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, aSynonym));
-        }
-        addSynonymForWord(aNewWord, synonym);
+    public void addWord(Word aWord) {
+        words.put(aWord.getText(), aWord);
     }
 
-    public void addSynonymForWord(String aText, Word aWord) {
-        String lowerText = aText.toLowerCase();
-//        Word newWord = createWord(lowerText, () -> aWord);
-        Word newWord = words.get(lowerText);
-        if (newWord == null) {
-            newWord = new Word(lowerText, aWord);
-            words.put(lowerText, newWord);
+    public void addSynonym(String aNewSynonym, String anExistingWord) {
+        String lowerExistingWord = anExistingWord.toLowerCase();
+        Word word = words.get(lowerExistingWord);
+        if (word == null) {
+            throw new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, anExistingWord));
+        }
+        addSynonymForWord(aNewSynonym, word);
+    }
+
+    public void addSynonymForWord(String aNewSynonym, Word anExistingWord) {
+        String lowerSynonym = aNewSynonym.toLowerCase();
+        if (simple) {
+            Word newSynoym = createWord(lowerSynonym, () -> anExistingWord);
         } else {
-            newWord.setType(aWord.getType());
-            newWord.setSynonym(aWord);
+            Word newSynonym = words.get(lowerSynonym);
+            if (newSynonym == null) {
+                newSynonym = new Word(lowerSynonym, anExistingWord);
+                words.put(lowerSynonym, newSynonym);
+            } else {
+                newSynonym.setType(anExistingWord.getType());
+                newSynonym.setSynonym(anExistingWord);
+            }
         }
     }
 
@@ -80,9 +106,13 @@ public class VocabularyData extends BasicData {
     public Optional<Word> findWord(String aWordText) {
         String lowerText = aWordText.toLowerCase();
         Word word = words.get(lowerText);
-        if (word == null) {
-            return Optional.empty();
+        return Optional.ofNullable(word);
+    }
+
+    public void setWords(Collection<Word> aBagOfWords) {
+        words.clear();
+        for (Word word : aBagOfWords) {
+            words.put(word.getText(), word);
         }
-        return Optional.of(word); // new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, aWordText)
     }
 }

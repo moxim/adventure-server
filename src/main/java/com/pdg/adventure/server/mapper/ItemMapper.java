@@ -1,23 +1,21 @@
 package com.pdg.adventure.server.mapper;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.CommandProviderData;
 import com.pdg.adventure.model.ItemData;
-import com.pdg.adventure.server.support.MapperProvider;
+import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.Item;
 
 public class ItemMapper implements Mapper<ItemData, Item> {
+    private MapperSupporter mapperSupporter;
 
-    private MapperProvider mapperProvider;
-
-    public ItemMapper(@Autowired MapperProvider aMapperProvider) {
-        mapperProvider = aMapperProvider;
-    }
+    public ItemMapper(MapperSupporter aMapperSupporter) {
+        mapperSupporter = aMapperSupporter;
+   }
 
     public Item mapToBO(ItemData anItemData) {
-        final Item item = new Item(DescriptionMapper.mapToBO(anItemData.getDescriptionData()), anItemData.isContainable());
+        DescriptionMapper descriptionMapper = mapperSupporter.getMapper(DescriptionMapper.class);
+        final Item item = new Item(descriptionMapper.mapToBO(anItemData.getDescriptionData()), anItemData.isContainable());
         item.setId(anItemData.getId());
         item.setIsWearable(anItemData.isWearable());
         item.setIsWorn(anItemData.isWorn());
@@ -31,7 +29,8 @@ public class ItemMapper implements Mapper<ItemData, Item> {
     public ItemData mapToDO(Item anItem) {
         ItemData itemData = new ItemData();
         itemData.setId(anItem.getId());
-        itemData.setDescriptionData(DescriptionMapper.mapToDO(anItem.getDescriptionProvider()));
+        DescriptionMapper descriptionMapper = mapperSupporter.getMapper(DescriptionMapper.class);
+        itemData.setDescriptionData(descriptionMapper.mapToDO(anItem.getDescriptionProvider()));
         itemData.setContainable(anItem.isContainable());
         itemData.setWearable(anItem.isWearable());
         itemData.setWorn(anItem.isWorn());

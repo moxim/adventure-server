@@ -16,8 +16,10 @@ class VocabularyTest {
         // when
 
         // then
-        assertThat(sut.getSynonym("take").getText()).isEqualTo("take");
-        assertThat(sut.getSynonym("take").getType()).isEqualTo(Word.Type.VERB);
+        assertThat(sut.findWord("take").isPresent());
+        assertThat(sut.findWord("get").isEmpty());
+        assertThat(sut.getType("take")).isEqualTo(Word.Type.VERB);
+        assertThat(sut.getSynonym("take")).isNull();
     }
 
     @Test

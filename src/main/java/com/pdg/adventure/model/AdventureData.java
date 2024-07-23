@@ -13,18 +13,29 @@ import java.util.Map;
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class AdventureData extends BasicData {
-    private String title ="";
-    private ItemContainerData playerPocket = new ItemContainerData();
+    private String title;
+    private ItemContainerData playerPocket;
     @DBRef(lazy = false)
 //    @CascadeSave
-    private Map<String, LocationData> locationData = new HashMap<>();
+    private Map<String, LocationData> locationData;
 //    private Set<LocationData> locationData = new HashSet<>();
-    private String currentLocationId = "";
+    private String currentLocationId;
     @DBRef(lazy = false)
-//    private Set<Word> words = new HashSet<>();
-    private transient VocabularyData vocabularyData = new VocabularyData();
+    private transient VocabularyData vocabularyData;
 
     private String notes = ""; // to outline a story or whatever
 
     // WorkflowData workFlow = new WorkflowData();
+
+    public AdventureData() {
+        this(new VocabularyData());
+    }
+
+    public AdventureData(VocabularyData aVocabularyData) {
+        vocabularyData = aVocabularyData;
+        playerPocket = new ItemContainerData();
+        locationData = new HashMap<>();
+        currentLocationId = "";
+        title = "";
+    }
 }

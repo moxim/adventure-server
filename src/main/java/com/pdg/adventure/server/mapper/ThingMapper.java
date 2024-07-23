@@ -1,25 +1,34 @@
 package com.pdg.adventure.server.mapper;
 
+import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.ThingData;
+import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.Thing;
 
-public abstract class ThingMapper {
-    private ThingMapper() {
-        // don't instantiate me
+public class ThingMapper implements Mapper<ThingData, Thing> {
+
+    private MapperSupporter mapperSupporter;
+
+    public ThingMapper(MapperSupporter aMapperSupporter) {
+        mapperSupporter = aMapperSupporter;
     }
 
-    public static Thing mapFrom(ThingData aThingData) {
-        Thing result = new Thing(DescriptionMapper.mapToBO(aThingData.getDescriptionData()));
+    public Thing mapToBO(ThingData aThingData) {
+        final DescriptionMapper descriptionMapper = mapperSupporter.getMapper(DescriptionMapper.class);
+        final CommandProviderMapper commandProviderMapper = mapperSupporter.getMapper(CommandProviderMapper.class);
+        Thing result = new Thing(descriptionMapper.mapToBO(aThingData.getDescriptionData()));
         result.setId(aThingData.getId());
-        result.setCommandProvider(CommandProviderMapper.map(aThingData.getCommandProviderData()));
+        result.setCommandProvider(commandProviderMapper.mapToBO(aThingData.getCommandProviderData()));
         return result;
     }
 
-    public static ThingData mapFrom(Thing aThing) {
+    public ThingData mapToDO(Thing aThing) {
         ThingData result = new ThingData();
         result.setId(aThing.getId());
-        result.setDescriptionData(DescriptionMapper.mapToDO(aThing.getDescriptionProvider()));
-        result.setCommandProviderData(CommandProviderMapper.map(aThing.getCommandProvider()));
+        DescriptionMapper descriptionMapper = mapperSupporter.getMapper(DescriptionMapper.class);
+        final CommandProviderMapper commandProviderMapper = mapperSupporter.getMapper(CommandProviderMapper.class);
+        result.setDescriptionData(descriptionMapper.mapToDO(aThing.getDescriptionProvider()));
+        result.setCommandProviderData(commandProviderMapper.mapToDO(aThing.getCommandProvider()));
         return result;
     }
 }

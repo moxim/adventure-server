@@ -6,27 +6,35 @@ import com.pdg.adventure.model.DirectionData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.server.location.GenericDirection;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.support.MapperProvider;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.pdg.adventure.server.support.MapperSupporter;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DirectionMapper implements Mapper<DirectionData, GenericDirection> {
 
-    private final MapperProvider mapperProvider;
+    private final MapperSupporter mapperSupporter;
 
-    @Autowired
-    public DirectionMapper(MapperProvider aMapperProvider) {
-        mapperProvider = aMapperProvider;
+//    @Autowired
+    public DirectionMapper(MapperSupporter aMapperSupporter) {
+        mapperSupporter = aMapperSupporter;
     }
 
 
     @Override
     public GenericDirection mapToBO(DirectionData aDirectionData) {
-        Command command = CommandMapper.mapToBO(aDirectionData.getCommandData());
+        final CommandMapper commandMapper = mapperSupporter.getMapper(CommandMapper.class);
+        Command command = commandMapper.mapToBO(aDirectionData.getCommandData());
         boolean mustMentionDestination = aDirectionData.isDestinationMustBeMentioned();
-        LocationMapper locMapper = mapperProvider.getMapper(LocationMapper.class);
-        Location destination = locMapper.mapToBO(aDirectionData.getDestinationData());
+        LocationMapper locMapper = mapperSupporter.getMapper(LocationMapper.class);
+        LocationData destinationData = aDirectionData.getDestinationData();
+        String locationId = destinationData.getId();
+        Location destination;
+//        if (mapperSupporter.getMappedLocation(locationId) != null) {
+//            destination = mapperSupporter.getMappedLocation(locationId);
+//            return new GenericDirection(command, destination, mustMentionDestination);
+//        }
+        destination = locMapper.mapToBO(destinationData);
+
         GenericDirection direction = new GenericDirection(command, destination, mustMentionDestination);
         direction.setId(aDirectionData.getId());
         return direction;
@@ -36,12 +44,13 @@ public class DirectionMapper implements Mapper<DirectionData, GenericDirection> 
     public DirectionData mapToDO(GenericDirection aDirection) {
         DirectionData directionData = new DirectionData();
         directionData.setId(aDirection.getId());
-        LocationMapper locMapper = mapperProvider.getMapper(LocationMapper.class);
+        LocationMapper locMapper = mapperSupporter.getMapper(LocationMapper.class);
         LocationData destination = locMapper.mapToDO(aDirection.getDestination());
         directionData.setDestinationData(destination);
         directionData.setDestinationMustBeMentioned(aDirection.isDestinationMustBeMentioned());
-        // TODO get(0) ? Really?
-        directionData.setCommandData(CommandMapper.mapToBO(aDirection.getCommands().get(0)));
+        final CommandMapper commandMapper = mapperSupporter.getMapper(CommandMapper.class);
+        // TODO: getFirst() ? Really?
+        directionData.setCommandData(commandMapper.mapToDO(aDirection.getCommands().getFirst()));
         return directionData;
     }
 

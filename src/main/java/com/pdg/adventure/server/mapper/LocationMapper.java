@@ -1,35 +1,65 @@
 package com.pdg.adventure.server.mapper;
 
-import com.pdg.adventure.api.Containable;
-import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.Mapper;
+import com.pdg.adventure.model.CommandProviderData;
+import com.pdg.adventure.model.DirectionData;
+import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.server.location.GenericDirection;
 import com.pdg.adventure.server.location.Location;
+import com.pdg.adventure.server.parser.CommandProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.support.MapperProvider;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.pdg.adventure.server.support.MapperSupporter;
+import com.pdg.adventure.server.tangible.GenericContainer;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
 
 @Service
 public class LocationMapper implements Mapper<LocationData, Location> {
 
-    private MapperProvider mapperProvider;
+    private final MapperSupporter mapperSupporter;
 
-    @Autowired
-    public LocationMapper(MapperProvider aMapperProvider) {
-        mapperProvider = aMapperProvider;
+    public LocationMapper(MapperSupporter aMapperSupporter) {
+        mapperSupporter = aMapperSupporter;
     }
 
     public Location mapToBO(LocationData aLocationData) {
-        DescriptionProvider descriptionProvider = DescriptionMapper.mapToBO(aLocationData.getDescriptionData());
-        ItemContainerMapper directionContainerMapper = mapperProvider.getMapper(ItemContainerMapper.class);
-        Container pocket = directionContainerMapper.mapToBO(aLocationData.getItemContainerData());
-        Location location = new Location(descriptionProvider, pocket);
-        location.setId(aLocationData.getId());
-        location.setLight(aLocationData.getLumen());
-        for (Containable item : pocket.getContents()) {
-            location.addItem(item);
+        Location mappedLocation = mapperSupporter.getMappedLocation(aLocationData.getId());
+        if (mappedLocation != null) {
+            return mappedLocation;
         }
+        DescriptionMapper descriptionMapper = mapperSupporter.getMapper(DescriptionMapper.class);
+        DescriptionProvider descriptionProvider = descriptionMapper.mapToBO(aLocationData.getDescriptionData());
+        if (descriptionProvider == null) {
+            throw new IllegalArgumentException("DescriptionProvider is null");
+        }
+        ItemContainerMapper directionContainerMapper = mapperSupporter.getMapper(ItemContainerMapper.class);
+
+        final ItemContainerData itemContainerData = aLocationData.getItemContainerData();
+        ItemContainerMapper itemContainerMapper = mapperSupporter.getMapper(ItemContainerMapper.class);
+        final GenericContainer itemContainer = itemContainerMapper.mapToBO(itemContainerData);
+
+        Location location = new Location(descriptionProvider, itemContainer);
+        location.setId(aLocationData.getId());
+        mapperSupporter.addMappedLocation(location);
+
+        location.setLight(aLocationData.getLumen());
+        // TODO: change in LocationData to be an Integer
+        location.setTimesVisited(aLocationData.isHasBeenVisited() ? 1 : 0);
+
+        final Set<DirectionData> directionsData = aLocationData.getDirectionsData();
+        final DirectionMapper directionMapper = mapperSupporter.getMapper(DirectionMapper.class);
+        for (DirectionData directionData : directionsData) {
+            final GenericDirection direction = directionMapper.mapToBO(directionData);
+            location.addDirection(direction);
+        }
+
+        final CommandProviderData commandProviderData = aLocationData.getCommandProviderData();
+        final CommandProviderMapper commandProviderMapper = mapperSupporter.getMapper(CommandProviderMapper.class);
+        final CommandProvider commandProvider = commandProviderMapper.mapToBO(commandProviderData);
+        location.setCommandProvider(commandProvider);
+
         return location;
     }
 
@@ -37,7 +67,14 @@ public class LocationMapper implements Mapper<LocationData, Location> {
         LocationData result = new LocationData();
         result.setId(aLoction.getId());
         result.setLumen(aLoction.getLight());
-        // TODO: fill in rest
+        DescriptionMapper descriptionMapper = mapperSupporter.getMapper(DescriptionMapper.class);
+        result.setDescriptionData(descriptionMapper.mapToDO(aLoction.getDescriptionProvider()));
+        ItemContainerMapper itemContainerMapper = mapperSupporter.getMapper(ItemContainerMapper.class);
+        result.setItemContainerData(itemContainerMapper.mapToDO(aLoction.getContainer()));
+        DirectionMapper directionMapper = mapperSupporter.getMapper(DirectionMapper.class);
+        for (DirectionData directionData : directionMapper.mapToDOs(aLoction.getDirections())) {
+            result.getDirectionsData().add(directionData);
+        }
         return result;
     }
 }

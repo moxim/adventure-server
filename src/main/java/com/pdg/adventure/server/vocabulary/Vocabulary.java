@@ -1,6 +1,7 @@
 package com.pdg.adventure.server.vocabulary;
 
 import com.pdg.adventure.api.Ided;
+import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.model.basics.BasicData;
 import lombok.EqualsAndHashCode;
@@ -9,16 +10,18 @@ import lombok.ToString;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+
+import static com.pdg.adventure.model.VocabularyData.EMPTY_STRING;
+import static com.pdg.adventure.model.VocabularyData.UNKNOWN_WORD_TEXT;
 
 // TODO: have each word type in a separate map?
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @ToString(callSuper = true)
 public class Vocabulary extends BasicData implements Ided {
-    // TODO: remove, as it has been moved to VocabularyData
-    public static final String UNKNOWN_WORD_TEXT = "Word '%s' is not present, yet!";
-    public static final String EMPTY_STRING = "";
 
-    private Map<String, Word> allWords; // text -> synonym, eg. take -> Word(get, null, VERB)
+    private final VocabularyData data;
+//    private Map<String, Word> allWords; // text -> synonym, eg. take -> Word(get, null, VERB)
 
     /*
       text   | synonym | type
@@ -31,70 +34,55 @@ public class Vocabulary extends BasicData implements Ided {
      */
 
     public Vocabulary() {
-        allWords = new HashMap<>();
+        Map<String, Word> allWords = new HashMap<>();
+        data = new VocabularyData(allWords);
     }
 
-    // TODO: remove, as it has been moved to VocabularyData
     public void addNewWord(String aWord, Word.Type aType) {
-        String lowerText = aWord.toLowerCase();
-        Word newWord = new Word(lowerText, aType);
-        allWords.put(lowerText, newWord);
+        data.addNewWord(aWord, aType);
     }
 
-    // TODO: remove, as it has been moved to VocabularyData
-    public void addSynonym(String aNewWord, String aSynonym) {
-        String lowerSynonym = aSynonym.toLowerCase();
-        Word synonym = allWords.get(lowerSynonym);
-        if (synonym == null) {
-            throw new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, aSynonym));
-        }
-        addSynonymForWord(aNewWord, synonym);
+    public void addSynonym(String aNewSynonym, String anExistingWord) {
+        data.addSynonym(aNewSynonym, anExistingWord);
     }
 
-    // TODO: remove, as it has been moved to VocabularyData
     private void addSynonymForWord(String aText, Word aWord) {
-        String lowerText = aText.toLowerCase();
-        Word newWord = new Word(lowerText, aWord);
-        allWords.put(lowerText, newWord);
+        data.addSynonymForWord(aText, aWord);
     }
 
     public Word getSynonym(String aWord) {
-        Word direct = allWords.get(aWord);
-        if (direct == null) {
-            return null;
-        }
-        final Word optionalSynonym = direct.getSynonym();
-        if (optionalSynonym == null) {
-            return null;
-        }
-        return optionalSynonym;
+        Word word = data.findWord(aWord).orElseThrow(() -> new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, aWord)));
+        return word.getSynonym();
     }
 
     public String getSynonym(String aWord, Word.Type aType) {
-        Word synonym = getSynonym(aWord);
-        if (synonym == null || synonym.getType() != aType) {
+        Word synonym = getSynonym(aWord); // guaranteed to be present
+        if (synonym.getType() != aType) {
             return EMPTY_STRING;
         }
         return synonym.getText();
     }
 
     public Word.Type getType(String aWord) {
-        Word word = allWords.get(aWord);
-        if (word == null) {
-            throw new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, aWord));
-        }
+        Word word = data.findWord(aWord).orElseThrow(() -> new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, aWord)));
         return word.getType();
     }
 
-    // TODO: remove, as it has been moved to VocabularyData
-    private Collection<Word> getWords() {
-        return allWords.values();
+    public Collection<Word> getWords() {
+        return data.getWords();
     }
 
-    public void putWords(Collection<Word> aWords) {
-        allWords.clear();
-        for (Word word : aWords) {
-            allWords.put(word.getText(), word);
+    public void setWords(Collection<Word> words) {
+        data.getWords().clear();
+        addWords(words);
+    }
+    public void addWords(Collection<Word> words) {
+        for (Word word : words) {
+            data.addNewWord(word.getText(), word.getType());
         }
+    }
+
+    public Optional<Word> findWord(String aWordText) {
+        return data.findWord(aWordText);
     }
 }

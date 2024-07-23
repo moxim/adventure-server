@@ -1,29 +1,39 @@
 package com.pdg.adventure.server.mapper;
 
 import com.pdg.adventure.api.CommandDescription;
+import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.basics.CommandDescriptionData;
+import com.pdg.adventure.server.parser.GenericCommandDescription;
+import com.pdg.adventure.server.support.MapperSupporter;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
+import org.springframework.stereotype.Service;
 
-public abstract class CommandDescriptionMapper {
-    private CommandDescriptionMapper() {
-        // don't instantiate me
+@Service
+public class CommandDescriptionMapper implements Mapper<CommandDescriptionData, CommandDescription> {
+
+    private final MapperSupporter mapperSupporter;
+
+    public CommandDescriptionMapper(MapperSupporter aMapperSupporter) {
+        mapperSupporter = aMapperSupporter;
     }
 
-    public static CommandDescriptionData map(CommandDescription aCommandDescription) {
-//        CommandDescriptionData result = new CommandDescriptionData();
-//        result.setId(aCommandDescription.getId());
-//        result.setVerb(aCommandDescription.getVerb());
-//        result.setAdjective(aCommandDescription.getAdjective());
-//        result.setNoun(aCommandDescription.getNoun());
-//        return result;
-        return null;
+    @Override
+    public CommandDescriptionData mapToDO(CommandDescription aCommandDescription) {
+        CommandDescriptionData result = new CommandDescriptionData();
+        final Vocabulary vocabulary = mapperSupporter.getVocabulary();
+        result.setId(aCommandDescription.getId());
+        result.setVerb(vocabulary.findWord(aCommandDescription.getVerb()).orElseThrow());
+        result.setAdjective(vocabulary.findWord(aCommandDescription.getAdjective()).orElseThrow());
+        result.setNoun(vocabulary.findWord(aCommandDescription.getNoun()).orElseThrow());
+        return result;
     }
 
-    public static CommandDescription map(CommandDescriptionData aCommandDescriptionData) {
-//        CommandDescription result = new GenericCommandDescription(aCommandDescriptionData.getVerb(),
-//                                                                  aCommandDescriptionData.getAdjective(),
-//                                                                  aCommandDescriptionData.getNoun());
-//        result.setId(aCommandDescriptionData.getId());
-//        return result;
-        return null;
+    @Override
+    public CommandDescription mapToBO(CommandDescriptionData aCommandDescriptionData) {
+        CommandDescription result = new GenericCommandDescription(aCommandDescriptionData.getVerb().getText(),
+                                                                  aCommandDescriptionData.getAdjective().getText(),
+                                                                  aCommandDescriptionData.getNoun().getText());
+        result.setId(aCommandDescriptionData.getId());
+        return result;
     }
 }

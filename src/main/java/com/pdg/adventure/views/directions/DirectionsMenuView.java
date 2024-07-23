@@ -10,7 +10,6 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -31,15 +30,12 @@ public class DirectionsMenuView extends VerticalLayout
     private transient LocationData locationData;
 
     private String pageTitle;
-    private Grid<DirectionData> grid;
-    private Button create;
-    private TextField searchField;
-    private Button backButton;
+    private final Grid<DirectionData> grid;
 
     public DirectionsMenuView() {
         setSizeFull();
 
-        backButton = new Button("Back", event -> UI.getCurrent().navigate(LocationEditorView.class,
+        Button backButton = new Button("Back", event -> UI.getCurrent().navigate(LocationEditorView.class,
                 new RouteParameters(
                         new RouteParam(ADVENTURE_ID, adventureData.getId()),
                         new RouteParam(LOCATION_ID_TEXT, locationData.getId()))
@@ -47,7 +43,7 @@ public class DirectionsMenuView extends VerticalLayout
         );
         backButton.addClickShortcut(Key.ESCAPE);
 
-        create = new Button("Create Exit", e -> UI.getCurrent().navigate(DirectionEditorView.class,
+        Button create = new Button("Create Exit", e -> UI.getCurrent().navigate(DirectionEditorView.class,
                 new RouteParameters(
                         new RouteParam(ADVENTURE_ID, adventureData.getId()),
                         new RouteParam(LOCATION_ID_TEXT, locationData.getId()))
@@ -55,23 +51,21 @@ public class DirectionsMenuView extends VerticalLayout
 
         VerticalLayout leftSide = new VerticalLayout(create, backButton);
 
-        searchField = new TextField();
+        TextField searchField = new TextField();
         searchField.setWidth("50%");
         searchField.setPlaceholder("Find direction");
         searchField.setTooltipText("Find direction by ID, noun or any text in its short description");
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         searchField.setValueChangeMode(ValueChangeMode.EAGER);
 
-        Div gridContainer = new Div();
-        gridContainer.setSizeFull();
-
+//        Div gridContainer = new Div();
+//        gridContainer.setSizeFull();
+//
         grid = getGrid();
-        grid.setWidth("500px");
-        grid.setHeight("500px");
 
-        gridContainer.add(grid);
+//        gridContainer.add(grid);
 
-        VerticalLayout rightSide = new VerticalLayout(searchField, gridContainer);
+        VerticalLayout rightSide = new VerticalLayout(searchField, grid);
 
         HorizontalLayout jumpRow = new HorizontalLayout(leftSide, rightSide);
 
@@ -83,7 +77,10 @@ public class DirectionsMenuView extends VerticalLayout
 
     private Grid<DirectionData> getGrid() {
         Grid<DirectionData> directionGrid = new Grid<>(DirectionData.class, false);
-//        directionGrid.setSizeFull();
+        directionGrid.setMinWidth("500px");
+        directionGrid.setMinHeight("250px");
+        directionGrid.setSizeFull();
+
         directionGrid.addColumn(ViewSupporter::formatId).setHeader("Id").setAutoWidth(true).setFlexGrow(0);
         directionGrid.addColumn(directionData ->
                 ViewSupporter.formatDescription(directionData.getCommandData().getCommandDescription())
@@ -92,6 +89,7 @@ public class DirectionsMenuView extends VerticalLayout
                 ViewSupporter.formatDescription(directionData.getDestinationData().getDescriptionData())
         ).setHeader("Location");
         directionGrid.addColumn(directionData -> ViewSupporter.formatId(directionData.getDestinationData())).setHeader("LocationId)");
+        directionGrid.getColumns().forEach(column -> column.setAutoWidth(true));
 
         directionGrid.addItemDoubleClickListener(e ->
                 UI.getCurrent().navigate(DirectionEditorView.class,

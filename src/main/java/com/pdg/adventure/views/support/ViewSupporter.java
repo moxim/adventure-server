@@ -80,7 +80,7 @@ public class ViewSupporter {
     public static String formatDescription(DescriptionData aDescriptionData) {
         String shortDescription = aDescriptionData.getShortDescription();
         if (shortDescription.isEmpty()) {
-            shortDescription = aDescriptionData.getNoun() + " / " + aDescriptionData.getAdjective();
+            shortDescription = aDescriptionData.getNoun().getText() + " / " + aDescriptionData.getAdjective().getText();
         }
         return shortDescription;
     }

@@ -15,7 +15,7 @@ import java.util.Set;
 public class LocationData extends ThingData {
     @DBRef(lazy = true)
     private AdventureData adventure;
-    @DBRef(lazy = true)
+    @DBRef(lazy = false)
     private ItemContainerData itemContainerData = new ItemContainerData();
 //    @DBRef
     private Set<DirectionData> directionsData = new HashSet<>();

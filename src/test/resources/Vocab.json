@@ -1,0 +1,13 @@
+{
+    _id: 'c56f5846-23b4-47cf-8153-679df6d5cd47',
+    words: {
+        '1': DBRef('undefined', '8dcea736-8129-4f4e-b010-127f57a75697'),
+        '2': DBRef('undefined', '379d9324-76c2-4ec8-883e-9a4157556180'),
+        sad: DBRef('undefined', 'ed0d4fcf-659c-4383-b343-ceb6442ad0a5'),
+        sdfgf: DBRef('undefined', 'e341026c-a4d3-46b6-a80e-4ae47c8c747f'),
+        go: DBRef('undefined', 'bd349751-9e00-4190-949a-48fcee366ba3'),
+        raft: DBRef('undefined', '360f7308-c26c-4273-8b52-6feb89a51ad4')
+    },
+    simple: false,
+    _class: 'com.pdg.adventure.model.VocabularyData'
+}

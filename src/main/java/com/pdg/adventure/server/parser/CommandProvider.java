@@ -1,9 +1,9 @@
 package com.pdg.adventure.server.parser;
 
-import java.util.*;
-
 import com.pdg.adventure.api.*;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.model.VocabularyData;
+
+import java.util.*;
 
 public class CommandProvider implements Ided {
     private final Map<CommandDescription, CommandChain> availableCommands;
@@ -72,12 +72,11 @@ public class CommandProvider implements Ided {
         for (Map.Entry<CommandDescription, CommandChain> entry : availableCommands.entrySet()) {
             CommandDescription description = entry.getKey();
             if (description.getVerb().equals(verb) &&
-                    (description.getNoun().equals(noun) || Vocabulary.EMPTY_STRING.equals(noun)) &&
-                    (description.getAdjective().equals(adjective) || Vocabulary.EMPTY_STRING.equals(adjective))) {
+                    (description.getNoun().equals(noun) || VocabularyData.EMPTY_STRING.equals(noun)) &&
+                    (description.getAdjective().equals(adjective) || VocabularyData.EMPTY_STRING.equals(adjective))) {
                 result.add(entry.getValue());
             }
         }
-
         return result;
     }
 

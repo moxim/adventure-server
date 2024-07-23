@@ -1,12 +1,12 @@
 package com.pdg.adventure.server.location;
 
 import com.pdg.adventure.api.*;
+import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.tangible.Thing;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ public class Location extends Thing implements Visitable, HasLight {
 
     private final Container container;
     private final Container directions;
-    private boolean hasBeenVisited;
+    private long timesVisited;
     private final Container pocket;
     private int lumen;
 
@@ -24,7 +24,7 @@ public class Location extends Thing implements Visitable, HasLight {
         container = new GenericContainer(aDescriptionProvider, 99);
         directions = new GenericContainer(aDescriptionProvider, true, 9999);
         pocket = aPocket;
-        hasBeenVisited = false; // explicit, but redundant
+        timesVisited = 0; // explicit, but redundant
     }
 
     public ExecutionResult addItem(Containable anItem) {
@@ -35,8 +35,8 @@ public class Location extends Thing implements Visitable, HasLight {
         return container.remove(anItem);
     }
 
-    public Container getContainer() {
-        return container;
+    public GenericContainer getContainer() {
+        return (GenericContainer) container;
     }
 
     public ExecutionResult addDirection(Direction aDirection) {
@@ -48,13 +48,13 @@ public class Location extends Thing implements Visitable, HasLight {
     }
 
     @Override
-    public boolean hasBeenVisited() {
-        return hasBeenVisited;
+    public long getTimesVisited() {
+        return timesVisited;
     }
 
     @Override
-    public void setHasBeenVisited(boolean aFlagWhetherThisHasBeenSeen) {
-        hasBeenVisited = aFlagWhetherThisHasBeenSeen;
+    public void setTimesVisited(long aNumberOfTimesThisHasBeenVisited) {
+        timesVisited = aNumberOfTimesThisHasBeenVisited;
     }
 
     @Override
@@ -72,11 +72,11 @@ public class Location extends Thing implements Visitable, HasLight {
         }
 
         if (result.getExecutionState()== ExecutionResult.State.FAILURE) {
-            if (Vocabulary.EMPTY_STRING.equals(result.getResultMessage())) {
+            if (VocabularyData.EMPTY_STRING.equals(result.getResultMessage())) {
                 result.setResultMessage("You can't do that.");
             }
         } else {
-            if (Vocabulary.EMPTY_STRING.equals(result.getResultMessage())) {
+            if (VocabularyData.EMPTY_STRING.equals(result.getResultMessage())) {
                 result.setResultMessage("OK.");
             }
         }
@@ -84,16 +84,24 @@ public class Location extends Thing implements Visitable, HasLight {
         return result;
     }
 
+    @Override
+    public List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription) {
+        return getCommandChains(aCommandDescription);
+    }
+
     private List<CommandChain> getCommandChains(CommandDescription aCommandDescription) {
         List<CommandChain> availableCommands = new ArrayList<>();
-        List<CommandChain> chain = getMatchingCommandChain(aCommandDescription);
+        List<CommandChain> chain = super.getMatchingCommandChain(aCommandDescription);
         availableCommands.addAll(chain);
         chain = container.getMatchingCommandChain(aCommandDescription);
         availableCommands.addAll(chain);
         chain = directions.getMatchingCommandChain(aCommandDescription);
         availableCommands.addAll(chain);
-        chain = pocket.getMatchingCommandChain(aCommandDescription);
-        availableCommands.addAll(chain);
+
+        // TODO: move this into interceptor chain
+//        chain = pocket.getMatchingCommandChain(aCommandDescription);
+//        availableCommands.addAll(chain);
+
         return availableCommands;
     }
 
@@ -102,7 +110,7 @@ public class Location extends Thing implements Visitable, HasLight {
         StringBuilder sb = new StringBuilder();
         sb.append(System.lineSeparator());
 
-        if (!hasBeenVisited()) {
+        if (timesVisited == 0) {
             sb.append(super.getLongDescription());
         } else {
             sb.append(getShortDescription());
@@ -129,12 +137,22 @@ public class Location extends Thing implements Visitable, HasLight {
         return container.contains(anItem);
     }
 
+
+    public List<GenericDirection> getDirections() {
+        List<GenericDirection> result = new ArrayList<>();
+        for (Containable containable : directions.getContents()) {
+            result.add((GenericDirection) containable);
+        }
+        return result;
+    }
+
+
     @Override
     public String toString() {
         return "Location{" +
                 "container=" + container +
                 ", directions=" + directions +
-                ", hasBeenVisited=" + hasBeenVisited +
+                ", hasBeenVisited=" + timesVisited +
                 ", pocket=" + pocket +
                 ", " + super.toString() +
                 '}';
