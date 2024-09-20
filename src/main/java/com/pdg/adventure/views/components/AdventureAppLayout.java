@@ -31,7 +31,12 @@ public class AdventureAppLayout extends AppLayout {
     }
 
     public void createDrawer(String anAppName) {
-        drawer = createMyDrawer(anAppName);
+        drawer = createMyDrawer(anAppName, null);
+        addToDrawer(drawer);
+    }
+
+    public void createDrawer(String anAppName, Image anImage) {
+        drawer = createMyDrawer(anAppName, anImage);
         addToDrawer(drawer);
     }
 
@@ -62,18 +67,20 @@ public class AdventureAppLayout extends AppLayout {
         return header;
     }
 
-    private VerticalLayout createMyDrawer(String anAppName) {
+    private VerticalLayout createMyDrawer(String anAppName, Image anAppImage) {
 
         H1 appName = new H1(anAppName);
         appName.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
-        Header header = new Header(appName);
+        HorizontalLayout headerRow = new HorizontalLayout(appName);
+        Header header = anAppImage == null ? new Header(appName) : new Header(anAppImage, appName);
+        headerRow.add(header);
 
         RouterLink aboutLink = new RouterLink("About", AboutView.class);
         aboutLink.setHighlightCondition(HighlightConditions.sameLocation());
         RouterLink adventureLink = new RouterLink("Adventures", AdventuresMenuView.class);
         adventureLink.setHighlightCondition(HighlightConditions.sameLocation());
 
-        final VerticalLayout drawer = new VerticalLayout(header, aboutLink, adventureLink);
+        final VerticalLayout drawer = new VerticalLayout(headerRow, aboutLink, adventureLink);
 
         drawer.setSizeFull();
         drawer.setPadding(true);
