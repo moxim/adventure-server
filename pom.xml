@@ -36,6 +36,17 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+
+        <repository>
+            <id>PDG public</id>
+            <url>
+                http://nexus.pdg-software.com:8081/repository/pdg-public-repository/
+            </url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+
         <repository>
             <id>vaadin-prereleases</id>
             <url>
