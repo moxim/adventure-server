@@ -30,7 +30,7 @@ public class Parser {
             while (scanner.hasNext()) {
                 String token = scanner.next();
                 if (false) {
-                    Word optionalWord = vocabulary.getSynonym(token);
+                    Word optionalWord = vocabulary.findSynonym(token);
                     if (optionalWord == null) {
                         // don't know this word
                         continue;

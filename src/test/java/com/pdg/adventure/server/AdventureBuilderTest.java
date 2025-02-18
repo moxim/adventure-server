@@ -1,21 +1,31 @@
 package com.pdg.adventure.server;
 
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.util.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basics.DescriptionData;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.testhelper.TestSupporter;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-@SpringBootTest
+@SpringBootTest//(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = com.pdg.adventure.server.AdventureConfig.class)
+@ComponentScan(basePackages = "com.pdg.adventure.server.mapper")
+@Import({com.pdg.adventure.server.AdventureConfig.class, com.pdg.adventure.server.mapper.AdventureMapper.class})
 public class AdventureBuilderTest {
     @Autowired
     AdventureMapper adventureMapper;
@@ -31,7 +41,7 @@ public class AdventureBuilderTest {
         final AdventureData adventureData = createAdventureData(adventureId);
         Adventure adventure = adventureMapper.mapToBO(adventureData);
 
-        mapperSupporter.getVocabulary().addNewWord("noun_Location3", Word.Type.NOUN);
+        mapperSupporter.getVocabulary().createNewWord("noun_Location3", Word.Type.NOUN);
 
         assertThat(adventure.getId()).isEqualTo(adventureId);
         List<Location> locations = adventure.getLocations();
@@ -87,8 +97,8 @@ public class AdventureBuilderTest {
     private LocationData createLocationData(String aQualifier) {
         LocationData locationData = createDummyLocationData(aQualifier);
         Set<DirectionData> directions = new HashSet<>();
-        directions.add(createDirectionData(aQualifier + "_Direction1", createDummyLocationData(aQualifier + "_Destination1")));
-        directions.add(createDirectionData(aQualifier + "_Direction2", createDummyLocationData(aQualifier + "_Destination2")));
+        directions.add(createDirectionData(aQualifier, createDummyLocationData(aQualifier)));
+        directions.add(createDirectionData(aQualifier, createDummyLocationData(aQualifier)));
         locationData.setDirectionsData(directions);
         return locationData;
     }
@@ -106,7 +116,7 @@ public class AdventureBuilderTest {
         DirectionData direction = new DirectionData();
         direction.setId(aDirection1);
         direction.setCommandData(createCommandData(aDirection1 + "_Command"));
-        direction.setDestinationData(aLocationData);
+        direction.setDestinationId(aLocationData.getId());
         direction.setDescriptionData(createDescriptionData(aDirection1 + "_Description"));
         return direction;
     }

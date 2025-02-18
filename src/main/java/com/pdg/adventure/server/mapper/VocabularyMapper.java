@@ -1,21 +1,28 @@
 package com.pdg.adventure.server.mapper;
 
+import jakarta.annotation.PostConstruct;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+
 import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
-import org.springframework.stereotype.Service;
-
-import java.util.Collection;
 
 @Service
 public class VocabularyMapper implements Mapper<VocabularyData, Vocabulary> {
 
-    private MapperSupporter mapperSupporter;
+    private final MapperSupporter mapperSupporter;
 
     public VocabularyMapper(MapperSupporter aMapperSupporter) {
         mapperSupporter = aMapperSupporter;
+    }
+
+    @PostConstruct
+    public void registerMapper() {
+        mapperSupporter.registerMapper(VocabularyData.class, Vocabulary.class, this);
     }
 
     @Override

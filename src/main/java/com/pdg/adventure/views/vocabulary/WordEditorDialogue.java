@@ -20,15 +20,13 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class WordEditorDialogue {
 
     private RadioButtonGroup<Word.Type> typeSelector;
     private ComboBox<Word> synonyms;
-    private TextField wordName;
+    private TextField wordText;
     private Button saveButton;
 
     private final Binder<Word> binder;
@@ -49,6 +47,8 @@ public class WordEditorDialogue {
             value = aValue;
         }
     }
+
+    private EditType editType = EditType.NEW;
 
     public WordEditorDialogue(VocabularyData aVocabulary) {
         vocabularyData = aVocabulary;
@@ -75,10 +75,11 @@ public class WordEditorDialogue {
     }
 
     public void open(EditType anEditType, DescribableWordAdapter aWordWrapper) {
+        editType = anEditType;
         switch (anEditType) {
             case EDIT: {
                 currentWord = aWordWrapper.getWord();
-                wordName.setValue(currentWord.getText());
+                wordText.setValue(currentWord.getText());
                 typeSelector.setValue(currentWord.getType());
                 Word synonym = currentWord.getSynonym();
                 if (synonym != null) {
@@ -108,7 +109,7 @@ public class WordEditorDialogue {
     private Component createDialogContent(DescribableWordAdapter aWordWrapper) {
 
         HorizontalLayout wordDefinition  = new HorizontalLayout();
-        wordDefinition.add(wordName, typeSelector);
+        wordDefinition.add(wordText, typeSelector);
 
         VerticalLayout fieldLayout = new VerticalLayout(wordDefinition, synonyms);
         fieldLayout.setSpacing(false);
@@ -130,12 +131,12 @@ public class WordEditorDialogue {
     }
 
     private void createWordField() {
-        wordName = new TextField("Word");
-        wordName.setRequired(true);
-        wordName.addValueChangeListener(e -> validateIfSave());
-        wordName.setValueChangeMode(ValueChangeMode.EAGER);
-        wordName.focus();
-        wordName.setHelperText("Combine with a synonym or a type.");
+        wordText = new TextField("Word");
+        wordText.setRequired(true);
+        wordText.addValueChangeListener(e -> validateIfSave());
+        wordText.setValueChangeMode(ValueChangeMode.EAGER);
+        wordText.focus();
+        wordText.setHelperText("Combine with a synonym or a type.");
 
     }
 
@@ -155,7 +156,7 @@ public class WordEditorDialogue {
 //        try {
 //            binder.writeBean(currentWord);
             if (!(typeSelector.getValue() == null && synonyms.getValue() == null)) {
-                saveButton.setEnabled(!wordName.isInvalid());
+                saveButton.setEnabled(!wordText.isInvalid());
                 // saveButton.setEnabled(binder.isValid());
                 // saveButton.setEnabled(false);
 //                if (synonyms.getValue() != null) {
@@ -175,10 +176,39 @@ public class WordEditorDialogue {
         cancelButton.addClickShortcut(Key.ESCAPE);
 
         saveButton.addClickListener(e -> {
-            if (synonyms.getValue() == null) {
-                vocabularyData.addNewWord(wordName.getValue(), typeSelector.getValue());
-            } else {
-                vocabularyData.addSynonymForWord(wordName.getValue(), synonyms.getValue());
+            if (editType == EditType.EDIT) {
+                final Optional<Word> existingWord = vocabularyData.findWord(wordText.getValue());
+                if (existingWord.isPresent() && !existingWord.get().equals(currentWord)) {
+                    wordText.setErrorMessage(String.format(VocabularyData.DUPLICATE_WORD_TEXT, wordText.getValue()));
+                    wordText.setInvalid(true);
+                    return;
+                };
+                final Optional<Word> word = vocabularyData.removeWord(currentWord.getText());
+                if (word.isPresent()) {
+                    final Word editedWord = word.get();
+                    final Word desiredSynonym = synonyms.getValue();
+                    if (desiredSynonym == null) {
+                        editedWord.setSynonym(null);
+                        editedWord.setType(typeSelector.getValue());
+                    } else {
+                        final Word rootSynonym = desiredSynonym.getSynonym();
+                        if (rootSynonym != null && rootSynonym.equals(editedWord)) {
+                            throw new RuntimeException("Synonym loop detected: " + editedWord.getText());
+                        }
+                        editedWord.setSynonym(Objects.requireNonNullElse(rootSynonym, desiredSynonym));
+                        editedWord.setType(desiredSynonym.getType());
+                    }
+                    editedWord.setText(wordText.getValue());
+                    vocabularyData.addWord(editedWord);
+                } else {
+                    throw new RuntimeException("Word not found: " + currentWord.getText());
+                }
+            } else { // EditType.NEW
+                if (synonyms.getValue() == null) {
+                    vocabularyData.createWord(wordText.getValue(), typeSelector.getValue());
+                } else {
+                    vocabularyData.createSynonym(wordText.getValue(), synonyms.getValue());
+                }
             }
             dialog.close();
             notifyListeners(true);

@@ -1,11 +1,5 @@
 package com.pdg.adventure.views.directions;
 
-import com.pdg.adventure.model.*;
-import com.pdg.adventure.model.basics.CommandDescriptionData;
-import com.pdg.adventure.server.storage.AdventureService;
-import com.pdg.adventure.views.adventure.AdventuresMainLayout;
-import com.pdg.adventure.views.commands.CommandsMenuView;
-import com.pdg.adventure.views.support.ViewSupporter;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -30,6 +24,15 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import static com.pdg.adventure.model.Word.Type.*;
+
+import com.pdg.adventure.model.*;
+import com.pdg.adventure.model.action.MovePlayerActionData;
+import com.pdg.adventure.model.basics.CommandDescriptionData;
+import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.support.MapperSupporter;
+import com.pdg.adventure.views.adventure.AdventuresMainLayout;
+import com.pdg.adventure.views.commands.CommandsMenuView;
+import com.pdg.adventure.views.support.ViewSupporter;
 
 @Route(value = "adventures/:adventureId/locations/:locationId/direction/:directionId/edit", layout = DirectionsMainLayout.class)
 @RouteAlias(value = "adventures/:adventureId/locations/:locationId/direction/new",  layout = DirectionsMainLayout.class)
@@ -62,6 +65,8 @@ public class DirectionEditorView extends VerticalLayout
     private transient Optional<LocationData> targetLocation;
     private transient String directionId;
 
+    private MapperSupporter mapperSupporter;
+
     @Autowired
     public DirectionEditorView(AdventureService anAdventureService) {
 
@@ -91,7 +96,7 @@ public class DirectionEditorView extends VerticalLayout
             if (targetLocation.isEmpty()) {
                 return;
             }
-            directionData.setDestinationData(targetLocation.get());
+            directionData.setDestinationId(targetLocation.get().getId());
             checkIfSaveAvailable();
         };
         grid.addSelectionListener(listener);
@@ -167,9 +172,9 @@ public class DirectionEditorView extends VerticalLayout
         }
 
         // TODO: fill this in
-//        final MovePlayerActionData movePlayerActionData = new MovePlayerActionData();
-//        movePlayerActionData.setLocationId(aDirectionData.getDestinationData().getId());
-//        commandData.setAction(movePlayerActionData);
+        final MovePlayerActionData movePlayerActionData = new MovePlayerActionData();
+        movePlayerActionData.setLocationId(aDirectionData.getDestinationId());
+        commandData.setAction(movePlayerActionData);
 
         final Set<DirectionData> directionsData = locationData.getDirectionsData();
         directionsData.add(aDirectionData);
@@ -327,7 +332,7 @@ public class DirectionEditorView extends VerticalLayout
         nounEntry.setValue(ViewSupporter.getWordText(ViewSupporter.getWord(commandDescriptionData, NOUN)));
         shortDescriptionTA.setValue(directionData.getDescriptionData().getShortDescription());
         longDescriptionTA.setValue(directionData.getDescriptionData().getLongDescription());
-        grid.select(directionData.getDestinationData());
+        grid.select(adventureData.getLocationData().get(directionData.getDestinationId()));
     }
 
     private void setUpBindings() {

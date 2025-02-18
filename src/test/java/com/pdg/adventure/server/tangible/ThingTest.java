@@ -19,7 +19,7 @@ class ThingTest {
     private final VariableProvider variableProvider = new VariableProvider();
     private final Vocabulary vocabulary = new Vocabulary();
     {
-        vocabulary.addNewWord("take", Word.Type.VERB);
+        vocabulary.createNewWord("take", Word.Type.VERB);
     }
     private Container pocket = new GenericContainer(new DescriptionProvider("your pocket"), 5);
 

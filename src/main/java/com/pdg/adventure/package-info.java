@@ -13,6 +13,7 @@ package com.pdg.adventure;
  *    - objects not available in any location (no, use flags)
  *    - objects worn (no, use objects)
  *  - add FollowupActions to PreConditions (no, current design is sufficient)
+ *  - add / complete more mappers (esp. actions, conditions)
  *  - add serialization via https://github.com/nitrite/nitrite-java (no, not sufficiently ready)
  *
  *  For more ideas, see: https://worldofspectrum.org//pub/sinclair/games-info/p/ProfessionalAdventureWriter_IntroductionManual.pdf

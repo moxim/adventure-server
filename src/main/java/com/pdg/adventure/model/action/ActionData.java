@@ -6,5 +6,9 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class ActionData extends BasicData {
+public abstract class ActionData extends BasicData {
+    public String getActionName() {
+        return this.getClass().getSimpleName();
+    }
+
 }

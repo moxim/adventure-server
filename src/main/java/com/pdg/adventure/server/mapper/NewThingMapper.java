@@ -1,5 +1,8 @@
 package com.pdg.adventure.server.mapper;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class NewThingMapper {
 /*
 

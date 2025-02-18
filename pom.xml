@@ -13,8 +13,11 @@
     <description>The Server for pdg-Software's Adventure Builder. It stores adventures.</description>
 
     <properties>
-        <java.version>21</java.version>
-        <vaadin.version>24.4.12</vaadin.version>
+        <maven.compiler.source>23</maven.compiler.source>
+        <maven.compiler.target>23</maven.compiler.target>
+        <java.version>23</java.version>
+        <spring-boot.version>3.3.4</spring-boot.version>
+        <vaadin.version>24.6.4</vaadin.version>
         <snakeyaml.version>2.2</snakeyaml.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -22,8 +25,15 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.3</version>
+        <version>3.3.4</version>
     </parent>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+        </license>
+    </licenses>
 
     <repositories>
         <!-- The order of definitions matters. Explicitly defining central here to make sure it has the highest priority. -->
@@ -38,9 +48,19 @@
         </repository>
 
         <repository>
-            <id>PDG public</id>
+            <id>pdg-internal</id>
             <url>
-                http://nexus.pdg-software.com:8081/repository/pdg-public-repository/
+                https://nexus.pdg-software.com/repository/pdg-internal/
+            </url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+
+        <repository>
+            <id>pdg-group</id>
+            <url>
+                https://nexus.pdg-software.com/repository/pdg-public-group/
             </url>
             <snapshots>
                 <enabled>false</enabled>
@@ -77,6 +97,19 @@
             <url>https://maven.vaadin.com/vaadin-prereleases/</url>
         </pluginRepository>
     </pluginRepositories>
+
+    <distributionManagement>
+<!--        <repository>-->
+<!--            <id>github</id>-->
+<!--            <name>moxim</name>-->
+<!--            <url>https://maven.pkg.github.com/moxim/adventure-server</url>-->
+<!--        </repository>-->
+        <repository>
+            <id>pdg-internal</id>
+            <name>mafw</name>
+            <url>https://nexus.pdg-software.com/repository/pdg-internal/</url>
+        </repository>
+    </distributionManagement>
 
     <dependencyManagement>
         <dependencies>
@@ -119,14 +152,31 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.5.8</version>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.vaadin</groupId>-->
+<!--            <artifactId>vaadin-testbench-bom</artifactId>-->
+<!--            <version>6.0.1</version>-->
+<!--        </dependency>-->
+        <dependency>
            <groupId>org.github.legioth</groupId>
            <artifactId>imagemap</artifactId>
            <version>1.1.0</version>
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>com.vaadin</groupId>-->
+<!--                    <artifactId>vaadin-testbench-bom</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
         </dependency>
         <dependency>
-           <groupId>org.vaadin.pekkam</groupId>
+            <groupId>org.parttio</groupId>
+<!--           <groupId>org.vaadin.pekkam</groupId>-->
            <artifactId>canvas-java</artifactId>
-           <version>1.0.1</version>
+           <version>2.0.0</version>
         </dependency>
 
         <dependency>
@@ -178,7 +228,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.30</version>
+            <version>1.18.34</version>
             <scope>compile</scope>
         </dependency>
 
@@ -195,37 +245,37 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.10.2</version>
+            <version>5.10.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <version>5.10.2</version>
+            <version>5.10.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>org.assertj</groupId>
           <artifactId>assertj-core</artifactId>
-          <version>3.26.0</version>
+          <version>3.27.3</version>
           <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.19.8</version>
+            <version>1.20.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>mongodb</artifactId>
-            <version>1.19.8</version>
+            <version>1.20.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-instrumentation-annotations</artifactId>
-            <version>1.26.0</version>
+            <version>2.6.0</version>
         </dependency>
     </dependencies>
 
@@ -242,8 +292,8 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.13.0</version>
                     <configuration>
-                        <source>21</source>
-                        <target>21</target>
+                        <source>23</source>
+                        <target>23</target>
                         <annotationProcessorPaths>
                             <path>
                                 <groupId>org.projectlombok</groupId>
@@ -309,6 +359,24 @@
 
     <profiles>
         <profile>
+            <id>github</id>
+            <repositories>
+                <repository>
+                    <id>central</id>
+                    <url>https://repo1.maven.org/maven2</url>
+                </repository>
+                <repository>
+                    <id>github</id>
+                    <name>mafw</name>
+                    <url>https://maven.pkg.github.com/mafw/adventure-server</url>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+
+        <profile>
             <!-- Production mode is activated using -Pproduction -->
             <id>production</id>
             <build>
@@ -340,7 +408,7 @@
                     <plugin>
                         <groupId>org.springframework.boot</groupId>
                         <artifactId>spring-boot-maven-plugin</artifactId>
-                        <version>3.2.3</version>
+                        <version>${spring-boot.version}</version>
                         <executions>
                             <execution>
                                 <id>start-spring-boot</id>
@@ -363,7 +431,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
-                        <version>2.22.2</version>
+                        <version>3.3.1</version>
                         <executions>
                             <execution>
                                 <goals>
@@ -380,7 +448,5 @@
                 </plugins>
             </build>
         </profile>
-
     </profiles>
-
 </project>

@@ -1,8 +1,11 @@
 package com.pdg.adventure.server.support;
 
+import org.springframework.stereotype.Service;
+
 import java.util.HashMap;
 import java.util.Map;
 
+@Service
 public class VariableProvider {
     private final Map<String, Variable> variables;
 

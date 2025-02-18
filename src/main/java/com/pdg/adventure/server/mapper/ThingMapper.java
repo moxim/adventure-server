@@ -1,21 +1,28 @@
 package com.pdg.adventure.server.mapper;
 
+import org.springframework.stereotype.Service;
+
 import com.pdg.adventure.api.Mapper;
+import com.pdg.adventure.model.CommandProviderData;
 import com.pdg.adventure.model.ThingData;
+import com.pdg.adventure.model.basics.DescriptionData;
+import com.pdg.adventure.server.parser.CommandProvider;
+import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.Thing;
 
+@Service
 public class ThingMapper implements Mapper<ThingData, Thing> {
 
-    private MapperSupporter mapperSupporter;
+    private final Mapper<DescriptionData, DescriptionProvider> descriptionMapper;
+    private final Mapper<CommandProviderData, CommandProvider> commandProviderMapper;
 
     public ThingMapper(MapperSupporter aMapperSupporter) {
-        mapperSupporter = aMapperSupporter;
+        descriptionMapper = aMapperSupporter.getMapper(DescriptionData.class);
+        commandProviderMapper = aMapperSupporter.getMapper(CommandProviderData.class);
     }
 
     public Thing mapToBO(ThingData aThingData) {
-        final DescriptionMapper descriptionMapper = mapperSupporter.getMapper(DescriptionMapper.class);
-        final CommandProviderMapper commandProviderMapper = mapperSupporter.getMapper(CommandProviderMapper.class);
         Thing result = new Thing(descriptionMapper.mapToBO(aThingData.getDescriptionData()));
         result.setId(aThingData.getId());
         result.setCommandProvider(commandProviderMapper.mapToBO(aThingData.getCommandProviderData()));
@@ -25,8 +32,6 @@ public class ThingMapper implements Mapper<ThingData, Thing> {
     public ThingData mapToDO(Thing aThing) {
         ThingData result = new ThingData();
         result.setId(aThing.getId());
-        DescriptionMapper descriptionMapper = mapperSupporter.getMapper(DescriptionMapper.class);
-        final CommandProviderMapper commandProviderMapper = mapperSupporter.getMapper(CommandProviderMapper.class);
         result.setDescriptionData(descriptionMapper.mapToDO(aThing.getDescriptionProvider()));
         result.setCommandProviderData(commandProviderMapper.mapToDO(aThing.getCommandProvider()));
         return result;

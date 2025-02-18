@@ -1,13 +1,15 @@
 package com.pdg.adventure.server.tangible;
 
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.api.Containable;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.support.DescriptionProvider;
-import java.util.List;
-import org.junit.jupiter.api.Test;
 
 class ItemIdentifierTest {
 
@@ -91,6 +93,25 @@ class ItemIdentifierTest {
 
         // then
         assertThat(items).size().isGreaterThan(1);
+    }
+
+    @Test
+    public void findSpecificItem() {
+        // given
+        String noun = "ring";
+        Item ring = new Item(new DescriptionProvider("small", noun), true);
+        container.add(ring);
+        Item largeRing = new Item(new DescriptionProvider("large", noun), true);
+        container.add(largeRing);
+        GenericCommandDescription commandDescription = new GenericCommandDescription("", "small", noun);
+
+        // when
+        List<Containable> items = ItemIdentifier.findItems(container, commandDescription);
+
+        // then
+        assertThat(items).contains(ring);
+        assertThat(items).doesNotContain(largeRing);
+        assertThat(items).size().isEqualTo(1);
     }
     
     

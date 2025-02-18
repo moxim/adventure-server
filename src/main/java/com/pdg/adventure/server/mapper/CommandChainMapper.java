@@ -15,15 +15,13 @@ import java.util.List;
 @Service
 public class CommandChainMapper implements Mapper<CommandChainData, CommandChain> {
 
-    private final MapperSupporter mapperSupporter;
+    private final Mapper<CommandData, Command> commandMapper;
 
     public CommandChainMapper(MapperSupporter aMapperSupporter) {
-        mapperSupporter = aMapperSupporter;
+        commandMapper = aMapperSupporter.getMapper(CommandData.class);
     }
 
     public CommandChain mapToBO(CommandChainData aData) {
-        final CommandMapper commandMapper = mapperSupporter.getMapper(CommandMapper.class);
-
         CommandChain result = new GenericCommandChain();
         result.setId(aData.getId());
         for (CommandData commandData : aData.getCommands()) {
@@ -37,7 +35,6 @@ public class CommandChainMapper implements Mapper<CommandChainData, CommandChain
         CommandChainData result = new CommandChainData();
         result.setId(aData.getId());
         List<CommandData> commandList = new ArrayList<>(aData.getCommands().size());
-        final CommandMapper commandMapper = mapperSupporter.getMapper(CommandMapper.class);
         for (Command command : aData.getCommands()) {
             final CommandData commandData = commandMapper.mapToDO(command);
             commandList.add(commandData);

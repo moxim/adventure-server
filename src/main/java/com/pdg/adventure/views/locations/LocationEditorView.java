@@ -35,25 +35,23 @@ public class LocationEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
     private static final String LOCATION_ID = "locationId";
     private static final String ADVENTURE_ID = "adventureId";
-    private static final int DEFAULT_EXITS = 1;
     private static final int MIN_LUMEN = 0;
     private static final int MAX_LUMEN = 100;
     private static final int LUMEN_STEP = 1;
 
     private final transient AdventureService adventureService;
     private final Binder<LocationViewModel> binder;
-    private VocabularyPicker noun;
-    private VocabularyPicker adjective;
+    private final VocabularyPicker nounSelection;
+    private final VocabularyPicker adjectiveSelection;
 
-    private Button saveButton;
-    private Button resetButton;
+    private final Button saveButton;
+    private final Button resetButton;
     private String pageTitle;
 
     private transient String locationId;
     private transient LocationData locationData;
     private transient LocationViewModel lvm;
     private transient AdventureData adventureData;
-    private transient VocabularyData vocabularyData;
 
     @Autowired
     public LocationEditorView(AdventureService anAdventureService) {
@@ -72,8 +70,8 @@ public class LocationEditorView extends VerticalLayout
         TextField locationIdTF = getLocationIdTF();
         TextField adventureIdTF = getAdventureIdTF();
 
-        noun = getWordBox("Noun", "The main theme of this location.");
-        adjective = getWordBox( "Adjective", "The qualifier for this location.");
+        nounSelection = getWordBox("Noun", "The main theme of this location.");
+        adjectiveSelection = getWordBox( "Adjective", "The qualifier for this location.");
     
         TextArea shortDescription = getShortDescTextArea();
         TextArea longDescription = getLongDescTextArea();
@@ -92,7 +90,7 @@ public class LocationEditorView extends VerticalLayout
             resetButton.setEnabled(hasChanges);
         });
 
-        HorizontalLayout h1 = new HorizontalLayout(adjective, noun);
+        HorizontalLayout h1 = new HorizontalLayout(adjectiveSelection, nounSelection);
         HorizontalLayout h2 = new HorizontalLayout(lumen, exits);
 
         VerticalLayout hl = new VerticalLayout(h1, h2);
@@ -101,7 +99,7 @@ public class LocationEditorView extends VerticalLayout
                 new RouteParameters(
                         new RouteParam(LOCATION_ID, locationData.getId()),
                         new RouteParam(ADVENTURE_ID, adventureData.getId()))
-        ));
+        ).ifPresent(e -> e.setData(adventureData, locationData)));
 
         Button manageItems = new Button("Manage Items");
         manageItems.setEnabled(false);
@@ -173,7 +171,8 @@ public class LocationEditorView extends VerticalLayout
                 throw new RuntimeException("Status Error: " + status.getValidationErrors());
             }
 
-            if (aLocationViewModel.getNoun() == null) {
+            // TODO: check if this is necessary
+            if (aLocationViewModel.getNoun() == null && aLocationViewModel.getLongDescription().isBlank()) {
                 throw new RuntimeException("Alles Mist");
             }
 
@@ -226,7 +225,7 @@ public class LocationEditorView extends VerticalLayout
 
     private void checkIfSaveAvailable() {
         if (binder.validate().isOk()) {
-            final boolean isNounEmpty = noun.isEmpty();
+            final boolean isNounEmpty = nounSelection.isEmpty();
             // TODO: see if we can use the binder instead
             //  binder.getBean().getNoun().getText().isEmpty();
             saveButton.setEnabled(!isNounEmpty);
@@ -262,13 +261,13 @@ public class LocationEditorView extends VerticalLayout
             locationData = new LocationData();
         }
         locationData.setAdventure(adventureData);
-        vocabularyData = adventureData.getVocabularyData();
-        noun.populate(vocabularyData.getWords(NOUN));
-        adjective.populate(vocabularyData.getWords(ADJECTIVE));
+        VocabularyData vocabularyData = adventureData.getVocabularyData();
+        nounSelection.populate(vocabularyData.getWords(NOUN));
+        adjectiveSelection.populate(vocabularyData.getWords(ADJECTIVE));
         lvm = new LocationViewModel(locationData);
 
-        ViewSupporter.bindField(binder, adjective, ADJECTIVE);
-        ViewSupporter.bindField(binder, noun, NOUN);
+        ViewSupporter.bindField(binder, adjectiveSelection, ADJECTIVE);
+        ViewSupporter.bindField(binder, nounSelection, NOUN);
 
         binder.readBean(lvm);
 

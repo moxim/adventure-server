@@ -1,26 +1,47 @@
 package com.pdg.adventure.server.support;
 
-import com.pdg.adventure.api.Mapper;
-import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.tangible.Item;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
+import jakarta.annotation.PostConstruct;
+import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import com.pdg.adventure.api.Mapper;
+import com.pdg.adventure.server.AdventureConfig;
+import com.pdg.adventure.server.location.Location;
+import com.pdg.adventure.server.storage.messages.MessagesHolder;
+import com.pdg.adventure.server.tangible.Item;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
+
 @Service
 public class MapperSupporter {
+    Logger logger = LoggerFactory.getLogger(MapperSupporter.class);
+
+    @Getter
     private final Vocabulary vocabulary;
-    private final Map<String, Item> bagOfItems;
-    private final MapperProvider mapperProvider;
+    @Getter
+    private final VariableProvider variableProvider;
+    @Getter
+    private final MessagesHolder messagesHolder;
+    @Getter
+    private final Map<String, Item> allItems;
+    @Getter
     private final Map<String, Location> mappedLocations;
 
-    public MapperSupporter(Vocabulary aVocabulary) {
-        mapperProvider = new MapperProvider(this);
-        mappedLocations = new HashMap<>();
-        bagOfItems = new HashMap<>();
-        vocabulary = new Vocabulary();
+    private final Map<Class<?>, Mapper<?, ?>> mapperMap;
+    private final AdventureConfig adventureConfig;
+
+    public MapperSupporter(AdventureConfig anAdventureConfig) {
+        adventureConfig = anAdventureConfig;
+        variableProvider = adventureConfig.allVariables();
+        messagesHolder = adventureConfig.allMessages();
+        allItems = adventureConfig.allItems();
+        vocabulary = adventureConfig.allWords();
+        mappedLocations = adventureConfig.allLocations();
+        mapperMap = new HashMap<>();
     }
 
     public void addMappedLocation(Location aLocation) {
@@ -31,24 +52,48 @@ public class MapperSupporter {
         return mappedLocations.get(aLocationId);
     }
 
-    public MapperProvider getMapperProvider() {
-        return mapperProvider;
+    /**
+     * This method returns a mapper for the given DTO class.
+     *
+     * @param aDataObjectMapperName The class of the data object.
+     * @param <BO>                  The type of the business object.
+     * @param <DO>                  The type of the data object.
+     * @return The mapper for the given DTO class.
+     */
+    public <BO, DO> Mapper<BO, DO> getMapper(Class<?> aDataObjectMapperName) {
+        return (Mapper<BO, DO>) mapperMap.get(aDataObjectMapperName);
     }
 
-    public <T extends Mapper> T getMapper(Class<T> aMapperName) {
-        return (T) mapperProvider.getMapper(aMapperName);
+    /**
+     * This method registers a mapper with the provider.
+     *
+     * @param aDOClass The class of the data object.
+     * @param aBOClass The class of the business object.
+     * @param aMapper  The mapper to register.
+     * @param <BO>     The type of the business object.
+     * @param <DO>     The type of the data object.
+     */
+    public <BO, DO> void registerMapper(Class<?> aDOClass, Class<?> aBOClass, Mapper<DO, BO> aMapper) {
+        mapperMap.put(aBOClass, aMapper);
+        mapperMap.put(aDOClass, aMapper);
     }
 
-    public <BO, DO> Mapper<BO, DO> registerMapper(Class<? extends Mapper<DO, BO>> aMapperClass,
-                                                  Mapper<DO, BO> aMapper) {
-        return mapperProvider.registerMapper(aMapperClass, aMapper);
+    @PostConstruct
+    public void completeInit() {
+        logger.info("MapperSupporter is initialized");
     }
 
-    public Map<String, Item> getBagOfItems() {
-        return bagOfItems;
+    public String toString() {
+        return "[MapperSupporter] " +
+                "vocabulary: " + vocabulary + ", " +
+                "variableProvider: " + variableProvider + ", " +
+                "messagesHolder: " + messagesHolder + ", " +
+                "allItems: " + allItems + ", " +
+                "mappedLocations: " + mappedLocations + ", " +
+                "mapperMap: " + mapperMap;
     }
 
-    public Vocabulary getVocabulary() {
-        return vocabulary;
+    private AdventureConfig getAdventrueConfig() {
+        return adventureConfig;
     }
 }

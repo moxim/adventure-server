@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.mapper;
 
+import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.support.MapperSupporter;
@@ -20,15 +21,15 @@ class VocabularyMapperTest {
     void mapToDOandThenToBO() {
         Vocabulary vocabulary = mapperSupporter.getVocabulary();
         assertThat(vocabulary).isNotNull();
-        vocabulary.addNewWord("word1", Word.Type.NOUN);
-        final VocabularyMapper sut = mapperSupporter.getMapper(VocabularyMapper.class);
+        vocabulary.createNewWord("word1", Word.Type.NOUN);
+        final Mapper<VocabularyData, Vocabulary> sut = mapperSupporter.getMapper(Vocabulary.class);
         final VocabularyData vocabularyData = sut.mapToDO(vocabulary);
         assertThat(vocabularyData).isNotNull();
         assertThat(vocabularyData.findWord("word1")).isNotNull();
 
         final Vocabulary vocabulary1 = sut.mapToBO(vocabularyData);
         assertThat(vocabulary1).isNotNull();
-        assertThat(vocabulary1.getSynonym("word1")).isNull();
+        assertThat(vocabulary1.findSynonym("word1")).isNull();
         assertThat(vocabulary1.findWord("word1")).isNotNull();
     }
 }

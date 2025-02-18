@@ -83,6 +83,8 @@ public class AdventuresMenuView extends VerticalLayout {
         });
 
         grid.setItems(locations);
+        grid.setEmptyStateText("Create some adventures.");
+
         grid.setWidth("500px");
         grid.setHeight("500px");
         AdventuresMenuView.AdventureDataContextMenu contextMenu = new AdventuresMenuView.AdventureDataContextMenu(grid);
