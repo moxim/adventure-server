@@ -26,11 +26,11 @@ public class Vocabulary extends BasicData implements Ided {
     /*
       text   | synonym | type
       -------+---------+------
-      get          GET   VERB        <- addWord(word, type)
-      rabbit    RABBIT   NOUN        <- addWord(word, type)
-      put          PUT   VERB        <- addWord(word, type)
-      take         GET   VERB        <- addWord(word, synonym)
-      small      SMALL   ADJECTIVE   <- addWord(word, type)
+      get          GET   VERB        <- createWord(word, type)
+      rabbit    RABBIT   NOUN        <- createWord(word, type)
+      put          PUT   VERB        <- createWord(word, type)
+      take         GET   VERB        <- createWord(word, synonym)
+      small      SMALL   ADJECTIVE   <- createWord(word, type)
      */
 
     public Vocabulary() {
@@ -38,25 +38,25 @@ public class Vocabulary extends BasicData implements Ided {
         data = new VocabularyData(allWords);
     }
 
-    public void addNewWord(String aWord, Word.Type aType) {
-        data.addNewWord(aWord, aType);
+    public Word createNewWord(String aWord, Word.Type aType) {
+        return data.createWord(aWord, aType);
     }
 
-    public void addSynonym(String aNewSynonym, String anExistingWord) {
-        data.addSynonym(aNewSynonym, anExistingWord);
+    public Word createSynonym(String aNewSynonym, String anExistingWord) {
+        return data.createSynonym(aNewSynonym, anExistingWord);
     }
 
-    private void addSynonymForWord(String aText, Word aWord) {
-        data.addSynonymForWord(aText, aWord);
-    }
+//    private Word addSynonymForWord(String aText, Word aWord) {
+//        return data.createSynonymForWord(aText, aWord);
+//    }
 
-    public Word getSynonym(String aWord) {
+    public Word findSynonym(String aWord) {
         Word word = data.findWord(aWord).orElseThrow(() -> new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, aWord)));
         return word.getSynonym();
     }
 
-    public String getSynonym(String aWord, Word.Type aType) {
-        Word synonym = getSynonym(aWord); // guaranteed to be present
+    public String findSynonym(String aWord, Word.Type aType) {
+        Word synonym = findSynonym(aWord); // guaranteed to be present
         if (synonym.getType() != aType) {
             return EMPTY_STRING;
         }
@@ -78,7 +78,7 @@ public class Vocabulary extends BasicData implements Ided {
     }
     public void addWords(Collection<Word> words) {
         for (Word word : words) {
-            data.addNewWord(word.getText(), word.getType());
+            data.createWord(word.getText(), word.getType());
         }
     }
 

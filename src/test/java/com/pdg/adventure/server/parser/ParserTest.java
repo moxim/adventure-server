@@ -13,7 +13,7 @@ class ParserTest {
     void getInput() {
         // given
         Vocabulary vocabulary = new Vocabulary();
-        vocabulary.addNewWord("PaRsEr", Word.Type.NOUN);
+        vocabulary.createNewWord("PaRsEr", Word.Type.NOUN);
         Parser parser = new Parser(vocabulary);
 
         // when

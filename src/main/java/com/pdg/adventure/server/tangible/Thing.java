@@ -1,5 +1,7 @@
 package com.pdg.adventure.server.tangible;
 
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -10,7 +12,8 @@ import com.pdg.adventure.server.parser.CommandProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
 
 public class Thing implements Describable, Actionable {
-    private final DescriptionProvider descriptionProvider;
+    @Setter
+    private DescriptionProvider descriptionProvider;
     private CommandProvider commandProvider;
     private String id;
 
@@ -19,6 +22,7 @@ public class Thing implements Describable, Actionable {
         descriptionProvider = aDescriptionProvider;
         id = UUID.randomUUID().toString();
     }
+
 
     @Override
     public String getId() {

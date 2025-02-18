@@ -2,6 +2,7 @@ package com.pdg.adventure.views.locations;
 
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.support.DescriptionProvider;
 
 import java.io.Serializable;
 
@@ -16,6 +17,8 @@ public final class LocationViewModel implements Serializable {
     private String longDescription;
     private String shortDescription;
 
+    private DescriptionProvider descriptionProvider;
+
     public LocationViewModel() {
         this(new LocationData());
     }
@@ -26,6 +29,8 @@ public final class LocationViewModel implements Serializable {
         lumen = data.getLumen();
         id = data.getId();
         adventureId = data.getAdventure().getId();
+        descriptionProvider = new DescriptionProvider(data.getDescriptionData());
+
         noun = data.getDescriptionData().getNoun();
         adjective = data.getDescriptionData().getAdjective();
         longDescription = data.getDescriptionData().getLongDescription();
@@ -76,14 +81,14 @@ public final class LocationViewModel implements Serializable {
     }
 
     public String getLongDescription() {
-        return data.getDescriptionData().getLongDescription();
+        return descriptionProvider.getLongDescription();
     }
     public void setLongDescription(String aDescription) {
         data.getDescriptionData().setLongDescription(aDescription);
     }
 
     public String getShortDescription() {
-        return data.getDescriptionData().getShortDescription();
+        return descriptionProvider.getShortDescription();
     }
     public void setShortDescription(String aDescription) {
         data.getDescriptionData().setShortDescription(aDescription);

@@ -1,12 +1,14 @@
 package com.pdg.adventure.server.mapper;
 
+import jakarta.annotation.PostConstruct;
+import org.springframework.stereotype.Service;
+
 import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.basics.CommandDescriptionData;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
-import org.springframework.stereotype.Service;
 
 @Service
 public class CommandDescriptionMapper implements Mapper<CommandDescriptionData, CommandDescription> {
@@ -15,6 +17,11 @@ public class CommandDescriptionMapper implements Mapper<CommandDescriptionData, 
 
     public CommandDescriptionMapper(MapperSupporter aMapperSupporter) {
         mapperSupporter = aMapperSupporter;
+    }
+
+    @PostConstruct
+    public void registerMapper() {
+        mapperSupporter.registerMapper(CommandDescriptionData.class, CommandDescription.class, this);
     }
 
     @Override

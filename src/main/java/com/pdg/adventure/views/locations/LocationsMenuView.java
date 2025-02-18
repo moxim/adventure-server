@@ -1,11 +1,5 @@
 package com.pdg.adventure.views.locations;
 
-import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.server.storage.AdventureService;
-import com.pdg.adventure.views.adventure.AdventureEditorView;
-import com.pdg.adventure.views.support.GridProvider;
-import com.pdg.adventure.views.support.ViewSupporter;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
@@ -32,6 +26,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.views.adventure.AdventureEditorView;
+import com.pdg.adventure.views.support.GridProvider;
+import com.pdg.adventure.views.support.ViewSupporter;
+
 @Route(value = "adventures/:adventureId/locations", layout = LocationsMainLayout.class)
 @RouteAlias(value = "adventures/locations",  layout = LocationsMainLayout.class)
 @PageTitle("Locations")
@@ -49,7 +50,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
     private transient AdventureData adventureData;
     private String pageTitle = "";
 
-    private TextField startLocation;
+    private TextField startLocationTF;
     private Button create;
     private Button edit;
     private TextField searchField;
@@ -65,10 +66,10 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
 
         binder = new Binder<>(AdventureData.class);
 
-        startLocation = getEntryLocation();
-        startLocation.setTooltipText("This is the location where a new adventures start.");
-        startLocation.setReadOnly(true);
-        startLocation.setWidth(300, Unit.PIXELS);
+        startLocationTF = getEntryLocation();
+        startLocationTF.setTooltipText("This is the location where a new adventures start.");
+        startLocationTF.setReadOnly(true);
+        startLocationTF.setWidth(300, Unit.PIXELS);
 
         numberOfLocations = new IntegerField("Locations:");
         numberOfLocations.setTooltipText("This is the number of locations you have defined.");
@@ -100,7 +101,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         });
         backButton.addClickShortcut(Key.ESCAPE);
 
-        VerticalLayout leftSide = new VerticalLayout(startLocation, numberOfLocations, edit, create, backButton);
+        VerticalLayout leftSide = new VerticalLayout(startLocationTF, numberOfLocations, edit, create, backButton);
 
         searchField = new TextField();
         searchField.setWidth("50%");
@@ -135,6 +136,8 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         Grid<LocationDescriptionAdapter> grid = gridProvider.getGrid();
         grid.setWidth("500px");
         grid.setHeight("500px");
+        grid.setEmptyStateText("Create some locations.");
+
 
         List<LocationDescriptionAdapter> locationDescriptions = new ArrayList<>(locations.size());
         for (LocationData location : locations) {
@@ -204,7 +207,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
     private void fillGUI() {
         List<LocationData> locations = new ArrayList<>(adventureData.getLocationData().values());
         numberOfLocations.setValue(locations.size());
-        ViewSupporter.populateStartLocation(adventureData, startLocation);
+        ViewSupporter.populateStartLocation(adventureData, startLocationTF);
         gridContainer.add(getLocationsGrid(locations));
     }
 
@@ -238,8 +241,8 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
             addItem("Edit", e -> e.getItem().ifPresent(location -> navigateToLocationEditor(location.getId())));
 
             addItem("Select as start", e -> e.getItem().ifPresent(location -> {
-                startLocation.setValue(ViewSupporter.getLocationsShortedDescription(location));
                 adventureData.setCurrentLocationId(location.getId());
+                ViewSupporter.populateStartLocation(adventureData, startLocationTF);
                 adventureService.saveAdventureData(adventureData);
             }));
 
@@ -267,8 +270,13 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
                 final GridListDataView<LocationDescriptionAdapter> view = target.getListDataView();
                 view.removeItem(location);
                 view.refreshAll();
-                adventureData.getLocationData().remove(location.getId());
-                adventureService.deleteLocation(location.getId());
+                String locationId = location.getId();
+                adventureData.getLocationData().remove(locationId);
+                if (locationId.equals(adventureData.getCurrentLocationId())) {
+                    adventureData.setCurrentLocationId("");
+                    startLocationTF.clear();
+                }
+                adventureService.deleteLocation(locationId);
                 adventureService.saveAdventureData(adventureData);
             }));
         }

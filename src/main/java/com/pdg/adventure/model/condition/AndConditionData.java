@@ -3,11 +3,9 @@ package com.pdg.adventure.model.condition;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import com.pdg.adventure.model.basics.BasicData;
-
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class AndConditionData extends BasicData {
+public class AndConditionData extends PreConditionData {
     private String preConditionId;
     private String anotherPreConditionId;
 }

@@ -1,29 +1,39 @@
 package com.pdg.adventure.server.mapper;
 
+import jakarta.annotation.PostConstruct;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.stereotype.Service;
+
 import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.model.basics.DescriptionData;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
-import org.springframework.stereotype.Service;
 
 @Service
+@DependsOn("mapperSupporter")
 public class DescriptionMapper implements Mapper<DescriptionData, DescriptionProvider> {
 
-    private MapperSupporter mapperSupporter;
+    private final MapperSupporter mapperSupporter;
+    private Vocabulary vocabulary;
 
-    public DescriptionMapper(MapperSupporter aMapperSupporter) {
-             mapperSupporter = aMapperSupporter;
-         }
+    public DescriptionMapper( MapperSupporter aMapperSupporter) {
+         mapperSupporter = aMapperSupporter;
+    }
+
+    @PostConstruct
+    public void registerMapper() {
+        vocabulary = mapperSupporter.getVocabulary();
+        mapperSupporter.registerMapper(DescriptionData.class, DescriptionProvider.class, this);
+    }
 
     @Override
     public DescriptionData mapToDO(DescriptionProvider aDescriptionProvider) {
         DescriptionData result = new DescriptionData();
         result.setId(aDescriptionProvider.getId());
-        Vocabulary vocabulary = mapperSupporter.getVocabulary();
-        result.setNoun(vocabulary.getSynonym(aDescriptionProvider.getNoun()));
-        result.setAdjective(vocabulary.getSynonym(aDescriptionProvider.getAdjective()));
+        result.setNoun(vocabulary.findSynonym(aDescriptionProvider.getNoun()));
+        result.setAdjective(vocabulary.findSynonym(aDescriptionProvider.getAdjective()));
         result.setShortDescription(aDescriptionProvider.getShortDescription());
         result.setLongDescription(aDescriptionProvider.getLongDescription());
         return result;

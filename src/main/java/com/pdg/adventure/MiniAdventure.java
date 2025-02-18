@@ -1,6 +1,13 @@
 package com.pdg.adventure;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.List;
+import java.util.Map;
+
 import com.pdg.adventure.api.*;
+import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.*;
 import com.pdg.adventure.server.condition.CarriedCondition;
 import com.pdg.adventure.server.condition.NotCondition;
@@ -21,61 +28,54 @@ import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
-import com.pdg.adventure.server.tangible.Thing;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
-import com.pdg.adventure.model.Word;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 // TODO
 //  get rid of ugly casts
 //  find them with \(\b[A-Z][A-Za-z0-9]*?\b\)
 
 public class MiniAdventure {
-    private final VariableProvider variableProvider;
     private Location portal;
     private Location location;
     private Location house;
-    private Map<String, Location> allLocations = new HashMap<>();
 
     private Container pocket;
 
+    private final AdventureConfig adventureConfig;
     // these hold everything
     private final Vocabulary allWords;
+    private final VariableProvider variableProvider;
     private final MessagesHolder allMessages;
     private final Container allItems;
     private final Map<String, Container> allContainers;
+    private final Map<String, Location> allLocations;
 
     private static final String SMALL_TEXT = "small";
 
     public static void main(String[] args) {
-        final MiniAdventure game = new MiniAdventure(new Vocabulary(), new HashMap<>(4), new MessagesHolder(),
-                                                     new GenericContainer(new DescriptionProvider("all items"), 9999));
+        final MiniAdventure game = new MiniAdventure(new AdventureConfig());
         game.setup();
         game.run();
     }
 
-    public MiniAdventure(Vocabulary aBagOfAllWords, Map<String, Container> aContainerBag, MessagesHolder aBagOfAllMessages,
-                         Container anItemContainer) {
-        allWords = aBagOfAllWords;
-        allContainers = aContainerBag;
-        allMessages = aBagOfAllMessages;
-        allItems = anItemContainer;
-        variableProvider = new VariableProvider();
+    public MiniAdventure(AdventureConfig anAdventureConfig) {
+        adventureConfig = anAdventureConfig;
+        allWords = adventureConfig.allWords();
+        allContainers = adventureConfig.allContainers();
+        allMessages = adventureConfig.allMessages();
+        allLocations = adventureConfig.allLocations();
+        allItems = new GenericContainer(new DescriptionProvider("all items"), 9999);
+        variableProvider = adventureConfig.allVariables();
     }
 
     void run() {
         System.out.println(new MessageAction(allMessages.getMessage("4"), allMessages).execute());
-        allWords.addNewWord("quit", Word.Type.VERB);
-        allWords.addSynonym("exit", "quit");
-        allWords.addSynonym("bye", "quit");
-        allWords.addNewWord("describe", Word.Type.VERB);
-        allWords.addSynonym("look", "describe");
-        allWords.addNewWord("help", Word.Type.VERB);
+        allWords.createNewWord("quit", Word.Type.VERB);
+        allWords.createSynonym("exit", "quit");
+        allWords.createSynonym("bye", "quit");
+        allWords.createNewWord("describe", Word.Type.VERB);
+        allWords.createSynonym("look", "describe");
+        allWords.createNewWord("help", Word.Type.VERB);
 
         setUpWorkflowCommands();
 
@@ -114,7 +114,7 @@ public class MiniAdventure {
 
         // start on location "1"
         ExecutionResult result =
-                new MovePlayerAction(location, Environment::setCurrentLocation, allMessages).execute();
+                new MovePlayerAction(location, allMessages).execute();
         Environment.tell(result.getResultMessage());
     }
 
@@ -183,10 +183,9 @@ public class MiniAdventure {
         house = new Location(houseDescription, pocket);
         setUpLookCommands(house);
 
-
-        allLocations.put("1", location);
-        allLocations.put("2", portal);
-        allLocations.put("3", house);
+        allLocations.put(location.getId(), location);
+        allLocations.put(portal.getId(), portal);
+        allLocations.put(house.getId(), house);
     }
 
     private void setUpPocket() {
@@ -203,7 +202,6 @@ public class MiniAdventure {
         GenericCommandDescription enterPortalCommandDescription = new GenericCommandDescription("enter", portal);
         GenericCommand enterPortalCommand = new GenericCommand(enterPortalCommandDescription,
                                                                    new MovePlayerAction(portal,
-                                                                                        Environment::setCurrentLocation,
                                                                                         allMessages));
         enterPortalCommand.addPreCondition(new WornCondition(ring));
 
@@ -211,7 +209,7 @@ public class MiniAdventure {
                                                    new MessageAction(allMessages.getMessage("12"), allMessages));
         enterCommand2.addPreCondition(new NotCondition(new WornCondition(ring)));
 
-        GenericDirection toPortal = new GenericDirection(enterCommand2, portal, true);
+        GenericDirection toPortal = new GenericDirection(allLocations, enterCommand2, portal.getId(), true);
         toPortal.addCommand(enterPortalCommand);
 
         setUpLookCommands(toPortal);
@@ -220,9 +218,8 @@ public class MiniAdventure {
         GenericCommandDescription enterHouseCommandDescription = new GenericCommandDescription("enter", house);
         GenericCommand enterHouseCommand = new GenericCommand(enterHouseCommandDescription,
                                                                   new MovePlayerAction(house,
-                                                                                       Environment::setCurrentLocation,
                                                                                        allMessages));
-        GenericDirection toHouse = new GenericDirection(enterHouseCommand, house, true);
+        GenericDirection toHouse = new GenericDirection(allLocations, enterHouseCommand, house.getId(), true);
 
         setUpLookCommands(toHouse);
         location.addDirection(toHouse);
@@ -230,16 +227,15 @@ public class MiniAdventure {
         GenericCommandDescription leavePortalCommandDescription = new GenericCommandDescription("leave", location);
         GenericCommand leaveCommand = new GenericCommand(leavePortalCommandDescription,
                                                              new MovePlayerAction(location,
-                                                                                  Environment::setCurrentLocation,
                                                                                   allMessages));
-        GenericDirection toLocation = new GenericDirection(leaveCommand, location);
+        GenericDirection toLocation = new GenericDirection(allLocations, leaveCommand, location.getId());
         portal.addDirection(toLocation);
 
         GenericCommandDescription leaveHouseCommandDescription = new GenericCommandDescription("north", location);
         leaveCommand = new GenericCommand(leaveHouseCommandDescription,
-                                            new MovePlayerAction(location, Environment::setCurrentLocation,
+                                            new MovePlayerAction(location,
                                                                  allMessages));
-        toLocation = new GenericDirection(leaveCommand, location);
+        toLocation = new GenericDirection(allLocations, leaveCommand, location.getId());
         house.addDirection(toLocation);
     }
 
@@ -386,12 +382,12 @@ public class MiniAdventure {
         anItem.addCommand(remove);
     }
 
-    private void setUpLookCommands(Thing aThing) {
+    private void setUpLookCommands(Actionable aThing) {
         aThing.addCommand(new GenericCommand(new GenericCommandDescription("describe", aThing),
                                              new DescribeAction(aThing::getLongDescription, allMessages)));
     }
 
-    private void setUpMessages() {
+    public void setUpMessages() {
         allMessages.addMessage("-13", "You already carry %s.");
         allMessages.addMessage("-12", "A %s appears in the %s.");
         allMessages.addMessage("-11", "The %s evaporates into thin air.");
@@ -433,68 +429,68 @@ public class MiniAdventure {
     }
 
     private void setUpVocabulary() {
-        allWords.addNewWord("quit", Word.Type.VERB);
-        allWords.addSynonym("exit", "quit");
-        allWords.addSynonym("bye", "quit");
-        allWords.addNewWord("save", Word.Type.VERB);
-        allWords.addNewWord("load", Word.Type.VERB);
-        allWords.addNewWord("inventory", Word.Type.VERB);
-        allWords.addSynonym("i", "inventory");
-        allWords.addNewWord("north", Word.Type.VERB);
-        allWords.addSynonym("n", "north");
-        allWords.addNewWord("east", Word.Type.VERB);
-        allWords.addSynonym("e", "east");
-        allWords.addNewWord("south", Word.Type.VERB);
-        allWords.addSynonym("s", "south");
-        allWords.addNewWord("west", Word.Type.VERB);
-        allWords.addSynonym("w", "west");
-        allWords.addNewWord("leave", Word.Type.VERB);
-        allWords.addNewWord("describe", Word.Type.VERB);
-        allWords.addSynonym("look", "describe");
-        allWords.addSynonym("l", "describe");
-        allWords.addSynonym("desc", "describe");
-        allWords.addSynonym("examine", "describe");
-        allWords.addSynonym("inspect", "describe");
+        allWords.createNewWord("quit", Word.Type.VERB);
+        allWords.createSynonym("exit", "quit");
+        allWords.createSynonym("bye", "quit");
+        allWords.createNewWord("save", Word.Type.VERB);
+        allWords.createNewWord("load", Word.Type.VERB);
+        allWords.createNewWord("inventory", Word.Type.VERB);
+        allWords.createSynonym("i", "inventory");
+        allWords.createNewWord("north", Word.Type.VERB);
+        allWords.createSynonym("n", "north");
+        allWords.createNewWord("east", Word.Type.VERB);
+        allWords.createSynonym("e", "east");
+        allWords.createNewWord("south", Word.Type.VERB);
+        allWords.createSynonym("s", "south");
+        allWords.createNewWord("west", Word.Type.VERB);
+        allWords.createSynonym("w", "west");
+        allWords.createNewWord("leave", Word.Type.VERB);
+        allWords.createNewWord("describe", Word.Type.VERB);
+        allWords.createSynonym("look", "describe");
+        allWords.createSynonym("l", "describe");
+        allWords.createSynonym("desc", "describe");
+        allWords.createSynonym("examine", "describe");
+        allWords.createSynonym("inspect", "describe");
 
-        allWords.addNewWord("knife", Word.Type.NOUN);
-        allWords.addNewWord("pelt", Word.Type.NOUN);
+        allWords.createNewWord("knife", Word.Type.NOUN);
+        allWords.createNewWord("pelt", Word.Type.NOUN);
 
-        allWords.addNewWord("get", Word.Type.VERB);
-        allWords.addSynonym("take", "get");
-        allWords.addNewWord("drop", Word.Type.VERB);
+        allWords.createNewWord("get", Word.Type.VERB);
+        allWords.createSynonym("take", "get");
+        allWords.createNewWord("drop", Word.Type.VERB);
 
-        allWords.addNewWord("open", Word.Type.VERB);
-        allWords.addNewWord("enter", Word.Type.VERB);
-        allWords.addSynonym("go", "enter");
+        allWords.createNewWord("open", Word.Type.VERB);
+        allWords.createNewWord("enter", Word.Type.VERB);
+        allWords.createSynonym("go", "enter");
 
-        allWords.addNewWord("cut", Word.Type.VERB);
-        allWords.addSynonym("kill", "cut");
-        allWords.addSynonym("stab", "cut");
+        allWords.createNewWord("cut", Word.Type.VERB);
+        allWords.createSynonym("kill", "cut");
+        allWords.createSynonym("stab", "cut");
 
-        allWords.addNewWord("wear", Word.Type.VERB);
-        allWords.addNewWord("remove", Word.Type.VERB);
+        allWords.createNewWord("wear", Word.Type.VERB);
+        allWords.createNewWord("remove", Word.Type.VERB);
 
-        allWords.addNewWord("rabbit", Word.Type.NOUN);
-        allWords.addSynonym("hare", "rabbit");
+        allWords.createNewWord("rabbit", Word.Type.NOUN);
+        allWords.createSynonym("hare", "rabbit");
 
-        allWords.addNewWord("ring", Word.Type.NOUN);
-        allWords.addNewWord("flowers", Word.Type.NOUN);
+        allWords.createNewWord("ring", Word.Type.NOUN);
+        allWords.createNewWord("flowers", Word.Type.NOUN);
 
-        allWords.addNewWord("big", Word.Type.ADJECTIVE);
-        allWords.addNewWord("skinned", Word.Type.ADJECTIVE);
-        allWords.addNewWord(SMALL_TEXT, Word.Type.ADJECTIVE);
-        allWords.addNewWord("golden", Word.Type.ADJECTIVE);
+        allWords.createNewWord("big", Word.Type.ADJECTIVE);
+        allWords.createNewWord("skinned", Word.Type.ADJECTIVE);
+        allWords.createNewWord(SMALL_TEXT, Word.Type.ADJECTIVE);
+        allWords.createNewWord("golden", Word.Type.ADJECTIVE);
 
-        allWords.addNewWord("portal", Word.Type.NOUN);
-        allWords.addNewWord("hut", Word.Type.NOUN);
-        allWords.addSynonym("house", "hut");
+        allWords.createNewWord("portal", Word.Type.NOUN);
+        allWords.createNewWord("hut", Word.Type.NOUN);
+        allWords.createSynonym("house", "hut");
 
-        allWords.addNewWord("leathery", Word.Type.ADJECTIVE);
-        allWords.addNewWord("gloves", Word.Type.NOUN);
+        allWords.createNewWord("leathery", Word.Type.ADJECTIVE);
+        allWords.createNewWord("gloves", Word.Type.NOUN);
 
-        allWords.addNewWord("here", Word.Type.NOUN);
+        allWords.createNewWord("here", Word.Type.NOUN);
 
-        allWords.addNewWord("help", Word.Type.VERB);
+        allWords.createNewWord("help", Word.Type.VERB);
     }
 
     public void setLocations(List<Location> locations) {

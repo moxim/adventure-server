@@ -2,20 +2,18 @@ package com.pdg.adventure.server.parser;
 
 import com.pdg.adventure.api.*;
 import com.pdg.adventure.model.VocabularyData;
+import lombok.Getter;
 
 import java.util.*;
 
 public class CommandProvider implements Ided {
+    @Getter
     private final Map<CommandDescription, CommandChain> availableCommands;
     private String id;
 
     public CommandProvider() {
         availableCommands = new HashMap<>();
         id = UUID.randomUUID().toString();
-    }
-
-    public Map<CommandDescription, CommandChain> getAvailableCommands() {
-        return availableCommands;
     }
 
     @Override

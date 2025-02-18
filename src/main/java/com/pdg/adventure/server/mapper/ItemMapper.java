@@ -1,20 +1,32 @@
 package com.pdg.adventure.server.mapper;
 
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.stereotype.Service;
+
+import com.pdg.adventure.api.Command;
 import com.pdg.adventure.api.Mapper;
+import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.CommandProviderData;
 import com.pdg.adventure.model.ItemData;
+import com.pdg.adventure.model.basics.DescriptionData;
+import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.Item;
 
+@Service
+@DependsOn({"descriptionMapper",
+            "commandMapper",
+            "mapperSupporter"})
 public class ItemMapper implements Mapper<ItemData, Item> {
-    private MapperSupporter mapperSupporter;
+    private final Mapper<DescriptionData, DescriptionProvider> descriptionMapper;
+    private final Mapper<CommandData, Command> commandMapper;
 
     public ItemMapper(MapperSupporter aMapperSupporter) {
-        mapperSupporter = aMapperSupporter;
-   }
+        descriptionMapper = aMapperSupporter.getMapper(DescriptionData.class);
+        commandMapper = aMapperSupporter.getMapper(CommandData.class);
+    }
 
     public Item mapToBO(ItemData anItemData) {
-        DescriptionMapper descriptionMapper = mapperSupporter.getMapper(DescriptionMapper.class);
         final Item item = new Item(descriptionMapper.mapToBO(anItemData.getDescriptionData()), anItemData.isContainable());
         item.setId(anItemData.getId());
         item.setIsWearable(anItemData.isWearable());
@@ -23,13 +35,13 @@ public class ItemMapper implements Mapper<ItemData, Item> {
         // TODO
 //        item.setParentContainer(containerMapper.mapToBO(anItemData.getParentContainerId()));
         final CommandProviderData commandProviderData = anItemData.getCommandProviderData();
+
         return item;
     }
     
     public ItemData mapToDO(Item anItem) {
         ItemData itemData = new ItemData();
         itemData.setId(anItem.getId());
-        DescriptionMapper descriptionMapper = mapperSupporter.getMapper(DescriptionMapper.class);
         itemData.setDescriptionData(descriptionMapper.mapToDO(anItem.getDescriptionProvider()));
         itemData.setContainable(anItem.isContainable());
         itemData.setWearable(anItem.isWearable());

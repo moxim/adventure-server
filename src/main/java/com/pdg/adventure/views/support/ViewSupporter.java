@@ -1,5 +1,11 @@
 package com.pdg.adventure.views.support;
 
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
+
+import java.util.Optional;
+
 import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.api.Ided;
 import com.pdg.adventure.model.*;
@@ -7,16 +13,15 @@ import com.pdg.adventure.model.basics.CommandDescriptionData;
 import com.pdg.adventure.model.basics.DescriptionData;
 import com.pdg.adventure.views.locations.LocationDescriptionAdapter;
 import com.pdg.adventure.views.locations.LocationViewModel;
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
-
-import java.util.Optional;
 
 public class ViewSupporter {
 
     public static String formatId(Ided anIdedData) {
-        return anIdedData.getId().substring(0, 8);
+        return formatId(anIdedData.getId().substring(0, 8));
+    }
+
+    public static String formatId(String anIdedData) {
+        return anIdedData.substring(0, 8);
     }
 
     public static void populateStartLocation(AdventureData anAdventureData, TextField aStartLocation) {
@@ -31,8 +36,15 @@ public class ViewSupporter {
             return "";
         }
         final DescriptionData locationDescriptionData = location.getDescriptionData();
-        String noun = locationDescriptionData.getNoun().getText();
-        String adjective = locationDescriptionData.getAdjective().getText();
+        Word nounWord = locationDescriptionData.getNoun();
+        String noun = nounWord.getText();
+
+        Word adjectiveWord = locationDescriptionData.getAdjective();
+        String adjective = adjectiveWord == null ? null : adjectiveWord.getText();
+
+        if (noun == null || noun.isEmpty()) {
+            return locationDescriptionData.getShortDescription();
+        }
         return getShortDescription(noun, adjective);
     }
 
@@ -41,6 +53,9 @@ public class ViewSupporter {
             return "";
         }
         final String noun = location.getNoun();
+        if (noun == null || noun.isEmpty()) {
+            return location.getShortDescription();
+        }
         final String adjective = location.getAdjective();
         return getShortDescription(noun, adjective);
     }

@@ -18,6 +18,7 @@ import java.util.function.Supplier;
 public class VocabularyData extends BasicData {
     public static final String UNKNOWN_WORD_TEXT = "Word '%s' is not present, yet!";
     public static final String PRESENT_WORD_HAS_DIFFERENT_TYPE_TEXT = "Word '%s' is already present, but has a synonym of different type!";
+    public static final String DUPLICATE_WORD_TEXT = "Word '%s' is already present!";
     public static final String EMPTY_STRING = "";
 
     @DBRef
@@ -34,10 +35,10 @@ public class VocabularyData extends BasicData {
         this.words = words;
     }
 
-    public void addNewWord(String aWord, Word.Type aType) {
-        String lowerText = aWord.toLowerCase();
+    public Word createWord(String aWordText, Word.Type aType) {
+        String lowerText = aWordText.toLowerCase();
         if (simple) {
-            Word newWord = createWord(lowerText, () -> new Word(lowerText, aType));
+            return createWord(lowerText, () -> new Word(lowerText, aType));
         } else {
             Word newWord = words.get(lowerText);
             if (newWord == null) {
@@ -48,29 +49,33 @@ public class VocabularyData extends BasicData {
                     newWord.setType(aType);
                 } else if (newWord.getType() != aType) {
                     // if the word is already present, it must have the same type, or it won't match its synonym
-                    throw new IllegalArgumentException(String.format(PRESENT_WORD_HAS_DIFFERENT_TYPE_TEXT, aWord));
+                    throw new IllegalArgumentException(String.format(PRESENT_WORD_HAS_DIFFERENT_TYPE_TEXT, aWordText));
                 }
             }
+            return newWord;
         }
+    }
+
+    public Optional<Word> removeWord(String aWordText) {
+        Optional<Word> result = findWord(aWordText);
+        result.ifPresent(_ -> words.remove(aWordText));
+        return result;
     }
 
     public void addWord(Word aWord) {
         words.put(aWord.getText(), aWord);
     }
 
-    public void addSynonym(String aNewSynonym, String anExistingWord) {
+    public Word createSynonym(String aNewSynonym, String anExistingWord) {
         String lowerExistingWord = anExistingWord.toLowerCase();
-        Word word = words.get(lowerExistingWord);
-        if (word == null) {
-            throw new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, anExistingWord));
-        }
-        addSynonymForWord(aNewSynonym, word);
+        Word word = findWord(lowerExistingWord).orElseThrow(() -> new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, anExistingWord)));
+        return createSynonym(aNewSynonym, word);
     }
 
-    public void addSynonymForWord(String aNewSynonym, Word anExistingWord) {
+    public Word createSynonym(String aNewSynonym, Word anExistingWord) {
         String lowerSynonym = aNewSynonym.toLowerCase();
         if (simple) {
-            Word newSynoym = createWord(lowerSynonym, () -> anExistingWord);
+            return createWord(lowerSynonym, () -> anExistingWord);
         } else {
             Word newSynonym = words.get(lowerSynonym);
             if (newSynonym == null) {
@@ -80,6 +85,7 @@ public class VocabularyData extends BasicData {
                 newSynonym.setType(anExistingWord.getType());
                 newSynonym.setSynonym(anExistingWord);
             }
+            return newSynonym;
         }
     }
 

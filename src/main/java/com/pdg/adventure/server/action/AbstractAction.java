@@ -9,13 +9,14 @@ public abstract class AbstractAction extends IdedAction implements Action {
     public AbstractAction(MessagesHolder aMessagesHolder) {
         messagesHolder = aMessagesHolder;
     }
+
     @Override
-    public String getName() {
+    public String getActionName() {
         return this.getClass().getSimpleName();
     }
 
     @Override
     public String toString() {
-        return getName();
+        return getActionName();
     }
 }

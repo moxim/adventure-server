@@ -14,7 +14,7 @@ class DescriptionProviderTest {
 
         // then
         Throwable thrown = catchThrowable(() ->
-                new DescriptionProvider(null)
+                new DescriptionProvider((String) null)
         );
         assertThat(thrown).hasMessage(DescriptionProvider.NOUN_MISSING_MESSAGE);
     }

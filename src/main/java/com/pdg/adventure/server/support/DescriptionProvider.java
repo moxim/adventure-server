@@ -2,6 +2,7 @@ package com.pdg.adventure.server.support;
 
 import com.pdg.adventure.api.Ided;
 import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.model.basics.DescriptionData;
 
 import java.util.UUID;
 
@@ -25,6 +26,12 @@ public class DescriptionProvider implements Ided {
         }
         noun = aNoun;
         id = UUID.randomUUID().toString();
+    }
+
+    public DescriptionProvider(DescriptionData descriptionData) {
+        this(descriptionData.getAdjective().getText(), descriptionData.getNoun().getText());
+        setShortDescription(descriptionData.getShortDescription());
+        setLongDescription(descriptionData.getLongDescription());
     }
 
     private void validateParameters(String aNoun) {
