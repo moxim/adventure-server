@@ -34,7 +34,7 @@ jobs:
       - name: Build with Maven
         run: mvn clean install -DskipTests
       - name: Run Tests
-        run: mvn test -Dspring.test.context.cache.maxSize=0 -Dlogging.level.org.springframework=DEBUG
+        run: mvn test -Dspring.test.context.cache.maxSize=32 -Dlogging.level.org.springframework=DEBUG
         timeout-minutes: 15
       - name: Generate Code Coverage Report
         run: mvn jacoco:report
