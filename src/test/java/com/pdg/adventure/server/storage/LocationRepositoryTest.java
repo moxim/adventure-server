@@ -1,35 +1,29 @@
 package com.pdg.adventure.server.storage;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.util.List;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import com.pdg.adventure.api.Container;
+import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.mapper.LocationMapper;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 
-@Testcontainers
-@DataMongoTest
+//@DataMongoTest()
+//@ExtendWith(SpringExtension.class)
+//@AutoConfigureDataMongo
+@SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class LocationRepositoryTest {
-//    @Container //
-//    private static final MongoDBContainer mongoDBContainer = MongoContainers.getDefaultContainer();
-
-    @DynamicPropertySource
-    static void setProperties(DynamicPropertyRegistry registry) {
-//        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
-    }
-
-//    @Autowired
-    LocationMapper locationMapper;
 
     @Autowired
     LocationRepository repository;
@@ -43,13 +37,20 @@ class LocationRepositoryTest {
     String longDescriptionOne = "long 4 location one";
     private Location one, two;
 
-    @BeforeEach
-    void setUp() {
-        // repository.deleteAll();
+    @Test
+    void example(@Autowired final MongoTemplate mongoTemplate) {
+      Assertions.assertThat(mongoTemplate.getDb()).isNotNull();
     }
 
     @Test
-    void saveWorks() {
+    void saveWorks(@Autowired MongoTemplate mongoTemplate) {
+        List<LocationData> locationDataList = mongoTemplate.findAll(LocationData.class);
+        assertThat(locationDataList.size()).isEqualTo(0);
+
+        mongoTemplate.save(new LocationData());
+        locationDataList = mongoTemplate.findAll(LocationData.class);
+        assertThat(locationDataList.size()).isEqualTo(1);
+
         DescriptionProvider locationDescription = new DescriptionProvider(adjectiveOne, noun);
         locationDescription.setShortDescription(shortDescriptionOne);
         locationDescription.setLongDescription(longDescriptionOne);

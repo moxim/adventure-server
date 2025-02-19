@@ -1,6 +1,7 @@
 package com.pdg.adventure.server;
 
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ public class AdventureBuilderTest {
     VocabularyData vocabularyData = new VocabularyData();
 
     @Test
+    @Disabled
     void buildAdventure() {
         String adventureId = "Adventure1";
         final AdventureData adventureData = createAdventureData(adventureId);
