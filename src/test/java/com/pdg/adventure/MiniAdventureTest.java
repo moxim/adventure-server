@@ -1,6 +1,5 @@
 package com.pdg.adventure;
 
-import org.junit.Assume;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,6 @@ class MiniAdventureTest {
     @Disabled("Disabled until DescriptionData is available!")
     void testGameRun() {
         final List<AdventureData> adventures = adventureService.getAdventures();
-        Assume.assumeTrue(!adventures.isEmpty());
         final AdventureData adventureData = adventures.getFirst();
         Adventure adventure = adventureMapper.mapToBO(adventureData);
 

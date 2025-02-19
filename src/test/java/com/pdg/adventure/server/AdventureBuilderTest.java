@@ -1,6 +1,5 @@
 package com.pdg.adventure.server;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -67,7 +66,6 @@ public class AdventureBuilderTest {
         adventure.run();
     }
 
-    @NotNull
     private AdventureData createAdventureData(String adventureId) {
         AdventureData adventureData = new AdventureData(vocabularyData);
         adventureData.setId(adventureId);
