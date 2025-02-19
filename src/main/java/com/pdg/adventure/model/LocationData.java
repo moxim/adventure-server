@@ -27,9 +27,8 @@ public class LocationData extends ThingData {
     public String toString() {
         return "LocationData{" +
                 "id=" + getId() +
-                "adventureId=" + adventure.getId() +
-                "itemContainerDataId=" + itemContainerData.getId() +
-//                super.toString() +
+                "adventureId=" + (adventure != null ? adventure.getId() : "null") +
+                "itemContainerDataId=" + (itemContainerData != null ? itemContainerData.getId() : "null") +
                 "}";
     }
 }
