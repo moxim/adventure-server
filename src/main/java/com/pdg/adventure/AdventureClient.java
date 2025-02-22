@@ -8,6 +8,7 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.server.Adventure;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.engine.Environment;
+import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.server.support.DescriptionProvider;
@@ -23,13 +24,6 @@ public class AdventureClient {
 
     AdventureMapper adventureMapper;
 
-    public static void main(String[] args) {
-        //        LaunchUtil.launchBrowserInDevelopmentMode(
-        SpringApplication.run(AdventureClient.class, args)
-        //        )
-        ;
-    }
-
     public AdventureClient(AdventureService adventureService, AdventureMapper adventureMapper) {
         final List<AdventureData> adventures = adventureService.getAdventures();
         final AdventureData adventureData = adventures.getFirst();
@@ -37,17 +31,27 @@ public class AdventureClient {
         Adventure savedAdventure = adventureMapper.mapToBO(adventureData);
 
         AdventureConfig adventureConfig = new AdventureConfig();
-        savedAdventure.getLocations().forEach(
-            location -> adventureConfig.allLocations().put(location.getId(), location)
-        );
+        savedAdventure.getLocations()
+                      .forEach(location -> adventureConfig.allLocations().put(location.getId(), location));
         adventureConfig.allWords().addWords(savedAdventure.getVocabulary().getWords());
 
         MiniAdventure miniAdventure = new MiniAdventure(adventureConfig);
 
-        Environment.setCurrentLocation(savedAdventure.getLocations().getFirst());
+        final String starrtLocationId = savedAdventure.getCurrentLocationId();
+        Location startLocation = adventureConfig.allLocations().get(starrtLocationId);
+        Environment.setCurrentLocation(startLocation);
+
         Environment.setUpWorkflows();
         Environment.setPocket(new GenericContainer(new DescriptionProvider("your pocket"), 5));
         miniAdventure.setUpMessages();
+
         miniAdventure.run();
+    }
+
+    public static void main(String[] args) {
+        //        LaunchUtil.launchBrowserInDevelopmentMode(
+        SpringApplication.run(AdventureClient.class, args)
+        //        )
+        ;
     }
 }
