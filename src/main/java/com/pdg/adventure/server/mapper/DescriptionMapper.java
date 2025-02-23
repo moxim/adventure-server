@@ -42,9 +42,6 @@ public class DescriptionMapper implements Mapper<DescriptionData, DescriptionPro
     @Override
     public DescriptionProvider mapToBO(DescriptionData aDescriptionData) {
         Word noun = aDescriptionData.getNoun();
-        if (noun == null) {
-            throw new RuntimeException(aDescriptionData.getLongDescription());
-        }
         DescriptionProvider result = new DescriptionProvider(noun == null ? "" : noun.getText());
         result.setId(aDescriptionData.getId());
         result.setAdjective(aDescriptionData.getAdjective().getText());
