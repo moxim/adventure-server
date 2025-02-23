@@ -17,7 +17,7 @@
         <maven.compiler.target>23</maven.compiler.target>
         <java.version>23</java.version>
         <spring-boot.version>3.4.2</spring-boot.version>
-        <vaadin.version>24.6.4</vaadin.version>
+        <vaadin.version>24.6.5</vaadin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -57,7 +57,7 @@
         </repository>
 
         <repository>
-            <id>pdg-group</id>
+            <id>pdg-public</id>
             <url>
                 https://nexus.pdg-software.com/repository/pdg-public-group/
             </url>
@@ -146,6 +146,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-spring-boot-starter</artifactId>
+            <version>${vaadin.version}</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
