@@ -4,7 +4,7 @@ import com.pdg.adventure.server.storage.messages.MessagesHolder;
 import com.pdg.adventure.server.support.VariableProvider;
 
 public abstract class AbstractVariableAction extends AbstractAction {
-    protected final VariableProvider variableProvider;
+    protected final transient VariableProvider variableProvider;
 
     AbstractVariableAction(VariableProvider aVariableProvider, MessagesHolder aMessagesHolder) {
         super(aMessagesHolder);
