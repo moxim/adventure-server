@@ -4,9 +4,9 @@ import com.pdg.adventure.api.Action;
 import com.pdg.adventure.server.storage.messages.MessagesHolder;
 
 public abstract class AbstractAction extends IdedAction implements Action {
-    protected final MessagesHolder messagesHolder;
+    protected final transient MessagesHolder messagesHolder;
 
-    public AbstractAction(MessagesHolder aMessagesHolder) {
+    protected AbstractAction(MessagesHolder aMessagesHolder) {
         messagesHolder = aMessagesHolder;
     }
 

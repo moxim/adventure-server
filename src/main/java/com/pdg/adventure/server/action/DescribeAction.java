@@ -8,7 +8,7 @@ import com.pdg.adventure.server.storage.messages.MessagesHolder;
 
 public class DescribeAction extends AbstractAction {
 
-    private final Supplier<String> target;
+    private final transient Supplier<String> target;
 
     public DescribeAction(Supplier<String> aFunction, MessagesHolder aMessagesHolder) {
         super(aMessagesHolder);
