@@ -34,7 +34,7 @@ import com.pdg.adventure.views.support.GridProvider;
 import com.pdg.adventure.views.support.ViewSupporter;
 
 @Route(value = "adventures/:adventureId/locations", layout = LocationsMainLayout.class)
-@RouteAlias(value = "adventures/locations",  layout = LocationsMainLayout.class)
+@RouteAlias(value = "adventures/locations", layout = LocationsMainLayout.class)
 @PageTitle("Locations")
 public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObserver, BeforeEnterObserver {
 
@@ -50,15 +50,15 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
     private transient AdventureData adventureData;
     private String pageTitle = "";
 
-    private TextField startLocationTF;
-    private Button create;
-    private Button edit;
-    private TextField searchField;
-    private Button backButton;
-    private IntegerField numberOfLocations;
+    private final TextField startLocationTF;
+    private final Button create;
+    private final Button edit;
+    private final TextField searchField;
+    private final Button backButton;
+    private final IntegerField numberOfLocations;
 
     @Autowired
-    public LocationsMenuView(AdventureService anAdventureService) {        
+    public LocationsMenuView(AdventureService anAdventureService) {
 
         setSizeFull();
 
@@ -77,27 +77,23 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         edit = new Button("Edit Location", e -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(LocationEditorView.class,
-                                     new RouteParameters(
-                                             new RouteParam(LOCATION_ID, targetLocationId),
-                                             new RouteParam(ADVENTURE_ID, adventureData.getId()))
-                ).ifPresent(editor -> editor.setAdventureData(adventureData));
+                                         new RouteParameters(new RouteParam(LOCATION_ID, targetLocationId),
+                                                             new RouteParam(ADVENTURE_ID, adventureData.getId())))
+                  .ifPresent(editor -> editor.setAdventureData(adventureData));
             }
         });
         edit.setEnabled(false);
 
         create = new Button("Create Location", e -> {
-            UI.getCurrent().navigate(LocationEditorView.class,
-                    new RouteParameters(
+            UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(
 //                            new RouteParam(LOCATION_ID, "new"),
-                            new RouteParam(ADVENTURE_ID, adventureData.getId()))
-                ).ifPresent(editor -> editor.setAdventureData(adventureData));
+                      new RouteParam(ADVENTURE_ID, adventureData.getId())))
+              .ifPresent(editor -> editor.setAdventureData(adventureData));
         });
 
         backButton = new Button("Back", event -> {
             UI.getCurrent().navigate(AdventureEditorView.class,
-                    new RouteParameters(
-                            new RouteParam(ADVENTURE_ID, adventureData.getId()))
-            );
+                                     new RouteParameters(new RouteParam(ADVENTURE_ID, adventureData.getId())));
         });
         backButton.addClickShortcut(Key.ESCAPE);
 
@@ -163,11 +159,13 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         gridProvider.setFilter(aLocationDescription -> {
             String searchTerm = searchField.getValue().trim();
 
-            if (searchTerm.isEmpty())
+            if (searchTerm.isEmpty()) {
                 return true;
+            }
 
             boolean matchesNoun = LocationsMenuView.this.matchesTerm(aLocationDescription.getNoun(), searchTerm);
-            boolean matchesShortDescription = LocationsMenuView.this.matchesTerm(aLocationDescription.getShortDescription(), searchTerm);
+            boolean matchesShortDescription = LocationsMenuView.this.matchesTerm(
+                    aLocationDescription.getShortDescription(), searchTerm);
             boolean matchesId = LocationsMenuView.this.matchesTerm(aLocationDescription.getId(), searchTerm);
 
             return matchesNoun || matchesShortDescription || matchesId;
@@ -234,6 +232,16 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
 //        AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges());
     }
 
+    private void navigateToLocationEditor(String aLocationId) {
+        // TODO: do I need to check if the bean is valid?
+//        if (binder.writeBeanIfValid(adventureData)) {
+        UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(new RouteParam(LOCATION_ID, aLocationId),
+                                                                               new RouteParam(ADVENTURE_ID,
+                                                                                              adventureData.getId())))
+          .ifPresent(e -> e.setAdventureData(adventureData));
+//        }
+    }
+
     private class LocationDataContextMenu extends GridContextMenu<LocationDescriptionAdapter> {
         public LocationDataContextMenu(Grid<LocationDescriptionAdapter> target) {
             super(target);
@@ -248,10 +256,11 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
 
             add(new Hr());
 
-            GridMenuItem<LocationDescriptionAdapter> locationDetailItem =
-                    addItem("LocationId", e -> e.getItem().ifPresent(location -> {
-                        // System.out.printf("Email: %s%n", location.getXYZ());
-                    }));
+            GridMenuItem<LocationDescriptionAdapter> locationDetailItem = addItem("LocationId", e -> e.getItem()
+                                                                                                      .ifPresent(
+                                                                                                              location -> {
+                                                                                                                  // System.out.printf("Email: %s%n", location.getXYZ());
+                                                                                                              }));
 
             setDynamicContentHandler(location -> {
                 // Do not show context menu when header is clicked
@@ -280,17 +289,6 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
                 adventureService.saveAdventureData(adventureData);
             }));
         }
-    }
-
-    private void navigateToLocationEditor(String aLocationId) {
-        // TODO: do I need to check if the bean is valid?
-//        if (binder.writeBeanIfValid(adventureData)) {
-            UI.getCurrent().navigate(LocationEditorView.class,
-                                 new RouteParameters(
-                                         new RouteParam(LOCATION_ID, aLocationId),
-                                         new RouteParam(ADVENTURE_ID, adventureData.getId())))
-                    .ifPresent(e -> e.setAdventureData(adventureData));
-//        }
     }
 
 }

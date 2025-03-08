@@ -6,6 +6,10 @@ public class ArticleProvider {
     }
 
     public static String prependIndefiniteArticle(String aText) {
+        if (aText == null || aText.isEmpty()) {
+            return aText;
+        }
+
         if (startsWithPronoun(aText)) {
             return aText;
         }

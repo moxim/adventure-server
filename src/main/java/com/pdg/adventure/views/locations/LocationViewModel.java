@@ -1,10 +1,10 @@
 package com.pdg.adventure.views.locations;
 
+import java.io.Serializable;
+
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.support.DescriptionProvider;
-
-import java.io.Serializable;
 
 public final class LocationViewModel implements Serializable {
     private final LocationData data;

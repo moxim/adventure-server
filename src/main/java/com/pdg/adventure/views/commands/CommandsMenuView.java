@@ -1,5 +1,15 @@
 package com.pdg.adventure.views.commands;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import static com.pdg.adventure.model.Word.Type.*;
+import static com.pdg.adventure.views.support.RouteSupporter.ADVENTURE_ID;
+import static com.pdg.adventure.views.support.RouteSupporter.LOCATION_ID;
+
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basics.CommandDescriptionData;
 import com.pdg.adventure.server.storage.AdventureService;
@@ -7,6 +17,7 @@ import com.pdg.adventure.views.adventure.AdventuresMainLayout;
 import com.pdg.adventure.views.components.VocabularyPicker;
 import com.pdg.adventure.views.locations.LocationEditorView;
 import com.pdg.adventure.views.support.ViewSupporter;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
@@ -25,16 +36,6 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import static com.pdg.adventure.model.Word.Type.*;
-import static com.pdg.adventure.views.support.RouteSupporter.ADVENTURE_ID;
-import static com.pdg.adventure.views.support.RouteSupporter.LOCATION_ID;
 
 @Route(value = "adventures/:adventureId/locations/:locationId/commands", layout = AdventuresMainLayout.class)
 public class CommandsMenuView  extends VerticalLayout
@@ -88,8 +89,8 @@ public class CommandsMenuView  extends VerticalLayout
 
         backButton = new Button("Back", event -> UI.getCurrent().navigate(LocationEditorView.class,
                         new RouteParameters(
-                                new RouteParam(LOCATION_ID.name(), locationData.getId()),
-                                new RouteParam(ADVENTURE_ID.name(), adventureData.getId()))
+                                new RouteParam(LOCATION_ID.getValue(), locationData.getId()),
+                                new RouteParam(ADVENTURE_ID.getValue(), adventureData.getId()))
                 ).ifPresent(e -> e.setAdventureData(adventureData)));
 
         resetButton = new Button("Reset", e -> {

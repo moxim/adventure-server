@@ -9,4 +9,8 @@ public enum RouteSupporter {
     RouteSupporter(String routeParam) {
         this.routeParam = routeParam;
     }
+
+    public String getValue() {
+        return routeParam;
+    }
 }

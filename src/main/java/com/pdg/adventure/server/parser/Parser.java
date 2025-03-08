@@ -1,13 +1,13 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.model.VocabularyData;
-import com.pdg.adventure.model.Word;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Scanner;
+
+import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 public class Parser {
     private final Vocabulary vocabulary;

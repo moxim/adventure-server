@@ -104,16 +104,17 @@ public class ViewSupporter {
         return formatDescription(aLocationData.getDescriptionData());
     }
 
-    public static void bindField(Binder<DirectionData> binder, ComboBox<String> field, VocabularyData aVocabulary, Word.Type type, CommandDescriptionData commandDescriptionData) {
+    public static void bindField(Binder<DirectionData> binder, ComboBox<String> field, VocabularyData aVocabulary,
+                                 Word.Type type, CommandDescriptionData commandDescriptionData) {
         binder.forField(field).bind(directionData -> {
-                    return getWordText(getWord(commandDescriptionData, type));
-                },
-                    (directionData, word) -> {
-                        setWord(aVocabulary, word, type, commandDescriptionData);
-                });
+            return getWordText(getWord(commandDescriptionData, type));
+        }, (directionData, word) -> {
+            setWord(aVocabulary, word, type, commandDescriptionData);
+        });
     }
 
-    public static void setWord(VocabularyData aVocabulary, String aWordText, Word.Type aWordType, CommandDescriptionData aCommandDescriptionData) {
+    public static void setWord(VocabularyData aVocabulary, String aWordText, Word.Type aWordType,
+                               CommandDescriptionData aCommandDescriptionData) {
         if (aWordText == null || aWordText.isEmpty()) {
             return;
         }
@@ -122,7 +123,7 @@ public class ViewSupporter {
             return;
         }
         Word foundWord = word.get();
-        switch (foundWord.getType())  {
+        switch (foundWord.getType()) {
             case NOUN -> aCommandDescriptionData.setNoun(foundWord);
             case ADJECTIVE -> aCommandDescriptionData.setAdjective(foundWord);
             case VERB -> aCommandDescriptionData.setVerb(foundWord);
@@ -150,16 +151,17 @@ public class ViewSupporter {
     }
 
 
-    public static void bindField(Binder<LocationViewModel> locationDataBinder, TextField aField, VocabularyData aVocabulary, Word.Type aType, DescriptionData aDescriptionData) {
+    public static void bindField(Binder<LocationViewModel> locationDataBinder, TextField aField,
+                                 VocabularyData aVocabulary, Word.Type aType, DescriptionData aDescriptionData) {
         locationDataBinder.bind(aField, locationData -> {
-                    return getWordText(getWord(aDescriptionData, aType));
-                },
-                (locationData, word) -> {
-                    setWord(aVocabulary, word, aType, aDescriptionData);
-                });
+            return getWordText(getWord(aDescriptionData, aType));
+        }, (locationData, word) -> {
+            setWord(aVocabulary, word, aType, aDescriptionData);
+        });
     }
 
-    private static void setWord(VocabularyData aVocabulary, String aWordText, Word.Type aType, DescriptionData aDescriptionData) {
+    private static void setWord(VocabularyData aVocabulary, String aWordText, Word.Type aType,
+                                DescriptionData aDescriptionData) {
         Optional<Word> word = resolveWord(aVocabulary, aWordText);
         if (word.isEmpty()) {
             return;
@@ -183,17 +185,8 @@ public class ViewSupporter {
 
     public static void bindField(Binder<LocationViewModel> aBinder, ComboBox<Word> aWord, Word.Type aType) {
         switch (aType) {
-            case NOUN -> aBinder.bind(aWord, LocationViewModel::getNoun,
-                    LocationViewModel::setNoun
-//                    (locationData, word) -> {
-//                        aDescriptionData.setNoun(word);
-//                    }
-                    );
-            case ADJECTIVE -> aBinder.bind(aWord, LocationViewModel::getAdjective, LocationViewModel::setAdjective
-//                    (locationData, word) -> {
-//                        aDescriptionData.setAdjective(word);
-//                    }
-                    );
+            case NOUN -> aBinder.bind(aWord, LocationViewModel::getNoun, LocationViewModel::setNoun);
+            case ADJECTIVE -> aBinder.bind(aWord, LocationViewModel::getAdjective, LocationViewModel::setAdjective);
         }
     }
 }
