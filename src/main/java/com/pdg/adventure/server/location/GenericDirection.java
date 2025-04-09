@@ -57,8 +57,13 @@ public class GenericDirection
 
     @Override
     public String getShortDescription() {
+        String constructedDescription = constructDescriptionFromAdjectiveAndNoun();
         if (destinationMustBeMentioned) {
-            return ArticleProvider.prependIndefiniteArticle(constructDescriptionFromAdjectiveAndNoun());
+            if (!VocabularyData.EMPTY_STRING.equals(constructedDescription)) {
+                return ArticleProvider.prependIndefiniteArticle(constructedDescription);
+            } else {
+                return description.getVerb() + " " + ArticleProvider.prependDefiniteArticle(description.getNoun());
+            }
         }
         return description.getVerb();
     }

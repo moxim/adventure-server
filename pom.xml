@@ -16,20 +16,20 @@
         <maven.compiler.source>23</maven.compiler.source>
         <maven.compiler.target>23</maven.compiler.target>
         <java.version>23</java.version>
-        <spring-boot.version>3.4.2</spring-boot.version>
-        <vaadin.version>24.6.5</vaadin.version>
+        <spring-boot.version>3.4.4</spring-boot.version>
+        <vaadin.version>24.7.1</vaadin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.2</version>
+        <version>3.4.4</version>
     </parent>
 
     <licenses>
         <license>
-            <name>MIT License</name>
+            <name>GPL 3 License</name>
             <url>https://www.gnu.org/licenses/gpl-3.0.html</url>
         </license>
     </licenses>
@@ -178,7 +178,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.34</version>
+            <version>1.18.38</version>
             <scope>compile</scope>
         </dependency>
 
@@ -190,7 +190,7 @@
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo.spring3x</artifactId>
-            <version>4.18.0</version>
+            <version>4.20.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -201,13 +201,32 @@
         <dependency>
           <groupId>org.assertj</groupId>
           <artifactId>assertj-core</artifactId>
-          <version>3.27.3</version>
+          <version>4.0.0-M1</version>
           <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-instrumentation-annotations</artifactId>
-            <version>2.6.0</version>
+            <version>2.14.0</version>
+        </dependency>
+
+<!--        AI inclusion -->
+        <dependency>
+           <groupId>org.springframework.ai</groupId>
+           <artifactId>spring-ai-spring-boot-testcontainers</artifactId>
+            <version>1.0.0-M6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-bom</artifactId>
+            <version>1.0.0-M6</version>
+            <type>pom</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+           <groupId>org.springframework.ai</groupId>
+           <artifactId>spring-ai-ollama-spring-boot-starter</artifactId>
+            <version>1.0.0-M6</version>
         </dependency>
     </dependencies>
 
@@ -242,7 +261,7 @@
                             <path>
                                 <groupId>org.projectlombok</groupId>
                                 <artifactId>lombok</artifactId>
-                                <version>1.18.34</version>
+                                <version>1.18.38</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>
@@ -442,6 +461,24 @@
                         <configuration>
                             <trimStackTrace>false</trimStackTrace>
                             <enableAssertions>true</enableAssertions>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>properties</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
                         </configuration>
                     </plugin>
                 </plugins>
