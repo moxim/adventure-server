@@ -1,10 +1,11 @@
 package com.pdg.adventure.model.basics;
 
-import com.pdg.adventure.model.Word;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.DBRef;
+
+import com.pdg.adventure.model.Word;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
@@ -12,4 +13,36 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 public class CommandDescriptionData extends BasicDescriptionData {
     @DBRef
     private Word verb = new Word("", Word.Type.VERB);;
+
+    public CommandDescriptionData(String aCommandSpec) {
+        setCommandSpecification(aCommandSpec);
+    }
+
+    public CommandDescriptionData() {
+        // default constructor
+    }
+
+    public String getCommandSpecification() {
+        String verb = getVerb() == null ? "" : getVerb().getText();
+        String adjective = getAdjective() == null ? "" : getAdjective().getText();
+        String noun = getNoun() == null ? "" : getNoun().getText();
+
+        return verb + "|" + adjective + "|" + noun;
+    }
+
+    public void setCommandSpecification(String aCommandSpec) {
+        if (aCommandSpec == null || aCommandSpec.isEmpty()) {
+            throw new IllegalArgumentException("Command spec must have 3 parts: " + aCommandSpec);
+        }
+
+        String [] parts = (aCommandSpec + " ").split("\\|");
+        if (parts.length > 2) {
+            setVerb(new Word(parts[0], Word.Type.VERB));
+            setAdjective(new Word(parts[1], Word.Type.ADJECTIVE));
+            setNoun(new Word(parts[2].trim(), Word.Type.NOUN));
+        } else {
+            throw new IllegalArgumentException("Command spec must have 3 parts: " + aCommandSpec);
+        }
+
+    }
 }

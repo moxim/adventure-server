@@ -1,6 +1,5 @@
 package com.pdg.adventure.model;
 
-import com.pdg.adventure.model.basics.BasicData;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -11,6 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import com.pdg.adventure.model.basics.BasicData;
 
 @Document
 @Data
@@ -58,7 +59,7 @@ public class VocabularyData extends BasicData {
 
     public Optional<Word> removeWord(String aWordText) {
         Optional<Word> result = findWord(aWordText);
-        result.ifPresent(_ -> words.remove(aWordText));
+        result.ifPresent(word -> words.remove(aWordText));
         return result;
     }
 

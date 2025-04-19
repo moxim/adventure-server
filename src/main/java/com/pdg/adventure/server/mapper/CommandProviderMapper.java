@@ -38,8 +38,9 @@ public class CommandProviderMapper implements Mapper<CommandProviderData, Comman
     public CommandProvider mapToBO(CommandProviderData aData) {
         CommandProvider result = new CommandProvider();
         result.setId(aData.getId());
-        for (Map.Entry<CommandDescriptionData, CommandChainData> entry : aData.getAvailableCommands().entrySet()) {
-            final CommandDescription description = commandDescriptionMapper.mapToBO(entry.getKey());
+        for (Map.Entry<String, CommandChainData> entry : aData.getAvailableCommands().entrySet()) {
+            CommandDescriptionData commandDescriptionData = new CommandDescriptionData(entry.getKey());
+            final CommandDescription description = commandDescriptionMapper.mapToBO(commandDescriptionData);
             final CommandChain commandChain = commandChainMapper.mapToBO(entry.getValue());
             result.getAvailableCommands().put(description, commandChain);
         }
@@ -53,7 +54,7 @@ public class CommandProviderMapper implements Mapper<CommandProviderData, Comman
         for (Map.Entry<CommandDescription, CommandChain> entry : aData.getAvailableCommands().entrySet()) {
             final CommandDescriptionData descriptionData = commandDescriptionMapper.mapToDO(entry.getKey());
             final CommandChainData chainData = commandChainMapper.mapToDO(entry.getValue());
-            result.getAvailableCommands().put(descriptionData, chainData);
+            result.getAvailableCommands().put(descriptionData.getCommandSpecification(), chainData);
         }
         return result;
     }

@@ -1,100 +1,99 @@
 package com.pdg.adventure.views.commands;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import static com.pdg.adventure.model.Word.Type.*;
-import static com.pdg.adventure.views.support.RouteSupporter.ADVENTURE_ID;
-import static com.pdg.adventure.views.support.RouteSupporter.LOCATION_ID;
-
-import com.pdg.adventure.model.*;
-import com.pdg.adventure.model.basics.CommandDescriptionData;
-import com.pdg.adventure.server.storage.AdventureService;
-import com.pdg.adventure.views.adventure.AdventuresMainLayout;
-import com.pdg.adventure.views.components.VocabularyPicker;
-import com.pdg.adventure.views.locations.LocationEditorView;
-import com.pdg.adventure.views.support.ViewSupporter;
-
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import static com.pdg.adventure.views.support.RouteSupporter.ADVENTURE_ID;
+import static com.pdg.adventure.views.support.RouteSupporter.LOCATION_ID;
+
+import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.CommandChainData;
+import com.pdg.adventure.model.CommandProviderData;
+import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.basics.CommandDescriptionData;
+import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.views.adventure.AdventuresMainLayout;
+import com.pdg.adventure.views.locations.LocationEditorView;
+import com.pdg.adventure.views.support.RouteSupporter;
+import com.pdg.adventure.views.support.ViewSupporter;
+
 @Route(value = "adventures/:adventureId/locations/:locationId/commands", layout = AdventuresMainLayout.class)
-public class CommandsMenuView  extends VerticalLayout
-        implements HasDynamicTitle, BeforeEnterObserver
-{
+public class CommandsMenuView extends VerticalLayout
+        implements HasDynamicTitle, BeforeEnterObserver {
     private transient final AdventureService adventureService;
-    private final Binder<LocationData> binder;
+    private final Binder<CommandProviderData> binder;
     private final Div gridContainer;
-
-    //    private Grid<CommandDescriptionData> grid;
-    private GridUnbufferedInlineEditor grid;
-
+    private final Button saveButton;
+    private final Button resetButton;
+    private final Button backButton;
+    private final Button createButton;
+    private Grid<SimpleCommandDescription> grid;
+//    private GridUnbufferedInlineEditor grid;
     private String pageTitle;
     private LocationData locationData;
     private AdventureData adventureData;
-
-    private final Button createButton;
-    private final Button saveButton;
-    private final Button resetButton;
-
-    private final VocabularyPicker nounSelection;
-    private final VocabularyPicker adjectiveSelection;
-    private final VocabularyPicker verbSelection;
-
     private TextField searchField;
-    private IntegerField numberOfLocations;
-    private final Button backButton;
     private CommandProviderData commandProviderData;
     private Set<CommandDescriptionData> availableCommands;
+    private GridListDataView<SimpleCommandDescription> gridListDataView;
 
     @Autowired
     public CommandsMenuView(AdventureService anAdventureService) {
         adventureService = anAdventureService;
-        binder = new Binder<>(LocationData.class);
+        binder = new BeanValidationBinder<>(CommandProviderData.class);
 
-        verbSelection = getWordBox("Verb", "You may filter on verbs.");
-        adjectiveSelection = getWordBox( "Adjective", "You may filter on adjectives.");
-        nounSelection = getWordBox("Noun", "You may filter on nouns.");
-
-        gridContainer = new Div("");
-//        grid = getGrid();
+        gridContainer = new Div("Commands");
         gridContainer.setSizeFull();
-//        gridContainer.add(grid);
 
         createButton = new Button("Create", e -> {
-            showCreateDialog();
+            UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
+                            new RouteParam(RouteSupporter.LOCATION_ID.getValue(), locationData.getId()),
+                      new RouteParam(RouteSupporter.ADVENTURE_ID.getValue(), adventureData.getId())))
+              .ifPresent(editor -> editor.setData(adventureData, locationData, gridListDataView));
+
+//            showCreateDialog(availableCommands);
         });
 
-        saveButton = new Button("Save", e -> {
-        });
+        saveButton = new Button("Save");
+        saveButton.addClickListener(e -> {
+                                    adventureService.saveLocationData(locationData);
+                                    saveButton.setEnabled(false);
+                                });
 
         backButton = new Button("Back", event -> UI.getCurrent().navigate(LocationEditorView.class,
-                        new RouteParameters(
-                                new RouteParam(LOCATION_ID.getValue(), locationData.getId()),
-                                new RouteParam(ADVENTURE_ID.getValue(), adventureData.getId()))
-                ).ifPresent(e -> e.setAdventureData(adventureData)));
+                                                                          new RouteParameters(
+                                                                                  new RouteParam(LOCATION_ID.getValue(),
+                                                                                                 locationData.getId()),
+                                                                                  new RouteParam(
+                                                                                          ADVENTURE_ID.getValue(),
+                                                                                          adventureData.getId()))
+        ).ifPresent(e -> e.setAdventureData(adventureData)));
+        backButton.addClickShortcut(Key.ESCAPE);
 
         resetButton = new Button("Reset", e -> {
-            binder.readBean(locationData);
+            binder.readBean(commandProviderData);
         });
 
         VerticalLayout vll = new VerticalLayout(createButton, backButton, resetButton, saveButton);
@@ -104,53 +103,22 @@ public class CommandsMenuView  extends VerticalLayout
         add(hl);
     }
 
-    private void showCreateDialog() {
-        HorizontalLayout commandLayout = new HorizontalLayout(verbSelection, adjectiveSelection, nounSelection);
-        Button saveButton = new Button("Save");
-        Button cancelButton = new Button("Cancel");
-        HorizontalLayout buttonsLayout = new HorizontalLayout(saveButton, cancelButton);
-        VerticalLayout vl = new VerticalLayout(commandLayout, buttonsLayout);
-        Dialog dialog = new Dialog("New command", vl);
-        cancelButton.addClickListener(e -> {
-            dialog.close();
-        });
-        saveButton.addClickListener(e -> {
-            CommandDescriptionData commandDescriptionData = new CommandDescriptionData();
-            commandDescriptionData.setVerb(verbSelection.getValue());
-            commandDescriptionData.setAdjective(adjectiveSelection.getValue());
-            commandDescriptionData.setNoun(nounSelection.getValue());
-            CommandData command = new CommandData();
-            command.setCommandDescription(commandDescriptionData);
-            final Map<CommandDescriptionData, CommandChainData> commandChainDataMap = commandProviderData.getAvailableCommands();
-            final CommandChainData commandChainData = commandChainDataMap.get(commandDescriptionData);
-            if (commandChainData == null) {
-                final CommandChainData chainData = new CommandChainData();
-                chainData.getCommands().add(command);
-                commandChainDataMap.put(commandDescriptionData, chainData);
-            } else {
-                commandChainData.getCommands().add(command);
-            }
-            dialog.close();
-        });
-        dialog.open();
-    }
-
-    private VocabularyPicker getWordBox(String label, String tooltipText) {
-        VocabularyPicker wordBox = new VocabularyPicker(label);
-        wordBox.setHelperText("");
-        wordBox.setTooltipText(tooltipText);
-        wordBox.addValueChangeListener(e -> checkIfSaveAvailable());
-        return wordBox;
-    }
-
-    private void checkIfSaveAvailable() {
-        if (binder.validate().isOk()) {
-            final boolean isNounEmpty = nounSelection.isEmpty();
-            // TODO: see if we can use the binder instead
-            //  binder.getBean().getNoun().getText().isEmpty();
-            saveButton.setEnabled(!isNounEmpty);
-        }
-        resetButton.setEnabled(false);
+    private static Component createFilterHeader(String labelText, Consumer<String> filterChangeConsumer) {
+        NativeLabel label = new NativeLabel(labelText);
+        label.getStyle().set("padding-top", "var(--lumo-space-m)")
+             .set("font-size", "var(--lumo-font-size-xs)");
+        TextField textField = new TextField();
+        textField.setValueChangeMode(ValueChangeMode.EAGER);
+        textField.setClearButtonVisible(true);
+        textField.addThemeVariants(TextFieldVariant.LUMO_SMALL);
+        textField.setWidthFull();
+        textField.getStyle().set("max-width", "100%");
+        textField.addValueChangeListener(
+                e -> filterChangeConsumer.accept(e.getValue()));
+        VerticalLayout layout = new VerticalLayout(label, textField);
+        layout.getThemeList().clear();
+        layout.getThemeList().add("spacing-xs");
+        return layout;
     }
 
     private Grid<CommandDescriptionData> getGrid() {
@@ -160,6 +128,15 @@ public class CommandsMenuView  extends VerticalLayout
         grid.addColumn(CommandDescriptionData::getVerb).setHeader("Verb").setAutoWidth(true);
         grid.addColumn(CommandDescriptionData::getAdjective).setHeader("Adjective").setAutoWidth(true);
         grid.addColumn(CommandDescriptionData::getNoun).setHeader("Noun").setAutoWidth(true);
+        return grid;
+    }
+
+    private Grid<SimpleCommandDescription> getSimpleGrid() {
+        Grid<SimpleCommandDescription> grid = new Grid<>(SimpleCommandDescription.class, false);
+        grid.setWidth(300, Unit.PIXELS);
+        grid.addColumn(SimpleCommandDescription::getVerb).setHeader("Verb").setAutoWidth(true).setFlexGrow(0).setSortable(true);
+        grid.addColumn(SimpleCommandDescription::getAdjective).setHeader("Adjective").setAutoWidth(true);
+        grid.addColumn(SimpleCommandDescription::getNoun).setHeader("Noun").setAutoWidth(true);
         return grid;
     }
 
@@ -179,99 +156,92 @@ public class CommandsMenuView  extends VerticalLayout
         pageTitle = "Commands for location #" + locationId;
     }
 
-    public void setData(AdventureData anAdventureData, LocationData aLocationData) {
-        adventureData = anAdventureData;
-        VocabularyData vocabularyData = adventureData.getVocabularyData();
-        nounSelection.populate(vocabularyData.getWords(NOUN));
-        adjectiveSelection.populate(vocabularyData.getWords(ADJECTIVE));
-        verbSelection.populate(vocabularyData.getWords(Word.Type.VERB));
-        locationData = aLocationData;
-        binder.setBean(locationData);
+    private GridListDataView<SimpleCommandDescription> fillGrid(CommandProviderData commandProviderData) {
+        final Map<String, CommandChainData> availableCommands = commandProviderData.getAvailableCommands();
+        final Set<SimpleCommandDescription> commandDescriptionDataSet = new HashSet<>();
 
-        commandProviderData = locationData.getCommandProviderData();
-        availableCommands = new HashSet<>(commandProviderData.getAvailableCommands().keySet());
-
-        var cdd  = new CommandDescriptionData();
-        cdd.setVerb(new Word("leave", VERB));
-        availableCommands.add(cdd);
-        cdd  = new CommandDescriptionData();
-        cdd.setVerb(new Word("climb", VERB));
-        availableCommands.add(cdd);
-
-        grid = new GridUnbufferedInlineEditor(availableCommands);
-
-//        fillGrid(locationData.getCommandProviderData());
-        grid.setWidth(300, Unit.PIXELS);
-        gridContainer.add(grid);
-        saveButton.setEnabled(false);
-   }
-
-    private void fillGrid(CommandProviderData commandProviderData) {
-        final Map<CommandDescriptionData, CommandChainData> availableCommands = commandProviderData.getAvailableCommands();
-        final Set<CommandDescriptionData> commandDescriptionDataSet = availableCommands.keySet();
-
-//        GridListDataView<CommandDescriptionData> gridListDataView = grid.setItems(commandDescriptionDataSet);
+        for (Map.Entry<String, CommandChainData> entry : availableCommands.entrySet()) {
+            String command = entry.getKey();
+            SimpleCommandDescription simpleCommandDescription = new SimpleCommandDescription(command);
+            commandDescriptionDataSet.add(simpleCommandDescription);
+            CommandChainData commandChainData = entry.getValue();
+//            for (CommandDescriptionData commandDescriptionData : commandChainData.getCommands()) {
+//                SimpleCommandDescription simpleCommandDescription = new SimpleCommandDescription(
+//                        commandDescriptionData.getVerb().getText(),
+//                        commandDescriptionData.getAdjective().getText(),
+//                        commandDescriptionData.getNoun().getText());
+//                commandDescriptionDataSet.add(simpleCommandDescription);
+//            }
+        }
 //        CommandDescriptionDataFilter gridFilter = new CommandDescriptionDataFilter(gridListDataView);
+        return grid.setItems(commandDescriptionDataSet);
     }
 
-    private static Component createFilterHeader(String labelText, Consumer<String> filterChangeConsumer) {
-        NativeLabel label = new NativeLabel(labelText);
-        label.getStyle().set("padding-top", "var(--lumo-space-m)")
-                .set("font-size", "var(--lumo-font-size-xs)");
-        TextField textField = new TextField();
-        textField.setValueChangeMode(ValueChangeMode.EAGER);
-        textField.setClearButtonVisible(true);
-        textField.addThemeVariants(TextFieldVariant.LUMO_SMALL);
-        textField.setWidthFull();
-        textField.getStyle().set("max-width", "100%");
-        textField.addValueChangeListener(
-                e -> filterChangeConsumer.accept(e.getValue()));
-        VerticalLayout layout = new VerticalLayout(label, textField);
-        layout.getThemeList().clear();
-        layout.getThemeList().add("spacing-xs");
+    public void setData(AdventureData anAdventureData, LocationData aLocationData) {
+        adventureData = anAdventureData;
+        locationData = aLocationData;
 
-        return layout;
+        commandProviderData = locationData.getCommandProviderData();
+        binder.setBean(commandProviderData);
+
+        HashSet<String> availableCommandsHelper = new HashSet<>(commandProviderData.getAvailableCommands().keySet());
+        availableCommands = new HashSet<>(commandProviderData.getAvailableCommands().size());
+        for (String command : availableCommandsHelper) {
+            CommandDescriptionData commandDescriptionData = new CommandDescriptionData(command);
+            availableCommands.add(commandDescriptionData);
+        }
+        grid = getSimpleGrid();
+//        grid = new GridUnbufferedInlineEditor(availableCommands, vocabularyData, saveButton);
+        grid.setEmptyStateText("Create some commands.");
+
+        gridListDataView = fillGrid(locationData.getCommandProviderData());
+//        grid.setWidth(50, Unit.PERCENTAGE);
+//        grid.setSizeFull();
+        gridContainer.add(grid);
+        saveButton.setEnabled(false);
+        resetButton.setEnabled(false);
     }
 
     private static class CommandDescriptionDataFilter {
-            private final GridListDataView<CommandDescriptionData> dataView;
+        private final GridListDataView<CommandDescriptionData> dataView;
 
-            private String verb;
-            private String adjective;
-            private String noun;
+        private String verb;
+        private String adjective;
+        private String noun;
 
-            public CommandDescriptionDataFilter(GridListDataView<CommandDescriptionData> dataView) {
-                this.dataView = dataView;
-                this.dataView.addFilter(this::test);
-            }
-
-            public void setVerb(String verb) {
-                this.verb = verb;
-                this.dataView.refreshAll();
-            }
-
-            public void setAdjective(String adjective) {
-                this.adjective = adjective;
-                this.dataView.refreshAll();
-            }
-
-            public void setNoun(String noun) {
-                this.noun = noun;
-                this.dataView.refreshAll();
-            }
-
-            public boolean test(CommandDescriptionData CommandDescriptionData) {
-                boolean matchesVerb = matches(CommandDescriptionData.getVerb().getText(), verb);
-                boolean matchesAdjective = matches(CommandDescriptionData.getAdjective().getText(), adjective);
-                boolean matchesNoun = matches(CommandDescriptionData.getNoun().getText(), noun);
-
-                return matchesVerb && matchesAdjective && matchesNoun;
-            }
-
-            private boolean matches(String value, String searchTerm) {
-                return searchTerm == null || searchTerm.isEmpty()
-                        || value.toLowerCase().contains(searchTerm.toLowerCase());
-            }
+        public CommandDescriptionDataFilter(GridListDataView<CommandDescriptionData> dataView) {
+            this.dataView = dataView;
+            this.dataView.addFilter(this::test);
         }
 
+        public void setVerb(String verb) {
+            this.verb = verb;
+            this.dataView.refreshAll();
+        }
+
+        public void setAdjective(String adjective) {
+            this.adjective = adjective;
+            this.dataView.refreshAll();
+        }
+
+        public void setNoun(String noun) {
+            this.noun = noun;
+            this.dataView.refreshAll();
+        }
+
+        public boolean test(CommandDescriptionData CommandDescriptionData) {
+            boolean matchesVerb = matches(CommandDescriptionData.getVerb().getText(), verb);
+            boolean matchesAdjective = matches(CommandDescriptionData.getAdjective().getText(), adjective);
+            boolean matchesNoun = matches(CommandDescriptionData.getNoun().getText(), noun);
+
+            return matchesVerb && matchesAdjective && matchesNoun;
+        }
+
+        private boolean matches(String value, String searchTerm) {
+            return searchTerm == null || searchTerm.isEmpty()
+                   || value.toLowerCase().contains(searchTerm.toLowerCase());
+        }
+    }
+
 }
+

@@ -13,12 +13,13 @@
     <description>The Server for pdg-Software's Adventure Builder. It stores adventures.</description>
 
     <properties>
-        <maven.compiler.source>23</maven.compiler.source>
-        <maven.compiler.target>23</maven.compiler.target>
-        <java.version>23</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <java.version>21</java.version>
         <spring-boot.version>3.4.4</spring-boot.version>
         <vaadin.version>24.7.1</vaadin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <org.mockito.mockito-core>2.23.4</org.mockito.mockito-core>
     </properties>
 
     <parent>
@@ -475,10 +476,12 @@
                         </executions>
                     </plugin>
                     <plugin>
+                        <!-- This is needed to run Mockito tests with the failsafe plugin -->
+                        <!-- see section 0.3 of https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html -->
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                            <argLine>@{argLine} -javaagent:${org.mockito.mockito-core}</argLine>
                         </configuration>
                     </plugin>
                 </plugins>

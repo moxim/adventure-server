@@ -1,9 +1,5 @@
 package com.pdg.adventure.views.support;
 
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
-
 import java.util.Optional;
 
 import com.pdg.adventure.api.Describable;
@@ -11,8 +7,13 @@ import com.pdg.adventure.api.Ided;
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basics.CommandDescriptionData;
 import com.pdg.adventure.model.basics.DescriptionData;
+import com.pdg.adventure.views.components.VocabularyPicker;
 import com.pdg.adventure.views.locations.LocationDescriptionAdapter;
 import com.pdg.adventure.views.locations.LocationViewModel;
+
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
 
 public class ViewSupporter {
 
@@ -109,12 +110,23 @@ public class ViewSupporter {
         binder.forField(field).bind(directionData -> {
             return getWordText(getWord(commandDescriptionData, type));
         }, (directionData, word) -> {
-            setWord(aVocabulary, word, type, commandDescriptionData);
+            setWord(aVocabulary, word, commandDescriptionData);
         });
     }
 
-    public static void setWord(VocabularyData aVocabulary, String aWordText, Word.Type aWordType,
-                               CommandDescriptionData aCommandDescriptionData) {
+    public static void bindField(Binder<DirectionData> aBinder, VocabularyPicker aVocabularyPicker,
+                                 Word.Type type, CommandDescriptionData aCommandDescriptionData) {
+        /*******************************************/
+//        aBinder.bind(aVocabularyPicker, (directionData) -> {
+//            return getWordText(aVocabularyPicker.getValue());
+//        }, (directionData, word) -> {
+//            setWord(aCommandDescriptionData, aVocabularyPicker.getValue());
+//        });
+        /*******************************************/
+    }
+
+
+    public static void setWord(VocabularyData aVocabulary, String aWordText, CommandDescriptionData aCommandDescriptionData) {
         if (aWordText == null || aWordText.isEmpty()) {
             return;
         }
@@ -123,6 +135,10 @@ public class ViewSupporter {
             return;
         }
         Word foundWord = word.get();
+        setWord(aCommandDescriptionData, foundWord);
+    }
+
+    private static void setWord(CommandDescriptionData aCommandDescriptionData, Word foundWord) {
         switch (foundWord.getType()) {
             case NOUN -> aCommandDescriptionData.setNoun(foundWord);
             case ADJECTIVE -> aCommandDescriptionData.setAdjective(foundWord);
@@ -189,4 +205,5 @@ public class ViewSupporter {
             case ADJECTIVE -> aBinder.bind(aWord, LocationViewModel::getAdjective, LocationViewModel::setAdjective);
         }
     }
+
 }

@@ -1,10 +1,7 @@
 package com.pdg.adventure.server.storage;
 
-import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.model.VocabularyData;
-import com.pdg.adventure.model.Word;
-import com.pdg.adventure.server.support.MapperSupporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
@@ -13,8 +10,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.support.MapperSupporter;
+
 @Service
 public class AdventureService {
+    private static final Logger LOG = LoggerFactory.getLogger(AdventureService.class);
+
     private final AdventureRepository adventureRepository;
     private final LocationRepository locationRepository;
     private final WordRepository wordRepository;
@@ -45,6 +50,8 @@ public class AdventureService {
     }
 
     public void saveLocationData(LocationData aLocationData) {
+        LOG.debug("Saving location data: {}", aLocationData);
+        LOG.info("Saving location data: {}", aLocationData.getId());
         locationRepository.save(aLocationData);
     }
 
@@ -57,15 +64,21 @@ public class AdventureService {
     }
 
     public void saveAdventureData(AdventureData anAdventure) {
+        LOG.debug("Saving adventure data: {}", anAdventure);
+        LOG.info("Saving adventure data: {}", anAdventure.getId());
         preProcess(anAdventure);
         adventureRepository.save(anAdventure);
     }
 
     public void saveVocabularyData(VocabularyData aVocabularyData) {
+        LOG.debug("Saving vocabulary data: {}", aVocabularyData);
+        LOG.info("Saving vocabulary data: {}", aVocabularyData.getId());
         vocabularyRepository.save(aVocabularyData);
     }
 
     public void saveWordData(Collection<Word> aNumberOfWords) {
+        LOG.debug("Saving word data: {}", aNumberOfWords);
+        LOG.info("Saving word data: {}", aNumberOfWords.size());
         wordRepository.saveAll(aNumberOfWords);
     }
 
