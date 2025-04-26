@@ -5,7 +5,7 @@ import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.exception.QuitException;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.parser.CommandExecuter;
+import com.pdg.adventure.server.parser.CommandExecutor;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.Parser;
 
@@ -44,7 +44,7 @@ public class GameLoop {
                 }
 
                 // Check commands that are possible because of the players inventory or the current location.
-                CommandExecuter commandExecuter = new CommandExecuter(Environment.getPocket(), currentLocation);
+                CommandExecutor commandExecuter = new CommandExecutor(Environment.getPocket(), currentLocation);
                 result = commandExecuter.execute(command);
 
                 if (!VocabularyData.EMPTY_STRING.equals(result.getResultMessage())) {

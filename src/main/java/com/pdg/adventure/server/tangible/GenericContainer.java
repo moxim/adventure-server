@@ -1,15 +1,16 @@
 package com.pdg.adventure.server.tangible;
 
-import com.pdg.adventure.api.*;
-import com.pdg.adventure.model.VocabularyData;
-import com.pdg.adventure.server.parser.CommandExecutionResult;
-import com.pdg.adventure.server.support.DescriptionProvider;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import com.pdg.adventure.api.*;
+import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.server.parser.CommandExecutionResult;
+import com.pdg.adventure.server.support.DescriptionProvider;
 
 public class GenericContainer extends Item implements Container {
 
@@ -138,6 +139,7 @@ public class GenericContainer extends Item implements Container {
             final List<CommandChain> commandChain = item.getMatchingCommandChain(aCommandDescription);
                 result.addAll(commandChain);
         }
+        result.addAll(super.getMatchingCommandChain(aCommandDescription));
         return result;
     }
 

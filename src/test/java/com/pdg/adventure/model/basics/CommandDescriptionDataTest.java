@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.model.Word;
 
 class CommandDescriptionDataTest {
@@ -17,12 +18,14 @@ class CommandDescriptionDataTest {
         String commandSpec = sut.getCommandSpecification();
 
         // then
-        assertEquals("||", commandSpec);
+        assertEquals(CommandDescription.COMMAND_SEPARATOR + CommandDescription.COMMAND_SEPARATOR, commandSpec);
     }
+
     @Test
     void getCommandSpecificaiton() {
         // given
-        String commandSpec = "climb|small|raft";
+        String commandSpec = "climb" + CommandDescription.COMMAND_SEPARATOR + "small" +
+                             CommandDescription.COMMAND_SEPARATOR + "raft";
 
         // when
         sut.setCommandSpecification(commandSpec);
@@ -34,7 +37,8 @@ class CommandDescriptionDataTest {
     @Test
     void setCommandSpecification() {
         // given
-        String commandSpec = "climb|small|raft";
+        String commandSpec = "climb" + CommandDescription.COMMAND_SEPARATOR + "small" +
+                             CommandDescription.COMMAND_SEPARATOR + "raft";
 
         // when
         sut.setCommandSpecification(commandSpec);
@@ -48,7 +52,9 @@ class CommandDescriptionDataTest {
     @Test
     public void createNewDataWithSpec() throws Exception {
         // given
-        CommandDescriptionData commandDescriptionData = new CommandDescriptionData("climb|small|raft");
+        String commandSpec = "climb" + CommandDescription.COMMAND_SEPARATOR + "small" +
+                             CommandDescription.COMMAND_SEPARATOR + "raft";
+        CommandDescriptionData commandDescriptionData = new CommandDescriptionData(commandSpec);
 
         // when
         Word verb = commandDescriptionData.getVerb();
@@ -93,7 +99,9 @@ class CommandDescriptionDataTest {
     @Test
     public void createNewDataWithSpecWithEmptyAdjective() {
         // given
-        CommandDescriptionData commandDescriptionData = new CommandDescriptionData("climb||raft");
+        String commandSpec = "climb" + CommandDescription.COMMAND_SEPARATOR + CommandDescription.COMMAND_SEPARATOR +
+                             "raft";
+        CommandDescriptionData commandDescriptionData = new CommandDescriptionData(commandSpec);
 
         // when
         Word verb = commandDescriptionData.getVerb();
@@ -109,7 +117,9 @@ class CommandDescriptionDataTest {
     @Test
     public void createNewDataWithSpecWithEmptyNoun() {
         // given
-        CommandDescriptionData commandDescriptionData = new CommandDescriptionData("climb|small|");
+        String commandSpec = "climb" + CommandDescription.COMMAND_SEPARATOR + "small" +
+                             CommandDescription.COMMAND_SEPARATOR;
+        CommandDescriptionData commandDescriptionData = new CommandDescriptionData(commandSpec);
 
         // when
         Word verb = commandDescriptionData.getVerb();
@@ -125,7 +135,9 @@ class CommandDescriptionDataTest {
     @Test
     public void createNewDataWithSpecWithEmptyVerb() {
         // given
-        CommandDescriptionData commandDescriptionData = new CommandDescriptionData("|small|raft");
+        String commandSpec = CommandDescription.COMMAND_SEPARATOR + "small" + CommandDescription.COMMAND_SEPARATOR +
+                             "raft";
+        CommandDescriptionData commandDescriptionData = new CommandDescriptionData(commandSpec);
 
         // when
         Word verb = commandDescriptionData.getVerb();
@@ -141,6 +153,8 @@ class CommandDescriptionDataTest {
     @Test
     public void createNewDataWithSpecWithEmptyAll() {
         // given
+        String commandSpec = CommandDescription.COMMAND_SEPARATOR + CommandDescription.COMMAND_SEPARATOR +
+                             CommandDescription.COMMAND_SEPARATOR;
         CommandDescriptionData commandDescriptionData = new CommandDescriptionData("|||");
 
         // when

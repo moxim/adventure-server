@@ -21,7 +21,7 @@ class CommandDescriptionTest {
     }
 
     @Test
-    void compareToEuqlOK() {
+    void compareToEqualOK() {
         // given
 
         // when

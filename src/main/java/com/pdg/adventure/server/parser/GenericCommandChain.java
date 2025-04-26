@@ -1,5 +1,8 @@
 package com.pdg.adventure.server.parser;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -10,19 +13,13 @@ import com.pdg.adventure.api.ExecutionResult;
 
 public class GenericCommandChain implements CommandChain {
     private final List<Command> commands;
+    @Getter
+    @Setter
     private String id;
 
     public GenericCommandChain() {
         commands = new ArrayList<>();
         id = UUID.randomUUID().toString();
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String anId) {
-        id = anId;
     }
 
     @Override

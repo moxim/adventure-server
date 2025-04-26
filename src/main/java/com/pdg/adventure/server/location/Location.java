@@ -1,15 +1,16 @@
 package com.pdg.adventure.server.location;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.pdg.adventure.server.parser.CommandExecutor.clarifyExecutionOutcome;
+
 import com.pdg.adventure.api.*;
-import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.tangible.Thing;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Location extends Thing implements Visitable, HasLight {
 
@@ -71,17 +72,7 @@ public class Location extends Thing implements Visitable, HasLight {
             result = availableCommandChains.get(0).execute();
         }
 
-        if (result.getExecutionState()== ExecutionResult.State.FAILURE) {
-            if (VocabularyData.EMPTY_STRING.equals(result.getResultMessage())) {
-                result.setResultMessage("You can't do that.");
-            }
-        } else {
-            if (VocabularyData.EMPTY_STRING.equals(result.getResultMessage())) {
-                result.setResultMessage("OK.");
-            }
-        }
-
-        return result;
+        return clarifyExecutionOutcome(result);
     }
 
     @Override

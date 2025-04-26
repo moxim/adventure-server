@@ -57,7 +57,7 @@ class ItemIdentifierTest {
         List<Containable> items = ItemIdentifier.findItems(container, commandDescription);
 
         // then
-        assertThat(items).isEmpty();
+        assertThat(items).contains(ring);
 
     }
 
