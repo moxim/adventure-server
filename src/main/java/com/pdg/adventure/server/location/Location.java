@@ -81,13 +81,9 @@ public class Location extends Thing implements Visitable, HasLight {
     }
 
     private List<CommandChain> getCommandChains(CommandDescription aCommandDescription) {
-        List<CommandChain> availableCommands = new ArrayList<>();
-        List<CommandChain> chain = super.getMatchingCommandChain(aCommandDescription);
-        availableCommands.addAll(chain);
-        chain = container.getMatchingCommandChain(aCommandDescription);
-        availableCommands.addAll(chain);
-        chain = directions.getMatchingCommandChain(aCommandDescription);
-        availableCommands.addAll(chain);
+        List<CommandChain> availableCommands = new ArrayList<>(super.getMatchingCommandChain(aCommandDescription));
+        availableCommands.addAll(container.getMatchingCommandChain(aCommandDescription));
+        availableCommands.addAll(directions.getMatchingCommandChain(aCommandDescription));
 
         // TODO: move this into interceptor chain
 //        chain = pocket.getMatchingCommandChain(aCommandDescription);

@@ -1,9 +1,10 @@
 package com.pdg.adventure.views.components;
 
-import com.pdg.adventure.model.Word;
 import com.vaadin.flow.component.combobox.ComboBox;
 
 import java.util.Collection;
+
+import com.pdg.adventure.model.Word;
 
 public class VocabularyPicker extends ComboBox<Word> {
 

@@ -1,17 +1,25 @@
 package com.pdg.adventure.server.support;
 
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.UUID;
+
 import com.pdg.adventure.api.Ided;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.basics.DescriptionData;
 
-import java.util.UUID;
-
 public class DescriptionProvider implements Ided {
     public static final String NOUN_MISSING_MESSAGE = "The noun is mandatory.";
     private String id;
+    @Getter
     private final String noun;
+    @Getter
+    @Setter
     private String adjective;
+    @Setter
     private String shortDescription;
+    @Setter
     private String longDescription;
 
     public DescriptionProvider(String aNoun) {
@@ -40,18 +48,6 @@ public class DescriptionProvider implements Ided {
         }
     }
 
-    public String getAdjective() {
-        return adjective;
-    }
-
-    public void setAdjective(String anAdjective) {
-        adjective = anAdjective;
-    }
-
-    public String getNoun() {
-        return noun;
-    }
-
     public String getShortDescription() {
         if (shortDescription == null) {
             shortDescription = getBasicDescription();
@@ -63,19 +59,11 @@ public class DescriptionProvider implements Ided {
         return ArticleProvider.prependIndefiniteArticle(aDescription);
     }
 
-    public void setShortDescription(String aShortDescription) {
-        shortDescription = aShortDescription;
-    }
-
     public String getLongDescription() {
         if (longDescription == null) {
             longDescription = getShortDescription();
         }
         return longDescription;
-    }
-
-    public void setLongDescription(String aLongDescription) {
-        longDescription = aLongDescription;
     }
 
     public String getBasicDescription() {

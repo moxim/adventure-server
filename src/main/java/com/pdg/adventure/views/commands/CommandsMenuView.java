@@ -25,8 +25,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static com.pdg.adventure.views.support.RouteSupporter.ADVENTURE_ID;
-import static com.pdg.adventure.views.support.RouteSupporter.LOCATION_ID;
+import static com.pdg.adventure.views.support.RouteIds.ADVENTURE_ID;
+import static com.pdg.adventure.views.support.RouteIds.LOCATION_ID;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.CommandChainData;
@@ -36,7 +36,7 @@ import com.pdg.adventure.model.basics.CommandDescriptionData;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.views.adventure.AdventuresMainLayout;
 import com.pdg.adventure.views.locations.LocationEditorView;
-import com.pdg.adventure.views.support.RouteSupporter;
+import com.pdg.adventure.views.support.RouteIds;
 import com.pdg.adventure.views.support.ViewSupporter;
 
 @Route(value = "adventures/:adventureId/locations/:locationId/commands", layout = AdventuresMainLayout.class)
@@ -49,7 +49,7 @@ public class CommandsMenuView extends VerticalLayout
     private final Button resetButton;
     private final Button backButton;
     private final Button createButton;
-    private Grid<SimpleCommandDescription> grid;
+    private Grid<DescribableCommandAdapter> grid;
 //    private GridUnbufferedInlineEditor grid;
     private String pageTitle;
     private LocationData locationData;
@@ -57,7 +57,7 @@ public class CommandsMenuView extends VerticalLayout
     private TextField searchField;
     private CommandProviderData commandProviderData;
     private Set<CommandDescriptionData> availableCommands;
-    private GridListDataView<SimpleCommandDescription> gridListDataView;
+    private GridListDataView<DescribableCommandAdapter> gridListDataView;
 
     @Autowired
     public CommandsMenuView(AdventureService anAdventureService) {
@@ -69,8 +69,8 @@ public class CommandsMenuView extends VerticalLayout
 
         createButton = new Button("Create", e -> {
             UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
-                            new RouteParam(RouteSupporter.LOCATION_ID.getValue(), locationData.getId()),
-                      new RouteParam(RouteSupporter.ADVENTURE_ID.getValue(), adventureData.getId())))
+                                    new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
               .ifPresent(editor -> editor.setData(adventureData, locationData, gridListDataView));
 
 //            showCreateDialog(availableCommands);
@@ -131,12 +131,12 @@ public class CommandsMenuView extends VerticalLayout
         return grid;
     }
 
-    private Grid<SimpleCommandDescription> getSimpleGrid() {
-        Grid<SimpleCommandDescription> grid = new Grid<>(SimpleCommandDescription.class, false);
+    private Grid<DescribableCommandAdapter> getSimpleGrid() {
+        Grid<DescribableCommandAdapter> grid = new Grid<>(DescribableCommandAdapter.class, false);
         grid.setWidth(300, Unit.PIXELS);
-        grid.addColumn(SimpleCommandDescription::getVerb).setHeader("Verb").setAutoWidth(true).setFlexGrow(0).setSortable(true);
-        grid.addColumn(SimpleCommandDescription::getAdjective).setHeader("Adjective").setAutoWidth(true);
-        grid.addColumn(SimpleCommandDescription::getNoun).setHeader("Noun").setAutoWidth(true);
+        grid.addColumn(DescribableCommandAdapter::getVerb).setHeader("Verb").setAutoWidth(true).setFlexGrow(0).setSortable(true);
+        grid.addColumn(DescribableCommandAdapter::getAdjective).setHeader("Adjective").setAutoWidth(true);
+        grid.addColumn(DescribableCommandAdapter::getNoun).setHeader("Noun").setAutoWidth(true);
         return grid;
     }
 
@@ -156,21 +156,20 @@ public class CommandsMenuView extends VerticalLayout
         pageTitle = "Commands for location #" + locationId;
     }
 
-    private GridListDataView<SimpleCommandDescription> fillGrid(CommandProviderData commandProviderData) {
+    private GridListDataView<DescribableCommandAdapter> fillGrid(CommandProviderData commandProviderData) {
         final Map<String, CommandChainData> availableCommands = commandProviderData.getAvailableCommands();
-        final Set<SimpleCommandDescription> commandDescriptionDataSet = new HashSet<>();
+        final Set<DescribableCommandAdapter> commandDescriptionDataSet = new HashSet<>();
 
         for (Map.Entry<String, CommandChainData> entry : availableCommands.entrySet()) {
             String command = entry.getKey();
-            SimpleCommandDescription simpleCommandDescription = new SimpleCommandDescription(command);
-            commandDescriptionDataSet.add(simpleCommandDescription);
-            CommandChainData commandChainData = entry.getValue();
+            DescribableCommandAdapter commandDescription = new DescribableCommandAdapter(command);
+            commandDescriptionDataSet.add(commandDescription);
+//            CommandChainData commandChainData = entry.getValue();
 //            for (CommandDescriptionData commandDescriptionData : commandChainData.getCommands()) {
-//                SimpleCommandDescription simpleCommandDescription = new SimpleCommandDescription(
-//                        commandDescriptionData.getVerb().getText(),
-//                        commandDescriptionData.getAdjective().getText(),
-//                        commandDescriptionData.getNoun().getText());
-//                commandDescriptionDataSet.add(simpleCommandDescription);
+//                DescribableCommandAdapter commandDescription = new DescribableCommandAdapter(
+//                  commandDescriptionData.getCommandSpecification()
+//                );
+//                commandDescriptionDataSet.add(commandDescription);
 //            }
         }
 //        CommandDescriptionDataFilter gridFilter = new CommandDescriptionDataFilter(gridListDataView);

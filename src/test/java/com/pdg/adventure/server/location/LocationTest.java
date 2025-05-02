@@ -19,8 +19,8 @@ import com.pdg.adventure.server.testhelper.TestSupporter;
 
 class LocationTest {
 
-    private Container pocket = new GenericContainer(new DescriptionProvider("your pocket"), 5);
-    Map<String, Location> allLocations = new HashMap<>();
+    private final Container pocket = new GenericContainer(new DescriptionProvider("your pocket"), 5);
+    private final Map<String, Location> allLocations = new HashMap<>();
     private final Location sut = new Location(new DescriptionProvider("small", "perch"), pocket);
     {
         allLocations.put(sut.getId(), sut);

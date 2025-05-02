@@ -23,17 +23,18 @@ import static com.pdg.adventure.model.Word.Type.NOUN;
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basics.CommandDescriptionData;
 import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.views.adventure.AdventuresMainLayout;
 import com.pdg.adventure.views.components.ResetBackSaveView;
 import com.pdg.adventure.views.components.VocabularyPicker;
 import com.pdg.adventure.views.locations.LocationsMainLayout;
-import com.pdg.adventure.views.support.RouteSupporter;
+import com.pdg.adventure.views.support.RouteIds;
 
 @Route(value = "adventures/:adventureId/locations/:locationId/commands/:commandId/edit", layout = LocationsMainLayout.class)
 @RouteAlias(value = "adventures/:adventureId/locations/:locationId/commands/new", layout = LocationsMainLayout.class)
 public class CommandEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
     private transient final AdventureService adventureService;
-    private final Binder<CommandProviderData> binder;
+    private final Binder<CommandDescriptionData> binder;
     private final VocabularyPicker nounSelection;
     private final VocabularyPicker adjectiveSelection;
     private final VocabularyPicker verbSelection;
@@ -41,21 +42,26 @@ public class CommandEditorView extends VerticalLayout
     private String pageTitle;
     private Button saveButton;
     private Button resetButton;
-    private Button backButton;
+    private Button cancelButton;
     private LocationData locationData;
-    private GridListDataView<SimpleCommandDescription> gridListDataView;
+    private GridListDataView<DescribableCommandAdapter> gridListDataView;
     private AdventureData adventureData;
     private CommandProviderData commandProviderData;
+    private CommandDescriptionData commandDescriptionData;
     private Set<CommandDescriptionData> availableCommands;
 
     public CommandEditorView(AdventureService anAdventureService) {
         adventureService = anAdventureService;
-        binder = new BeanValidationBinder<>(CommandProviderData.class);
+        binder = new BeanValidationBinder<>(CommandDescriptionData.class);
 
         verbSelection = getWordBox("Verb", "You may filter on verbs.");
         verbSelection.setHelperText("Select at least a verb.");
         adjectiveSelection = getWordBox("Adjective", "You may filter on adjectives.");
         nounSelection = getWordBox("Noun", "You may filter on nouns.");
+
+        binder.bind(verbSelection, CommandDescriptionData::getVerb, CommandDescriptionData::setVerb);
+        binder.bind(adjectiveSelection, CommandDescriptionData::getAdjective, CommandDescriptionData::setAdjective);
+        binder.bind(nounSelection, CommandDescriptionData::getNoun, CommandDescriptionData::setNoun);
 
         HorizontalLayout commandLayout = new HorizontalLayout(verbSelection, adjectiveSelection, nounSelection);
 
@@ -76,17 +82,19 @@ public class CommandEditorView extends VerticalLayout
         saveButton.setEnabled(false);
         resetButton = resetBackSaveView.getReset();
         resetButton.setEnabled(false);
+        cancelButton = resetBackSaveView.getCancel();
+        cancelButton.setEnabled(false);
 
         backButton.addClickListener(event -> UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
-                                                       new RouteParam(RouteSupporter.LOCATION_ID.getValue(), locationData.getId()),
-                                                       new RouteParam(RouteSupporter.ADVENTURE_ID.getValue(), adventureData.getId())))
+                                                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
                                                .ifPresent(e -> e.setData(adventureData, locationData)));
         saveButton.addClickListener(event -> validateSave(commandProviderData));
         resetButton.addClickListener(event -> {
             verbSelection.clear();
             adjectiveSelection.clear();
             nounSelection.clear();
-            binder.readBean(commandProviderData);
+            binder.readBean(commandDescriptionData);
             resetButton.setEnabled(false);
         });
         resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
@@ -96,18 +104,19 @@ public class CommandEditorView extends VerticalLayout
 
     private void validateSave(CommandProviderData aCommandProviderData) {
         try {
-            binder.writeBean(aCommandProviderData);
+            binder.writeBean(commandDescriptionData);
             if (binder.validate().isOk()) {
                 swivelTheSaveButton(gridListDataView);
                 adventureService.saveLocationData(locationData);
                 saveButton.setEnabled(false);
+                cancelButton.setEnabled(false);
             }
         } catch (ValidationException e) {
             e.printStackTrace();
         }
     }
 
-    private void swivelTheSaveButton(GridListDataView<SimpleCommandDescription> aGridListDataView) {
+    private void swivelTheSaveButton(GridListDataView<DescribableCommandAdapter> aGridListDataView) {
         CommandDescriptionData commandDescriptionData = new CommandDescriptionData();
         commandDescriptionData.setVerb(verbSelection.getValue());
         commandDescriptionData.setAdjective(adjectiveSelection.getValue());
@@ -125,70 +134,14 @@ public class CommandEditorView extends VerticalLayout
         } else {
             commandChainData.getCommands().add(command);
         }
-        aGridListDataView.addItem(new SimpleCommandDescription(commandDescriptionData.getCommandSpecification()));
-        adventureService.saveLocationData(locationData);
+        aGridListDataView.addItem(new DescribableCommandAdapter(commandDescriptionData.getCommandSpecification()));
     }
 
-    /*
-    private void showCreateDialog(Set<CommandDescriptionData> aListOfAvailableCommands) {
-
-        verbSelection.clear();
-        final Registration valueChangeListener = verbSelection.addValueChangeListener(
-                comboBoxWordComponentValueChangeEvent -> {
-                    createSaveButton.setEnabled(!verbSelection.isEmpty());
-                });
-
-        adjectiveSelection.clear();
-        nounSelection.clear();
-
-        HorizontalLayout commandLayout = new HorizontalLayout(verbSelection, adjectiveSelection, nounSelection);
-
-        Button cancelButton = new Button("Cancel");
-
-        HorizontalLayout buttonsLayout = new HorizontalLayout(createSaveButton, cancelButton);
-        VerticalLayout vl = new VerticalLayout(commandLayout, buttonsLayout);
-
-
-        VerticalLayout vl1 = new VerticalLayout();
-        vl1.add(new Span("Actions et all"));
-        Details details = new Details("Preconditions & Actions", vl1);
-
-        Dialog dialog = new Dialog("New command", vl, details);
-
-        createSaveButton.setEnabled(false);
-        createSaveButton.addClickListener(e -> {
-            CommandDescriptionData commandDescriptionData = new CommandDescriptionData();
-            commandDescriptionData.setVerb(verbSelection.getValue());
-            commandDescriptionData.setAdjective(adjectiveSelection.getValue());
-            commandDescriptionData.setNoun(nounSelection.getValue());
-
-            CommandData command = new CommandData();
-            command.setCommandDescription(commandDescriptionData);
-
-            final Map<String, CommandChainData> availableCommandsHelper = commandProviderData.getAvailableCommands();
-            final CommandChainData commandChainData = availableCommandsHelper.get(commandDescriptionData.getCommandSpecification());
-            if (commandChainData == null) {
-                final CommandChainData chainData = new CommandChainData();
-                chainData.getCommands().add(command);
-                availableCommandsHelper.put(commandDescriptionData.getCommandSpecification(), chainData);
-            } else {
-                commandChainData.getCommands().add(command);
-            }
-            grid.addItem(commandDescriptionData);
-            aListOfAvailableCommands.add(commandDescriptionData);
-            adventureService.saveLocationData(locationData);
-            closeDialog(dialog, valueChangeListener);
-        });
-
-        cancelButton.addClickListener(e -> closeDialog(dialog, valueChangeListener));
-
-        dialog.open();
-    }
-*/
     private void checkIfSaveAvailable() {
         final boolean isVerbEmpty = verbSelection.isEmpty();
         saveButton.setEnabled(!isVerbEmpty);
         resetButton.setEnabled(true);
+        cancelButton.setEnabled(true);
     }
 
     private VocabularyPicker getWordBox(String label, String tooltipText) {
@@ -206,7 +159,7 @@ public class CommandEditorView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        final Optional<String> optionalCommandId = event.getRouteParameters().get(RouteSupporter.COMMAND_ID.getValue());
+        final Optional<String> optionalCommandId = event.getRouteParameters().get(RouteIds.COMMAND_ID.getValue());
         if (optionalCommandId.isPresent()) {
             commandId = optionalCommandId.get();
             pageTitle = "Edit Command #" + commandId;
@@ -218,14 +171,14 @@ public class CommandEditorView extends VerticalLayout
 
     @Override
     public void beforeLeave(BeforeLeaveEvent event) {
-//        AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges());
+        AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges());
     }
 
     public void setData(AdventureData anAdventureData, LocationData aLocationData,
-                        GridListDataView<SimpleCommandDescription> aGridListDataView) {
+                        GridListDataView<DescribableCommandAdapter> aGridListDataView) {
         adventureData = anAdventureData;
         locationData = aLocationData;
-        this.gridListDataView = aGridListDataView;
+        gridListDataView = aGridListDataView;
 
         commandProviderData = locationData.getCommandProviderData();
         VocabularyData vocabularyData = adventureData.getVocabularyData();

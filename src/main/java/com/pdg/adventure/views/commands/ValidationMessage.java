@@ -6,7 +6,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
-class ValidationMessage extends HorizontalLayout implements HasText {
+public class ValidationMessage extends HorizontalLayout implements HasText {
 
     private final Span span = new Span();
 
