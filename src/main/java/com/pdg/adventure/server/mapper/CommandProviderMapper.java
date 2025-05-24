@@ -1,6 +1,7 @@
 package com.pdg.adventure.server.mapper;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -15,22 +16,22 @@ import com.pdg.adventure.server.parser.CommandProvider;
 import com.pdg.adventure.server.support.MapperSupporter;
 
 @Service
+@DependsOn({"commandChainMapper", "commandDescriptionMapper"})
 public class CommandProviderMapper implements Mapper<CommandProviderData, CommandProvider> {
 
-    private final Mapper<CommandChainData, CommandChain> commandChainMapper;
-    private final Mapper<CommandDescriptionData, CommandDescription> commandDescriptionMapper;
+    private Mapper<CommandChainData, CommandChain> commandChainMapper;
+    private Mapper<CommandDescriptionData, CommandDescription> commandDescriptionMapper;
     private final MapperSupporter mapperSupporter;
 
     public CommandProviderMapper(MapperSupporter aMapperSupporter) {
-        commandChainMapper = aMapperSupporter.getMapper(CommandChainData.class);
-        commandDescriptionMapper = aMapperSupporter.getMapper(CommandDescriptionData.class);
-
         mapperSupporter = aMapperSupporter;
     }
 
     @PostConstruct
     public void registerMapper() {
-//        MapperSupporter.registerMapper(CommandProviderData.class, CommandProvider.class, this);
+        commandChainMapper = mapperSupporter.getMapper(CommandChainData.class);
+        commandDescriptionMapper = mapperSupporter.getMapper(CommandDescriptionData.class);
+
         mapperSupporter.registerMapper(CommandProviderData.class, CommandProvider.class, this);
     }
 

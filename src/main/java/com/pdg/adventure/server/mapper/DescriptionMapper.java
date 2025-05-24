@@ -1,7 +1,6 @@
 package com.pdg.adventure.server.mapper;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import com.pdg.adventure.api.Mapper;
@@ -12,7 +11,7 @@ import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 @Service
-@DependsOn("mapperSupporter")
+//@DependsOn("mapperSupporter")
 public class DescriptionMapper implements Mapper<DescriptionData, DescriptionProvider> {
 
     private final MapperSupporter mapperSupporter;

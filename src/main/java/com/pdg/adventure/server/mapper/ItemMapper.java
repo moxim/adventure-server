@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.mapper;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
@@ -18,12 +19,21 @@ import com.pdg.adventure.server.tangible.Item;
             "commandMapper",
             "mapperSupporter"})
 public class ItemMapper implements Mapper<ItemData, Item> {
-    private final Mapper<DescriptionData, DescriptionProvider> descriptionMapper;
-    private final Mapper<CommandData, Command> commandMapper;
+    private Mapper<DescriptionData, DescriptionProvider> descriptionMapper;
+    private Mapper<CommandData, Command> commandMapper;
+
+    private final MapperSupporter mapperSupporter;
 
     public ItemMapper(MapperSupporter aMapperSupporter) {
-        descriptionMapper = aMapperSupporter.getMapper(DescriptionData.class);
-        commandMapper = aMapperSupporter.getMapper(CommandData.class);
+        mapperSupporter = aMapperSupporter;
+    }
+
+
+    @PostConstruct
+    public void registerMapper() {
+        descriptionMapper = mapperSupporter.getMapper(DescriptionData.class);
+        commandMapper = mapperSupporter.getMapper(CommandData.class);
+        mapperSupporter.registerMapper(ItemData.class, Item.class, this);
     }
 
     public Item mapToBO(ItemData anItemData) {
