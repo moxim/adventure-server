@@ -13,12 +13,27 @@ import com.pdg.adventure.model.condition.PreConditionData;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class CommandData
- extends BasicData {
-    private CommandDescriptionData commandDescription = new CommandDescriptionData();
-    private List<? extends PreConditionData> preConditions = new ArrayList<>();
-    private List<? extends ActionData>
-            followUpActions = new ArrayList<>();
+public class CommandData extends BasicData {
+    private CommandDescriptionData commandDescription;
+    private List<? extends PreConditionData> preConditions;
+    private List<? extends ActionData> followUpActions;
     private ActionData action;
+
+    public CommandData() {
+        this(new CommandDescriptionData());
+    }
+
+    public CommandData(CommandDescriptionData aCommandDescriptionData) {
+        commandDescription = aCommandDescriptionData;
+        preConditions = new ArrayList<>();
+        followUpActions = new ArrayList<>();
+    }
+
+    public void setAction(ActionData action) {
+        if (action == null) {
+            throw new IllegalArgumentException("Action cannot be null");
+        }
+        this.action = action;
+    }
 }
 

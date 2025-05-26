@@ -1,10 +1,14 @@
 package com.pdg.adventure.server.parser;
 
+import lombok.Setter;
+
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.VocabularyData;
 
 public class CommandExecutionResult implements ExecutionResult {
+    @Setter
     private State executionState;
+    @Setter
     private String resultMessage;
     private boolean commandHasMatched;
 
@@ -27,14 +31,6 @@ public class CommandExecutionResult implements ExecutionResult {
     @Override
     public boolean hasCommandMatched() {
         return commandHasMatched;
-    }
-
-    public void setExecutionState(State anExecutionState) {
-        this.executionState = anExecutionState;
-    }
-
-    public void setResultMessage(String aResultMessage) {
-        this.resultMessage = aResultMessage;
     }
 
     @Override

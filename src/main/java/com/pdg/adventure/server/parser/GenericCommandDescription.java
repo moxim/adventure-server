@@ -1,16 +1,21 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.api.CommandDescription;
-import com.pdg.adventure.api.Describable;
-import com.pdg.adventure.model.VocabularyData;
+import lombok.Getter;
 
 import java.util.Objects;
 import java.util.UUID;
 
+import com.pdg.adventure.api.CommandDescription;
+import com.pdg.adventure.api.Describable;
+import com.pdg.adventure.model.VocabularyData;
+
 public class GenericCommandDescription implements CommandDescription {
     private String id;
+    @Getter
     private final String verb;
+    @Getter
     private final String adjective;
+    @Getter
     private final String noun;
 
     public GenericCommandDescription(String aVerb, Describable aNamedThing) {
@@ -40,18 +45,6 @@ public class GenericCommandDescription implements CommandDescription {
     @Override
     public void setId(String anId) {
         id = anId;
-    }
-
-    public String getVerb() {
-        return verb;
-    }
-
-    public String getAdjective() {
-        return adjective;
-    }
-
-    public String getNoun() {
-        return noun;
     }
 
     @Override

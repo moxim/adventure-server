@@ -31,6 +31,7 @@ import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.views.adventure.AdventureEditorView;
 import com.pdg.adventure.views.support.GridProvider;
+import com.pdg.adventure.views.support.RouteIds;
 import com.pdg.adventure.views.support.ViewSupporter;
 
 @Route(value = "adventures/:adventureId/locations", layout = LocationsMainLayout.class)
@@ -77,9 +78,9 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         edit = new Button("Edit Location", e -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(LocationEditorView.class,
-                                         new RouteParameters(new RouteParam(LOCATION_ID, targetLocationId),
-                                                             new RouteParam(ADVENTURE_ID, adventureData.getId())))
-                  .ifPresent(editor -> editor.setAdventureData(adventureData));
+                                            new RouteParameters(new RouteParam(RouteIds.LOCATION_ID.getValue(), targetLocationId),
+                                                             new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                                .ifPresent(editor -> editor.setAdventureData(adventureData));
             }
         });
         edit.setEnabled(false);
@@ -87,13 +88,13 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         create = new Button("Create Location", e -> {
             UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(
 //                            new RouteParam(LOCATION_ID, "new"),
-                      new RouteParam(ADVENTURE_ID, adventureData.getId())))
+                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
               .ifPresent(editor -> editor.setAdventureData(adventureData));
         });
 
         backButton = new Button("Back", event -> {
             UI.getCurrent().navigate(AdventureEditorView.class,
-                                     new RouteParameters(new RouteParam(ADVENTURE_ID, adventureData.getId())));
+                                     new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
         });
         backButton.addClickShortcut(Key.ESCAPE);
 

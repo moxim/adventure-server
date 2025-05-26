@@ -39,12 +39,19 @@ public class CommandMapper implements Mapper<CommandData, Command> {
 
     public Command mapToBO(CommandData aCommandData) {
         CommandDescription description = commandDescriptionMapper.mapToBO(aCommandData.getCommandDescription());
-        actionMapper = mapperSupporter.getMapper(aCommandData.getAction().getClass());
-        Command result = new GenericCommand(description, actionMapper.mapToBO(aCommandData.getAction()));
+        final ActionData mainActionData = aCommandData.getAction();
+        Action actionBO = null;
+        if (mainActionData != null) {
+            actionMapper = mapperSupporter.getMapper(mainActionData.getClass());
+            actionBO = actionMapper.mapToBO(mainActionData);
+        }
+        Command result = new GenericCommand(description, actionBO);
         result.setId(aCommandData.getId());
-        for (ActionData actionData : aCommandData.getFollowUpActions()) {
-            actionMapper = mapperSupporter.getMapper(actionData.getClass());
-            result.addFollowUpAction(actionMapper.mapToBO(actionData));
+        for (ActionData subActionData : aCommandData.getFollowUpActions()) {
+            if (subActionData != null) {
+                actionMapper = mapperSupporter.getMapper(subActionData.getClass());
+                result.addFollowUpAction(actionMapper.mapToBO(subActionData));
+            }
         }
         for (PreCondition condition : aCommandData.getPreConditions()) {
             result.addPreCondition(condition);

@@ -22,7 +22,7 @@ class DirectionTest {
 
     private static final String GLOWING_TXT = "glowing";
     private static final String PORTAL_TXT = "portal";
-    private final Map<String, Location> allLocations = new HashMap();
+    private final Map<String, Location> allLocations = new HashMap<>();
     private final Vocabulary vocabulary = new Vocabulary();
     private final Container pocket = new GenericContainer(new DescriptionProvider("your pocket"), 5);
     private final Location destination = new Location(new DescriptionProvider(GLOWING_TXT, PORTAL_TXT), pocket);

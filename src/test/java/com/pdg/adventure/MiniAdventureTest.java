@@ -23,7 +23,7 @@ class MiniAdventureTest {
     AdventureMapper adventureMapper;
 
     @Test
-    @Disabled("Disabled until DescriptionData is available!")
+    @Disabled("Disabled until the engine can be feed with commands automatically.")
     void testGameRun() {
         final List<AdventureData> adventures = adventureService.getAdventures();
         final AdventureData adventureData = adventures.getFirst();

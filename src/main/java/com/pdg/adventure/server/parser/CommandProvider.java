@@ -1,10 +1,11 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.api.*;
-import com.pdg.adventure.model.VocabularyData;
 import lombok.Getter;
 
 import java.util.*;
+
+import com.pdg.adventure.api.*;
+import com.pdg.adventure.model.VocabularyData;
 
 public class CommandProvider implements Ided {
     @Getter
@@ -68,11 +69,15 @@ public class CommandProvider implements Ided {
 
         List<CommandChain> result = new ArrayList<>();
         for (Map.Entry<CommandDescription, CommandChain> entry : availableCommands.entrySet()) {
-            CommandDescription description = entry.getKey();
-            if (description.getVerb().equals(verb) &&
-                    (description.getNoun().equals(noun) || VocabularyData.EMPTY_STRING.equals(noun)) &&
-                    (description.getAdjective().equals(adjective) || VocabularyData.EMPTY_STRING.equals(adjective))) {
-                result.add(entry.getValue());
+            CommandDescription itemCommand = entry.getKey();
+            if (itemCommand.getVerb().equals(verb) && itemCommand.getNoun().equals(noun)) {
+                if (itemCommand.getAdjective().equals(adjective)) {
+                    result.add(entry.getValue());
+                } else if (VocabularyData.EMPTY_STRING.equals(itemCommand.getAdjective())) {
+                    result.add(entry.getValue());
+                } else if (VocabularyData.EMPTY_STRING.equals(adjective)) {
+                    result.add(entry.getValue());
+                }
             }
         }
         return result;

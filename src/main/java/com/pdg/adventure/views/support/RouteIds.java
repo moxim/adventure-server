@@ -1,12 +1,13 @@
 package com.pdg.adventure.views.support;
 
-public enum RouteSupporter {
+public enum RouteIds {
     ADVENTURE_ID("adventureId"),
-    LOCATION_ID("locationId");
+    LOCATION_ID("locationId"),
+    COMMAND_ID("commandId");
 
     private final String routeParam;
 
-    RouteSupporter(String routeParam) {
+    RouteIds(String routeParam) {
         this.routeParam = routeParam;
     }
 
