@@ -1,5 +1,7 @@
 package com.pdg.adventure.server.parser;
 
+import lombok.Data;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Optional;
@@ -29,22 +31,13 @@ public class Parser {
         Scanner scanner = new Scanner(lowerCaseInput)) {
             while (scanner.hasNext()) {
                 String token = scanner.next();
-                if (false) {
-                    Word optionalWord = vocabulary.findSynonym(token);
-                    if (optionalWord == null) {
-                        // don't know this word
-                        continue;
-                    }
-                    populate(simpleSentence, optionalWord);
-                } else {
-                    Optional<Word> optionalWord = vocabulary.findWord(token);
-                    if (optionalWord.isEmpty()) {
-                        // don't know this word
-                        continue;
-                    }
-                    Word word = optionalWord.get();
-                    populate(simpleSentence, word.getSynonym() == null ? word : word.getSynonym());
+                Optional<Word> optionalWord = vocabulary.findWord(token);
+                if (optionalWord.isEmpty()) {
+                    // don't know this word
+                    continue;
                 }
+                Word word = optionalWord.get();
+                populate(simpleSentence, word.getSynonym() == null ? word : word.getSynonym());
             }
         }
         return new GenericCommandDescription(simpleSentence.getVerb(), simpleSentence.getAdjective(), simpleSentence.getNoun());
@@ -60,32 +53,9 @@ public class Parser {
     }
 }
 
+@Data
 class SimpleSentence {
     private String verb = VocabularyData.EMPTY_STRING;
     private String adjective = VocabularyData.EMPTY_STRING;
     private String noun = VocabularyData.EMPTY_STRING;
-
-    public void setVerb(String verb) {
-        this.verb = verb;
-    }
-
-    public void setAdjective(String adjective) {
-        this.adjective = adjective;
-    }
-
-    public void setNoun(String noun) {
-        this.noun = noun;
-    }
-
-    public String getVerb() {
-        return verb;
-    }
-
-    public String getAdjective() {
-        return adjective;
-    }
-
-    public String getNoun() {
-        return noun;
-    }
 }
