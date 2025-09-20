@@ -9,10 +9,12 @@ import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.action.WearActionData;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.WearAction;
+import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.storage.messages.MessagesHolder;
 import com.pdg.adventure.server.tangible.Item;
 
 @Service
+@AutoRegisterMapper(priority = 30, description = "Wear action mapper")
 public class WearActionMapper implements Mapper<WearActionData, WearAction> {
     private final MessagesHolder messagesHolder;
     private final Map<String, Item> allItems;

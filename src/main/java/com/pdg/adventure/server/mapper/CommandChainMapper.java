@@ -1,7 +1,6 @@
 package com.pdg.adventure.server.mapper;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -12,11 +11,12 @@ import com.pdg.adventure.api.CommandChain;
 import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.CommandChainData;
 import com.pdg.adventure.model.CommandData;
+import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.parser.GenericCommandChain;
 import com.pdg.adventure.server.support.MapperSupporter;
 
 @Service
-@DependsOn({"commandMapper"})
+@AutoRegisterMapper(priority = 55, description = "Command chain mapping")
 public class CommandChainMapper implements Mapper<CommandChainData, CommandChain> {
 
     private final MapperSupporter mapperSupporter;
@@ -27,9 +27,8 @@ public class CommandChainMapper implements Mapper<CommandChainData, CommandChain
     }
 
     @PostConstruct
-    public void registerMapper() {
+    public void initializeDependencies() {
         commandMapper = mapperSupporter.getMapper(CommandData.class);
-        mapperSupporter.registerMapper(CommandChainData.class, CommandChain.class, this);
     }
 
     public CommandChain mapToBO(CommandChainData aData) {

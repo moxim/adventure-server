@@ -1,7 +1,6 @@
 package com.pdg.adventure.server.mapper;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import com.pdg.adventure.api.Command;
@@ -10,14 +9,13 @@ import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.CommandProviderData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.basics.DescriptionData;
+import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.Item;
 
 @Service
-@DependsOn({"descriptionMapper",
-            "commandMapper",
-            "mapperSupporter"})
+@AutoRegisterMapper(priority = 40, description = "Item mapping with dependencies")
 public class ItemMapper implements Mapper<ItemData, Item> {
     private Mapper<DescriptionData, DescriptionProvider> descriptionMapper;
     private Mapper<CommandData, Command> commandMapper;
@@ -28,12 +26,10 @@ public class ItemMapper implements Mapper<ItemData, Item> {
         mapperSupporter = aMapperSupporter;
     }
 
-
     @PostConstruct
-    public void registerMapper() {
+    public void initializeDependencies() {
         descriptionMapper = mapperSupporter.getMapper(DescriptionData.class);
         commandMapper = mapperSupporter.getMapper(CommandData.class);
-        mapperSupporter.registerMapper(ItemData.class, Item.class, this);
     }
 
     public Item mapToBO(ItemData anItemData) {

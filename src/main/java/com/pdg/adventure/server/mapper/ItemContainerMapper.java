@@ -1,7 +1,6 @@
 package com.pdg.adventure.server.mapper;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -13,15 +12,14 @@ import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.basics.DescriptionData;
+import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 
 @Service
-@DependsOn({"descriptionMapper",
-            "itemMapper",
-            "mapperSupporter"})
+@AutoRegisterMapper(priority = 45, description = "Item container mapping with item dependencies")
 public class ItemContainerMapper implements Mapper<ItemContainerData, GenericContainer> {
 
     private final MapperSupporter mapperSupporter;
@@ -29,14 +27,13 @@ public class ItemContainerMapper implements Mapper<ItemContainerData, GenericCon
     private Mapper<DescriptionData, DescriptionProvider> descriptionMapper;
     private Mapper<ItemData, Item> itemMapper;
 
-    public ItemContainerMapper( MapperSupporter aMapperSupporter) {
+    public ItemContainerMapper(MapperSupporter aMapperSupporter) {
         mapperSupporter = aMapperSupporter;
         allItems = aMapperSupporter.getAllItems();
     }
 
     @PostConstruct
-    public void registerMapper() {
-        mapperSupporter.registerMapper(ItemContainerData.class, GenericContainer.class, this);
+    public void initializeDependencies() {
         descriptionMapper = mapperSupporter.getMapper(DescriptionData.class);
         itemMapper = mapperSupporter.getMapper(ItemData.class);
     }

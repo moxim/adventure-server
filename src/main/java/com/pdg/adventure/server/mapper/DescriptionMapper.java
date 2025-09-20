@@ -6,25 +6,25 @@ import org.springframework.stereotype.Service;
 import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.model.basics.DescriptionData;
+import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 @Service
-//@DependsOn("mapperSupporter")
+@AutoRegisterMapper(priority = 15, description = "Core description mapping")
 public class DescriptionMapper implements Mapper<DescriptionData, DescriptionProvider> {
 
     private final MapperSupporter mapperSupporter;
     private Vocabulary vocabulary;
 
-    public DescriptionMapper( MapperSupporter aMapperSupporter) {
-         mapperSupporter = aMapperSupporter;
+    public DescriptionMapper(MapperSupporter aMapperSupporter) {
+        mapperSupporter = aMapperSupporter;
     }
 
     @PostConstruct
-    public void registerMapper() {
+    public void initializeDependencies() {
         vocabulary = mapperSupporter.getVocabulary();
-        mapperSupporter.registerMapper(DescriptionData.class, DescriptionProvider.class, this);
     }
 
     @Override
