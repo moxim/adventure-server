@@ -1,5 +1,9 @@
 package com.pdg.adventure.views.support;
 
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
+
 import java.util.Optional;
 
 import com.pdg.adventure.api.Describable;
@@ -10,10 +14,6 @@ import com.pdg.adventure.model.basics.DescriptionData;
 import com.pdg.adventure.views.components.VocabularyPicker;
 import com.pdg.adventure.views.locations.LocationDescriptionAdapter;
 import com.pdg.adventure.views.locations.LocationViewModel;
-
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
 
 public class ViewSupporter {
 
@@ -76,13 +76,41 @@ public class ViewSupporter {
         return shortDescription;
     }
 
-    public static String formatDescription(CommandDescriptionData aCommandDescription) {
-        String noun = aCommandDescription.getNoun().getText();
-        String adjective = aCommandDescription.getAdjective().getText();
-        String verb = aCommandDescription.getVerb().getText();
+//    public static String formatDescription(CommandDescriptionData aCommandDescription) {
+//        String noun = aCommandDescription.getNoun().getText();
+//        String adjective = aCommandDescription.getAdjective().getText();
+//        String verb = aCommandDescription.getVerb().getText();
+//
+//        String command = verb + " " + adjective + " " + noun;
+//        return command;
+//    }
 
-        String command = verb + " " + adjective + " " + noun;
-        return command;
+    public static String formatDescription(CommandDescriptionData aCommandDescription) {
+        if (aCommandDescription == null) {
+            return "";
+        }
+        String noun = getWordText(aCommandDescription.getNoun());
+        String adjective = getWordText(aCommandDescription.getAdjective());
+        String verb = getWordText(aCommandDescription.getVerb());
+
+        // Combine non-empty parts
+        StringBuilder command = new StringBuilder();
+        if (!verb.isEmpty()) {
+            command.append(verb);
+        }
+        if (!adjective.isEmpty()) {
+            if (command.length() > 0) {
+                command.append(" ");
+            }
+            command.append(adjective);
+        }
+        if (!noun.isEmpty()) {
+            if (command.length() > 0) {
+                command.append(" ");
+            }
+            command.append(noun);
+        }
+        return command.toString();
     }
 
     public static String formatDescription(Describable aDescribable) {
@@ -96,7 +124,7 @@ public class ViewSupporter {
     public static String formatDescription(DescriptionData aDescriptionData) {
         String shortDescription = aDescriptionData.getShortDescription();
         if (shortDescription.isEmpty()) {
-            shortDescription = aDescriptionData.getNoun().getText() + " / " + aDescriptionData.getAdjective().getText();
+            shortDescription = getWordText(aDescriptionData.getNoun()) + " / " + getWordText(aDescriptionData.getAdjective());
         }
         return shortDescription;
     }
@@ -116,6 +144,7 @@ public class ViewSupporter {
 
     public static void bindField(Binder<DirectionData> aBinder, VocabularyPicker aVocabularyPicker,
                                  Word.Type type, CommandDescriptionData aCommandDescriptionData) {
+        throw new UnsupportedOperationException("Not implemented yet");
         /*******************************************/
 //        aBinder.bind(aVocabularyPicker, (directionData) -> {
 //            return getWordText(aVocabularyPicker.getValue());
@@ -126,7 +155,8 @@ public class ViewSupporter {
     }
 
 
-    public static void setWord(VocabularyData aVocabulary, String aWordText, CommandDescriptionData aCommandDescriptionData) {
+    public static void setWord(VocabularyData aVocabulary, String aWordText,
+                               CommandDescriptionData aCommandDescriptionData) {
         if (aWordText == null || aWordText.isEmpty()) {
             return;
         }
@@ -163,7 +193,7 @@ public class ViewSupporter {
     }
 
     public static String getWordText(Word aWord) {
-        return aWord.getText();
+        return aWord == null ? "" : aWord.getText();
     }
 
 

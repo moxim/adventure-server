@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.pdg.adventure.api.Ided;
 import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.model.Word;
 import com.pdg.adventure.model.basics.DescriptionData;
 
 public class DescriptionProvider implements Ided {
@@ -22,57 +23,70 @@ public class DescriptionProvider implements Ided {
     @Setter
     private String longDescription;
 
-    public DescriptionProvider(String aNoun) {
-        this(null, aNoun);
+    public DescriptionProvider(String noun) {
+        this(null, noun);
     }
 
-    public DescriptionProvider(String anAdjective, String aNoun) {
-        validateParameters(aNoun);
-        adjective = anAdjective;
-        if (adjective == null) {
-            adjective = VocabularyData.EMPTY_STRING;
-        }
-        noun = aNoun;
-        id = UUID.randomUUID().toString();
+    public DescriptionProvider(String adjective, String noun) {
+//        validateParameters(noun);
+        this.adjective = adjective != null ? adjective : VocabularyData.EMPTY_STRING;
+        this.noun = noun;
+        this.id = UUID.randomUUID().toString();
+    }
+
+    public DescriptionProvider(Word adjective, Word noun) {
+//        validateParameters(noun);
+        this.adjective = adjective != null && adjective.getText() != null ? adjective.getText() : VocabularyData.EMPTY_STRING;
+        this.noun = noun.getText();
+        this.id = UUID.randomUUID().toString();
     }
 
     public DescriptionProvider(DescriptionData descriptionData) {
-        this(descriptionData.getAdjective().getText(), descriptionData.getNoun().getText());
-        setShortDescription(descriptionData.getShortDescription());
-        setLongDescription(descriptionData.getLongDescription());
+        this(
+            descriptionData.getAdjective() != null ? descriptionData.getAdjective().getText() : null,
+            descriptionData.getNoun() != null ? descriptionData.getNoun().getText() : ""
+        );
+        setShortDescription(descriptionData.getShortDescription() != null ? descriptionData.getShortDescription() : "");
+        setLongDescription(descriptionData.getLongDescription() != null ? descriptionData.getLongDescription() : "");
     }
 
-    private void validateParameters(String aNoun) {
-        if (aNoun == null) {
+    private void validateParameters(String noun) {
+        if (noun == null || noun.trim().isEmpty()) {
+            throw new IllegalArgumentException(NOUN_MISSING_MESSAGE);
+        }
+    }
+
+    private void validateParameters(Word noun) {
+        if (noun == null || noun.getText() == null || noun.getText().trim().isEmpty()) {
             throw new IllegalArgumentException(NOUN_MISSING_MESSAGE);
         }
     }
 
     public String getShortDescription() {
-        if (shortDescription == null) {
+        if (shortDescription == null || shortDescription.isEmpty()) {
             shortDescription = getBasicDescription();
         }
         return shortDescription;
     }
 
-    public String getEnrichedShortDescription(String aDescription) {
-        return ArticleProvider.prependIndefiniteArticle(aDescription);
+    public String getEnrichedShortDescription(String description) {
+        return ArticleProvider.prependIndefiniteArticle(description != null && !description.isEmpty() ? description : getBasicDescription());
     }
 
     public String getLongDescription() {
-        if (longDescription == null) {
+        if (longDescription == null || longDescription.isEmpty()) {
             longDescription = getShortDescription();
         }
         return longDescription;
     }
 
     public String getBasicDescription() {
-        String result = "";
-        if (!VocabularyData.EMPTY_STRING.equals(adjective)) {
-            result += adjective + " ";
+        StringBuilder result = new StringBuilder();
+        if (adjective != null && !adjective.isEmpty()) {
+            result.append(adjective).append(" ");
         }
-        result += noun;
-        return result;
+        result.append(noun);
+        return result.toString();
     }
 
     public String getEnrichedBasicDescription() {

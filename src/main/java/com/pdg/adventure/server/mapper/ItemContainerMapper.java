@@ -44,7 +44,7 @@ public class ItemContainerMapper implements Mapper<ItemContainerData, GenericCon
         DescriptionProvider descriptionProvider = descriptionMapper.mapToBO(descriptionData);
         GenericContainer container = new GenericContainer(descriptionProvider, anItemContainerData.getMaxSize());
         container.setId(anItemContainerData.getId());
-        List<Containable> itemList = new ArrayList<>(anItemContainerData.getContents().size());
+        List<Containable> itemList = new ArrayList<>(anItemContainerData.getItems().size());
         // TODO: map this
 //        for (String itemId : anItemContainerData.getContents()) {
 //            container.add(allItems.get(itemId));

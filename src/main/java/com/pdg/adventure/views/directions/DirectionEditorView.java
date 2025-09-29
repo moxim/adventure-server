@@ -1,5 +1,22 @@
 package com.pdg.adventure.views.directions;
 
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.BinderValidationStatus;
+import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.selection.SelectionListener;
+import com.vaadin.flow.router.*;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,23 +35,6 @@ import com.pdg.adventure.views.commands.CommandsMenuView;
 import com.pdg.adventure.views.components.ResetBackSaveView;
 import com.pdg.adventure.views.components.VocabularyPicker;
 import com.pdg.adventure.views.support.ViewSupporter;
-
-import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.BinderValidationStatus;
-import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.selection.SelectionListener;
-import com.vaadin.flow.router.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Route(value = "adventures/:adventureId/locations/:locationId/direction/:directionId/edit", layout = DirectionsMainLayout.class)
 @RouteAlias(value = "adventures/:adventureId/locations/:locationId/direction/new",  layout = DirectionsMainLayout.class)
@@ -365,7 +365,7 @@ public class DirectionEditorView extends VerticalLayout
         adjectiveEntry.setItems(adjectives);
 
         locationIdTF.setHelperText(locationData.getDescriptionData().getShortDescription());
-        directionIdTF.setValue(directionData.getId());
+        directionIdTF.setValue(directionData.getId() == null ? "new direction" : directionData.getId());
 
         setUpGUI();
         setUpBindings();

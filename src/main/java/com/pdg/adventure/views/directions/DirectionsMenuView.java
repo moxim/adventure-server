@@ -18,7 +18,6 @@ import java.util.Set;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.DirectionData;
 import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.views.adventure.AdventuresMainLayout;
 import com.pdg.adventure.views.locations.LocationEditorView;
 import com.pdg.adventure.views.support.ViewSupporter;
@@ -27,13 +26,12 @@ import com.pdg.adventure.views.support.ViewSupporter;
 public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitle, BeforeEnterObserver {
     private static final String LOCATION_ID_TEXT = "locationId";
     private static final String ADVENTURE_ID = "adventureId";
-    private final MapperSupporter mapperSupporter;
     private final Grid<DirectionData> grid;
     private transient AdventureData adventureData;
     private transient LocationData locationData;
     private String pageTitle;
 
-    public DirectionsMenuView(MapperSupporter mapperSupporter) {
+    public DirectionsMenuView() {
         setSizeFull();
 
         Button backButton = new Button("Back", event -> UI.getCurrent().navigate(LocationEditorView.class,
@@ -79,7 +77,6 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
         setPadding(true);
 
         add(jumpRow);
-        this.mapperSupporter = mapperSupporter;
     }
 
     private Grid<DirectionData> getGrid() {

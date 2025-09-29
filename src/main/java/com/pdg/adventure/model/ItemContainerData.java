@@ -13,7 +13,8 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class ItemContainerData extends ItemData {
     @DBRef(lazy = true)
-    private List<ItemData> contents = new ArrayList<>();
+//    @CascadeSave
+    private List<ItemData> items = new ArrayList<>();
     private int maxSize;
     private boolean holdingDirections;
 

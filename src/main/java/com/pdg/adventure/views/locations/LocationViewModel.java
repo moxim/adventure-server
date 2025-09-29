@@ -28,7 +28,7 @@ public final class LocationViewModel implements Serializable {
         defaultExits = data.getDirectionsData().size();
         lumen = data.getLumen();
         id = data.getId();
-        adventureId = data.getAdventure().getId();
+        adventureId = "Your Adventure"; //data.getAdventure().getId();
         descriptionProvider = new DescriptionProvider(data.getDescriptionData());
 
         noun = data.getDescriptionData().getNoun();
@@ -60,10 +60,11 @@ public final class LocationViewModel implements Serializable {
     }
 
     public String getAdventureId() {
-        return data.getAdventure().getId();
+        return adventureId; // data.getAdventure().getId();
     }
     public void setAdventureId(String anId) {
-        data.getAdventure().setId(anId);
+        adventureId = anId;
+//        data.getAdventure().setId(anId);
     }
 
     public Word getNoun() {

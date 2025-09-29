@@ -114,5 +114,34 @@ class ItemIdentifierTest {
         assertThat(items).size().isEqualTo(1);
     }
     
-    
+    @Test
+    void omgNoVerbNoNoun() {
+        // given
+        GenericCommandDescription commandDescription = new GenericCommandDescription("", "", "");
+        DescriptionProvider ringDescription = new DescriptionProvider("ring");
+        Item ring = new Item(ringDescription, true);
+        container.add(ring);
+
+        // when
+        List<Containable> items = ItemIdentifier.findItems(container, commandDescription);
+
+        // then
+        assertThat(items).size().isEqualTo(0);
+    }
+
+    @Test
+    void omgAVerbButNoNoun() {
+        // given
+        GenericCommandDescription commandDescription = new GenericCommandDescription("use", "", "");
+        DescriptionProvider ringDescription = new DescriptionProvider("ring");
+        Item north = new Item(ringDescription, true);
+        container.add(north);
+
+        // when
+        List<Containable> items = ItemIdentifier.findItems(container, commandDescription);
+
+        // then
+        assertThat(items).size().isEqualTo(0);
+    }
+
 }
