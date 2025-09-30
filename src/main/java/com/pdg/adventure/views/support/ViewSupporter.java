@@ -144,10 +144,9 @@ public class ViewSupporter {
 
     public static void bindField(Binder<DirectionData> aBinder, VocabularyPicker aVocabularyPicker,
                                  Word.Type type, CommandDescriptionData aCommandDescriptionData) {
-        throw new UnsupportedOperationException("Not implemented yet");
         /*******************************************/
 //        aBinder.bind(aVocabularyPicker, (directionData) -> {
-//            return getWordText(aVocabularyPicker.getValue());
+//            return aVocabularyPicker.getValue();
 //        }, (directionData, word) -> {
 //            setWord(aCommandDescriptionData, aVocabularyPicker.getValue());
 //        });

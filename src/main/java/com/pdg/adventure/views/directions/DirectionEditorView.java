@@ -91,9 +91,9 @@ public class DirectionEditorView extends VerticalLayout
         adjectiveEntry = getAdjectiveTextField();
 
         /*******************************************/
-        verbSelection = getWordBox("Noun", "The main theme of this location.");
-        nounSelection = getWordBox("Noun", "The main theme of this location.");
-        nounSelection.setPlaceholder("Select a noun (required)");
+        verbSelection = getWordBox("Verb", "The action needed to follow this direction.");
+        verbSelection.setPlaceholder("Select a noun (required)");
+        nounSelection = getWordBox("Noun", "A descriptive noun for this direction.");
         adjectiveSelection = getWordBox("Adjective", "The qualifier for this location.");
         /*******************************************/
 
@@ -305,6 +305,7 @@ public class DirectionEditorView extends VerticalLayout
 
     private void setUpNewEdit() {
         directionData = new DirectionData();
+        directionData.setId(java.util.UUID.randomUUID().toString());
         directionId = directionData.getId();
         pageTitle = "New Direction";
     }
@@ -365,7 +366,7 @@ public class DirectionEditorView extends VerticalLayout
         adjectiveEntry.setItems(adjectives);
 
         locationIdTF.setHelperText(locationData.getDescriptionData().getShortDescription());
-        directionIdTF.setValue(directionData.getId() == null ? "new direction" : directionData.getId());
+        directionIdTF.setValue(directionData.getId() == null ? "" : directionData.getId());
 
         setUpGUI();
         setUpBindings();

@@ -195,7 +195,9 @@ public class LocationEditorView extends VerticalLayout
         try {
             if (binder.validate().isOk()) {
                 binder.writeBean(aLocationViewModel);
-                adventureData.getLocationData().put(aLocationViewModel.getId(), aLocationViewModel.getData());
+                final LocationData locationData = aLocationViewModel.getData();
+//                adventureService.saveLocationData(locationData); // need to save location first to ensure it has an ID
+                adventureData.getLocationData().put(aLocationViewModel.getId(), locationData);
                 adventureService.saveAdventureData(adventureData);
                 saveButton.setEnabled(false);
             }
@@ -262,6 +264,10 @@ public class LocationEditorView extends VerticalLayout
     public void setAdventureData(AdventureData anAdventureData) {
         adventureData = anAdventureData;
         locationData = adventureData.getLocationData().getOrDefault(locationId, new LocationData());
+        if (locationData.getId() == null || locationData.getId().isEmpty()) {
+            locationData.setId(java.util.UUID.randomUUID().toString());
+            locationId = locationData.getId();
+        }
 
         VocabularyData vocabularyData = adventureData.getVocabularyData();
         adjectiveSelection.populate(vocabularyData.getWords(ADJECTIVE));
