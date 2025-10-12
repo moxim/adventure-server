@@ -17,8 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.pdg.adventure.model.Word.Type.ADJECTIVE;
-import static com.pdg.adventure.model.Word.Type.NOUN;
+import static com.pdg.adventure.model.Word.Type.*;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basics.CommandDescriptionData;
@@ -26,6 +25,7 @@ import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.views.adventure.AdventuresMainLayout;
 import com.pdg.adventure.views.components.ResetBackSaveView;
 import com.pdg.adventure.views.components.VocabularyPicker;
+import com.pdg.adventure.views.components.VocabularyPickerField;
 import com.pdg.adventure.views.locations.LocationsMainLayout;
 import com.pdg.adventure.views.support.RouteIds;
 
@@ -54,10 +54,10 @@ public class CommandEditorView extends VerticalLayout
         adventureService = anAdventureService;
         binder = new BeanValidationBinder<>(CommandDescriptionData.class);
 
-        verbSelection = getWordBox("Verb", "You may filter on verbs.");
+        verbSelection = new VocabularyPickerField("Verb", "You may filter on verbs.",  VERB, new VocabularyData());
         verbSelection.setHelperText("Select at least a verb.");
-        adjectiveSelection = getWordBox("Adjective", "You may filter on adjectives.");
-        nounSelection = getWordBox("Noun", "You may filter on nouns.");
+        adjectiveSelection = new VocabularyPickerField("Adjective", "You may filter on adjectives.", ADJECTIVE, new VocabularyData());
+        nounSelection = new VocabularyPickerField("Noun", "You may filter on nouns.", NOUN, new VocabularyData());
 
         binder.bind(verbSelection, CommandDescriptionData::getVerb, CommandDescriptionData::setVerb);
         binder.bind(adjectiveSelection, CommandDescriptionData::getAdjective, CommandDescriptionData::setAdjective);
@@ -104,8 +104,8 @@ public class CommandEditorView extends VerticalLayout
 
     private void validateSave(CommandProviderData aCommandProviderData) {
         try {
-            binder.writeBean(commandDescriptionData);
             if (binder.validate().isOk()) {
+                binder.writeBean(commandDescriptionData);
                 swivelTheSaveButton(gridListDataView);
                 adventureService.saveLocationData(locationData);
                 saveButton.setEnabled(false);
@@ -144,14 +144,6 @@ public class CommandEditorView extends VerticalLayout
         cancelButton.setEnabled(true);
     }
 
-    private VocabularyPicker getWordBox(String label, String tooltipText) {
-        VocabularyPicker wordBox = new VocabularyPicker(label);
-        wordBox.setHelperText("");
-        wordBox.setTooltipText(tooltipText);
-        wordBox.addValueChangeListener(e -> checkIfSaveAvailable());
-        return wordBox;
-    }
-
     @Override
     public String getPageTitle() {
         return pageTitle;
@@ -187,7 +179,7 @@ public class CommandEditorView extends VerticalLayout
         adjectiveSelection.populate(
                 vocabularyData.getWords(ADJECTIVE).stream().filter(word -> word.getSynonym() == null).toList());
         verbSelection.populate(
-                vocabularyData.getWords(Word.Type.VERB).stream().filter(word -> word.getSynonym() == null).toList());
+                vocabularyData.getWords(VERB).stream().filter(word -> word.getSynonym() == null).toList());
 
     }
 }
