@@ -78,7 +78,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
                 UI.getCurrent().navigate(LocationEditorView.class,
                                             new RouteParameters(new RouteParam(RouteIds.LOCATION_ID.getValue(), targetLocationId),
                                                              new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                .ifPresent(editor -> editor.setAdventureData(adventureData));
+                                .ifPresent(editor -> editor.setData(adventureData));
             }
         });
         edit.setEnabled(false);
@@ -87,7 +87,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
             UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(
 //                            new RouteParam(LOCATION_ID, "new"),
                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-              .ifPresent(editor -> editor.setAdventureData(adventureData));
+              .ifPresent(editor -> editor.setData(adventureData));
         });
 
         backButton = new Button("Back", event -> {
@@ -225,7 +225,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(new RouteParam(LOCATION_ID, aLocationId),
                                                                                new RouteParam(ADVENTURE_ID,
                                                                                               adventureData.getId())))
-          .ifPresent(e -> e.setAdventureData(adventureData));
+          .ifPresent(e -> e.setData(adventureData));
 //        }
     }
 

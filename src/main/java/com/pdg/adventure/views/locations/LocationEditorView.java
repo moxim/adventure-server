@@ -39,8 +39,8 @@ public class LocationEditorView extends VerticalLayout
 
     private final transient AdventureService adventureService;
     private final Binder<LocationViewModel> binder;
-    private final VocabularyPickerField adjectiveSelection;
-    private final VocabularyPickerField nounPicker;
+    private final VocabularyPickerField adjectiveSelector;
+    private final VocabularyPickerField nounSelector;
 
     private Button saveButton;
     private Button resetButton;
@@ -62,14 +62,10 @@ public class LocationEditorView extends VerticalLayout
         locationData = new LocationData();
         locationId = locationData.getId();
 
-        adjectiveSelection = new VocabularyPickerField("Adjective", "The qualifier for this location.", ADJECTIVE, new VocabularyData());
+        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this location.", ADJECTIVE, new VocabularyData());
 
-        nounPicker = new VocabularyPickerField("Noun", "The main theme of this location.", NOUN, new VocabularyData());
-        nounPicker.setPlaceholder("Select a noun (required)");
-
-        // Add value change listeners to update save button state
-        nounPicker.getPicker().addValueChangeListener(e -> updateSaveButtonState());
-        adjectiveSelection.getPicker().addValueChangeListener(e -> updateSaveButtonState());
+        nounSelector = new VocabularyPickerField("Noun", "The main theme of this location.", NOUN, new VocabularyData());
+        nounSelector.setPlaceholder("Select a noun (required)");
 
         TextField locationIdTF = getLocationIdTF();
         TextField adventureIdTF = getAdventureIdTF();
@@ -78,21 +74,21 @@ public class LocationEditorView extends VerticalLayout
         IntegerField lumen = getLumenField();
         IntegerField exits = getExitsField();
 
-        final ResetBackSaveView resetBackSaveView = setUpNavidationButtons();
+        final ResetBackSaveView resetBackSaveView = setUpNavigationButtons();
 
         // Bind fields
-        binder.forField(nounPicker.getPicker())
+        binder.forField(nounSelector)
               .asRequired("Noun is required")
               .withValidator(word -> word != null && !word.getText().isEmpty(), "Please select a noun with text")
               .bind(LocationViewModel::getNoun, LocationViewModel::setNoun);
-        binder.forField(adjectiveSelection.getPicker())
+        binder.forField(adjectiveSelector)
               .bind(LocationViewModel::getAdjective, LocationViewModel::setAdjective);
         binder.bind(shortDescription, LocationViewModel::getShortDescription, LocationViewModel::setShortDescription);
         binder.bind(longDescription, LocationViewModel::getLongDescription, LocationViewModel::setLongDescription);
         binder.bind(lumen, LocationViewModel::getLumen, LocationViewModel::setLumen);
         binder.bindReadOnly(locationIdTF, LocationViewModel::getId);
         binder.bindReadOnly(adventureIdTF, LocationViewModel::getAdventureId);
-        binder.bindReadOnly(exits, LocationViewModel::getDefaultExits);
+        binder.bindReadOnly(exits, LocationViewModel::getNumberOfExits);
 
         binder.addStatusChangeListener(event -> {
             boolean isValid = event.getBinder().isValid();
@@ -102,7 +98,7 @@ public class LocationEditorView extends VerticalLayout
             resetButton.setEnabled(hasChanges);
         });
 
-        HorizontalLayout h1 = new HorizontalLayout(adjectiveSelection, nounPicker);
+        HorizontalLayout h1 = new HorizontalLayout(adjectiveSelector, nounSelector);
         HorizontalLayout h2 = new HorizontalLayout(lumen, exits);
 
         VerticalLayout hl = new VerticalLayout(h1, h2);
@@ -140,7 +136,7 @@ public class LocationEditorView extends VerticalLayout
         add(idRow, hl, shortDescription, longDescription, commandRow, resetBackSaveView);
     }
 
-    private ResetBackSaveView setUpNavidationButtons() {
+    private ResetBackSaveView setUpNavigationButtons() {
         final ResetBackSaveView resetBackSaveView = new ResetBackSaveView();
 
         Button backButton = resetBackSaveView.getBack();
@@ -160,7 +156,7 @@ public class LocationEditorView extends VerticalLayout
     private IntegerField getExitsField() {
         IntegerField field = new IntegerField("Number of exits");
         field.setReadOnly(true);
-        binder.bind(field, LocationViewModel::getDefaultExits, null);
+//        binder.bind(field, LocationViewModel::getDefaultExits, null);
         return field;
     }
 
@@ -173,21 +169,44 @@ public class LocationEditorView extends VerticalLayout
                 "Set the lighting of this location. (" + MAX_LUMEN + " = max, " + MIN_LUMEN + " = total darkness)");
         field.setValueChangeMode(ValueChangeMode.EAGER);
 //        field.addValueChangeListener(event -> checkIfSaveAvailable());
-        binder.bind(field, LocationViewModel::getLumen, LocationViewModel::setLumen);
+//        binder.bind(field, LocationViewModel::getLumen, LocationViewModel::setLumen);
         return field;
     }
 
     private TextField getLocationIdTF() {
         TextField field = new TextField("Location ID");
         field.setReadOnly(true);
-        binder.bindReadOnly(field, LocationViewModel::getId);
+//        binder.bindReadOnly(field, LocationViewModel::getId);
         return field;
     }
 
     private TextField getAdventureIdTF() {
         TextField field = new TextField("Adventure ID");
         field.setReadOnly(true);
-        binder.bindReadOnly(field, LocationViewModel::getAdventureId);
+//        binder.bindReadOnly(field, LocationViewModel::getAdventureId);
+        return field;
+    }
+
+    private TextArea getLongDescTextArea() {
+        TextArea field = new TextArea("Long description");
+        field.setWidth("95%");
+        field.setMinHeight("200px");
+        field.setMaxHeight("350px");
+        field.setTooltipText("If left empty, this will be derived from the short description.");
+        field.setValueChangeMode(ValueChangeMode.EAGER);
+//        binder.bind(field, LocationViewModel::getLongDescription, LocationViewModel::setLongDescription);
+        return field;
+    }
+
+
+    private TextArea getShortDescTextArea() {
+        TextArea field = new TextArea("Short description");
+        field.setWidth("95%");
+        field.setMinHeight("100px");
+        field.setMaxHeight("150px");
+        field.setTooltipText("If left empty, this will be derived from the provided noun and verb.");
+        field.setValueChangeMode(ValueChangeMode.EAGER);
+//        binder.bind(field, LocationViewModel::getShortDescription, LocationViewModel::setShortDescription);
         return field;
     }
 
@@ -205,40 +224,6 @@ public class LocationEditorView extends VerticalLayout
             e.printStackTrace();
         }
     }
-
-    private TextArea getLongDescTextArea() {
-        TextArea field = new TextArea("Long description");
-        field.setWidth("95%");
-        field.setMinHeight("200px");
-        field.setMaxHeight("350px");
-        field.setTooltipText("If left empty, this will be derived from the short description.");
-        field.setValueChangeMode(ValueChangeMode.EAGER);
-        binder.bind(field, LocationViewModel::getLongDescription,
-                    LocationViewModel::setLongDescription);
-        return field;
-    }
-
-
-    private TextArea getShortDescTextArea() {
-        TextArea field = new TextArea("Short description");
-        field.setWidth("95%");
-        field.setMinHeight("100px");
-        field.setMaxHeight("150px");
-        field.setTooltipText("If left empty, this will be derived from the provided noun and verb.");
-        field.setValueChangeMode(ValueChangeMode.EAGER);
-        binder.bind(field, LocationViewModel::getShortDescription,
-                    LocationViewModel::setShortDescription);
-        return field;
-    }
-
-    private void updateSaveButtonState() {
-        boolean isValid = binder.isValid();
-        boolean hasChanges = binder.hasChanges();
-
-        saveButton.setEnabled(hasChanges && isValid);
-        resetButton.setEnabled(hasChanges);
-    }
-
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
@@ -261,7 +246,7 @@ public class LocationEditorView extends VerticalLayout
         AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges());
     }
 
-    public void setAdventureData(AdventureData anAdventureData) {
+    public void setData(AdventureData anAdventureData) {
         adventureData = anAdventureData;
         locationData = adventureData.getLocationData().getOrDefault(locationId, new LocationData());
         if (locationData.getId() == null || locationData.getId().isEmpty()) {
@@ -270,8 +255,8 @@ public class LocationEditorView extends VerticalLayout
         }
 
         VocabularyData vocabularyData = adventureData.getVocabularyData();
-        adjectiveSelection.populate(vocabularyData.getWords(ADJECTIVE));
-        nounPicker.populate(vocabularyData.getWords(NOUN));
+        adjectiveSelector.populate(vocabularyData.getWords(ADJECTIVE));
+        nounSelector.populate(vocabularyData.getWords(NOUN));
 
         saveButton.setEnabled(false);
         lvm = new LocationViewModel(locationData);

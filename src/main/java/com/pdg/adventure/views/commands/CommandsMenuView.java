@@ -89,7 +89,7 @@ public class CommandsMenuView extends VerticalLayout
                                                                                   new RouteParam(
                                                                                           ADVENTURE_ID.getValue(),
                                                                                           adventureData.getId()))
-        ).ifPresent(e -> e.setAdventureData(adventureData)));
+        ).ifPresent(e -> e.setData(adventureData)));
         backButton.addClickShortcut(Key.ESCAPE);
 
         resetButton = new Button("Reset", e -> {

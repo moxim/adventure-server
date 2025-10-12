@@ -8,4 +8,12 @@ import lombok.EqualsAndHashCode;
 public class DescriptionData extends BasicDescriptionData {
     private String shortDescription = "";
     private String longDescription = "";
+
+    public DescriptionData() {
+    }
+
+    public DescriptionData(String aShortDescription, String aLongDescription) {
+        this.shortDescription = aShortDescription;
+        this.longDescription = aLongDescription;
+    }
 }

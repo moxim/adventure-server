@@ -3,7 +3,8 @@ package com.pdg.adventure.views.support;
 public enum RouteIds {
     ADVENTURE_ID("adventureId"),
     LOCATION_ID("locationId"),
-    COMMAND_ID("commandId");
+    COMMAND_ID("commandId"),
+    DIRECTION_ID("directionId");
 
     private final String routeParam;
 

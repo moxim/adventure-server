@@ -18,14 +18,12 @@ import java.util.Set;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.DirectionData;
 import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.views.adventure.AdventuresMainLayout;
 import com.pdg.adventure.views.locations.LocationEditorView;
+import com.pdg.adventure.views.support.RouteIds;
 import com.pdg.adventure.views.support.ViewSupporter;
 
-@Route(value = "adventures/:adventureId/locations/:locationId/directions", layout = AdventuresMainLayout.class)
+@Route(value = "adventures/:adventureId/locations/:locationId/directions", layout = DirectionsMainLayout.class)
 public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitle, BeforeEnterObserver {
-    private static final String LOCATION_ID_TEXT = "locationId";
-    private static final String ADVENTURE_ID = "adventureId";
     private final Grid<DirectionData> grid;
     private transient AdventureData adventureData;
     private transient LocationData locationData;
@@ -36,19 +34,19 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
 
         Button backButton = new Button("Back", event -> UI.getCurrent().navigate(LocationEditorView.class,
                                                                                  new RouteParameters(
-                                                                                         new RouteParam(ADVENTURE_ID,
+                                                                                         new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                                                                         adventureData.getId()),
                                                                                          new RouteParam(
-                                                                                                 LOCATION_ID_TEXT,
+                                                                                                 RouteIds.LOCATION_ID.getValue(),
                                                                                                  locationData.getId())))
-                                                          .ifPresent(e -> e.setAdventureData(adventureData)));
+                                                          .ifPresent(e -> e.setData(adventureData)));
         backButton.addClickShortcut(Key.ESCAPE);
 
         Button create = new Button("Create Exit", e -> UI.getCurrent().navigate(DirectionEditorView.class,
                                                                                 new RouteParameters(
-                                                                                        new RouteParam(ADVENTURE_ID,
+                                                                                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                                                                        adventureData.getId()),
-                                                                                        new RouteParam(LOCATION_ID_TEXT,
+                                                                                        new RouteParam(RouteIds.LOCATION_ID.getValue(),
                                                                                                        locationData.getId())))
                                                          .ifPresent(editor -> editor.setData(locationData,
                                                                                              adventureData)));
@@ -98,11 +96,11 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
 
         directionGrid.addItemDoubleClickListener(e -> UI.getCurrent().navigate(DirectionEditorView.class,
                                                                                new RouteParameters(
-                                                                                       new RouteParam(ADVENTURE_ID,
+                                                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                                                                       adventureData.getId()),
-                                                                                       new RouteParam(LOCATION_ID_TEXT,
+                                                                                       new RouteParam(RouteIds.LOCATION_ID.getValue(),
                                                                                                       locationData.getId()),
-                                                                                       new RouteParam("directionId",
+                                                                                       new RouteParam(RouteIds.DIRECTION_ID.getValue(),
                                                                                                       e.getItem()
                                                                                                        .getId())))
                                                         .ifPresent(
@@ -118,7 +116,7 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<String> locId = event.getRouteParameters().get(LOCATION_ID_TEXT);
+        Optional<String> locId = event.getRouteParameters().get(RouteIds.LOCATION_ID.getValue());
         if (locId.isPresent()) {
             final String locationId = locId.get();
             pageTitle = "Directions for location #" + locationId;
