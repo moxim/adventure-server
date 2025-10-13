@@ -4,6 +4,8 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -11,6 +13,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 import java.util.Set;
@@ -18,18 +21,22 @@ import java.util.Set;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.DirectionData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.views.locations.LocationEditorView;
 import com.pdg.adventure.views.support.RouteIds;
 import com.pdg.adventure.views.support.ViewSupporter;
 
 @Route(value = "adventures/:adventureId/locations/:locationId/directions", layout = DirectionsMainLayout.class)
 public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitle, BeforeEnterObserver {
+    private final transient AdventureService adventureService;
     private final Grid<DirectionData> grid;
     private transient AdventureData adventureData;
     private transient LocationData locationData;
     private String pageTitle;
 
-    public DirectionsMenuView() {
+    @Autowired
+    public DirectionsMenuView(AdventureService anAdventureService) {
+        adventureService = anAdventureService;
         setSizeFull();
 
         Button backButton = new Button("Back", event -> UI.getCurrent().navigate(LocationEditorView.class,
@@ -136,5 +143,39 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
         final Set<DirectionData> directionsData = locationData.getDirectionsData();
 
         fillGrid(directionsData);
+
+        // Add context menu
+        new DirectionContextMenu(grid);
+    }
+
+    private void navigateToDirectionEditor(String aDirectionId) {
+        UI.getCurrent().navigate(DirectionEditorView.class,
+                new RouteParameters(
+                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                        new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                        new RouteParam(RouteIds.DIRECTION_ID.getValue(), aDirectionId)))
+          .ifPresent(editor -> editor.setData(locationData, adventureData));
+    }
+
+    private class DirectionContextMenu extends GridContextMenu<DirectionData> {
+        public DirectionContextMenu(Grid<DirectionData> target) {
+            super(target);
+
+            addItem("Edit", e -> e.getItem().ifPresent(direction -> {
+                String directionId = direction.getId();
+                navigateToDirectionEditor(directionId);
+            }));
+
+            addComponent(new Hr());
+
+            addItem("Delete", e -> e.getItem().ifPresent(direction -> {
+                // Remove from location's directions set
+                locationData.getDirectionsData().remove(direction);
+                // Save changes
+                adventureService.saveLocationData(locationData);
+                // Refresh grid
+                grid.getDataProvider().refreshAll();
+            }));
+        }
     }
 }

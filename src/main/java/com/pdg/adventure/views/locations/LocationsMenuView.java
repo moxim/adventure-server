@@ -133,7 +133,6 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         grid.setHeight("500px");
         grid.setEmptyStateText("Create some locations.");
 
-
         List<LocationDescriptionAdapter> locationDescriptions = new ArrayList<>(locations.size());
         for (LocationData location : locations) {
             locationDescriptions.add(new LocationDescriptionAdapter(location));
