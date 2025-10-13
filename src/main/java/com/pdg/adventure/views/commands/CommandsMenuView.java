@@ -6,8 +6,10 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -200,6 +202,10 @@ public class CommandsMenuView extends VerticalLayout
         });
 
         gridListDataView = fillGrid(locationData.getCommandProviderData());
+
+        // Add context menu
+        new CommandContextMenu(grid);
+
 //        grid.setWidth(50, Unit.PERCENTAGE);
 //        grid.setSizeFull();
         gridContainer.add(grid);
@@ -253,6 +259,31 @@ public class CommandsMenuView extends VerticalLayout
         private boolean matches(String value, String searchTerm) {
             return searchTerm == null || searchTerm.isEmpty()
                    || value.toLowerCase().contains(searchTerm.toLowerCase());
+        }
+    }
+
+    private class CommandContextMenu extends GridContextMenu<DescribableCommandAdapter> {
+        public CommandContextMenu(Grid<DescribableCommandAdapter> target) {
+            super(target);
+
+            addItem("Edit", e -> e.getItem().ifPresent(command -> {
+                String commandSpec = command.getShortDescription();
+                navigateToCommandEditor(commandSpec);
+            }));
+
+            addComponent(new Hr());
+
+            addItem("Delete", e -> e.getItem().ifPresent(command -> {
+                String commandSpec = command.getShortDescription();
+                // Remove from the data view
+                gridListDataView.removeItem(command);
+                // Remove from the command provider data
+                commandProviderData.getAvailableCommands().remove(commandSpec);
+                // Save changes
+                adventureService.saveLocationData(locationData);
+                // Refresh grid
+                gridListDataView.refreshAll();
+            }));
         }
     }
 
