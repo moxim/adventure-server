@@ -8,14 +8,12 @@ import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.*;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import static com.pdg.adventure.model.Word.Type.*;
 
@@ -34,10 +32,10 @@ import com.pdg.adventure.views.support.RouteIds;
 public class CommandEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
     private transient final AdventureService adventureService;
-    private final Binder<CommandDescriptionData> binder;
-    private final VocabularyPicker nounSelection;
-    private final VocabularyPicker adjectiveSelection;
-    private final VocabularyPicker verbSelection;
+    private final Binder<CommandViewModel> binder;
+    private final VocabularyPicker nounSelector;
+    private final VocabularyPicker adjectiveSelector;
+    private final VocabularyPicker verbSelector;
     private transient String commandId;
     private String pageTitle;
     private Button saveButton;
@@ -48,22 +46,35 @@ public class CommandEditorView extends VerticalLayout
     private AdventureData adventureData;
     private CommandProviderData commandProviderData;
     private CommandDescriptionData commandDescriptionData;
-    private Set<CommandDescriptionData> availableCommands;
+    private transient CommandViewModel cvm;
 
     public CommandEditorView(AdventureService anAdventureService) {
         adventureService = anAdventureService;
-        binder = new BeanValidationBinder<>(CommandDescriptionData.class);
+        binder = new Binder<>(CommandViewModel.class);
 
-        verbSelection = new VocabularyPickerField("Verb", "You may filter on verbs.",  VERB, new VocabularyData());
-        verbSelection.setHelperText("Select at least a verb.");
-        adjectiveSelection = new VocabularyPickerField("Adjective", "You may filter on adjectives.", ADJECTIVE, new VocabularyData());
-        nounSelection = new VocabularyPickerField("Noun", "You may filter on nouns.", NOUN, new VocabularyData());
+        verbSelector = new VocabularyPickerField("Verb", "You may filter on verbs.", VERB, new VocabularyData());
+        verbSelector.setHelperText("Select at least a verb.");
+        adjectiveSelector = new VocabularyPickerField("Adjective", "You may filter on adjectives.", ADJECTIVE, new VocabularyData());
+        nounSelector = new VocabularyPickerField("Noun", "You may filter on nouns.", NOUN, new VocabularyData());
 
-        binder.bind(verbSelection, CommandDescriptionData::getVerb, CommandDescriptionData::setVerb);
-        binder.bind(adjectiveSelection, CommandDescriptionData::getAdjective, CommandDescriptionData::setAdjective);
-        binder.bind(nounSelection, CommandDescriptionData::getNoun, CommandDescriptionData::setNoun);
+        binder.forField(verbSelector)
+              .asRequired("Verb is required")
+              .withValidator(word -> word != null && !word.getText().isEmpty(), "Please select a verb with text")
+              .bind(CommandViewModel::getVerb, CommandViewModel::setVerb);
+        binder.forField(adjectiveSelector)
+              .bind(CommandViewModel::getAdjective, CommandViewModel::setAdjective);
+        binder.forField(nounSelector)
+              .bind(CommandViewModel::getNoun, CommandViewModel::setNoun);
 
-        HorizontalLayout commandLayout = new HorizontalLayout(verbSelection, adjectiveSelection, nounSelection);
+        binder.addStatusChangeListener(event -> {
+            boolean isValid = event.getBinder().isValid();
+            boolean hasChanges = event.getBinder().hasChanges();
+
+            saveButton.setEnabled(hasChanges && isValid);
+            resetButton.setEnabled(hasChanges);
+        });
+
+        HorizontalLayout commandLayout = new HorizontalLayout(verbSelector, adjectiveSelector, nounSelector);
 
         final ResetBackSaveView resetBackSaveView = setUpNavidationButtons();
 
@@ -90,13 +101,7 @@ public class CommandEditorView extends VerticalLayout
                                                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
                                                .ifPresent(e -> e.setData(adventureData, locationData)));
         saveButton.addClickListener(event -> validateSave(commandProviderData));
-        resetButton.addClickListener(event -> {
-            verbSelection.clear();
-            adjectiveSelection.clear();
-            nounSelection.clear();
-            binder.readBean(commandDescriptionData);
-            resetButton.setEnabled(false);
-        });
+        resetButton.addClickListener(event -> binder.readBean(cvm));
         resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
 
         return resetBackSaveView;
@@ -105,7 +110,7 @@ public class CommandEditorView extends VerticalLayout
     private void validateSave(CommandProviderData aCommandProviderData) {
         try {
             if (binder.validate().isOk()) {
-                binder.writeBean(commandDescriptionData);
+                binder.writeBean(cvm);
                 swivelTheSaveButton(gridListDataView);
                 adventureService.saveLocationData(locationData);
                 saveButton.setEnabled(false);
@@ -117,31 +122,42 @@ public class CommandEditorView extends VerticalLayout
     }
 
     private void swivelTheSaveButton(GridListDataView<DescribableCommandAdapter> aGridListDataView) {
-        CommandDescriptionData commandDescriptionData = new CommandDescriptionData();
-        commandDescriptionData.setVerb(verbSelection.getValue());
-        commandDescriptionData.setAdjective(adjectiveSelection.getValue());
-        commandDescriptionData.setNoun(nounSelection.getValue());
-
-        CommandData command = new CommandData();
-        command.setCommandDescription(commandDescriptionData);
+        // Use the commandDescriptionData that was updated via the binder
+        final CommandDescriptionData updatedCommandDescription = cvm.getData();
+        final String newSpecification = updatedCommandDescription.getCommandSpecification();
 
         final Map<String, CommandChainData> availableCommandsHelper = commandProviderData.getAvailableCommands();
-        final CommandChainData commandChainData = availableCommandsHelper.get(commandDescriptionData.getCommandSpecification());
+
+        // If editing an existing command and the specification has changed, remove the old entry
+        if (commandId != null && !commandId.isEmpty() && !commandId.equals(newSpecification)) {
+            availableCommandsHelper.remove(commandId);
+            // Remove old item from grid
+            aGridListDataView.getItems()
+                    .filter(item -> item.getShortDescription().equals(commandId))
+                    .findFirst()
+                    .ifPresent(aGridListDataView::removeItem);
+        }
+
+        // Now add or update the command with the new specification
+        CommandData command = new CommandData();
+        command.setCommandDescription(updatedCommandDescription);
+
+        final CommandChainData commandChainData = availableCommandsHelper.get(newSpecification);
         if (commandChainData == null) {
+            // New command - create new chain
             final CommandChainData chainData = new CommandChainData();
             chainData.getCommands().add(command);
-            availableCommandsHelper.put(commandDescriptionData.getCommandSpecification(), chainData);
+            availableCommandsHelper.put(newSpecification, chainData);
+            // Add to grid only if it's truly new
+            aGridListDataView.addItem(new DescribableCommandAdapter(newSpecification));
         } else {
+            // Command already exists - update it
+            // Clear existing commands and replace with updated one
+            commandChainData.getCommands().clear();
             commandChainData.getCommands().add(command);
+            // Refresh grid to show updated data
+            aGridListDataView.refreshAll();
         }
-        aGridListDataView.addItem(new DescribableCommandAdapter(commandDescriptionData.getCommandSpecification()));
-    }
-
-    private void checkIfSaveAvailable() {
-        final boolean isVerbEmpty = verbSelection.isEmpty();
-        saveButton.setEnabled(!isVerbEmpty);
-        resetButton.setEnabled(true);
-        cancelButton.setEnabled(true);
     }
 
     @Override
@@ -173,13 +189,33 @@ public class CommandEditorView extends VerticalLayout
         gridListDataView = aGridListDataView;
 
         commandProviderData = locationData.getCommandProviderData();
+
+        // Find existing command or create new one
+        if (commandId != null && !commandId.isEmpty()) {
+            // Look up existing command by specification (commandId contains the spec like "go|north|")
+            CommandChainData commandChain = commandProviderData.getAvailableCommands().get(commandId);
+            if (commandChain != null && !commandChain.getCommands().isEmpty()) {
+                // Get the command description from the first command in the chain
+                commandDescriptionData = commandChain.getCommands().get(0).getCommandDescription();
+            } else {
+                // Command not found, create new one with the specification
+                commandDescriptionData = new CommandDescriptionData(commandId);
+            }
+        } else {
+            // Creating a new command
+            commandDescriptionData = new CommandDescriptionData();
+        }
+
         VocabularyData vocabularyData = adventureData.getVocabularyData();
-        nounSelection.populate(
+        nounSelector.populate(
                 vocabularyData.getWords(NOUN).stream().filter(word -> word.getSynonym() == null).toList());
-        adjectiveSelection.populate(
+        adjectiveSelector.populate(
                 vocabularyData.getWords(ADJECTIVE).stream().filter(word -> word.getSynonym() == null).toList());
-        verbSelection.populate(
+        verbSelector.populate(
                 vocabularyData.getWords(VERB).stream().filter(word -> word.getSynonym() == null).toList());
 
+        saveButton.setEnabled(false);
+        cvm = new CommandViewModel(commandDescriptionData);
+        binder.readBean(cvm);
     }
 }

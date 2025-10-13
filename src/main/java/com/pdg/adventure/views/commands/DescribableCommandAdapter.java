@@ -3,6 +3,7 @@ package com.pdg.adventure.views.commands;
 import lombok.Getter;
 
 import com.pdg.adventure.api.Describable;
+import com.pdg.adventure.model.Word;
 import com.pdg.adventure.model.basics.CommandDescriptionData;
 
 public class DescribableCommandAdapter implements Describable {
@@ -18,17 +19,21 @@ public class DescribableCommandAdapter implements Describable {
     }
 
     public String getVerb() {
-        return commandDescription.getVerb().getText();
+        return getWordTextSafely(commandDescription.getVerb());
     }
 
     @Override
     public String getAdjective() {
-        return commandDescription.getAdjective().getText();
+        return getWordTextSafely(commandDescription.getAdjective());
     }
 
     @Override
     public String getNoun() {
-        return commandDescription.getNoun().getText();
+        return getWordTextSafely(commandDescription.getNoun());
+    }
+
+    public String getWordTextSafely(Word aWord) {
+        return aWord != null ? aWord.getText() : "";
     }
 
     @Override

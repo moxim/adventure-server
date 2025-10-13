@@ -193,12 +193,26 @@ public class CommandsMenuView extends VerticalLayout
 //        grid = new GridUnbufferedInlineEditor(availableCommands, vocabularyData, saveButton);
         grid.setEmptyStateText("Create some commands.");
 
+        // Add double-click listener to edit commands
+        grid.addItemDoubleClickListener(e -> {
+            String commandSpec = e.getItem().getShortDescription(); // This returns the command specification
+            navigateToCommandEditor(commandSpec);
+        });
+
         gridListDataView = fillGrid(locationData.getCommandProviderData());
 //        grid.setWidth(50, Unit.PERCENTAGE);
 //        grid.setSizeFull();
         gridContainer.add(grid);
         saveButton.setEnabled(false);
         resetButton.setEnabled(false);
+    }
+
+    private void navigateToCommandEditor(String aCommandId) {
+        UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
+                new RouteParam(RouteIds.COMMAND_ID.getValue(), aCommandId),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+          .ifPresent(editor -> editor.setData(adventureData, locationData, gridListDataView));
     }
 
     private static class CommandDescriptionDataFilter {
