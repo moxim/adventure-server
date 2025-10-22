@@ -5,7 +5,7 @@
     "@polymer/paper-slider": "^3.0.1",
     "@polymer/polymer": "3.5.2",
     "@vaadin-component-factory/vcf-anchor-nav": "^23.4.0",
-    "@vaadin-component-factory/vcf-nav": "^1.1.3",
+    "@vaadin-component-factory/vcf-nav": "1.1.3",
     "@vaadin/bundles": "24.9.2",
     "@vaadin/common-frontend": "0.0.19",
     "@vaadin/polymer-legacy-adapter": "24.9.2",
@@ -60,7 +60,6 @@
     "line-awesome": "$line-awesome",
     "@polymer/paper-slider": "$@polymer/paper-slider",
     "@vaadin-component-factory/vcf-anchor-nav": "$@vaadin-component-factory/vcf-anchor-nav",
-    "@vaadin-component-factory/vcf-nav": "$@vaadin-component-factory/vcf-nav",
     "@vaadin/react-components": "$@vaadin/react-components",
     "react-dom": "$react-dom",
     "react": "$react",
@@ -123,7 +122,8 @@
     "@vaadin/upload": "24.9.2",
     "@vaadin/router": "2.0.0",
     "@vaadin/vertical-layout": "24.9.2",
-    "@vaadin/virtual-list": "24.9.2"
+    "@vaadin/virtual-list": "24.9.2",
+    "@vaadin-component-factory/vcf-nav": "$@vaadin-component-factory/vcf-nav"
   },
   "vaadin": {
     "dependencies": {
@@ -166,7 +166,7 @@
       "workbox-core": "7.3.0",
       "workbox-precaching": "7.3.0"
     },
-    "hash": "2a22d53bf4ab31da3b6604fdad0b76e4295ba7faaf271cdd1787008192442e87"
+    "hash": "5f9334aade665fff77985b65c04426992b229c5b7afc409644f69519e71aad72"
   },
   "type": "module"
 }

@@ -44,6 +44,7 @@ public class CommandDescriptionData extends BasicDescriptionData {
         return result.toString();
     }
 
+    // TODO: this must not be possible as it is bypassing the vocabulary
     public void setCommandSpecification(String aCommandSpec) {
         if (aCommandSpec == null || aCommandSpec.trim().isEmpty()) {
             return; // Allow empty input to reset fields

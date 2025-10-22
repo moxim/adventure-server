@@ -76,14 +76,9 @@ public class ViewSupporter {
         return shortDescription;
     }
 
-//    public static String formatDescription(CommandDescriptionData aCommandDescription) {
-//        String noun = aCommandDescription.getNoun().getText();
-//        String adjective = aCommandDescription.getAdjective().getText();
-//        String verb = aCommandDescription.getVerb().getText();
-//
-//        String command = verb + " " + adjective + " " + noun;
-//        return command;
-//    }
+    public static String formatDescription(ItemData anItem) {
+        return formatDescription(anItem.getDescriptionData());
+    }
 
     public static String formatDescription(CommandDescriptionData aCommandDescription) {
         if (aCommandDescription == null) {
@@ -234,5 +229,4 @@ public class ViewSupporter {
             case ADJECTIVE -> aBinder.bind(aWord, LocationViewModel::getAdjective, LocationViewModel::setAdjective);
         }
     }
-
 }

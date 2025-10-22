@@ -221,7 +221,7 @@ public class DirectionEditorView extends VerticalLayout
 
     private void validateSave(DirectionViewModel aDirectionViewModel) {
         if (binder.validate().isOk()) {
-            destinationMatchesCurrentLocationIsOK(aDirectionViewModel);
+            askUserIfLocationLoopsAreOK(aDirectionViewModel);
         }
     }
 
@@ -244,7 +244,7 @@ public class DirectionEditorView extends VerticalLayout
         }
     }
 
-    private void destinationMatchesCurrentLocationIsOK(DirectionViewModel aDirectionViewModel) {
+    private void askUserIfLocationLoopsAreOK(DirectionViewModel aDirectionViewModel) {
         if (directionId.equals(locationData.getId())) {;
             ConfirmDialog dialog = new ConfirmDialog();
             dialog.setHeader("Dangerous Destination");
