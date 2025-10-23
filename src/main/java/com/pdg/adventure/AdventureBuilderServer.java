@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * and some desktop browsers.
  */
 @SpringBootApplication
+//@EnableMongoRepositories(basePackages = "com.pdg.adventure.server.storage")
 @Theme(value = "adventureBuilder")
 @NpmPackage(value = "@vaadin-component-factory/vcf-nav", version = "1.1.3")
 @PWA(name = "Adventure Builder", shortName = "Adventure",

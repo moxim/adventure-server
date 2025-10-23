@@ -6,8 +6,10 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -89,7 +91,7 @@ public class CommandsMenuView extends VerticalLayout
                                                                                   new RouteParam(
                                                                                           ADVENTURE_ID.getValue(),
                                                                                           adventureData.getId()))
-        ).ifPresent(e -> e.setAdventureData(adventureData)));
+        ).ifPresent(e -> e.setData(adventureData)));
         backButton.addClickShortcut(Key.ESCAPE);
 
         resetButton = new Button("Reset", e -> {
@@ -193,12 +195,30 @@ public class CommandsMenuView extends VerticalLayout
 //        grid = new GridUnbufferedInlineEditor(availableCommands, vocabularyData, saveButton);
         grid.setEmptyStateText("Create some commands.");
 
+        // Add double-click listener to edit commands
+        grid.addItemDoubleClickListener(e -> {
+            String commandSpec = e.getItem().getShortDescription(); // This returns the command specification
+            navigateToCommandEditor(commandSpec);
+        });
+
         gridListDataView = fillGrid(locationData.getCommandProviderData());
+
+        // Add context menu
+        new CommandContextMenu(grid);
+
 //        grid.setWidth(50, Unit.PERCENTAGE);
 //        grid.setSizeFull();
         gridContainer.add(grid);
         saveButton.setEnabled(false);
         resetButton.setEnabled(false);
+    }
+
+    private void navigateToCommandEditor(String aCommandId) {
+        UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
+                new RouteParam(RouteIds.COMMAND_ID.getValue(), aCommandId),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+          .ifPresent(editor -> editor.setData(adventureData, locationData, gridListDataView));
     }
 
     private static class CommandDescriptionDataFilter {
@@ -239,6 +259,31 @@ public class CommandsMenuView extends VerticalLayout
         private boolean matches(String value, String searchTerm) {
             return searchTerm == null || searchTerm.isEmpty()
                    || value.toLowerCase().contains(searchTerm.toLowerCase());
+        }
+    }
+
+    private class CommandContextMenu extends GridContextMenu<DescribableCommandAdapter> {
+        public CommandContextMenu(Grid<DescribableCommandAdapter> target) {
+            super(target);
+
+            addItem("Edit", e -> e.getItem().ifPresent(command -> {
+                String commandSpec = command.getShortDescription();
+                navigateToCommandEditor(commandSpec);
+            }));
+
+            addComponent(new Hr());
+
+            addItem("Delete", e -> e.getItem().ifPresent(command -> {
+                String commandSpec = command.getShortDescription();
+                // Remove from the data view
+                gridListDataView.removeItem(command);
+                // Remove from the command provider data
+                commandProviderData.getAvailableCommands().remove(commandSpec);
+                // Save changes
+                adventureService.saveLocationData(locationData);
+                // Refresh grid
+                gridListDataView.refreshAll();
+            }));
         }
     }
 

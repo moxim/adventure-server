@@ -13,37 +13,46 @@ import com.pdg.adventure.model.Word;
 @ToString(callSuper = true)
 public class CommandDescriptionData extends BasicDescriptionData {
     @DBRef
-    private Word verb = new Word("", Word.Type.VERB);
+    private Word verb;
+
+    public CommandDescriptionData() {
+        // Default constructor
+    }
 
     public CommandDescriptionData(String aCommandSpec) {
         setCommandSpecification(aCommandSpec);
     }
 
-    public CommandDescriptionData() {
-        // default constructor
-    }
-
     public String getCommandSpecification() {
-        String verb = getVerb() == null ? "" : getVerb().getText();
-        String adjective = getAdjective() == null ? "" : getAdjective().getText();
-        String noun = getNoun() == null ? "" : getNoun().getText();
-
-        return verb + CommandDescription.COMMAND_SEPARATOR + adjective + CommandDescription.COMMAND_SEPARATOR + noun;
+        String verbText = verb != null && verb.getText() != null ? verb.getText() : "";
+        String adjectiveText = getAdjective() != null && getAdjective().getText() != null ? getAdjective().getText() : "";
+        String nounText = getNoun() != null && getNoun().getText() != null ? getNoun().getText() : "";
+        StringBuilder result = new StringBuilder();
+//        if (!verbText.isEmpty()) {
+            result.append(verbText);
+//        }
+//        if (!adjectiveText.isEmpty()) {
+//            if (result.length() > 0)
+                result.append(CommandDescription.COMMAND_SEPARATOR);
+            result.append(adjectiveText);
+//        }
+//        if (!nounText.isEmpty()) {
+//            if (result.length() > 0)
+                result.append(CommandDescription.COMMAND_SEPARATOR);
+            result.append(nounText);
+//        }
+        return result.toString();
     }
 
+    // TODO: this must not be possible as it is bypassing the vocabulary
     public void setCommandSpecification(String aCommandSpec) {
-        if (aCommandSpec == null || aCommandSpec.isEmpty()) {
-            throw new IllegalArgumentException("Command spec must have 3 parts: " + aCommandSpec);
+        if (aCommandSpec == null || aCommandSpec.trim().isEmpty()) {
+            return; // Allow empty input to reset fields
         }
 
-        String [] parts = (aCommandSpec + " ").split("\\" + CommandDescription.COMMAND_SEPARATOR);
-        if (parts.length > 2) {
-            setVerb(new Word(parts[0], Word.Type.VERB));
-            setAdjective(new Word(parts[1], Word.Type.ADJECTIVE));
-            setNoun(new Word(parts[2].trim(), Word.Type.NOUN));
-        } else {
-            throw new IllegalArgumentException("Command spec must have 3 parts: " + aCommandSpec);
-        }
-
+        String[] parts = (aCommandSpec).split("\\" + CommandDescription.COMMAND_SEPARATOR, 3);
+        setVerb(parts[0].trim().isEmpty() ? null : new Word(parts[0].trim(), Word.Type.VERB));
+        setAdjective(parts[1].trim().isEmpty() ? null : new Word(parts[1].trim(), Word.Type.ADJECTIVE));
+        setNoun(parts[2].trim().isEmpty() ? null : new Word(parts[2].trim(), Word.Type.NOUN));
     }
 }

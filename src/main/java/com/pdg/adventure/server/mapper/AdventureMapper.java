@@ -2,7 +2,6 @@ package com.pdg.adventure.server.mapper;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -13,6 +12,7 @@ import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.Adventure;
+import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.storage.messages.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
@@ -21,23 +21,20 @@ import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 @Service
 @ComponentScan(basePackages = "com.pdg.adventure.server.support")
-@DependsOn({"locationMapper",
-            "vocabularyMapper",
-            "itemContainerMapper",
-            "mapperSupporter"})
+@AutoRegisterMapper(priority = 100, description = "Top-level adventure mapping with all dependencies")
 public class AdventureMapper implements Mapper<AdventureData, Adventure> {
 
     private final MapperSupporter mapperSupporter;
-    private  Mapper<VocabularyData, Vocabulary> vocabularyMapper;
-    private  Mapper<LocationData, Location> locationMapper;
-    private  Mapper<ItemContainerData, GenericContainer> containerMapper;
+    private Mapper<VocabularyData, Vocabulary> vocabularyMapper;
+    private Mapper<LocationData, Location> locationMapper;
+    private Mapper<ItemContainerData, GenericContainer> containerMapper;
 
-    public AdventureMapper( MapperSupporter aMapperSupporter) {
+    public AdventureMapper(MapperSupporter aMapperSupporter) {
         mapperSupporter = aMapperSupporter;
     }
 
     @PostConstruct
-    public void registerMapper() {
+    public void initializeDependencies() {
         vocabularyMapper = mapperSupporter.getMapper(VocabularyData.class);
         locationMapper = mapperSupporter.getMapper(LocationData.class);
         containerMapper = mapperSupporter.getMapper(ItemContainerData.class);

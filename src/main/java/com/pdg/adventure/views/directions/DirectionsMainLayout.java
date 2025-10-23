@@ -8,7 +8,7 @@ public class DirectionsMainLayout extends AdventureAppLayout {
         String title = "Adventure Builder";
         createHeader(title);
 
-        String appName = "Location Commands";
+        String appName = "Direction Commands";
         createDrawer(appName);
 
         setPrimarySection(Section.NAVBAR);

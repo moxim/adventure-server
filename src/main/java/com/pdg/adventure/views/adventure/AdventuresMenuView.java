@@ -1,8 +1,5 @@
 package com.pdg.adventure.views.adventure;
 
-import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.server.storage.AdventureService;
-import com.pdg.adventure.views.support.ViewSupporter;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -21,6 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Optional;
+
+import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.views.support.ViewSupporter;
 
 @PageTitle("Your World Of Adventures")
 @RouteAlias(value = "adventures", layout = AdventuresMainLayout.class)
@@ -111,7 +112,7 @@ public class AdventuresMenuView extends VerticalLayout {
                 navigateToAdventureEditor(targetAdventureId);
             }));
 
-            add(new Hr());
+            addComponent(new Hr());
 
             GridMenuItem<AdventureData> adventureDetailItem =
                     addItem("AdventureId", e -> e.getItem().ifPresent(adventure -> {
@@ -128,7 +129,7 @@ public class AdventuresMenuView extends VerticalLayout {
                 return true;
             });
 
-            add(new Hr());
+            addComponent(new Hr());
 
             addItem("Delete", e -> e.getItem().ifPresent(adventure -> {
                 ListDataProvider<AdventureData> dataProvider =

@@ -5,19 +5,15 @@ import lombok.EqualsAndHashCode;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.storage.mongo.CascadeSave;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class BasicDescriptionData extends BasicData {
     @DBRef
+    @CascadeSave
     private Word adjective;
     @DBRef
+    @CascadeSave
     private Word noun;
-
-    public BasicDescriptionData() {
-        adjective = new Word("", Word.Type.ADJECTIVE);
-        adjective.setId("666");
-        noun = new Word("", Word.Type.NOUN);
-        noun.setId("666");
-    }
 }

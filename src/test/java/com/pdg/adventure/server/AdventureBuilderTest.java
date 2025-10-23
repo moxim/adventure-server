@@ -73,7 +73,7 @@ public class AdventureBuilderTest {
         List<LocationData> locationData = createLocations();
         Map<String, LocationData> locationDataMap = new HashMap<>();
         locationData.forEach(location -> {
-            location.setAdventure(adventureData);
+//            location.setAdventure(adventureData);
             locationDataMap.put(location.getId(), location);
         });
         adventureData.setLocationData(locationDataMap);

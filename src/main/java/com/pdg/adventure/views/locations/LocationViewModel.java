@@ -1,96 +1,67 @@
 package com.pdg.adventure.views.locations;
 
-import java.io.Serializable;
+import lombok.Getter;
 
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.Word;
-import com.pdg.adventure.server.support.DescriptionProvider;
 
-public final class LocationViewModel implements Serializable {
+@Getter
+public final class LocationViewModel {
+    // "read-only" attributes
     private final LocationData data;
-    private int defaultExits;
-    private int lumen;
+    private final int numberOfExits;
+    private final String adventureId;
+    // these attributes can be edited
     private String id;
-    private String adventureId;
+    private int lumen;
     private Word noun;
     private Word adjective;
-    private String longDescription;
     private String shortDescription;
-
-    private DescriptionProvider descriptionProvider;
-
-    public LocationViewModel() {
-        this(new LocationData());
-    }
+    private String longDescription;
 
     public LocationViewModel(LocationData aLocationData) {
         data = aLocationData;
-        defaultExits = data.getDirectionsData().size();
-        lumen = data.getLumen();
+        numberOfExits = data.getDirectionsData().size();
+        adventureId = "Your Adventure";
         id = data.getId();
-        adventureId = data.getAdventure().getId();
-        descriptionProvider = new DescriptionProvider(data.getDescriptionData());
-
+        lumen = data.getLumen();
         noun = data.getDescriptionData().getNoun();
         adjective = data.getDescriptionData().getAdjective();
-        longDescription = data.getDescriptionData().getLongDescription();
         shortDescription = data.getDescriptionData().getShortDescription();
+        longDescription = data.getDescriptionData().getLongDescription();
     }
 
-    public Integer getDefaultExits() {
+    public Integer getNumberOfExits() {
         return data.getDirectionsData().size();
     }
 
-    public LocationData getData() {
-        return data;
-    }
-
-    public Integer getLumen() {
-        return data.getLumen();
-    }
-    public void setLumen(Integer aValue) {
-        data.setLumen(aValue);
-    }
-
-    public String getId() {
-        return data.getId();
-    }
     public void setId(String anId) {
+        id = anId;
         data.setId(anId);
     }
 
-    public String getAdventureId() {
-        return data.getAdventure().getId();
-    }
-    public void setAdventureId(String anId) {
-        data.getAdventure().setId(anId);
+    public void setLumen(Integer aValue) {
+        lumen = aValue;
+        data.setLumen(aValue);
     }
 
-    public Word getNoun() {
-        return data.getDescriptionData().getNoun();
-    }
     public void setNoun(Word aNoun) {
+        this.noun = aNoun;
         data.getDescriptionData().setNoun(aNoun);
     }
 
-    public Word getAdjective() {
-        return data.getDescriptionData().getAdjective();
-    }
     public void setAdjective(Word anAdjective) {
+        this.adjective = anAdjective;
         data.getDescriptionData().setAdjective(anAdjective);
     }
 
-    public String getLongDescription() {
-        return descriptionProvider.getLongDescription();
-    }
     public void setLongDescription(String aDescription) {
+        this.longDescription = aDescription;
         data.getDescriptionData().setLongDescription(aDescription);
     }
 
-    public String getShortDescription() {
-        return descriptionProvider.getShortDescription();
-    }
     public void setShortDescription(String aDescription) {
+        this.shortDescription = aDescription;
         data.getDescriptionData().setShortDescription(aDescription);
     }
 }

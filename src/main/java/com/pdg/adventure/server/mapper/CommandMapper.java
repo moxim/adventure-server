@@ -1,7 +1,6 @@
 package com.pdg.adventure.server.mapper;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,31 +9,25 @@ import com.pdg.adventure.api.*;
 import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.basics.CommandDescriptionData;
+import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.support.MapperSupporter;
 
 @Service
-@DependsOn({ // TODO: list all action mappers here
-             "movePlayerActionMapper",
-             "setVariableActionMapper",
-             "wearActionMapper",
-             "commandDescriptionMapper",
-             "mapperSupporter"})
+@AutoRegisterMapper(priority = 50, description = "Command mapping with dynamic action resolution")
 public class CommandMapper implements Mapper<CommandData, Command> {
 
     private final MapperSupporter mapperSupporter;
     private Mapper<ActionData, Action> actionMapper;
     private Mapper<CommandDescriptionData, CommandDescription> commandDescriptionMapper;
 
-
     public CommandMapper(MapperSupporter aMapperSupporter) {
         mapperSupporter = aMapperSupporter;
     }
 
     @PostConstruct
-    public void registerMapper() {
+    public void initializeDependencies() {
         commandDescriptionMapper = mapperSupporter.getMapper(CommandDescriptionData.class);
-        mapperSupporter.registerMapper(CommandData.class, Command.class, this);
     }
 
     public Command mapToBO(CommandData aCommandData) {

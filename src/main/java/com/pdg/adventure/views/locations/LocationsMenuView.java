@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
@@ -49,7 +48,6 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
 
     private String targetLocationId;
     private transient AdventureData adventureData;
-    private String pageTitle = "";
 
     private final TextField startLocationTF;
     private final Button create;
@@ -80,7 +78,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
                 UI.getCurrent().navigate(LocationEditorView.class,
                                             new RouteParameters(new RouteParam(RouteIds.LOCATION_ID.getValue(), targetLocationId),
                                                              new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                .ifPresent(editor -> editor.setAdventureData(adventureData));
+                                .ifPresent(editor -> editor.setData(adventureData));
             }
         });
         edit.setEnabled(false);
@@ -89,7 +87,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
             UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(
 //                            new RouteParam(LOCATION_ID, "new"),
                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-              .ifPresent(editor -> editor.setAdventureData(adventureData));
+              .ifPresent(editor -> editor.setData(adventureData));
         });
 
         backButton = new Button("Back", event -> {
@@ -134,7 +132,6 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         grid.setWidth("500px");
         grid.setHeight("500px");
         grid.setEmptyStateText("Create some locations.");
-
 
         List<LocationDescriptionAdapter> locationDescriptions = new ArrayList<>(locations.size());
         for (LocationData location : locations) {
@@ -210,18 +207,6 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         gridContainer.add(getLocationsGrid(locations));
     }
 
-    private void setUpNewEdit() {
-        adventureData = new AdventureData();
-        adventureData.setId(UUID.randomUUID().toString());
-        binder.setBean(adventureData);
-        pageTitle = "A new adventure awaits";
-    }
-
-    private void setUpLoading(String anAdventureId) {
-        loadAdventure(anAdventureId);
-        pageTitle = "Locations of adventure " + adventureData.getTitle();
-    }
-
     public void loadAdventure(String anAdventureId) {
         adventureData = adventureService.findAdventureById(anAdventureId);
         binder.setBean(adventureData);
@@ -239,7 +224,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(new RouteParam(LOCATION_ID, aLocationId),
                                                                                new RouteParam(ADVENTURE_ID,
                                                                                               adventureData.getId())))
-          .ifPresent(e -> e.setAdventureData(adventureData));
+          .ifPresent(e -> e.setData(adventureData));
 //        }
     }
 
@@ -255,7 +240,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
                 adventureService.saveAdventureData(adventureData);
             }));
 
-            add(new Hr());
+            addComponent(new Hr());
 
             GridMenuItem<LocationDescriptionAdapter> locationDetailItem = addItem("LocationId", e -> e.getItem()
                                                                                                       .ifPresent(
@@ -273,7 +258,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
                 return true;
             });
 
-            add(new Hr());
+            addComponent(new Hr());
 
             addItem("Delete", e -> e.getItem().ifPresent(location -> {
                 // TODO: check that no directions exist, pointing to this location

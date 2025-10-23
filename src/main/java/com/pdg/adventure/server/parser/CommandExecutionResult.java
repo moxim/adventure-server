@@ -19,8 +19,12 @@ public class CommandExecutionResult implements ExecutionResult {
     }
 
     public CommandExecutionResult(State aSuccessState) {
+        this(aSuccessState, VocabularyData.EMPTY_STRING);
+    }
+
+    public CommandExecutionResult(State aSuccessState, String aResultMessage) {
         executionState = aSuccessState;
-        resultMessage = VocabularyData.EMPTY_STRING;
+        resultMessage = aResultMessage;
         commandHasMatched = false;
     }
 

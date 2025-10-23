@@ -25,7 +25,7 @@ public class VocabularyData extends BasicData {
     @DBRef
     private Map<String, Word> words;
 
-    boolean simple = false; // TODO: delete this
+    // TODO: keep a list of words that point to the same synonym, to be able to remove the synonym and appoint a new synonym
 
 //    @PersistenceInstantiator
     public VocabularyData() {
@@ -38,23 +38,19 @@ public class VocabularyData extends BasicData {
 
     public Word createWord(String aWordText, Word.Type aType) {
         String lowerText = aWordText.toLowerCase();
-        if (simple) {
-            return createWord(lowerText, () -> new Word(lowerText, aType));
+        Word newWord = words.get(lowerText);
+        if (newWord == null) {
+            newWord = new Word(lowerText, aType);
+            words.put(lowerText, newWord);
         } else {
-            Word newWord = words.get(lowerText);
-            if (newWord == null) {
-                newWord = new Word(lowerText, aType);
-                words.put(lowerText, newWord);
-            } else {
-                if (newWord.getSynonym() == null) {
-                    newWord.setType(aType);
-                } else if (newWord.getType() != aType) {
-                    // if the word is already present, it must have the same type, or it won't match its synonym
-                    throw new IllegalArgumentException(String.format(PRESENT_WORD_HAS_DIFFERENT_TYPE_TEXT, aWordText));
-                }
+            if (newWord.getSynonym() == null) {
+                newWord.setType(aType);
+            } else if (newWord.getType() != aType) {
+                // if the word is already present, it must have the same type, or it won't match its synonym
+                throw new IllegalArgumentException(String.format(PRESENT_WORD_HAS_DIFFERENT_TYPE_TEXT, aWordText));
             }
-            return newWord;
         }
+        return newWord;
     }
 
     public Optional<Word> removeWord(String aWordText) {
@@ -75,19 +71,15 @@ public class VocabularyData extends BasicData {
 
     public Word createSynonym(String aNewSynonym, Word anExistingWord) {
         String lowerSynonym = aNewSynonym.toLowerCase();
-        if (simple) {
-            return createWord(lowerSynonym, () -> anExistingWord);
+        Word newSynonym = words.get(lowerSynonym);
+        if (newSynonym == null) {
+            newSynonym = new Word(lowerSynonym, anExistingWord);
+            words.put(lowerSynonym, newSynonym);
         } else {
-            Word newSynonym = words.get(lowerSynonym);
-            if (newSynonym == null) {
-                newSynonym = new Word(lowerSynonym, anExistingWord);
-                words.put(lowerSynonym, newSynonym);
-            } else {
-                newSynonym.setType(anExistingWord.getType());
-                newSynonym.setSynonym(anExistingWord);
-            }
-            return newSynonym;
+            newSynonym.setType(anExistingWord.getType());
+            newSynonym.setSynonym(anExistingWord);
         }
+        return newSynonym;
     }
 
     public Collection<Word> getWords() {

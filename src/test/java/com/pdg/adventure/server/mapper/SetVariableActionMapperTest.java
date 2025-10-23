@@ -26,6 +26,9 @@ class SetVariableActionMapperTest {
     private VariableProvider variableProvider;
 
     @Autowired
+    SetVariableActionMapper setVariableActionMapper;
+
+    @Autowired
     public SetVariableActionMapperTest(AdventureConfig anAdventureConfig) {
         adventureConfig = anAdventureConfig;
         mapperSupporter = new MapperSupporter(adventureConfig);
@@ -36,7 +39,7 @@ class SetVariableActionMapperTest {
     @Test
     void mapToDOAndBO() {
         SetVariableAction setVariableAction = new SetVariableAction("name", "value", variableProvider, messagesHolder);
-        Mapper<SetVariableActionData, SetVariableAction> mapper = new SetVariableActionMapper(mapperSupporter);
+        Mapper<SetVariableActionData, SetVariableAction> mapper = setVariableActionMapper;
         final SetVariableActionData setVariableActionData = mapper.mapToDO(setVariableAction);
         assertThat(setVariableActionData).isNotNull();
         assertThat(setVariableActionData).isInstanceOf(ActionData.class);

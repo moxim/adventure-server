@@ -6,11 +6,13 @@ import org.springframework.stereotype.Service;
 import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.action.SetVariableActionData;
 import com.pdg.adventure.server.action.SetVariableAction;
+import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.storage.messages.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.support.VariableProvider;
 
 @Service
+@AutoRegisterMapper(priority = 30, description = "Set variable action mapper")
 public class SetVariableActionMapper implements Mapper<SetVariableActionData, SetVariableAction> {
 
     private final MapperSupporter mapperSupporter;
@@ -22,11 +24,9 @@ public class SetVariableActionMapper implements Mapper<SetVariableActionData, Se
     }
 
     @PostConstruct
-    public void registerMapper() {
+    public void initializeDependencies() {
         variableProvider = mapperSupporter.getVariableProvider();
         messagesHolder = mapperSupporter.getMessagesHolder();
-
-        mapperSupporter.registerMapper(SetVariableActionData.class, SetVariableAction.class, this);
     }
 
     @Override

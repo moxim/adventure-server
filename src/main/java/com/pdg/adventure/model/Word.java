@@ -1,11 +1,12 @@
 package com.pdg.adventure.model;
 
-import com.pdg.adventure.model.basics.BasicData;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.pdg.adventure.model.basics.BasicData;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
@@ -16,6 +17,7 @@ public class Word extends BasicData {
     private Type type;
     // TODO: using DBRef doesn't resolve the synonym
     @DBRef//(lazy = true)
+//    @CascadeSave
     private Word synonym;
 
     protected Word() {
@@ -33,7 +35,7 @@ public class Word extends BasicData {
     }
 
     public Word(String aText, Type aType) {
-        text = aText;
+        text = aText.toLowerCase();
         type = aType;
         synonym = null;
     }

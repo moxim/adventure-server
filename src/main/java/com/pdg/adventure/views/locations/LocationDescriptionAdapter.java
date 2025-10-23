@@ -2,6 +2,7 @@ package com.pdg.adventure.views.locations;
 
 import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.views.support.ViewSupporter;
 
 public class LocationDescriptionAdapter implements Describable {
     private final LocationData locationData;
@@ -12,17 +13,17 @@ public class LocationDescriptionAdapter implements Describable {
 
     @Override
     public String getAdjective() {
-        return locationData.getDescriptionData().getAdjective().getText();
+        return ViewSupporter.getWordText(locationData.getDescriptionData().getAdjective());
     }
 
     @Override
     public String getNoun() {
-        return locationData.getDescriptionData().getNoun().getText();
+        return ViewSupporter.getWordText(locationData.getDescriptionData().getNoun());
     }
 
     @Override
     public String getBasicDescription() {
-        return locationData.getDescriptionData().getAdjective() + " " + locationData.getDescriptionData().getNoun();
+        return ViewSupporter.getWordText(locationData.getDescriptionData().getAdjective()) + " " + ViewSupporter.getWordText(locationData.getDescriptionData().getNoun());
     }
 
     @Override
