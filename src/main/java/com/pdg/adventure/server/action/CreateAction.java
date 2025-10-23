@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 import com.pdg.adventure.api.Containable;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.ExecutionResult;
-import com.pdg.adventure.server.storage.messages.MessagesHolder;
+import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 public class CreateAction extends AbstractAction {
 

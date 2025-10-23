@@ -3,7 +3,7 @@ package com.pdg.adventure.server;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.Ided;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.storage.messages.MessagesHolder;
+import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;

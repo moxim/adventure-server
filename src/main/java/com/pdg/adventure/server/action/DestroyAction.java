@@ -2,7 +2,7 @@ package com.pdg.adventure.server.action;
 
 import com.pdg.adventure.api.Containable;
 import com.pdg.adventure.api.ExecutionResult;
-import com.pdg.adventure.server.storage.messages.MessagesHolder;
+import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 public class DestroyAction extends AbstractAction {
 

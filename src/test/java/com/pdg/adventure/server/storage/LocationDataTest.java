@@ -18,8 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.Word;
-import com.pdg.adventure.model.basics.BasicDescriptionData;
-import com.pdg.adventure.model.basics.DescriptionData;
+import com.pdg.adventure.model.basic.BasicDescriptionData;
+import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.storage.mongo.CascadeSaveMongoEventListener;
 import com.pdg.adventure.server.storage.mongo.UuidIdGenerationMongoEventListener;
 

@@ -14,10 +14,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.Word;
-import com.pdg.adventure.model.basics.CommandDescriptionData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.server.storage.mongo.CascadeSaveMongoEventListener;
 import com.pdg.adventure.server.storage.mongo.UuidIdGenerationMongoEventListener;
-import com.pdg.adventure.views.support.ViewSupporter;
+import com.pdg.adventure.view.support.ViewSupporter;
 
 @DataMongoTest
 @Import(value = {UuidIdGenerationMongoEventListener.class, CascadeSaveMongoEventListener.class})

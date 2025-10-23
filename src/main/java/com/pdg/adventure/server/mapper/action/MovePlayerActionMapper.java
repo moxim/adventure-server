@@ -8,7 +8,7 @@ import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.storage.messages.MessagesHolder;
+import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
 
 @Service

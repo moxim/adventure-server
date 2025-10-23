@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import org.junit.jupiter.api.Test;
 
-import com.pdg.adventure.server.storage.messages.MessagesHolder;
+import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 

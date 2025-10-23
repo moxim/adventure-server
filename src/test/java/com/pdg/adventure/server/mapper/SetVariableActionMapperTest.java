@@ -12,7 +12,7 @@ import com.pdg.adventure.model.action.SetVariableActionData;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.SetVariableAction;
 import com.pdg.adventure.server.mapper.action.SetVariableActionMapper;
-import com.pdg.adventure.server.storage.messages.MessagesHolder;
+import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.support.VariableProvider;
 

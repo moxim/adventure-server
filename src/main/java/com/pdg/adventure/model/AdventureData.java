@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.pdg.adventure.model.basics.BasicData;
+import com.pdg.adventure.model.basic.BasicData;
 import com.pdg.adventure.server.storage.mongo.CascadeSave;
 
 @Document

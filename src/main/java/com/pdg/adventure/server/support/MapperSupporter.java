@@ -12,7 +12,7 @@ import java.util.Map;
 import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.storage.messages.MessagesHolder;
+import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 

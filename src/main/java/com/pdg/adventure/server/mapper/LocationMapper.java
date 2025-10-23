@@ -13,7 +13,7 @@ import com.pdg.adventure.model.CommandProviderData;
 import com.pdg.adventure.model.DirectionData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.model.basics.DescriptionData;
+import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.location.GenericDirection;
 import com.pdg.adventure.server.location.Location;

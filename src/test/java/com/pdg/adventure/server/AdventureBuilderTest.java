@@ -15,7 +15,7 @@ import java.util.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.*;
-import com.pdg.adventure.model.basics.DescriptionData;
+import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.support.MapperSupporter;

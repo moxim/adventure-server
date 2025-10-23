@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import com.pdg.adventure.model.basics.BasicData;
+import com.pdg.adventure.model.basic.BasicData;
 
 @Document
 @Data

@@ -8,7 +8,7 @@ import java.util.UUID;
 import com.pdg.adventure.api.Ided;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
-import com.pdg.adventure.model.basics.DescriptionData;
+import com.pdg.adventure.model.basic.DescriptionData;
 
 public class DescriptionProvider implements Ided {
     public static final String NOUN_MISSING_MESSAGE = "The noun is mandatory.";
