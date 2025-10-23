@@ -335,4 +335,9 @@ public class DirectionEditorView extends VerticalLayout
     protected void setUpLoading(String s) {
         directionId = s;
     }
+
+    // for testing purposes
+    protected DirectionViewModel getViewModel() {
+        return dvm;
+    }
 }

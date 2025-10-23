@@ -102,7 +102,7 @@ class DirectionEditorViewBinderTest {
         view.setData(locationData, adventureData);
 
         // then
-        assertThat(binder.getBean()).isNotNull();
+        assertThat(view.getViewModel()).isNotNull();
     }
 
     @Test
@@ -128,7 +128,7 @@ class DirectionEditorViewBinderTest {
         view.setData(locationData, adventureData);
 
         // Get the view model and remove verb
-        DirectionViewModel viewModel = binder.getBean();
+        DirectionViewModel viewModel = view.getViewModel();
         viewModel.setVerb(null);
         binder.readBean(viewModel);
 
@@ -148,7 +148,7 @@ class DirectionEditorViewBinderTest {
         view.setData(locationData, adventureData);
 
         // when
-        DirectionViewModel viewModel = binder.getBean();
+        DirectionViewModel viewModel = view.getViewModel();
         binder.readBean(viewModel);
 
         // then
@@ -163,7 +163,7 @@ class DirectionEditorViewBinderTest {
         view.setData(locationData, adventureData);
 
         // when
-        DirectionViewModel viewModel = binder.getBean();
+        DirectionViewModel viewModel = view.getViewModel();
 
         // then
         assertThat(viewModel).isNotNull();
@@ -178,7 +178,7 @@ class DirectionEditorViewBinderTest {
         view.setData(locationData, adventureData);
 
         // when
-        DirectionViewModel viewModel = binder.getBean();
+        DirectionViewModel viewModel = view.getViewModel();
 
         // then
         assertThat(viewModel.getShortDescription()).isEqualTo("Go north");

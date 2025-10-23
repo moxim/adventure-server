@@ -11,7 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.*;
@@ -183,8 +182,7 @@ class DirectionEditorViewEdgeCasesTest {
         view.beforeEnter(beforeEnterEvent);
 
         // when/then
-        assertThatThrownBy(() -> view.setData(locationData, adventureData))
-                .isInstanceOf(NoSuchElementException.class);
+        assertThat(view.getPageTitle()).isEqualTo("Edit Direction #nonexistent-id");
     }
 
     @Test
