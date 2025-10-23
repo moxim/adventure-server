@@ -210,6 +210,7 @@ public class ViewSupporter {
         switch (aType) {
             case NOUN -> aDescriptionData.setNoun(foundWord);
             case ADJECTIVE -> aDescriptionData.setAdjective(foundWord);
+            default -> throw new IllegalStateException("Unexpected value: " + aType);
         }
     }
 
@@ -227,6 +228,7 @@ public class ViewSupporter {
         switch (aType) {
             case NOUN -> aBinder.bind(aWord, LocationViewModel::getNoun, LocationViewModel::setNoun);
             case ADJECTIVE -> aBinder.bind(aWord, LocationViewModel::getAdjective, LocationViewModel::setAdjective);
+            default -> throw new IllegalStateException("Unexpected value: " + aType);
         }
     }
 }
