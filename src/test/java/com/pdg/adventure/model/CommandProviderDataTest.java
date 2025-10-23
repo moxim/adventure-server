@@ -7,7 +7,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.pdg.adventure.model.basics.CommandDescriptionData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.server.testhelper.TestSupporter;
 
 class CommandProviderDataTest {

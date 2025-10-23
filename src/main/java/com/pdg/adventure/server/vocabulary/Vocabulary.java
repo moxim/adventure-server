@@ -3,7 +3,7 @@ package com.pdg.adventure.server.vocabulary;
 import com.pdg.adventure.api.Ided;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
-import com.pdg.adventure.model.basics.BasicData;
+import com.pdg.adventure.model.basic.BasicData;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 

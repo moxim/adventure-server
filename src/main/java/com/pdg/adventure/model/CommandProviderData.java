@@ -6,8 +6,8 @@ import lombok.EqualsAndHashCode;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.pdg.adventure.model.basics.BasicData;
-import com.pdg.adventure.model.basics.CommandDescriptionData;
+import com.pdg.adventure.model.basic.BasicData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)

@@ -2,7 +2,7 @@ package com.pdg.adventure.model.condition;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.api.PreCondition;
-import com.pdg.adventure.model.basics.BasicData;
+import com.pdg.adventure.model.basic.BasicData;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

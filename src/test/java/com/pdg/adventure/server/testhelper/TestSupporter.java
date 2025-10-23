@@ -7,7 +7,7 @@ import com.pdg.adventure.api.PreCondition;
 import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
-import com.pdg.adventure.model.basics.CommandDescriptionData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 
 public class TestSupporter {

@@ -10,7 +10,7 @@ import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.CommandChainData;
 import com.pdg.adventure.model.CommandProviderData;
-import com.pdg.adventure.model.basics.CommandDescriptionData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.parser.CommandProvider;
 import com.pdg.adventure.server.support.MapperSupporter;

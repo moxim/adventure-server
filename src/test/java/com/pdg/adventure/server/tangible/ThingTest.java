@@ -8,7 +8,7 @@ import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
-import com.pdg.adventure.server.storage.messages.MessagesHolder;
+import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.support.DescriptionProvider;

@@ -6,7 +6,7 @@ import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.pdg.adventure.model.basics.BasicData;
+import com.pdg.adventure.model.basic.BasicData;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)

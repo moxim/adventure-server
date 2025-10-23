@@ -10,7 +10,7 @@ import com.pdg.adventure.model.action.WearActionData;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.WearAction;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
-import com.pdg.adventure.server.storage.messages.MessagesHolder;
+import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.tangible.Item;
 
 @Service

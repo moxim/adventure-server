@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.Environment;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.storage.messages.MessagesHolder;
+import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 public class MovePlayerAction extends AbstractAction {
     @Getter

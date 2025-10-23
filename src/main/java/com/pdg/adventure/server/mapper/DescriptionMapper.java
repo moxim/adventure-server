@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.Word;
-import com.pdg.adventure.model.basics.DescriptionData;
+import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.MapperSupporter;

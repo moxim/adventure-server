@@ -1,7 +1,7 @@
 package com.pdg.adventure.server.storage;
 
 import com.pdg.adventure.model.*;
-import com.pdg.adventure.model.basics.CommandDescriptionData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 
 public class DataManager {
     private final AdventureService service;

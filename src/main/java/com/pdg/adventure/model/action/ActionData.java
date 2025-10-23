@@ -1,6 +1,6 @@
 package com.pdg.adventure.model.action;
 
-import com.pdg.adventure.model.basics.BasicData;
+import com.pdg.adventure.model.basic.BasicData;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

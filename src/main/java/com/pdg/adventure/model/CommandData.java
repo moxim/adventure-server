@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.pdg.adventure.model.action.ActionData;
-import com.pdg.adventure.model.basics.BasicData;
-import com.pdg.adventure.model.basics.CommandDescriptionData;
+import com.pdg.adventure.model.basic.BasicData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.condition.PreConditionData;
 
 @Data

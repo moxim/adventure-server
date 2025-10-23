@@ -8,7 +8,7 @@ import java.util.List;
 import com.pdg.adventure.api.*;
 import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.action.ActionData;
-import com.pdg.adventure.model.basics.CommandDescriptionData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.support.MapperSupporter;
