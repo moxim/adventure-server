@@ -2,7 +2,6 @@ package com.pdg.adventure.server.storage.mongo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -28,39 +27,14 @@ public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Ob
 
     private static final Logger LOG = LoggerFactory.getLogger(CascadeSaveMongoEventListener.class);
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+    private final MongoTemplate mongoTemplate;
+    private final UuidIdGenerationMongoEventListener uuidIdGenerationMongoEventListener;
 
-    @Autowired
-    private UuidIdGenerationMongoEventListener uuidIdGenerationMongoEventListener;
-
-    /*
-    @Override
-    public void onBeforeConvert(BeforeConvertEvent<Object> event) {
-        int depth = eventDepth.get();
-        if (depth == 0) {
-            processedObjects.get().clear(); // Only clear for top-level event
-        }
-        eventDepth.set(++depth);
-        LOG.debug("**** onBeforeConvert: depth={}", depth);
-        LOG.debug("CascadeSaveMongoEventListener.onBeforeConvert: depth={}, processedObjects={}", depth, processedObjects.get().size());
-
-        Object source = event.getSource();
-        if (source != null && !processedObjects.get().contains(source)) {
-            processedObjects.get().add(source);
-            recurseAndCascade(source);
-        }
-
-        // After processing, decrement depth
-        eventDepth.set(eventDepth.get() - 1);
-        LOG.debug("CascadeSaveMongoEventListener.onBeforeConvert: depth={}, processedObjects={}", depth, processedObjects.get().size());
-        if (eventDepth.get() == 0) {
-            LOG.debug("**** cleaning up");
-            processedObjects.remove();
-            eventDepth.remove();
-        }
+    public CascadeSaveMongoEventListener(final MongoTemplate aMongoTemplate,
+                                         final UuidIdGenerationMongoEventListener aUuidIdGenerationMongoEventListener) {
+        mongoTemplate = aMongoTemplate;
+        uuidIdGenerationMongoEventListener = aUuidIdGenerationMongoEventListener;
     }
-     */
 
     public void onBeforeConvert(BeforeConvertEvent<Object> event) {
         int depth = eventDepth.get();
