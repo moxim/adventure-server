@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.mapper;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -24,18 +23,17 @@ public class ItemContainerMapper implements Mapper<ItemContainerData, GenericCon
 
     private final MapperSupporter mapperSupporter;
     private final Map<String, Item> allItems;
-    private Mapper<DescriptionData, DescriptionProvider> descriptionMapper;
-    private Mapper<ItemData, Item> itemMapper;
+    private final Mapper<DescriptionData, DescriptionProvider> descriptionMapper;
+    private final Mapper<ItemData, Item> itemMapper;
 
-    public ItemContainerMapper(MapperSupporter aMapperSupporter) {
+    public ItemContainerMapper(MapperSupporter aMapperSupporter,
+                               DescriptionMapper aDescriptionMapper,
+                               ItemMapper aItemMapper) {
         mapperSupporter = aMapperSupporter;
         allItems = aMapperSupporter.getAllItems();
-    }
-
-    @PostConstruct
-    public void initializeDependencies() {
-        descriptionMapper = mapperSupporter.getMapper(DescriptionData.class);
-        itemMapper = mapperSupporter.getMapper(ItemData.class);
+        descriptionMapper = aDescriptionMapper;
+        itemMapper = aItemMapper;
+        mapperSupporter.registerMapper(ItemContainerData.class, GenericContainer.class, this);
     }
 
     @Override

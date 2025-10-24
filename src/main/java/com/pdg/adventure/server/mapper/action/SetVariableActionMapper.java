@@ -3,7 +3,6 @@ package com.pdg.adventure.server.mapper.action;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
-import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.action.SetVariableActionData;
 import com.pdg.adventure.server.action.SetVariableAction;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
@@ -13,20 +12,20 @@ import com.pdg.adventure.server.support.VariableProvider;
 
 @Service
 @AutoRegisterMapper(priority = 30, description = "Set variable action mapper")
-public class SetVariableActionMapper implements Mapper<SetVariableActionData, SetVariableAction> {
+public class SetVariableActionMapper extends ActionMapper<SetVariableActionData, SetVariableAction> {
 
-    private final MapperSupporter mapperSupporter;
     private VariableProvider variableProvider;
     private MessagesHolder messagesHolder;
 
     public SetVariableActionMapper(MapperSupporter aMapperSupporter) {
-        mapperSupporter = aMapperSupporter;
+        super(aMapperSupporter);
+        aMapperSupporter.registerMapper(SetVariableActionData.class, SetVariableAction.class, this);
     }
 
     @PostConstruct
     public void initializeDependencies() {
-        variableProvider = mapperSupporter.getVariableProvider();
-        messagesHolder = mapperSupporter.getMessagesHolder();
+        variableProvider = getMapperSupporter().getVariableProvider();
+        messagesHolder = getMapperSupporter().getMessagesHolder();
     }
 
     @Override

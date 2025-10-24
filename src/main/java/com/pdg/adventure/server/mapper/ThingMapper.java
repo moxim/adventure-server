@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.mapper;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
 import com.pdg.adventure.api.Mapper;
@@ -17,18 +16,17 @@ import com.pdg.adventure.server.tangible.Thing;
 @AutoRegisterMapper(priority = 35, description = "Thing mapping with description and command dependencies")
 public class ThingMapper implements Mapper<ThingData, Thing> {
 
-    private Mapper<DescriptionData, DescriptionProvider> descriptionMapper;
-    private Mapper<CommandProviderData, CommandProvider> commandProviderMapper;
-
+    private final Mapper<DescriptionData, DescriptionProvider> descriptionMapper;
+    private final Mapper<CommandProviderData, CommandProvider> commandProviderMapper;
     private final MapperSupporter mapperSupporter;
-    public ThingMapper(MapperSupporter aMapperSupporter) {
-        mapperSupporter = aMapperSupporter;
-    }
 
-    @PostConstruct
-    public void initializeDependencies() {
-        descriptionMapper = mapperSupporter.getMapper(DescriptionData.class);
-        commandProviderMapper = mapperSupporter.getMapper(CommandProviderData.class);
+    public ThingMapper(MapperSupporter aMapperSupporter,
+                       DescriptionMapper aDescriptionMapper,
+                       CommandProviderMapper aCommandProviderMapper) {
+        mapperSupporter = aMapperSupporter;
+        descriptionMapper = aDescriptionMapper;
+        commandProviderMapper = aCommandProviderMapper;
+        mapperSupporter.registerMapper(ThingData.class, Thing.class, this);
     }
 
     public Thing mapToBO(ThingData aThingData) {

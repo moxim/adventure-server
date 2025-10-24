@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.mapper;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -19,18 +18,17 @@ import com.pdg.adventure.server.support.MapperSupporter;
 @AutoRegisterMapper(priority = 60, description = "Command provider mapping")
 public class CommandProviderMapper implements Mapper<CommandProviderData, CommandProvider> {
 
-    private Mapper<CommandChainData, CommandChain> commandChainMapper;
-    private Mapper<CommandDescriptionData, CommandDescription> commandDescriptionMapper;
+    private final Mapper<CommandChainData, CommandChain> commandChainMapper;
+    private final Mapper<CommandDescriptionData, CommandDescription> commandDescriptionMapper;
     private final MapperSupporter mapperSupporter;
 
-    public CommandProviderMapper(MapperSupporter aMapperSupporter) {
+    public CommandProviderMapper(MapperSupporter aMapperSupporter,
+                                 CommandChainMapper aCommandChainMapper,
+                                 CommandDescriptionMapper aCommandDescriptionMapper) {
         mapperSupporter = aMapperSupporter;
-    }
-
-    @PostConstruct
-    public void initializeDependencies() {
-        commandChainMapper = mapperSupporter.getMapper(CommandChainData.class);
-        commandDescriptionMapper = mapperSupporter.getMapper(CommandDescriptionData.class);
+        commandChainMapper = aCommandChainMapper;
+        commandDescriptionMapper = aCommandDescriptionMapper;
+        mapperSupporter.registerMapper(CommandProviderData.class, CommandProvider.class, this);
     }
 
     @Override

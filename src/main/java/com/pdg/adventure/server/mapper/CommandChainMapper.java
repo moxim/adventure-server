@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.mapper;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,15 +19,13 @@ import com.pdg.adventure.server.support.MapperSupporter;
 public class CommandChainMapper implements Mapper<CommandChainData, CommandChain> {
 
     private final MapperSupporter mapperSupporter;
-    private Mapper<CommandData, Command> commandMapper;
+    private final Mapper<CommandData, Command> commandMapper;
 
-    public CommandChainMapper(MapperSupporter aMapperSupporter) {
+    public CommandChainMapper(MapperSupporter aMapperSupporter,
+                              CommandMapper aCommandMapper) {
         mapperSupporter = aMapperSupporter;
-    }
-
-    @PostConstruct
-    public void initializeDependencies() {
-        commandMapper = mapperSupporter.getMapper(CommandData.class);
+        commandMapper = aCommandMapper;
+        mapperSupporter.registerMapper(CommandChainData.class, CommandChain.class, this);
     }
 
     public CommandChain mapToBO(CommandChainData aData) {

@@ -1,5 +1,6 @@
 package com.pdg.adventure;
 
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 
 import java.util.List;
@@ -18,13 +19,18 @@ import com.pdg.adventure.server.tangible.GenericContainer;
  * The entry point of a Spring Boot application.
  */
 //@SpringBootApplication
-public class AdventureClient {
+public class AdventureClient implements CommandLineRunner {
 
-    AdventureService adventureService;
-
-    AdventureMapper adventureMapper;
+    private final AdventureService adventureService;
+    private final AdventureMapper adventureMapper;
 
     public AdventureClient(AdventureService adventureService, AdventureMapper adventureMapper) {
+        this.adventureService = adventureService;
+        this.adventureMapper = adventureMapper;
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
         final List<AdventureData> adventures = adventureService.getAdventures();
         final AdventureData adventureData = adventures.getFirst();
 

@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.mapper;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,22 +17,20 @@ import com.pdg.adventure.server.support.MapperSupporter;
 public class CommandMapper implements Mapper<CommandData, Command> {
 
     private final MapperSupporter mapperSupporter;
-    private Mapper<ActionData, Action> actionMapper;
-    private Mapper<CommandDescriptionData, CommandDescription> commandDescriptionMapper;
+    private final Mapper<CommandDescriptionData, CommandDescription> commandDescriptionMapper;
 
-    public CommandMapper(MapperSupporter aMapperSupporter) {
+    public CommandMapper(MapperSupporter aMapperSupporter,
+                         CommandDescriptionMapper aCommandDescriptionMapper) {
         mapperSupporter = aMapperSupporter;
-    }
-
-    @PostConstruct
-    public void initializeDependencies() {
-        commandDescriptionMapper = mapperSupporter.getMapper(CommandDescriptionData.class);
+        commandDescriptionMapper = aCommandDescriptionMapper;
+        mapperSupporter.registerMapper(CommandData.class, Command.class, this);
     }
 
     public Command mapToBO(CommandData aCommandData) {
         CommandDescription description = commandDescriptionMapper.mapToBO(aCommandData.getCommandDescription());
         final ActionData mainActionData = aCommandData.getAction();
         Action actionBO = null;
+        Mapper<ActionData, Action> actionMapper = null;
         if (mainActionData != null) {
             actionMapper = mapperSupporter.getMapper(mainActionData.getClass());
             actionBO = actionMapper.mapToBO(mainActionData);
@@ -60,6 +57,7 @@ public class CommandMapper implements Mapper<CommandData, Command> {
         final List<PreCondition> preconditions = aCommand.getPreconditions();
         result.setPreConditions(null);
         result.setFollowUpActions(null);
+        Mapper<ActionData, Action> actionMapper = null;
         result.setAction(actionMapper.mapToDO(aCommand.getAction()));
         return result;
     }

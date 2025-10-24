@@ -19,6 +19,7 @@ public class VocabularyMapper implements Mapper<VocabularyData, Vocabulary> {
 
     public VocabularyMapper(MapperSupporter aMapperSupporter) {
         mapperSupporter = aMapperSupporter;
+        mapperSupporter.registerMapper(VocabularyData.class, Vocabulary.class, this);
     }
 
     @Override

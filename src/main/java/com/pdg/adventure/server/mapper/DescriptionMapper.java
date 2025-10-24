@@ -20,6 +20,7 @@ public class DescriptionMapper implements Mapper<DescriptionData, DescriptionPro
 
     public DescriptionMapper(MapperSupporter aMapperSupporter) {
         mapperSupporter = aMapperSupporter;
+        mapperSupporter.registerMapper(DescriptionData.class, DescriptionProvider.class, this);
     }
 
     @PostConstruct
@@ -43,7 +44,8 @@ public class DescriptionMapper implements Mapper<DescriptionData, DescriptionPro
         Word noun = aDescriptionData.getNoun();
         DescriptionProvider result = new DescriptionProvider(noun == null ? "" : noun.getText());
         result.setId(aDescriptionData.getId());
-        result.setAdjective(aDescriptionData.getAdjective().getText());
+        String adjective = aDescriptionData.getAdjective() == null ? "" : aDescriptionData.getAdjective().getText();
+        result.setAdjective(adjective);
         result.setShortDescription(aDescriptionData.getShortDescription());
         result.setLongDescription(aDescriptionData.getLongDescription());
         return result;
