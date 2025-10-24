@@ -1,5 +1,8 @@
 package com.pdg.adventure.server.engine;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.action.MessageAction;
@@ -8,9 +11,6 @@ import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.CommandExecutor;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.Parser;
-
-import java.io.BufferedReader;
-import java.io.IOException;
 
 public class GameLoop {
     private final Parser parser;
@@ -38,7 +38,7 @@ public class GameLoop {
                 }
 
                 // Continue if the user provided nothing that we understand.
-                if (command.toString().equals("__")) {
+                if (command.toString().equals("||")) {
                     System.out.println(new MessageAction("I don't understand, please rephrase.", null).execute());
                     continue;
                 }

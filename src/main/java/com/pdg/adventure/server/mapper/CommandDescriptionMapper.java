@@ -18,6 +18,7 @@ public class CommandDescriptionMapper implements Mapper<CommandDescriptionData, 
 
     public CommandDescriptionMapper(MapperSupporter aMapperSupporter) {
         mapperSupporter = aMapperSupporter;
+        mapperSupporter.registerMapper(CommandDescriptionData.class, CommandDescription.class, this);
     }
 
     @Override
@@ -33,9 +34,10 @@ public class CommandDescriptionMapper implements Mapper<CommandDescriptionData, 
 
     @Override
     public CommandDescription mapToBO(CommandDescriptionData aCommandDescriptionData) {
-        CommandDescription result = new GenericCommandDescription(aCommandDescriptionData.getVerb().getText(),
-                                                                  aCommandDescriptionData.getAdjective().getText(),
-                                                                  aCommandDescriptionData.getNoun().getText());
+        var verb = aCommandDescriptionData.getVerb() == null ? "" : aCommandDescriptionData.getVerb().getText();
+        var adjective = aCommandDescriptionData.getAdjective() == null ? "" : aCommandDescriptionData.getAdjective().getText();
+        var noun = aCommandDescriptionData.getNoun() == null ? "" : aCommandDescriptionData.getNoun().getText();
+        CommandDescription result = new GenericCommandDescription(verb, adjective, noun);
         result.setId(aCommandDescriptionData.getId());
         return result;
     }

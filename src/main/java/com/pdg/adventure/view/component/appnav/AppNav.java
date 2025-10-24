@@ -1,4 +1,4 @@
-package com.pdg.adventure.view.components.appnav;
+package com.pdg.adventure.view.component.appnav;
 
 import java.util.Optional;
 

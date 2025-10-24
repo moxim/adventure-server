@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.mapper;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Service;
 
@@ -25,19 +24,19 @@ import com.pdg.adventure.server.vocabulary.Vocabulary;
 public class AdventureMapper implements Mapper<AdventureData, Adventure> {
 
     private final MapperSupporter mapperSupporter;
-    private Mapper<VocabularyData, Vocabulary> vocabularyMapper;
-    private Mapper<LocationData, Location> locationMapper;
-    private Mapper<ItemContainerData, GenericContainer> containerMapper;
+    private final Mapper<VocabularyData, Vocabulary> vocabularyMapper;
+    private final Mapper<LocationData, Location> locationMapper;
+    private final Mapper<ItemContainerData, GenericContainer> containerMapper;
 
-    public AdventureMapper(MapperSupporter aMapperSupporter) {
+    public AdventureMapper(MapperSupporter aMapperSupporter,
+                           VocabularyMapper aVocabularyMapper,
+                           LocationMapper aLocationMapper,
+                           ItemContainerMapper aContainerMapper) {
         mapperSupporter = aMapperSupporter;
-    }
-
-    @PostConstruct
-    public void initializeDependencies() {
-        vocabularyMapper = mapperSupporter.getMapper(VocabularyData.class);
-        locationMapper = mapperSupporter.getMapper(LocationData.class);
-        containerMapper = mapperSupporter.getMapper(ItemContainerData.class);
+        vocabularyMapper = aVocabularyMapper;
+        locationMapper = aLocationMapper;
+        containerMapper = aContainerMapper;
+        mapperSupporter.registerMapper(AdventureData.class, Adventure.class, this);
     }
 
     public Adventure mapToBO(AdventureData anAdventureData) {

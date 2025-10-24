@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.mapper;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,21 +26,22 @@ import com.pdg.adventure.server.tangible.GenericContainer;
 public class LocationMapper implements Mapper<LocationData, Location> {
 
     private final MapperSupporter mapperSupporter;
-    private Mapper<DescriptionData, DescriptionProvider> descriptionMapper;
-    private Mapper<ItemContainerData, GenericContainer> itemContainerMapper;
-    private Mapper<DirectionData, GenericDirection> directionMapper;
-    private Mapper<CommandProviderData, CommandProvider> commandProviderMapper;
+    private final Mapper<DescriptionData, DescriptionProvider> descriptionMapper;
+    private final Mapper<ItemContainerData, GenericContainer> itemContainerMapper;
+    private final Mapper<DirectionData, GenericDirection> directionMapper;
+    private final Mapper<CommandProviderData, CommandProvider> commandProviderMapper;
 
-    public LocationMapper(MapperSupporter aMapperSupporter) {
+    public LocationMapper(MapperSupporter aMapperSupporter,
+                          DescriptionMapper aDescriptionMapper,
+                          ItemContainerMapper aItemContainerMapper,
+                          DirectionMapper aDirectionMapper,
+                          CommandProviderMapper aCommandProviderMapper) {
         mapperSupporter = aMapperSupporter;
-    }
-
-    @PostConstruct
-    public void initializeDependencies() {
-        descriptionMapper = mapperSupporter.getMapper(DescriptionData.class);
-        itemContainerMapper = mapperSupporter.getMapper(ItemContainerData.class);
-        directionMapper = mapperSupporter.getMapper(DirectionData.class);
-        commandProviderMapper = mapperSupporter.getMapper(CommandProviderData.class);
+        descriptionMapper = aDescriptionMapper;
+        itemContainerMapper = aItemContainerMapper;
+        directionMapper = aDirectionMapper;
+        commandProviderMapper = aCommandProviderMapper;
+        mapperSupporter.registerMapper(LocationData.class, Location.class, this);
     }
 
     public Location mapToBO(LocationData aLocationData) {
