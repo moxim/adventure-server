@@ -62,6 +62,15 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
+        Button editMessagesButton = new Button("Manage Messages", e -> {
+            if (binder.writeBeanIfValid(adventureData)) {
+                UI.getCurrent().navigate(com.pdg.adventure.view.message.MessagesMenuView.class,
+                                new RouteParameters(
+                                        new RouteParam("adventureId", adventureData.getId())))
+                        .ifPresent(editor -> editor.setData(adventureData));
+            }
+        });
+
         Button workflowButton = new Button("Manage Workflow");
         workflowButton.setEnabled(false);
 
@@ -81,7 +90,7 @@ public class AdventureEditorView extends VerticalLayout
         setMargin(true);
         setPadding(true);
 
-        final HorizontalLayout editRow = new HorizontalLayout(editVocabularyButton, editLocationsButton, workflowButton);
+        final HorizontalLayout editRow = new HorizontalLayout(editVocabularyButton, editMessagesButton, editLocationsButton, workflowButton);
 
         Button backButton = new Button("Back", event -> UI.getCurrent().navigate(AdventuresMenuView.class));
         backButton.addClickShortcut(Key.ESCAPE);
