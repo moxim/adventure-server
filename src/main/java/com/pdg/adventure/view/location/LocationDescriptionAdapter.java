@@ -6,9 +6,16 @@ import com.pdg.adventure.view.support.ViewSupporter;
 
 public class LocationDescriptionAdapter implements Describable {
     private final LocationData locationData;
+    private int usageCount;
 
     public LocationDescriptionAdapter(LocationData aLocationData) {
         this.locationData = aLocationData;
+        this.usageCount = 0;
+    }
+
+    public LocationDescriptionAdapter(LocationData aLocationData, int aUsageCount) {
+        this.locationData = aLocationData;
+        this.usageCount = aUsageCount;
     }
 
     @Override
@@ -58,5 +65,13 @@ public class LocationDescriptionAdapter implements Describable {
 
     public int getLumen() {
         return locationData.getLumen();
+    }
+
+    public int getUsageCount() {
+        return usageCount;
+    }
+
+    public void setUsageCount(int aUsageCount) {
+        this.usageCount = aUsageCount;
     }
 }
