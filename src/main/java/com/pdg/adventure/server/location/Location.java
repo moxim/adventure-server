@@ -61,7 +61,7 @@ public class Location extends Thing implements Visitable, HasLight {
     @Override
     public ExecutionResult applyCommand(CommandDescription aCommandDescription) {
 
-        List<CommandChain> availableCommandChains = getCommandChains(aCommandDescription);
+        List<CommandChain> availableCommandChains = getMatchingCommandChain(aCommandDescription);
 
         ExecutionResult result = new CommandExecutionResult();
         if (availableCommandChains.isEmpty()) {
@@ -77,10 +77,6 @@ public class Location extends Thing implements Visitable, HasLight {
 
     @Override
     public List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription) {
-        return getCommandChains(aCommandDescription);
-    }
-
-    private List<CommandChain> getCommandChains(CommandDescription aCommandDescription) {
         List<CommandChain> availableCommands = new ArrayList<>(super.getMatchingCommandChain(aCommandDescription));
         availableCommands.addAll(container.getMatchingCommandChain(aCommandDescription));
         availableCommands.addAll(directions.getMatchingCommandChain(aCommandDescription));
