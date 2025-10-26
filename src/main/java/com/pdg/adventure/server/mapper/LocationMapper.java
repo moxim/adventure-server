@@ -71,9 +71,9 @@ public class LocationMapper implements Mapper<LocationData, Location> {
 //            location.addDirection(direction);
 //        }
 //
-        final CommandProviderData commandProviderData = aLocationData.getCommandProviderData();
-        final CommandProvider commandProvider = commandProviderMapper.mapToBO(commandProviderData);
-        location.setCommandProvider(commandProvider);
+//        final CommandProviderData commandProviderData = aLocationData.getCommandProviderData();
+//        final CommandProvider commandProvider = commandProviderMapper.mapToBO(commandProviderData);
+//        location.setCommandProvider(commandProvider);
 
         return location;
     }
@@ -103,6 +103,9 @@ public class LocationMapper implements Mapper<LocationData, Location> {
                 final GenericDirection direction = directionMapper.mapToBO(directionData);
                 location.addDirection(direction);
             }
+            final CommandProviderData commandProviderData = locationData.getCommandProviderData();
+            final CommandProvider commandProvider = commandProviderMapper.mapToBO(commandProviderData);
+            location.setCommandProvider(commandProvider);
         }
 
         return result;

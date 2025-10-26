@@ -2,6 +2,7 @@ package com.pdg.adventure;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.List;
 
@@ -18,7 +19,7 @@ import com.pdg.adventure.server.tangible.GenericContainer;
 /**
  * The entry point of a Spring Boot application.
  */
-//@SpringBootApplication
+@SpringBootApplication
 public class AdventureClient implements CommandLineRunner {
 
     private final AdventureService adventureService;

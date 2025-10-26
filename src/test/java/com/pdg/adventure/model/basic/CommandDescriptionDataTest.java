@@ -113,7 +113,7 @@ class CommandDescriptionDataTest {
 
         // then
         assertEquals("climb", verb.getText());
-        assertThat(adjective == null);
+        assertThat(adjective ).isNull();
         assertEquals("raft", noun.getText());
     }
 
@@ -132,7 +132,7 @@ class CommandDescriptionDataTest {
         // then
         assertEquals("climb", verb.getText());
         assertEquals("small", adjective.getText());
-        assertThat(noun == null);
+        assertThat(noun ).isNull();
     }
 
     @Test
@@ -148,7 +148,7 @@ class CommandDescriptionDataTest {
         Word noun = commandDescriptionData.getNoun();
 
         // then
-        assertThat(verb == null);
+        assertThat(verb ).isNull();
         assertEquals("small", adjective.getText());
         assertEquals("raft", noun.getText());
     }
@@ -158,7 +158,7 @@ class CommandDescriptionDataTest {
         // given
         String commandSpec = CommandDescription.COMMAND_SEPARATOR + CommandDescription.COMMAND_SEPARATOR +
                              CommandDescription.COMMAND_SEPARATOR;
-        CommandDescriptionData commandDescriptionData = new CommandDescriptionData("|||");
+        CommandDescriptionData commandDescriptionData = new CommandDescriptionData(commandSpec);
 
         // when
         Word verb = commandDescriptionData.getVerb();
@@ -167,8 +167,8 @@ class CommandDescriptionDataTest {
 
         // then
 
-        assertThat(verb == null);
-        assertThat(adjective == null);
-        assertThat(noun == null);
+        assertThat(verb ).isNull();
+        assertThat(adjective ).isNull();
+        assertThat(noun ).isNull();
     }
 }
