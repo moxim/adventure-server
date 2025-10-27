@@ -57,7 +57,7 @@ public class CommandMapper implements Mapper<CommandData, Command> {
         final List<PreCondition> preconditions = aCommand.getPreconditions();
         result.setPreConditions(null);
         result.setFollowUpActions(null);
-        Mapper<ActionData, Action> actionMapper = null;
+        Mapper<ActionData, Action> actionMapper = mapperSupporter.getMapper(aCommand.getAction().getClass());
         result.setAction(actionMapper.mapToDO(aCommand.getAction()));
         return result;
     }
