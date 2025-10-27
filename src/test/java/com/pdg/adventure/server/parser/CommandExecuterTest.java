@@ -87,7 +87,7 @@ class CommandExecutorTest {
     }
 
     @Test
-    public void matchingPocketCommandMustExecuteSuccessfully() {
+    void matchingPocketCommandMustExecuteSuccessfully() {
         // given
         pocket.addCommand(new GenericCommand(matchingCommand, successAction));
 
@@ -99,7 +99,7 @@ class CommandExecutorTest {
     }
 
     @Test
-    public void matchingPocketCommandForItemMustExecuteSuccessfully() {
+    void matchingPocketCommandForItemMustExecuteSuccessfully() {
         // given
         Item item = new Item(new DescriptionProvider("tree"), true);
         item.addCommand(new GenericCommand(partialCommand, successAction)); // TODO: also test for complete command execution
@@ -113,7 +113,7 @@ class CommandExecutorTest {
     }
 
     @Test
-    public void matchingLocationCommandMustExecuteSuccessfully() {
+    void matchingLocationCommandMustExecuteSuccessfully() {
         // given
         location.addCommand(new GenericCommand(matchingCommand, successAction));
 
@@ -125,7 +125,7 @@ class CommandExecutorTest {
     }
 
     @Test
-    public void matchingCommandForItemMustExecuteSuccessfully() {
+    void matchingCommandForItemMustExecuteSuccessfully() {
         // given
         Item item = new Item(new DescriptionProvider("tree"), true);
         item.addCommand(new GenericCommand(partialCommand, successAction));
@@ -139,7 +139,7 @@ class CommandExecutorTest {
     }
 
     @Test
-    public void matchingCommandForAmbiguousItemsMustFail() {
+    void matchingCommandForAmbiguousItemsMustFail() {
         // given
         Item someTree = new Item(new DescriptionProvider("tree"), true);
         someTree.addCommand(new GenericCommand(partialCommand, successAction));
@@ -158,7 +158,7 @@ class CommandExecutorTest {
     }
 
     @Test
-    public void commandForSpecificItemMustExecuteSuccessfully() {
+    void commandForSpecificItemMustExecuteSuccessfully() {
         // given
         Item someTree = new Item(new DescriptionProvider("tree"), true);
         someTree.addCommand(new GenericCommand(partialCommand, successAction));
@@ -178,7 +178,7 @@ class CommandExecutorTest {
     }
 
     @Test
-    public void ambiguousCommandForItemsWithDifferentNamesMustFail() {
+    void ambiguousCommandForItemsWithDifferentNamesMustFail() {
         // given
         Item someTree = new Item(new DescriptionProvider("tree"), true);
         someTree.addCommand(new GenericCommand(partialCommand, successAction));

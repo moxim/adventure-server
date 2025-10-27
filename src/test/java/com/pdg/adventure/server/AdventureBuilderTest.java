@@ -26,7 +26,7 @@ import com.pdg.adventure.server.testhelper.TestSupporter;
 @ContextConfiguration(classes = com.pdg.adventure.server.AdventureConfig.class)
 @ComponentScan(basePackages = "com.pdg.adventure.server.mapper")
 @Import({com.pdg.adventure.server.AdventureConfig.class, com.pdg.adventure.server.mapper.AdventureMapper.class})
-public class AdventureBuilderTest {
+class AdventureBuilderTest {
     @Autowired
     AdventureMapper adventureMapper;
 

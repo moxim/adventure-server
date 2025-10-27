@@ -18,7 +18,7 @@ class CommandProviderDataTest {
     CommandDescriptionData cmdDesc = TestSupporter.createCommandDescriptionData(commandId, vocabularyData);
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         sut.setId("id_1");
         sut.add(TestSupporter.createCommand(commandId, vocabularyData));
     }

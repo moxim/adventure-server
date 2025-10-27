@@ -17,23 +17,34 @@ import com.pdg.adventure.model.Word;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.server.storage.mongo.CascadeSaveMongoEventListener;
 import com.pdg.adventure.server.storage.mongo.UuidIdGenerationMongoEventListener;
-import com.pdg.adventure.view.support.ViewSupporter;
 
 @DataMongoTest
 @Import(value = {UuidIdGenerationMongoEventListener.class, CascadeSaveMongoEventListener.class})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class CommandDescriptionDataTest {
+class CommandDescriptionDataTest {
 
     @Test
     @DirtiesContext(methodMode=DirtiesContext.MethodMode.BEFORE_METHOD)
-    public void testSomething(@Autowired MongoTemplate mongoTemplate) {
+    void testSomething(@Autowired MongoTemplate mongoTemplate) {
         CommandDescriptionData command = new CommandDescriptionData();
-        command.setVerb(new Word("go", Word.Type.VERB));
-        command.setNoun(new Word("room", Word.Type.NOUN));
+
+        Word verbWord = new Word("go", Word.Type.VERB);
+        mongoTemplate.save(verbWord);
+        Word nounWord = new Word("room", Word.Type.NOUN);
+        mongoTemplate.save(nounWord);
+
+        command.setVerb(verbWord);
+        command.setNoun(nounWord);
         command.setAdjective(null); // Should exclude adjective from document
+
         final CommandDescriptionData save = mongoTemplate.save(command);
         List<CommandDescriptionData> commands = mongoTemplate.findAll(CommandDescriptionData.class);
-        assertThat(commands.size() == 1);
-        commands.forEach(commandDescription -> System.out.println(ViewSupporter.formatDescription(commandDescription)));
+        assertThat(commands).hasSize(1);
+
+        final CommandDescriptionData savedCommandDescription = commands.get(0);
+        assertThat(savedCommandDescription.getId()).isEqualTo(save.getId());
+        assertThat(savedCommandDescription.getVerb().getText()).isEqualTo("go");
+        assertThat(savedCommandDescription.getNoun().getText()).isEqualTo("room");
+        assertThat(savedCommandDescription.getAdjective()).isNull();
     }
 }

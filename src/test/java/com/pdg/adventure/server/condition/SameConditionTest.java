@@ -1,11 +1,12 @@
 package com.pdg.adventure.server.condition;
 
-import com.pdg.adventure.server.support.Variable;
-import com.pdg.adventure.server.support.VariableProvider;
-import com.pdg.adventure.server.testhelper.TestSupporter;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+import com.pdg.adventure.server.support.Variable;
+import com.pdg.adventure.server.support.VariableProvider;
+import com.pdg.adventure.server.testhelper.TestSupporter;
 
 class SameConditionTest {
 
