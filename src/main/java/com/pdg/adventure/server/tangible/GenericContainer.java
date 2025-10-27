@@ -135,9 +135,10 @@ public class GenericContainer extends Item implements Container {
     public List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription) {
         final List<Containable> items = ItemIdentifier.findItems(this, aCommandDescription);
         List<CommandChain> result = new ArrayList<>();
-        for (Containable item : items) {
-            final List<CommandChain> commandChain = item.getMatchingCommandChain(aCommandDescription);
-                result.addAll(commandChain);
+        if (holdsDirections) {
+            result.addAll(getCommandMatcher().getMatchingCommandsFromCommandProvider(getContents(), aCommandDescription));
+        } else {
+            result.addAll(getCommandMatcher().getMatchingCommands(items, aCommandDescription));
         }
         result.addAll(super.getMatchingCommandChain(aCommandDescription));
         return result;

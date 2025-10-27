@@ -17,14 +17,15 @@ public class Location extends Thing implements Visitable, HasLight {
     private final Container container;
     private final Container directions;
     private long timesVisited;
-    private final Container pocket;
+    // TODO: reconsider having Location know about the player's pocket
+//    private final Container pocket;
     private int lumen;
 
     public Location(DescriptionProvider aDescriptionProvider, Container aPocket) {
         super(aDescriptionProvider);
         container = new GenericContainer(aDescriptionProvider, 99);
         directions = new GenericContainer(aDescriptionProvider, true, 9999);
-        pocket = aPocket;
+//        pocket = aPocket;
         timesVisited = 0; // explicit, but redundant
     }
 
@@ -61,7 +62,7 @@ public class Location extends Thing implements Visitable, HasLight {
     @Override
     public ExecutionResult applyCommand(CommandDescription aCommandDescription) {
 
-        List<CommandChain> availableCommandChains = getCommandChains(aCommandDescription);
+        List<CommandChain> availableCommandChains = getMatchingCommandChain(aCommandDescription);
 
         ExecutionResult result = new CommandExecutionResult();
         if (availableCommandChains.isEmpty()) {
@@ -77,10 +78,6 @@ public class Location extends Thing implements Visitable, HasLight {
 
     @Override
     public List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription) {
-        return getCommandChains(aCommandDescription);
-    }
-
-    private List<CommandChain> getCommandChains(CommandDescription aCommandDescription) {
         List<CommandChain> availableCommands = new ArrayList<>(super.getMatchingCommandChain(aCommandDescription));
         availableCommands.addAll(container.getMatchingCommandChain(aCommandDescription));
         availableCommands.addAll(directions.getMatchingCommandChain(aCommandDescription));
@@ -140,7 +137,7 @@ public class Location extends Thing implements Visitable, HasLight {
                 "container=" + container +
                 ", directions=" + directions +
                 ", hasBeenVisited=" + timesVisited +
-                ", pocket=" + pocket +
+//                ", pocket=" + pocket +
                 ", " + super.toString() +
                 '}';
     }

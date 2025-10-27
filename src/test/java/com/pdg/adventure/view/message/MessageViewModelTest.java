@@ -1,9 +1,13 @@
 package com.pdg.adventure.view.message;
 
-import com.pdg.adventure.model.MessageData;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import com.pdg.adventure.model.MessageData;
 
 class MessageViewModelTest {
 
@@ -121,9 +125,9 @@ class MessageViewModelTest {
         String preview = viewModel.getPreview(20);
 
         // Then
-        assertThat(preview).hasSize(23); // 20 chars + "..."
-        assertThat(preview).startsWith("This is a very long");
-        assertThat(preview).endsWith("...");
+        assertThat(preview).hasSize(23). // 20 chars + "..."
+            startsWith("This is a very long").
+            endsWith("...");
     }
 
     @Test
@@ -177,63 +181,13 @@ class MessageViewModelTest {
         assertThat(isValid).isTrue();
     }
 
-    @Test
-    void isValidId_shouldReturnFalse_forIdWithSpaces() {
+    @ParameterizedTest
+    @ValueSource(strings = {"invalid message", "invalid-message!", "invalid@message", "invalid#message", "", "   ", "\t", "\n"})
+    @NullSource
+    void isValidId_shouldReturnFalse_forInvalidIds(String arg) {
         // Given
         MessageViewModel viewModel = new MessageViewModel();
-        viewModel.setId("invalid message");
-
-        // When
-        boolean isValid = viewModel.isValidId();
-
-        // Then
-        assertThat(isValid).isFalse();
-    }
-
-    @Test
-    void isValidId_shouldReturnFalse_forIdWithSpecialCharacters() {
-        // Given
-        MessageViewModel viewModel = new MessageViewModel();
-        viewModel.setId("invalid-message!");
-
-        // When
-        boolean isValid = viewModel.isValidId();
-
-        // Then
-        assertThat(isValid).isFalse();
-    }
-
-    @Test
-    void isValidId_shouldReturnFalse_forEmptyId() {
-        // Given
-        MessageViewModel viewModel = new MessageViewModel();
-        viewModel.setId("");
-
-        // When
-        boolean isValid = viewModel.isValidId();
-
-        // Then
-        assertThat(isValid).isFalse();
-    }
-
-    @Test
-    void isValidId_shouldReturnFalse_forNullId() {
-        // Given
-        MessageViewModel viewModel = new MessageViewModel();
-        viewModel.setId(null);
-
-        // When
-        boolean isValid = viewModel.isValidId();
-
-        // Then
-        assertThat(isValid).isFalse();
-    }
-
-    @Test
-    void isValidId_shouldReturnFalse_forWhitespaceOnlyId() {
-        // Given
-        MessageViewModel viewModel = new MessageViewModel();
-        viewModel.setId("   ");
+        viewModel.setId(arg);
 
         // When
         boolean isValid = viewModel.isValidId();

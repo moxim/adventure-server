@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.action;
 
-import org.jetbrains.annotations.Nullable;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaApi;
@@ -29,14 +28,13 @@ public class DescribeAction extends AbstractAction {
     public ExecutionResult execute() {
         ExecutionResult result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
 
-        final String response = fillThroughAI();
-
-        result.setResultMessage(response);
-//        result.setResultMessage(target.get());
+//        final String response = fillThroughAI(target.get());
+//        result.setResultMessage(response);
+        result.setResultMessage(target.get());
         return result;
     }
 
-    private @Nullable String fillThroughAI() {
+    private String fillThroughAI(String aRequest) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(10_000); // 10 seconds for connection
         requestFactory.setReadTimeout(60_000);    // 60 seconds for reading response
@@ -53,8 +51,7 @@ public class DescribeAction extends AbstractAction {
 
         ChatClient chatClient = ChatClient.builder(chatModel).build();
 
-        String request = target.get();
-        System.out.println("Request: " + request);
+        System.out.println("Request: " + aRequest);
 
         ChatClient.ChatClientRequestSpec chatResponse =
             chatClient.prompt()
@@ -64,7 +61,7 @@ public class DescribeAction extends AbstractAction {
                   Please elaborate on the following so that it sounds like a short excerpt of you novels,
                   but only use 100 words and do mention the exits.
                   """)
-                  .user(request);
+                  .user(aRequest);
 
         String response = chatResponse.call().content();
         return response;

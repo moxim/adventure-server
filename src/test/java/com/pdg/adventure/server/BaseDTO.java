@@ -1,6 +1,6 @@
 package com.pdg.adventure.server;
 
-public class BaseDTO {
+class BaseDTO {
     private final String name;
     private String id;
 

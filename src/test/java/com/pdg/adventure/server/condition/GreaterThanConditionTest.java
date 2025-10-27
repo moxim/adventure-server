@@ -1,23 +1,24 @@
 package com.pdg.adventure.server.condition;
 
-import com.pdg.adventure.server.exception.ConfigurationException;
-import com.pdg.adventure.server.support.Variable;
-import com.pdg.adventure.server.support.VariableProvider;
-import com.pdg.adventure.server.testhelper.TestSupporter;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
+import com.pdg.adventure.server.exception.ConfigurationException;
+import com.pdg.adventure.server.support.Variable;
+import com.pdg.adventure.server.support.VariableProvider;
+import com.pdg.adventure.server.testhelper.TestSupporter;
+
 class GreaterThanConditionTest {
-    private static final String varName = "t";
+    private static final String VAR_NAME = "t";
     private final VariableProvider variableProvider = new VariableProvider();
-    private GreaterThanCondition sut = new GreaterThanCondition(varName, 2, variableProvider);
+    private final  GreaterThanCondition sut = new GreaterThanCondition(VAR_NAME, 2, variableProvider);
 
     @Test
-    void testVariableMeetsCondition() throws Exception {
+    void testVariableMeetsCondition() {
         // given
-        variableProvider.set(new Variable(varName, "3"));
+        variableProvider.set(new Variable(VAR_NAME, "3"));
 
         // when
 
@@ -28,7 +29,7 @@ class GreaterThanConditionTest {
     @Test
     void executeWithAlphaString() {
         // given
-        variableProvider.set(new Variable(varName, "wrongValue"));
+        variableProvider.set(new Variable(VAR_NAME, "wrongValue"));
 
         // when
         Throwable thrown = catchThrowable(() -> sut.check());
@@ -38,9 +39,9 @@ class GreaterThanConditionTest {
     }
 
     @Test
-    void testVariableFailsCondition() throws Exception {
+    void testVariableFailsCondition(){
         // given
-        variableProvider.set(new Variable(varName, "1"));
+        variableProvider.set(new Variable(VAR_NAME, "1"));
 
         // when
 

@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.tangible;
 
+import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
@@ -8,17 +9,21 @@ import java.util.Objects;
 import java.util.UUID;
 
 import com.pdg.adventure.api.*;
-import com.pdg.adventure.server.parser.CommandProvider;
+import com.pdg.adventure.server.parser.CommandMatcher;
+import com.pdg.adventure.server.parser.GenericCommandProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
 
 public class Thing implements Describable, Actionable {
+    private String id;
     @Setter
     private DescriptionProvider descriptionProvider;
-    private CommandProvider commandProvider;
-    private String id;
+    @Getter
+    private final CommandMatcher commandMatcher;
+    private GenericCommandProvider commandProvider;
 
     public Thing(DescriptionProvider aDescriptionProvider) {
-        commandProvider = new CommandProvider();
+        commandProvider = new GenericCommandProvider();
+        commandMatcher = new CommandMatcher();
         descriptionProvider = aDescriptionProvider;
         id = UUID.randomUUID().toString();
     }
@@ -88,7 +93,7 @@ public class Thing implements Describable, Actionable {
 
     @Override
     public List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription) {
-        return commandProvider.getMatchingCommandChain(aCommandDescription);
+        return commandMatcher.getMatchingCommands(commandProvider, aCommandDescription);
     }
 
     @Override
@@ -110,11 +115,11 @@ public class Thing implements Describable, Actionable {
         return descriptionProvider;
     }
 
-    public void setCommandProvider(CommandProvider aCommandProvider) {
+    public void setCommandProvider(GenericCommandProvider aCommandProvider) {
         commandProvider = aCommandProvider;
     }
 
-    public CommandProvider getCommandProvider() {
+    public GenericCommandProvider getCommandProvider() {
         return commandProvider;
     }
 

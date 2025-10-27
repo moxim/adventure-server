@@ -16,7 +16,7 @@ import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.location.GenericDirection;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.parser.CommandProvider;
+import com.pdg.adventure.server.parser.GenericCommandProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.GenericContainer;
@@ -29,7 +29,7 @@ public class LocationMapper implements Mapper<LocationData, Location> {
     private final Mapper<DescriptionData, DescriptionProvider> descriptionMapper;
     private final Mapper<ItemContainerData, GenericContainer> itemContainerMapper;
     private final Mapper<DirectionData, GenericDirection> directionMapper;
-    private final Mapper<CommandProviderData, CommandProvider> commandProviderMapper;
+    private final Mapper<CommandProviderData, GenericCommandProvider> commandProviderMapper;
 
     public LocationMapper(MapperSupporter aMapperSupporter,
                           DescriptionMapper aDescriptionMapper,
@@ -71,9 +71,9 @@ public class LocationMapper implements Mapper<LocationData, Location> {
 //            location.addDirection(direction);
 //        }
 //
-        final CommandProviderData commandProviderData = aLocationData.getCommandProviderData();
-        final CommandProvider commandProvider = commandProviderMapper.mapToBO(commandProviderData);
-        location.setCommandProvider(commandProvider);
+//        final CommandProviderData commandProviderData = aLocationData.getCommandProviderData();
+//        final GenericCommandProvider commandProvider = commandProviderMapper.mapToBO(commandProviderData);
+//        location.setCommandProvider(commandProvider);
 
         return location;
     }
@@ -103,6 +103,9 @@ public class LocationMapper implements Mapper<LocationData, Location> {
                 final GenericDirection direction = directionMapper.mapToBO(directionData);
                 location.addDirection(direction);
             }
+            final CommandProviderData commandProviderData = locationData.getCommandProviderData();
+            final GenericCommandProvider commandProvider = commandProviderMapper.mapToBO(commandProviderData);
+            location.setCommandProvider(commandProvider);
         }
 
         return result;

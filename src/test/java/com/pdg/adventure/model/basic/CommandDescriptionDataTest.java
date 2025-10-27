@@ -12,7 +12,7 @@ class CommandDescriptionDataTest {
     CommandDescriptionData sut = new CommandDescriptionData();
 
     @Test
-    public void getEmptyCommandSpec() throws Exception {
+    void getEmptyCommandSpec() {
         // given
 
         // when
@@ -51,7 +51,7 @@ class CommandDescriptionDataTest {
     }
 
     @Test
-    public void createNewDataWithSpec() throws Exception {
+    void createNewDataWithSpec(){
         // given
         String commandSpec = "climb" + CommandDescription.COMMAND_SEPARATOR + "small" +
                              CommandDescription.COMMAND_SEPARATOR + "raft";
@@ -71,7 +71,7 @@ class CommandDescriptionDataTest {
 
     /*
     @Test
-    public void createNewDataWithSpecEmpty() throws Exception {
+    void createNewDataWithSpecEmpty() throws Exception {
         // given
         String commandSpec = "";
 
@@ -85,7 +85,7 @@ class CommandDescriptionDataTest {
     }
 
     @Test
-    public void createNewDataWithSpecNull() throws Exception {
+    void createNewDataWithSpecNull() throws Exception {
         // given
         String commandSpec = null;
 
@@ -100,7 +100,7 @@ class CommandDescriptionDataTest {
 */
 
     @Test
-    public void createNewDataWithSpecWithEmptyAdjective() {
+    void createNewDataWithSpecWithEmptyAdjective() {
         // given
         String commandSpec = "climb" + CommandDescription.COMMAND_SEPARATOR + CommandDescription.COMMAND_SEPARATOR +
                              "raft";
@@ -113,12 +113,12 @@ class CommandDescriptionDataTest {
 
         // then
         assertEquals("climb", verb.getText());
-        assertThat(adjective == null);
+        assertThat(adjective).isNull();
         assertEquals("raft", noun.getText());
     }
 
     @Test
-    public void createNewDataWithSpecWithEmptyNoun() {
+    void createNewDataWithSpecWithEmptyNoun() {
         // given
         String commandSpec = "climb" + CommandDescription.COMMAND_SEPARATOR + "small" +
                              CommandDescription.COMMAND_SEPARATOR;
@@ -132,11 +132,11 @@ class CommandDescriptionDataTest {
         // then
         assertEquals("climb", verb.getText());
         assertEquals("small", adjective.getText());
-        assertThat(noun == null);
+        assertThat(noun).isNull();
     }
 
     @Test
-    public void createNewDataWithSpecWithEmptyVerb() {
+    void createNewDataWithSpecWithEmptyVerb() {
         // given
         String commandSpec = CommandDescription.COMMAND_SEPARATOR + "small" + CommandDescription.COMMAND_SEPARATOR +
                              "raft";
@@ -148,17 +148,16 @@ class CommandDescriptionDataTest {
         Word noun = commandDescriptionData.getNoun();
 
         // then
-        assertThat(verb == null);
+        assertThat(verb).isNull();
         assertEquals("small", adjective.getText());
         assertEquals("raft", noun.getText());
     }
 
     @Test
-    public void createNewDataWithSpecWithEmptyAll() {
+    void createNewDataWithSpecWithEmptyAll() {
         // given
-        String commandSpec = CommandDescription.COMMAND_SEPARATOR + CommandDescription.COMMAND_SEPARATOR +
-                             CommandDescription.COMMAND_SEPARATOR;
-        CommandDescriptionData commandDescriptionData = new CommandDescriptionData("|||");
+        String commandSpec = CommandDescription.COMMAND_SEPARATOR + CommandDescription.COMMAND_SEPARATOR;
+        CommandDescriptionData commandDescriptionData = new CommandDescriptionData(commandSpec);
 
         // when
         Word verb = commandDescriptionData.getVerb();
@@ -167,8 +166,8 @@ class CommandDescriptionDataTest {
 
         // then
 
-        assertThat(verb == null);
-        assertThat(adjective == null);
-        assertThat(noun == null);
+        assertThat(verb).isNull();
+        assertThat(adjective).isNull();
+        assertThat(noun).isNull();
     }
 }

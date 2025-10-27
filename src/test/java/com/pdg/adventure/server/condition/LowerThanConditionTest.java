@@ -1,13 +1,14 @@
 package com.pdg.adventure.server.condition;
 
-import com.pdg.adventure.server.exception.ConfigurationException;
-import com.pdg.adventure.server.support.Variable;
-import com.pdg.adventure.server.support.VariableProvider;
-import com.pdg.adventure.server.testhelper.TestSupporter;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+
+import com.pdg.adventure.server.exception.ConfigurationException;
+import com.pdg.adventure.server.support.Variable;
+import com.pdg.adventure.server.support.VariableProvider;
+import com.pdg.adventure.server.testhelper.TestSupporter;
 
 class LowerThanConditionTest {
     private static final String varName = "t";
@@ -15,7 +16,7 @@ class LowerThanConditionTest {
     private LowerThanCondition sut = new LowerThanCondition(varName, 2, variableProvider);
 
     @Test
-    void testVariableMeetsCondition() throws Exception {
+    void testVariableMeetsCondition() {
         // given
         variableProvider.set(new Variable(varName, "1"));
 
@@ -38,7 +39,7 @@ class LowerThanConditionTest {
     }
 
     @Test
-    void testVariableFailsCondition() throws Exception {
+    void testVariableFailsCondition() {
         // given
         variableProvider.set(new Variable(varName, "3"));
 

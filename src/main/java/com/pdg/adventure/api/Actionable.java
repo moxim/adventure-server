@@ -15,4 +15,6 @@ public interface Actionable extends Describable {
     boolean hasVerb(String aVerb);
 
     List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription);
+
+    CommandProvider getCommandProvider();
 }

@@ -34,7 +34,8 @@ class ItemIdentifierTest {
     void findFullyQualifiedItem() {
         // given
         GenericCommandDescription commandDescription = new GenericCommandDescription("", "small", "ring");
-        DescriptionProvider ringDescription = new DescriptionProvider(commandDescription.getAdjective(), commandDescription.getNoun());
+        DescriptionProvider ringDescription = new DescriptionProvider(commandDescription.getAdjective(),
+                                                                      commandDescription.getNoun());
         Item ring = new Item(ringDescription, true);
         container.add(ring);
 
@@ -46,7 +47,7 @@ class ItemIdentifierTest {
     }
 
     @Test
-    void failToFindItem() {
+    void ableToFindItem_evenIfNotCompletelySpecified() {
         // given
         GenericCommandDescription commandDescription = new GenericCommandDescription("", "small", "ring");
         DescriptionProvider ringDescription = new DescriptionProvider(commandDescription.getNoun());
@@ -96,7 +97,7 @@ class ItemIdentifierTest {
     }
 
     @Test
-    public void findSpecificItem() {
+    void findSpecificItem() {
         // given
         String noun = "ring";
         Item ring = new Item(new DescriptionProvider("small", noun), true);
@@ -109,11 +110,9 @@ class ItemIdentifierTest {
         List<Containable> items = ItemIdentifier.findItems(container, commandDescription);
 
         // then
-        assertThat(items).contains(ring);
-        assertThat(items).doesNotContain(largeRing);
-        assertThat(items).size().isEqualTo(1);
+        assertThat(items).contains(ring).doesNotContain(largeRing).size().isEqualTo(1);
     }
-    
+
     @Test
     void omgNoVerbNoNoun() {
         // given

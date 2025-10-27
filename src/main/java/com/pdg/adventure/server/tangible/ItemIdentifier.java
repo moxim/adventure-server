@@ -1,8 +1,5 @@
 package com.pdg.adventure.server.tangible;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,8 +9,6 @@ import com.pdg.adventure.api.Container;
 import com.pdg.adventure.model.VocabularyData;
 
 public class ItemIdentifier {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ItemIdentifier.class);
 
     private ItemIdentifier() {
         // don't instantiate me
@@ -26,8 +21,8 @@ public class ItemIdentifier {
         List<Containable> items = aContainer.getContents();
         List<Containable> foundItems = new ArrayList<>();
 
-        if (VocabularyData.EMPTY_STRING.equals(noun)) { // TODO: when does this ever happen?
-            LOG.warn("Drats! Empty noun in command description: {}", aCommandDescription);
+        // if there is no noun, this means we are likely dealing with a verb-only command
+        if (VocabularyData.EMPTY_STRING.equals(noun)) {
             String verb = aCommandDescription.getVerb();
             foundItems.addAll(addItemsByVerb(items, verb));
         } else {
@@ -49,17 +44,15 @@ public class ItemIdentifier {
 
     private static <T extends Containable> List<Containable> addItemsByName(List<T> aListOfItems, String aNoun, String anAdjective) {
         final List<Containable> matchingItems = new ArrayList<>();
-        if (!VocabularyData.EMPTY_STRING.equals(aNoun)) {
-            for (T item : aListOfItems) {
-                if (item.getNoun().equals(aNoun) && item.getAdjective().equals(anAdjective)) {
-                    matchingItems.add(item);
-                }
+        for (T item : aListOfItems) {
+            if (item.getNoun().equals(aNoun) && item.getAdjective().equals(anAdjective)) {
+                matchingItems.add(item);
             }
-            if (matchingItems.isEmpty()) {
-                for (T item : aListOfItems) {
-                    if (item.getNoun().equals(aNoun)) {
-                        matchingItems.add(item);
-                    }
+        }
+        if (matchingItems.isEmpty()) {
+            for (T item : aListOfItems) {
+                if (item.getNoun().equals(aNoun)) {
+                    matchingItems.add(item);
                 }
             }
         }
