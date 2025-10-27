@@ -85,10 +85,10 @@ public class GenericDirection
         return description.getVerb();
     }
 
-    public Command getCommand() {
-        // TODO: really??
-        return getCommands().get(0);
-    }
+//    public Command getCommand() {
+//        // TODO: really??
+//        return getCommands().get(0);
+//    }
 
     @Override
     public boolean isContainable() {

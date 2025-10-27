@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.server.testhelper.TestSupporter;
 
-class CommandProviderDataTest {
+class GenericCommandProviderDataTest {
 
     private CommandProviderData sut = new CommandProviderData();
     private String commandId = "c_id_1";

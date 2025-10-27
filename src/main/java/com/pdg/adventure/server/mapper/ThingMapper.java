@@ -7,7 +7,7 @@ import com.pdg.adventure.model.CommandProviderData;
 import com.pdg.adventure.model.ThingData;
 import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
-import com.pdg.adventure.server.parser.CommandProvider;
+import com.pdg.adventure.server.parser.GenericCommandProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.Thing;
@@ -17,7 +17,7 @@ import com.pdg.adventure.server.tangible.Thing;
 public class ThingMapper implements Mapper<ThingData, Thing> {
 
     private final Mapper<DescriptionData, DescriptionProvider> descriptionMapper;
-    private final Mapper<CommandProviderData, CommandProvider> commandProviderMapper;
+    private final Mapper<CommandProviderData, GenericCommandProvider> commandProviderMapper;
     private final MapperSupporter mapperSupporter;
 
     public ThingMapper(MapperSupporter aMapperSupporter,

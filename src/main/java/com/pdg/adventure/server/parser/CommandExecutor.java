@@ -30,7 +30,9 @@ public class CommandExecutor {
     }
 
     public ExecutionResult execute(CommandDescription aCommand) {
+        // first look for commands in the pocket
         List<CommandChain> availableCommandChains = pocket.getMatchingCommandChain(aCommand);
+        // then add commands in the location itself, the directions and the items in the location
         availableCommandChains.addAll(location.getMatchingCommandChain(aCommand));
 
         reduceCommandChains(availableCommandChains, aCommand);

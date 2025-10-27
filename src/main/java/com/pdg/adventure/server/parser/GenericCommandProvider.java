@@ -7,12 +7,12 @@ import java.util.*;
 import com.pdg.adventure.api.*;
 import com.pdg.adventure.model.VocabularyData;
 
-public class CommandProvider implements Ided {
+public class GenericCommandProvider implements CommandProvider {
     @Getter
     private final Map<CommandDescription, CommandChain> availableCommands;
     private String id;
 
-    public CommandProvider() {
+    public GenericCommandProvider() {
         availableCommands = new HashMap<>();
         id = UUID.randomUUID().toString();
     }
@@ -27,6 +27,7 @@ public class CommandProvider implements Ided {
         id = anId;
     }
 
+    @Override
     public void addCommand(Command aCommand) {
         CommandChain chain = availableCommands.get(aCommand.getDescription());
         if (chain == null) {
@@ -36,6 +37,7 @@ public class CommandProvider implements Ided {
         availableCommands.put(aCommand.getDescription(), chain);
     }
 
+    @Override
     public void removeCommand(Command aCommand) {
         availableCommands.remove(aCommand.getDescription());
     }
@@ -44,12 +46,18 @@ public class CommandProvider implements Ided {
         return availableCommands.containsKey(aCommand);
     }
 
+    @Override
     public List<Command> getCommands() {
         List<Command> commands = new ArrayList<>();
         for (CommandChain chain : availableCommands.values()) {
             commands.addAll(chain.getCommands());
         }
         return commands;
+    }
+
+    @Override
+    public List<CommandChain> getMatchingCommands(final CommandDescription aCommandDescription) {
+        return getMatchingCommandChain(aCommandDescription);
     }
 
     public ExecutionResult applyCommand(CommandDescription aCommandDescription) {
@@ -70,10 +78,13 @@ public class CommandProvider implements Ided {
         List<CommandChain> result = new ArrayList<>();
         for (Map.Entry<CommandDescription, CommandChain> entry : availableCommands.entrySet()) {
             CommandDescription itemCommand = entry.getKey();
-            if (itemCommand.getVerb().equals(verb) && itemCommand.getNoun().equals(noun)) {
-                if (itemCommand.getAdjective().equals(adjective)) {
+            String itemVerb = itemCommand.getVerb();
+            String itemAdjective = itemCommand.getAdjective();
+            String itemNoun = itemCommand.getNoun();
+            if (itemVerb.equals(verb) && itemNoun.equals(noun)) {
+                if (itemAdjective.equals(adjective)) {
                     result.add(entry.getValue());
-                } else if (VocabularyData.EMPTY_STRING.equals(itemCommand.getAdjective())) {
+                } else if (VocabularyData.EMPTY_STRING.equals(itemAdjective)) {
                     result.add(entry.getValue());
                 } else if (VocabularyData.EMPTY_STRING.equals(adjective)) {
                     result.add(entry.getValue());
@@ -94,7 +105,7 @@ public class CommandProvider implements Ided {
 
     @Override
     public String toString() {
-        return "CommandProvider{" +
+        return "GenericCommandProvider{" +
                 "availableCommands=" + availableCommands +
                 ", id='" + id + '\'' +
                 '}';

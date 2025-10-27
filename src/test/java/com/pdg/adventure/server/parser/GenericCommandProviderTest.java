@@ -6,12 +6,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.api.*;
 
-class CommandProviderTest {
+class GenericCommandProviderTest {
 
     @Test
     void addingCommandWithSameDescriptionCreatesChain() {
         // given
-        CommandProvider provider = new CommandProvider();
+        GenericCommandProvider provider = new GenericCommandProvider();
         GenericCommandDescription description = new GenericCommandDescription("open", "wooden", "door");
 
         Action action1 = new Action() {
@@ -58,7 +58,7 @@ class CommandProviderTest {
     @Test
     void commandChainExecutesUntilSuccessfulPreconditionsMet() {
         // given
-        CommandProvider provider = new CommandProvider();
+        GenericCommandProvider provider = new GenericCommandProvider();
         GenericCommandDescription description = new GenericCommandDescription("open", "wooden", "door");
 
         // First command with failing precondition
@@ -150,7 +150,7 @@ class CommandProviderTest {
     @Test
     void addingDifferentCommandsCreatesMultipleChains() {
         // given
-        CommandProvider provider = new CommandProvider();
+        GenericCommandProvider provider = new GenericCommandProvider();
         GenericCommandDescription openDoor = new GenericCommandDescription("open", "wooden", "door");
         GenericCommandDescription closeDoor = new GenericCommandDescription("close", "wooden", "door");
 
