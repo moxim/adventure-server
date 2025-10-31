@@ -17,6 +17,7 @@ import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.view.item.AllItemsMenuView;
 import com.pdg.adventure.view.location.LocationsMenuView;
 import com.pdg.adventure.view.support.ViewSupporter;
 import com.pdg.adventure.view.vocabulary.VocabularyMenuView;
@@ -71,6 +72,15 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
+        Button editItemsButton = new Button("Manage Items", e -> {
+            if (binder.writeBeanIfValid(adventureData)) {
+                UI.getCurrent().navigate(AllItemsMenuView.class,
+                                new RouteParameters(
+                                        new RouteParam("adventureId", adventureData.getId())))
+                        .ifPresent(editor -> editor.setData(adventureData));
+            }
+        });
+
         Button workflowButton = new Button("Manage Workflow");
         workflowButton.setEnabled(false);
 
@@ -90,7 +100,7 @@ public class AdventureEditorView extends VerticalLayout
         setMargin(true);
         setPadding(true);
 
-        final HorizontalLayout editRow = new HorizontalLayout(editVocabularyButton, editMessagesButton, editLocationsButton, workflowButton);
+        final HorizontalLayout editRow = new HorizontalLayout(editVocabularyButton, editMessagesButton, editItemsButton, editLocationsButton, workflowButton);
 
         Button backButton = new Button("Back", event -> UI.getCurrent().navigate(AdventuresMenuView.class));
         backButton.addClickShortcut(Key.ESCAPE);

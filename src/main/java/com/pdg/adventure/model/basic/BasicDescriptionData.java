@@ -16,4 +16,20 @@ public class BasicDescriptionData extends BasicData {
     @DBRef
     @CascadeSave
     private Word noun;
+
+    public String getSafeAdjective() {
+        if (adjective != null) {
+            return adjective.getText();
+        } else {
+            return "";
+        }
+    }
+
+    public String getSafeNoun() {
+        if (noun != null) {
+            return noun.getText();
+        } else {
+            return "";
+        }
+    }
 }

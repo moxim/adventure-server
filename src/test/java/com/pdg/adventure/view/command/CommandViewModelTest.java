@@ -1,11 +1,12 @@
 package com.pdg.adventure.view.command;
 
-import com.pdg.adventure.model.Word;
-import com.pdg.adventure.model.basic.CommandDescriptionData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import com.pdg.adventure.model.Word;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 
 class CommandViewModelTest {
 
@@ -34,9 +35,9 @@ class CommandViewModelTest {
 
         // Then
         assertThat(viewModel.getData()).isEqualTo(commandDescriptionData);
-        assertThat(viewModel.getVerb()).isEqualTo(verb);
-        assertThat(viewModel.getAdjective()).isEqualTo(adjective);
-        assertThat(viewModel.getNoun()).isEqualTo(noun);
+        assertThat(viewModel.getVerb().getText()).isEqualTo(verb.getText());
+        assertThat(viewModel.getAdjective().getText()).isEqualTo(adjective.getText());
+        assertThat(viewModel.getNoun().getText()).isEqualTo(noun.getText());
         assertThat(viewModel.getSpecification()).isEqualTo("get|rusty|key");
     }
 
@@ -150,8 +151,8 @@ class CommandViewModelTest {
         viewModel.setSpecification(newSpec);
 
         // Then
-        assertThat(viewModel.getData().getVerb()).isEqualTo(newVerb);
-        assertThat(viewModel.getData().getNoun()).isEqualTo(newNoun);
+        assertThat(viewModel.getData().getVerb().getText()).isEqualTo(newVerb.getText());
+        assertThat(viewModel.getData().getNoun().getText()).isEqualTo(newNoun.getText());
         assertThat(viewModel.getData().getCommandSpecification()).isEqualTo(newSpec);
     }
 

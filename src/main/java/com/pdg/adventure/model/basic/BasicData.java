@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
 
+import java.util.UUID;
+
 import com.pdg.adventure.api.Ided;
 
 @Data
@@ -11,5 +13,5 @@ import com.pdg.adventure.api.Ided;
 public class BasicData implements Ided {
     @Id
     @EqualsAndHashCode.Include
-    private String id; // = UUID.randomUUID().toString();
+    private String id = UUID.randomUUID().toString();
 }

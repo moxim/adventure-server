@@ -8,10 +8,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.pdg.adventure.model.basic.BasicData;
 
+@Document(collection = "words")
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @ToString(callSuper = true)
-@Document(collection = "wordData")
 public class Word extends BasicData {
     private String text;
     private Type type;

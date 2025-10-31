@@ -75,11 +75,13 @@ public class GenericDirection
         String adjective = description.getAdjective();
         String noun = description.getNoun();
 
-        if (!VocabularyData.EMPTY_STRING.equals(adjective)) {
-            result.append(" ").append(adjective);
-        }
-
         if (!VocabularyData.EMPTY_STRING.equals(noun)) {
+            result.append(" the");
+
+            if (!VocabularyData.EMPTY_STRING.equals(adjective)) {
+                result.append(" ").append(adjective);
+            }
+
             result.append(" ").append(noun);
         }
 

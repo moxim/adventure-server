@@ -10,7 +10,7 @@ import java.util.Set;
 
 import com.pdg.adventure.server.storage.mongo.CascadeSave;
 
-@Document
+@Document(collection = "locations")
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class LocationData extends ThingData {
@@ -19,7 +19,7 @@ public class LocationData extends ThingData {
     private ItemContainerData itemContainerData = new ItemContainerData();
     private Set<DirectionData> directionsData = new HashSet<>();
 
-    private boolean hasBeenVisited;
+    private int timesVisited;
     private int lumen= 50;
 
     @Override

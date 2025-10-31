@@ -5,15 +5,13 @@ import lombok.EqualsAndHashCode;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 import com.pdg.adventure.model.basic.BasicData;
+import com.pdg.adventure.server.storage.mongo.CascadeSave;
 
-@Document
+@Document(collection = "vocabularies")
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class VocabularyData extends BasicData {
@@ -22,7 +20,8 @@ public class VocabularyData extends BasicData {
     public static final String DUPLICATE_WORD_TEXT = "Word '%s' is already present!";
     public static final String EMPTY_STRING = "";
 
-    @DBRef
+    @DBRef(lazy = false)
+    @CascadeSave
     private Map<String, Word> words;
 
     // TODO: keep a list of words that point to the same synonym, to be able to remove the synonym and appoint a new synonym
@@ -41,6 +40,7 @@ public class VocabularyData extends BasicData {
         Word newWord = words.get(lowerText);
         if (newWord == null) {
             newWord = new Word(lowerText, aType);
+//            newWord.setId(UUID.randomUUID().toString());
             words.put(lowerText, newWord);
         } else {
             if (newWord.getSynonym() == null) {

@@ -18,7 +18,14 @@ import com.pdg.adventure.view.location.LocationViewModel;
 public class ViewSupporter {
 
     public static String formatId(Ided anIdedData) {
-        return formatId(anIdedData.getId().substring(0, 8));
+        if (anIdedData == null) {
+            return "";
+        }
+        String id = anIdedData.getId();
+        if (id == null || id.isEmpty()) {
+            return "";
+        }
+        return formatId(id);
     }
 
     public static String formatId(String anIdedData) {

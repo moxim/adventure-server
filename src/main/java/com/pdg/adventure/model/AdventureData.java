@@ -11,19 +11,28 @@ import java.util.Map;
 import com.pdg.adventure.model.basic.BasicData;
 import com.pdg.adventure.server.storage.mongo.CascadeSave;
 
-@Document
+@Document(collection = "adventures")
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class AdventureData extends BasicData {
     private String title;
+
+    @DBRef(lazy = false)
+    @CascadeSave
     private ItemContainerData playerPocket;
+
     @DBRef(lazy = false)
     @CascadeSave
     private Map<String, LocationData> locationData;
     private String currentLocationId;
+
     @DBRef(lazy = false)
     @CascadeSave
     private transient VocabularyData vocabularyData;
+
+    @DBRef(lazy = false)
+    @CascadeSave
+    Map<String, MessageData> messages;
 
     private String notes = ""; // to outline a story or whatever
 
