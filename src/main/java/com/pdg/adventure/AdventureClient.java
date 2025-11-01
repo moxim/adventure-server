@@ -50,9 +50,8 @@ public class AdventureClient implements CommandLineRunner {
         Vocabulary vocabulary = vocabularyMapper.mapToBO(adventureData.getVocabularyData());
         // Vocabulary is already populated in adventureConfig by the mapper
 
-        // Load messages from MongoDB and populate MessagesHolder BEFORE mapping
-        List<MessageData> messages = messageService.getAllMessagesForAdventure(adventureData.getId());
-        for (MessageData messageData : messages) {
+        // Load messages from adventure's messages Map (loaded via @DBRef) and populate MessagesHolder BEFORE mapping
+        for (MessageData messageData : adventureData.getMessages().values()) {
             adventureConfig.allMessages().addMessage(messageData.getMessageId(), messageData.getText());
         }
 

@@ -16,8 +16,8 @@ class MessageDataTest {
         MessageData messageData = new MessageData();
 
         // Then
-        assertThat(messageData.getCreatedDate()).isNotNull();
-        assertThat(messageData.getModifiedDate()).isNotNull();
+        assertThat(messageData.getCreatedAt()).isNotNull();
+        assertThat(messageData.getUpdatedAt()).isNotNull();
         assertThat(messageData.getTranslations()).isNotNull().isEmpty();
         assertThat(messageData.getTags()).isNotNull().isEmpty();
     }
@@ -36,8 +36,8 @@ class MessageDataTest {
         assertThat(messageData.getAdventureId()).isEqualTo(adventureId);
         assertThat(messageData.getMessageId()).isEqualTo(messageId);
         assertThat(messageData.getText()).isEqualTo(text);
-        assertThat(messageData.getCreatedDate()).isNotNull();
-        assertThat(messageData.getModifiedDate()).isNotNull();
+        assertThat(messageData.getCreatedAt()).isNotNull();
+        assertThat(messageData.getUpdatedAt()).isNotNull();
     }
 
     @Test
@@ -54,7 +54,7 @@ class MessageDataTest {
     void touch_shouldUpdateModifiedDate() throws InterruptedException {
         // Given
         MessageData messageData = new MessageData();
-        Instant originalModifiedDate = messageData.getModifiedDate();
+        Instant originalModifiedDate = messageData.getUpdatedAt();
 
         // Small delay to ensure time difference
         Thread.sleep(10);
@@ -63,8 +63,8 @@ class MessageDataTest {
         messageData.touch();
 
         // Then
-        assertThat(messageData.getModifiedDate()).isAfter(originalModifiedDate);
-        assertThat(messageData.getCreatedDate()).isEqualTo(messageData.getCreatedDate()); // Created date unchanged
+        assertThat(messageData.getUpdatedAt()).isAfter(originalModifiedDate);
+        assertThat(messageData.getCreatedAt()).isEqualTo(messageData.getCreatedAt()); // Created date unchanged
     }
 
     @Test
@@ -123,21 +123,21 @@ class MessageDataTest {
         MessageData messageData = new MessageData();
 
         // Then
-        assertThat(messageData.getCreatedDate()).isInstanceOf(Instant.class);
-        assertThat(messageData.getModifiedDate()).isInstanceOf(Instant.class);
+        assertThat(messageData.getCreatedAt()).isInstanceOf(Instant.class);
+        assertThat(messageData.getUpdatedAt()).isInstanceOf(Instant.class);
     }
 
     @Test
     void createdDate_shouldNotChangeAfterTouch() {
         // Given
         MessageData messageData = new MessageData();
-        Instant originalCreatedDate = messageData.getCreatedDate();
+        Instant originalCreatedDate = messageData.getCreatedAt();
 
         // When
         messageData.touch();
 
         // Then
-        assertThat(messageData.getCreatedDate()).isEqualTo(originalCreatedDate);
+        assertThat(messageData.getCreatedAt()).isEqualTo(originalCreatedDate);
     }
 
     @Test
@@ -146,8 +146,8 @@ class MessageDataTest {
         MessageData messageData = new MessageData();
 
         // Then
-        assertThat(messageData.getModifiedDate()).isNotNull();
-        assertThat(messageData.getModifiedDate()).isBeforeOrEqualTo(Instant.now());
+        assertThat(messageData.getCreatedAt()).isNotNull();
+        assertThat(messageData.getUpdatedAt()).isBeforeOrEqualTo(Instant.now());
     }
 
     @Test

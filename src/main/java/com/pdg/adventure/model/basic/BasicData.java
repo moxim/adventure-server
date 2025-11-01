@@ -2,8 +2,12 @@ package com.pdg.adventure.model.basic;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import com.pdg.adventure.api.Ided;
@@ -13,5 +17,33 @@ import com.pdg.adventure.api.Ided;
 public class BasicData implements Ided {
     @Id
     @EqualsAndHashCode.Include
-    private String id = UUID.randomUUID().toString();
+    private String id;
+
+    /**
+     * Timestamp when the message was created.
+     */
+    @CreatedDate
+    @Field("createdAt")
+    private Instant createdAt;
+
+    /**
+     * Timestamp when the message was last modified.
+     */
+    @LastModifiedDate
+    @Field("updatedAt")
+    private Instant updatedAt;
+
+    public BasicData() {
+        id = UUID.randomUUID().toString();
+        createdAt = Instant.now();
+        updatedAt = Instant.now();
+    }
+
+    /**
+     * Update the modified timestamp.
+     * Should be called before saving updates.
+     */
+    public void touch() {
+        updatedAt = Instant.now();
+    }
 }

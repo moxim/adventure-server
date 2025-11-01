@@ -21,8 +21,6 @@ import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.server.storage.AdventureService;
-import com.pdg.adventure.server.storage.ItemService;
-import com.pdg.adventure.server.storage.MessageService;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 @PageTitle("Your World Of Adventures")
@@ -32,20 +30,16 @@ import com.pdg.adventure.view.support.ViewSupporter;
 public class AdventuresMenuView extends VerticalLayout {
 
     private transient final AdventureService adventureService;
-    private transient final MessageService messageService;
-    private transient final ItemService itemService;
 
     private String targetAdventureId;
     private Button runAdventure;
 
     @Autowired
-    public AdventuresMenuView(AdventureService anAdventureService, MessageService aMessageService, ItemService anItemService) {
+    public AdventuresMenuView(AdventureService anAdventureService) {
 
         setSizeFull();
 
         adventureService = anAdventureService;
-        messageService = aMessageService;
-        itemService = anItemService;
 
         Button create = new Button("Create Adventure", e -> UI.getCurrent().navigate(AdventureEditorView.class));
         //<theme-editor-local-classname>
@@ -143,29 +137,13 @@ public class AdventuresMenuView extends VerticalLayout {
                 dataProvider.getItems().remove(adventure);
                 dataProvider.refreshAll();
 
-                String adventureId = adventure.getId();
-
-                // Delete all messages for this adventure
-                messageService.deleteAllMessagesForAdventure(adventureId);
-
-                // Delete all items for this adventure
-                itemService.deleteAllItemsForAdventure(adventureId);
-
-                // Delete all locations
-                adventure.getLocationData().keySet().stream().forEach(locationId -> {
-                    adventureService.deleteLocation(locationId);
-                });
-
-                // Delete all words in vocabulary
-                adventure.getVocabularyData().getWords().stream().forEach(word -> {
-                    adventureService.deleteWord(word.getId());
-                });
-
-                // Delete vocabulary
-                adventureService.deleteVocabulary(adventure.getVocabularyData().getId());
-
-                // Finally, delete the adventure itself
-                adventureService.deleteAdventure(adventureId);
+                // Delete adventure - cascade delete will automatically handle:
+                // - All messages (@CascadeDelete on messages field)
+                // - All items (@CascadeDelete on itemContainerData in locations)
+                // - All locations (@CascadeDelete on locationData field)
+                // - All words (@CascadeDelete on words in vocabularyData)
+                // - Vocabulary (@CascadeDelete on vocabularyData field)
+                adventureService.deleteAdventure(adventure.getId());
             }));
         }
     }

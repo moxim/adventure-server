@@ -5,7 +5,6 @@ import lombok.EqualsAndHashCode;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,24 +58,12 @@ public class MessageData extends BasicData {
     private Map<String, String> translations;
 
     /**
-     * Timestamp when the message was created.
-     */
-    private Instant createdDate;
-
-    /**
-     * Timestamp when the message was last modified.
-     */
-    private Instant modifiedDate;
-
-    /**
      * Optional notes or comments about the message.
      * Useful for documentation and context.
      */
     private String notes;
 
     public MessageData() {
-        this.createdDate = Instant.now();
-        this.modifiedDate = Instant.now();
         this.translations = new HashMap<>();
         this.tags = new java.util.HashSet<>();
     }
@@ -86,13 +73,5 @@ public class MessageData extends BasicData {
         this.adventureId = adventureId;
         this.messageId = messageId;
         this.text = text;
-    }
-
-    /**
-     * Update the modified timestamp.
-     * Should be called before saving updates.
-     */
-    public void touch() {
-        this.modifiedDate = Instant.now();
     }
 }

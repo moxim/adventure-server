@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.storage;
 
-import com.pdg.adventure.model.MessageData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,8 +14,9 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+
+import com.pdg.adventure.model.MessageData;
 
 @ExtendWith(MockitoExtension.class)
 class MessageServiceTest {
@@ -52,8 +52,8 @@ class MessageServiceTest {
         assertThat(result.getAdventureId()).isEqualTo(adventureId);
         assertThat(result.getMessageId()).isEqualTo(messageId);
         assertThat(result.getText()).isEqualTo(messageText);
-        assertThat(result.getCreatedDate()).isNotNull();
-        assertThat(result.getModifiedDate()).isNotNull();
+        assertThat(result.getCreatedAt()).isNotNull();
+        assertThat(result.getUpdatedAt()).isNotNull();
 
         verify(messageRepository).existsByAdventureIdAndMessageId(adventureId, messageId);
         verify(messageRepository).save(any(MessageData.class));
@@ -304,7 +304,7 @@ class MessageServiceTest {
         MessageData result = messageService.saveMessage(message);
 
         // Then
-        assertThat(result.getModifiedDate()).isNotNull();
+        assertThat(result.getUpdatedAt()).isNotNull();
         verify(messageRepository).save(message);
     }
 }

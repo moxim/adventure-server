@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.function.Supplier;
 
 import com.pdg.adventure.model.basic.BasicData;
+import com.pdg.adventure.server.storage.mongo.CascadeDelete;
 import com.pdg.adventure.server.storage.mongo.CascadeSave;
 
 @Document(collection = "vocabularies")
@@ -22,6 +23,7 @@ public class VocabularyData extends BasicData {
 
     @DBRef(lazy = false)
     @CascadeSave
+    @CascadeDelete
     private Map<String, Word> words;
 
     // TODO: keep a list of words that point to the same synonym, to be able to remove the synonym and appoint a new synonym

@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.pdg.adventure.model.basic.BasicData;
+import com.pdg.adventure.server.storage.mongo.CascadeDelete;
 import com.pdg.adventure.server.storage.mongo.CascadeSave;
 
 @Document(collection = "adventures")
@@ -19,20 +20,24 @@ public class AdventureData extends BasicData {
 
     @DBRef(lazy = false)
     @CascadeSave
+    @CascadeDelete
     private ItemContainerData playerPocket;
 
     @DBRef(lazy = false)
     @CascadeSave
+    @CascadeDelete
     private Map<String, LocationData> locationData;
     private String currentLocationId;
 
     @DBRef(lazy = false)
     @CascadeSave
+    @CascadeDelete
     private transient VocabularyData vocabularyData;
 
     @DBRef(lazy = false)
     @CascadeSave
-    Map<String, MessageData> messages;
+    @CascadeDelete
+    private Map<String, MessageData> messages;
 
     private String notes = ""; // to outline a story or whatever
 
@@ -46,6 +51,7 @@ public class AdventureData extends BasicData {
         vocabularyData = aVocabularyData;
         playerPocket = new ItemContainerData();
         locationData = new HashMap<>();
+        messages = new HashMap<>();
         currentLocationId = "";
         title = "";
     }

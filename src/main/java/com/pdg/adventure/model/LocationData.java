@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.pdg.adventure.server.storage.mongo.CascadeDelete;
 import com.pdg.adventure.server.storage.mongo.CascadeSave;
 
 @Document(collection = "locations")
@@ -16,6 +17,7 @@ import com.pdg.adventure.server.storage.mongo.CascadeSave;
 public class LocationData extends ThingData {
     @DBRef(lazy = false)
     @CascadeSave
+    @CascadeDelete
     private ItemContainerData itemContainerData = new ItemContainerData();
     private Set<DirectionData> directionsData = new HashSet<>();
 

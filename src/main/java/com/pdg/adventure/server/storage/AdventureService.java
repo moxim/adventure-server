@@ -12,8 +12,10 @@ import java.util.UUID;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.storage.mongo.CascadeDeleteHelper;
 import com.pdg.adventure.server.support.MapperSupporter;
 
 @Service
@@ -24,17 +26,23 @@ public class AdventureService {
     private final LocationRepository locationRepository;
     private final WordRepository wordRepository;
     private final VocabularyReporitory vocabularyRepository;
+    private final MessageService messageService;
+    private final CascadeDeleteHelper cascadeDeleteHelper;
 
 //    @Autowired
     public AdventureService(LocationRepository aLocationRepository,
                             AdventureRepository anAdventureRepository,
                             WordRepository aWordRepository,
                             VocabularyReporitory aVocabularyRepository,
-                            MapperSupporter aMappingService) {
+                            MapperSupporter aMappingService,
+                            MessageService aMessageService,
+                            CascadeDeleteHelper aCascadeDeleteHelper) {
         locationRepository = aLocationRepository;
         adventureRepository = anAdventureRepository;
         wordRepository = aWordRepository;
         vocabularyRepository = aVocabularyRepository;
+        messageService = aMessageService;
+        cascadeDeleteHelper = aCascadeDeleteHelper;
     }
 
     public LocationData findLocationById(@Nonnull String id) {
@@ -126,7 +134,26 @@ public class AdventureService {
     }
 
     public void deleteAdventure(String anId) {
-        adventureRepository.deleteById(anId);
+        LOG.info("Deleting adventure: {}", anId);
+
+        // Load the adventure first to ensure cascade delete can access all relationships
+        Optional<AdventureData> adventureOpt = adventureRepository.findById(anId);
+
+        if (adventureOpt.isPresent()) {
+            AdventureData adventure = adventureOpt.get();
+
+            // Perform cascade delete on all @CascadeDelete annotated fields
+            // (messages, locations, items, vocabulary, words)
+            LOG.info("Performing cascade delete for adventure: {}", anId);
+            cascadeDeleteHelper.cascadeDelete(adventure);
+
+            // Now delete the adventure itself
+            LOG.info("Deleting adventure document: {}", anId);
+            adventureRepository.delete(adventure);
+            LOG.info("Adventure deleted successfully: {}", anId);
+        } else {
+            LOG.warn("Adventure not found for deletion: {}", anId);
+        }
     }
 
     public void deleteWord(String id) {wordRepository.deleteById(id);}

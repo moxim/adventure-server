@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.pdg.adventure.server.storage.mongo.CascadeDelete;
 import com.pdg.adventure.server.storage.mongo.CascadeSave;
 
 /**
@@ -25,6 +26,7 @@ public class ItemContainerData extends ItemData {
 
     @DBRef(lazy = false)
     @CascadeSave
+    @CascadeDelete
     private List<ItemData> items = new ArrayList<>();
 
     private int maxSize;

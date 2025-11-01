@@ -7,8 +7,6 @@ import com.vaadin.flow.component.html.Span;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.action.MessageActionData;
-import com.pdg.adventure.server.storage.MessageService;
-import com.pdg.adventure.view.support.ApplicationContextProvider;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,7 +18,6 @@ import java.util.stream.Collectors;
 public class MessageActionEditor extends ActionEditorComponent {
     private final MessageActionData messageActionData;
     private final AdventureData adventureData;
-    private final MessageService messageService;
     private ComboBox<String> messageIdComboBox;
     private Div messagePreview;
 
@@ -28,10 +25,6 @@ public class MessageActionEditor extends ActionEditorComponent {
         super(actionData);
         this.messageActionData = actionData;
         this.adventureData = adventureData;
-
-        // Get MessageService from Spring context
-        this.messageService = ApplicationContextProvider.getApplicationContext()
-                .getBean(MessageService.class);
         // UI will be built when initialize() is called
     }
 
@@ -41,9 +34,8 @@ public class MessageActionEditor extends ActionEditorComponent {
         Span description = new Span("Display a message to the player from the message catalog");
         description.getStyle().set("color", "var(--lumo-secondary-text-color)");
 
-        // Load available messages from the database
-        List<MessageData> availableMessages = messageService.getAllMessagesForAdventure(adventureData.getId());
-        List<String> messageIds = availableMessages.stream()
+        // Load available messages from adventure's messages Map (loaded via @DBRef)
+        List<String> messageIds = adventureData.getMessages().values().stream()
                 .map(MessageData::getMessageId)
                 .sorted()
                 .collect(Collectors.toList());
@@ -113,9 +105,10 @@ public class MessageActionEditor extends ActionEditorComponent {
     private void updateMessagePreview(String messageId) {
         messagePreview.removeAll();
 
-        String messageText = messageService.getMessageText(adventureData.getId(), messageId);
-        if (messageText != null) {
-            Span textSpan = new Span(messageText);
+        // Get message from adventure's messages Map
+        MessageData message = adventureData.getMessages().get(messageId);
+        if (message != null) {
+            Span textSpan = new Span(message.getText());
             messagePreview.add(textSpan);
         } else {
             Span warningSpan = new Span("⚠ Message ID '" + messageId + "' not found in catalog");
