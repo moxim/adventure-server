@@ -1,15 +1,16 @@
 package com.pdg.adventure.view.direction;
 
+import com.vaadin.flow.component.html.Image;
+
 import com.pdg.adventure.view.component.AdventureAppLayout;
 
 public class DirectionsMainLayout extends AdventureAppLayout {
 
     public DirectionsMainLayout() {
-        String title = "Adventure Builder";
-        createHeader(title);
-
         String appName = "Direction Commands";
-        createDrawer(appName);
+        Image appImage = new Image("icons/path.gif", appName);
+        appImage.setMaxWidth("100px");
+        createDrawer(appName, appImage);
 
         setPrimarySection(Section.NAVBAR);
     }

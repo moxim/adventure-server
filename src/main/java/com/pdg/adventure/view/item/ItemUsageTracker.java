@@ -1,15 +1,16 @@
 package com.pdg.adventure.view.item;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.CommandChainData;
 import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.action.*;
 import com.pdg.adventure.model.basic.BasicData;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import com.pdg.adventure.view.support.TrackedUsage;
 
 /**
  * Utility class for tracking item usage throughout an adventure.
@@ -20,7 +21,7 @@ public class ItemUsageTracker {
     /**
      * Data class representing a single usage of an item.
      */
-    public static class ItemUsage {
+    public static class ItemUsage implements TrackedUsage {
         private final String usageType;
         private final String sourceLocationId;
         private final String sourceLocationDescription;
@@ -168,32 +169,25 @@ public class ItemUsageTracker {
         String thingId = null;
         String actionType = null;
 
-        if (action instanceof TakeActionData) {
-            TakeActionData takeAction = (TakeActionData) action;
+        if (action instanceof TakeActionData takeAction) {
             thingId = takeAction.getThingId();
             actionType = "Take Action";
-        } else if (action instanceof DropActionData) {
-            DropActionData dropAction = (DropActionData) action;
+        } else if (action instanceof DropActionData dropAction) {
             thingId = dropAction.getThingId();
             actionType = "Drop Action";
-        } else if (action instanceof WearActionData) {
-            WearActionData wearAction = (WearActionData) action;
+        } else if (action instanceof WearActionData wearAction) {
             thingId = wearAction.getThingId();
             actionType = "Wear Action";
-        } else if (action instanceof MoveItemActionData) {
-            MoveItemActionData moveAction = (MoveItemActionData) action;
+        } else if (action instanceof MoveItemActionData moveAction) {
             thingId = moveAction.getThingId();
             actionType = "Move Item Action";
-        } else if (action instanceof CreateActionData) {
-            CreateActionData createAction = (CreateActionData) action;
+        } else if (action instanceof CreateActionData createAction) {
             thingId = createAction.getThingId();
             actionType = "Create Action";
-        } else if (action instanceof DestroyActionData) {
-            DestroyActionData destroyAction = (DestroyActionData) action;
+        } else if (action instanceof DestroyActionData destroyAction) {
             thingId = destroyAction.getThingId();
             actionType = "Destroy Action";
-        } else if (action instanceof RemoveActionData) {
-            RemoveActionData removeAction = (RemoveActionData) action;
+        } else if (action instanceof RemoveActionData removeAction) {
             thingId = removeAction.getThingId();
             actionType = "Remove Action";
         }

@@ -10,9 +10,6 @@ import com.pdg.adventure.view.component.AdventureAppLayout;
 public class LocationsMainLayout extends AdventureAppLayout {
 
     public LocationsMainLayout() {
-        String title = "Adventure Builder";
-        createHeader(title);
-
         String appName = "Locations";
         Image appImage = new Image("icons/maps.gif", appName);
         appImage.setMaxWidth("100px");

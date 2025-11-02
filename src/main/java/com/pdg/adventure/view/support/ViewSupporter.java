@@ -1,9 +1,13 @@
 package com.pdg.adventure.view.support;
 
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.pdg.adventure.api.Describable;
@@ -237,5 +241,47 @@ public class ViewSupporter {
             case ADJECTIVE -> aBinder.bind(aWord, LocationViewModel::getAdjective, LocationViewModel::setAdjective);
             default -> throw new IllegalStateException("Unexpected value: " + aType);
         }
+    }
+
+    public static ConfirmDialog getConfirmDialog(final String aHeader, final String aType, final String anId) {
+        ConfirmDialog dialog = new ConfirmDialog();
+        dialog.setHeader(aHeader);
+
+        dialog.setText("Are you sure you want to delete " + aType + " '" + anId + "'?");
+        dialog.setConfirmButtonTheme("error primary");
+
+        dialog.setCancelable(true);
+        dialog.setConfirmText("Delete");
+        return dialog;
+    }
+
+    public static void showUsages(final String aHeader, String aType, String anItemId, final List<? extends TrackedUsage> usages) {
+        ConfirmDialog dialog = new ConfirmDialog();
+        dialog.setHeader(aHeader + ": " + anItemId);
+        dialog.setWidth("700px");
+
+        if (usages.isEmpty()) {
+            dialog.setText("This " + aType + " is not currently used in any commands.");
+        } else {
+            StringBuilder usageText = new StringBuilder();
+            usageText.append("This " + aType + " is referenced ").append(usages.size()).append(" time(s):\n\n");
+
+            for (TrackedUsage usage : usages) {
+                usageText.append("• ").append(usage.getDisplayText()).append("\n");
+            }
+
+            Span usageSpan = new Span(usageText.toString());
+            usageSpan.getStyle()
+                    .set("white-space", "pre-wrap")
+                    .set("font-family", "monospace")
+                    .set("font-size", "0.9em");
+
+            VerticalLayout content = new VerticalLayout(usageSpan);
+            content.setPadding(false);
+            dialog.add(content);
+        }
+
+        dialog.setConfirmText("Close");
+        dialog.open();
     }
 }

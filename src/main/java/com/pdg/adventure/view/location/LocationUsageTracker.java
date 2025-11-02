@@ -8,6 +8,7 @@ import java.util.Set;
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
+import com.pdg.adventure.view.support.TrackedUsage;
 
 /**
  * Utility class for tracking location usage throughout an adventure.
@@ -18,7 +19,7 @@ public class LocationUsageTracker {
     /**
      * Data class representing a single usage of a location.
      */
-    public static class LocationUsage {
+    public static class LocationUsage implements TrackedUsage {
         private String usageType;
         private final String sourceLocationId;
         private final String sourceLocationDescription;

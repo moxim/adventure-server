@@ -8,12 +8,11 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
-import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
@@ -270,74 +269,42 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         }
     }
 
-    private void showLocationUsage(LocationDescriptionAdapter location) {
-        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData, location.getId());
-
-        ConfirmDialog dialog = new ConfirmDialog();
-        dialog.setHeader("Location Usage: " + location.getId());
-        dialog.setWidth("700px");
-
-        if (usages.isEmpty()) {
-            dialog.setText("This location is not currently referenced anywhere in the adventure.");
-        } else {
-            StringBuilder usageText = new StringBuilder();
-            usageText.append("This location is referenced ").append(usages.size()).append(" time(s):\n\n");
-
-            for (LocationUsageTracker.LocationUsage usage : usages) {
-                usageText.append("• ").append(usage.getDisplayText()).append("\n");
-            }
-
-            Span usageSpan = new Span(usageText.toString());
-            usageSpan.getStyle()
-                    .set("white-space", "pre-wrap")
-                    .set("font-family", "monospace")
-                    .set("font-size", "0.9em");
-
-            VerticalLayout content = new VerticalLayout(usageSpan);
-            content.setPadding(false);
-            dialog.add(content);
-        }
-
-        dialog.setConfirmText("Close");
-        dialog.open();
+    private void showLocationUsage(LocationDescriptionAdapter aLlocation) {
+        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData, aLlocation.getId());
+        ViewSupporter.showUsages("Location Usage", "location", aLlocation.getId(), usages);
     }
 
-    private void confirmDeleteLocation(LocationDescriptionAdapter location) {
-        int usageCount = LocationUsageTracker.countLocationUsages(adventureData, location.getId());
-
-        ConfirmDialog dialog = new ConfirmDialog();
-        dialog.setHeader("Delete Location");
+    private void confirmDeleteLocation(LocationDescriptionAdapter aLlocation) {
+        String locationId = aLlocation.getId();
+        int usageCount = LocationUsageTracker.countLocationUsages(adventureData, locationId);
 
         if (usageCount > 0) {
-            dialog.setText("WARNING: This location is currently referenced " + usageCount +
-                    " time(s) (as starting location, direction destination, or in move actions). " +
-                    "Deleting it may cause issues with your adventure. " +
-                    "Are you sure you want to delete location '" + location.getId() + "'?");
-            dialog.setConfirmButtonTheme("error primary");
+            Notification.show("Cannot delete location '" + locationId +
+                              "' because it is still referenced " + usageCount +
+                              " time(s). Please remove those references first.",
+                              5000, Notification.Position.MIDDLE);
         } else {
-            dialog.setText("Are you sure you want to delete location '" + location.getId() + "'?");
-            dialog.setConfirmButtonTheme("error primary");
+            final var dialog = getConfirmDialog(aLlocation);
+            dialog.addConfirmListener(event -> {
+                adventureData.getLocationData().remove(locationId);
+                if (locationId.equals(adventureData.getCurrentLocationId())) {
+                    adventureData.setCurrentLocationId("");
+                    startLocationTF.clear();
+                }
+                adventureService.deleteLocation(locationId);
+                adventureService.saveAdventureData(adventureData);
+
+                // Refresh the grid
+                gridContainer.removeAll();
+                fillGUI();
+            });
+
+            dialog.open();
         }
+    }
 
-        dialog.setCancelable(true);
-        dialog.setConfirmText("Delete");
-
-        dialog.addConfirmListener(event -> {
-            String locationId = location.getId();
-            adventureData.getLocationData().remove(locationId);
-            if (locationId.equals(adventureData.getCurrentLocationId())) {
-                adventureData.setCurrentLocationId("");
-                startLocationTF.clear();
-            }
-            adventureService.deleteLocation(locationId);
-            adventureService.saveAdventureData(adventureData);
-
-            // Refresh the grid
-            gridContainer.removeAll();
-            fillGUI();
-        });
-
-        dialog.open();
+    private static ConfirmDialog getConfirmDialog(final LocationDescriptionAdapter aLocation) {
+        return ViewSupporter.getConfirmDialog("Delete Location", "location", aLocation.getId());
     }
 
 }

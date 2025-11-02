@@ -8,7 +8,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
@@ -25,6 +25,7 @@ import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.server.storage.ItemService;
 import com.pdg.adventure.view.location.LocationsMenuView;
 import com.pdg.adventure.view.support.RouteIds;
+import com.pdg.adventure.view.support.ViewSupporter;
 
 @Route(value = "adventures/:adventureId/locations/:locationId/items", layout = ItemsMainLayout.class)
 @PageTitle("Items")
@@ -163,88 +164,60 @@ public class ItemsMenuView extends VerticalLayout implements BeforeEnterObserver
     private void createContextMenu(Grid<ItemData> grid) {
         GridContextMenu<ItemData> contextMenu = grid.addContextMenu();
 
-        contextMenu.addItem("Edit", e -> e.getItem().ifPresent(item -> navigateToItemEditor(item.getId())));
+        contextMenu.addItem("Edit", e -> e.getItem().
+                                          ifPresent(item -> navigateToItemEditor(item.getId())));
 
-        contextMenu.addItem("Find Usage", e -> e.getItem().ifPresent(this::showItemUsage));
+        contextMenu.addItem("Find Usage", e -> e.getItem().
+                                                ifPresent(this::showItemUsage));
 
         contextMenu.addComponent(new Hr());
 
-        contextMenu.addItem("Delete", e -> e.getItem().ifPresent(this::confirmDeleteItem));
+        contextMenu.addItem("Delete", e -> e.getItem().
+                                            ifPresent(this::confirmDeleteItem));
     }
 
     private void showItemUsage(ItemData item) {
         List<ItemUsageTracker.ItemUsage> usages = ItemUsageTracker.findItemUsages(adventureData, item.getId());
-
-        ConfirmDialog dialog = new ConfirmDialog();
-        dialog.setHeader("Item Usage: " + item.getId());
-        dialog.setWidth("700px");
-
-        if (usages.isEmpty()) {
-            dialog.setText("This item is not currently used in any commands.");
-        } else {
-            StringBuilder usageText = new StringBuilder();
-            usageText.append("This item is referenced ").append(usages.size()).append(" time(s):\n\n");
-
-            for (ItemUsageTracker.ItemUsage usage : usages) {
-                usageText.append("• ").append(usage.getDisplayText()).append("\n");
-            }
-
-            Span usageSpan = new Span(usageText.toString());
-            usageSpan.getStyle()
-                    .set("white-space", "pre-wrap")
-                    .set("font-family", "monospace")
-                    .set("font-size", "0.9em");
-
-            VerticalLayout content = new VerticalLayout(usageSpan);
-            content.setPadding(false);
-            dialog.add(content);
-        }
-
-        dialog.setConfirmText("Close");
-        dialog.open();
+        ViewSupporter.showUsages("Item Usage", "item", item.getId(), usages);
     }
 
     private void confirmDeleteItem(ItemData item) {
-        int usageCount = ItemUsageTracker.countItemUsages(adventureData, item.getId());
-
-        ConfirmDialog dialog = new ConfirmDialog();
-        dialog.setHeader("Delete Item");
+        String itemId = item.getId();
+        int usageCount = ItemUsageTracker.countItemUsages(adventureData, itemId);
 
         if (usageCount > 0) {
-            dialog.setText("WARNING: This item is currently used in " + usageCount +
-                    " command(s) or location(s). Deleting it may cause issues with your adventure. " +
-                    "Are you sure you want to delete item '" + item.getId() + "'?");
-            dialog.setConfirmButtonTheme("error primary");
+            Notification.show("Cannot delete item '" + itemId +
+                              "' because it is still referenced " + usageCount +
+                              " time(s). Please remove those references first.",
+                              5000, Notification.Position.MIDDLE);
         } else {
-            dialog.setText("Are you sure you want to delete item '" + item.getId() + "'?");
-            dialog.setConfirmButtonTheme("error primary");
+            final var dialog = getConfirmDialog(item);
+
+            dialog.addConfirmListener(event -> {
+                // Remove item from location's ItemContainer
+                if (locationData.getItemContainerData() != null) {
+                    locationData.getItemContainerData().getItems().removeIf(i -> i != null && itemId.equals(i.getId()));
+                }
+
+                // Delete the item document from the database
+                itemService.deleteItem(adventureData.getId(), itemId);
+
+                // Update location in adventure's locationData Map
+                adventureData.getLocationData().put(locationData.getId(), locationData);
+
+                // Save adventure to update @DBRef references
+                adventureService.saveAdventureData(adventureData);
+
+                // Refresh the grid
+                gridContainer.removeAll();
+                fillGUI();
+            });
+
+            dialog.open();
         }
+    }
 
-        dialog.setCancelable(true);
-        dialog.setConfirmText("Delete");
-
-        dialog.addConfirmListener(event -> {
-            String itemId = item.getId();
-
-            // Remove item from location's ItemContainer
-            if (locationData.getItemContainerData() != null) {
-                locationData.getItemContainerData().getItems().removeIf(i -> i != null && itemId.equals(i.getId()));
-            }
-
-            // Delete the item document from the database
-            itemService.deleteItem(adventureData.getId(), itemId);
-
-            // Update location in adventure's locationData Map
-            adventureData.getLocationData().put(locationData.getId(), locationData);
-
-            // Save adventure to update @DBRef references
-            adventureService.saveAdventureData(adventureData);
-
-            // Refresh the grid
-            gridContainer.removeAll();
-            fillGUI();
-        });
-
-        dialog.open();
+    private static ConfirmDialog getConfirmDialog(final ItemData item) {
+        return ViewSupporter.getConfirmDialog("Delete Item", "item", item.getId());
     }
 }
