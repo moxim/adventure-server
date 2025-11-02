@@ -1,17 +1,13 @@
 package com.pdg.adventure.view.location;
 
-import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.CommandChainData;
-import com.pdg.adventure.model.CommandData;
-import com.pdg.adventure.model.DirectionData;
-import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.model.action.ActionData;
-import com.pdg.adventure.model.action.MovePlayerActionData;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.pdg.adventure.model.*;
+import com.pdg.adventure.model.action.ActionData;
+import com.pdg.adventure.model.action.MovePlayerActionData;
 
 /**
  * Utility class for tracking location usage throughout an adventure.
@@ -23,7 +19,7 @@ public class LocationUsageTracker {
      * Data class representing a single usage of a location.
      */
     public static class LocationUsage {
-        private final String usageType;
+        private String usageType;
         private final String sourceLocationId;
         private final String sourceLocationDescription;
         private final String context;
@@ -67,7 +63,7 @@ public class LocationUsageTracker {
             } else if ("Direction".equals(usageType)) {
                 String locationName = sourceLocationDescription != null ? sourceLocationDescription : sourceLocationId;
                 sb.append("From '").append(locationName).append("' → ").append(context);
-            } else if ("Move Action".equals(usageType)) {
+            } else {
                 String locationName = sourceLocationDescription != null ? sourceLocationDescription : sourceLocationId;
                 sb.append("From '").append(locationName).append("' | Command: ")
                   .append(commandSpecification).append(" | ").append(context);
@@ -113,7 +109,7 @@ public class LocationUsageTracker {
                 // Check directions from this location
                 checkDirections(location, sourceLocationId, sourceLocationDesc, locationId, usages);
 
-                // Check movement actions in commands
+                // Check actions in commands
                 checkCommandActions(location, sourceLocationId, sourceLocationDesc, locationId, usages);
             }
         }
@@ -133,17 +129,39 @@ public class LocationUsageTracker {
                 if (targetLocationId.equals(direction.getDestinationId())) {
                     String directionName = direction.getDescriptionData() != null ?
                             direction.getDescriptionData().getShortDescription() : "Unknown direction";
-
-                    usages.add(new LocationUsage(
-                            "Direction",
-                            sourceLocationId,
-                            sourceLocationDesc,
-                            "Direction '" + directionName + "'",
-                            null
-                    ));
+                    if (directionName == null || directionName.isEmpty()) {
+                        List<LocationUsage> fromDirections = new ArrayList<>();
+                        checkCommandsInDirection(direction, sourceLocationId, sourceLocationDesc, targetLocationId, fromDirections);
+                        for (var usage : fromDirections) {
+                            usage.usageType = ("in Direction: " + usage.getUsageType());
+                        }
+                        usages.addAll(fromDirections);
+                    } else {
+                        usages.add(new LocationUsage(
+                                "Direction",
+                                sourceLocationId,
+                                sourceLocationDesc,
+                                "Direction '" + directionName + "'",
+                                null
+                        ));
+                    }
                 }
             }
         }
+    }
+
+    private static void checkCommandsInDirection(final DirectionData aDirection, String sourceLocationId,
+                                               String sourceLocationDesc, String targetLocationId,
+                                               List<LocationUsage> usages) {
+        if (aDirection.getCommandProviderData() == null ||
+            aDirection.getCommandProviderData().getAvailableCommands() == null) {
+            return;
+        }
+
+        Map<String, CommandChainData> commands = aDirection.getCommandProviderData().getAvailableCommands();
+        checkCommandChains(sourceLocationId, sourceLocationDesc, targetLocationId, usages, commands);
+
+        checkCommand(sourceLocationId, sourceLocationDesc, targetLocationId, usages, aDirection.getCommandData(), aDirection.getCommandData().getCommandDescription().getCommandSpecification());
     }
 
     /**
@@ -159,29 +177,41 @@ public class LocationUsageTracker {
 
         Map<String, CommandChainData> commands = sourceLocation.getCommandProviderData().getAvailableCommands();
 
+        checkCommandChains(sourceLocationId, sourceLocationDesc, targetLocationId, usages, commands);
+    }
+
+    private static void checkCommandChains(final String sourceLocationId, final String sourceLocationDesc,
+                                  final String targetLocationId, final List<LocationUsage> usages,
+                                  final Map<String, CommandChainData> commands) {
         for (Map.Entry<String, CommandChainData> commandEntry : commands.entrySet()) {
             String commandSpec = commandEntry.getKey();
             CommandChainData chain = commandEntry.getValue();
 
             if (chain != null && chain.getCommands() != null) {
                 for (CommandData command : chain.getCommands()) {
-                    // Check primary action
-                    if (command.getAction() != null) {
-                        checkMoveAction(command.getAction(), sourceLocationId, sourceLocationDesc,
-                                commandSpec, "Primary Action", targetLocationId, usages);
-                    }
-
-                    // Check follow-up actions
-                    if (command.getFollowUpActions() != null) {
-                        int followUpIndex = 1;
-                        for (ActionData followUpAction : command.getFollowUpActions()) {
-                            checkMoveAction(followUpAction, sourceLocationId, sourceLocationDesc,
-                                    commandSpec, "Follow-up Action #" + followUpIndex,
-                                    targetLocationId, usages);
-                            followUpIndex++;
-                        }
-                    }
+                    checkCommand(sourceLocationId, sourceLocationDesc, targetLocationId, usages, command, commandSpec);
                 }
+            }
+        }
+    }
+
+    private static void checkCommand(final String sourceLocationId, final String sourceLocationDesc,
+                                     final String targetLocationId, final List<LocationUsage> usages,
+                                     final CommandData command, final String commandSpec) {
+        // Check primary action
+        if (command.getAction() != null) {
+            checkMoveAction(command.getAction(), sourceLocationId, sourceLocationDesc,
+                            commandSpec, "Primary Action", targetLocationId, usages);
+        }
+
+        // Check follow-up actions
+        if (command.getFollowUpActions() != null) {
+            int followUpIndex = 1;
+            for (ActionData followUpAction : command.getFollowUpActions()) {
+                checkMoveAction(followUpAction, sourceLocationId, sourceLocationDesc,
+                                commandSpec, "Follow-up Action #" + followUpIndex,
+                                targetLocationId, usages);
+                followUpIndex++;
             }
         }
     }
@@ -192,8 +222,7 @@ public class LocationUsageTracker {
     private static void checkMoveAction(ActionData action, String sourceLocationId, String sourceLocationDesc,
                                        String commandSpec, String context, String targetLocationId,
                                        List<LocationUsage> usages) {
-        if (action instanceof MovePlayerActionData) {
-            MovePlayerActionData moveAction = (MovePlayerActionData) action;
+        if (action instanceof MovePlayerActionData moveAction) {
             if (targetLocationId.equals(moveAction.getLocationId())) {
                 usages.add(new LocationUsage(
                         "Move Action",

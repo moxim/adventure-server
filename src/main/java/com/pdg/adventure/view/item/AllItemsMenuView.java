@@ -4,8 +4,11 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -25,6 +28,7 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.ItemService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
@@ -38,6 +42,7 @@ import com.pdg.adventure.view.support.ViewSupporter;
 public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObserver {
 
     private final transient AdventureService adventureService;
+    private final transient ItemService itemService;
     private final Div gridContainer;
     private final TextField searchField;
     private final Button backButton;
@@ -48,10 +53,11 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
     private transient ListDataProvider<ItemLocationPair> dataProvider;
 
     @Autowired
-    public AllItemsMenuView(AdventureService anAdventureService) {
+    public AllItemsMenuView(AdventureService anAdventureService, ItemService anItemService) {
         setSizeFull();
 
         adventureService = anAdventureService;
+        itemService = anItemService;
 
         numberOfItems = new IntegerField("Total Items:");
         numberOfItems.setReadOnly(true);
@@ -149,6 +155,9 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
             navigateToItemEditor(pair.getItem().getId(), pair.getLocation().getId());
         });
 
+        // Add context menu
+        createContextMenu(grid);
+
         return grid;
     }
 
@@ -233,6 +242,99 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
                     LocationData location = adventureData.getLocationData().get(locationId);
                     e.setData(adventureData, location);
                 });
+    }
+
+    private void createContextMenu(Grid<ItemLocationPair> grid) {
+        GridContextMenu<ItemLocationPair> contextMenu = grid.addContextMenu();
+
+        contextMenu.addItem("Edit", e -> e.getItem().ifPresent(pair ->
+            navigateToItemEditor(pair.getItem().getId(), pair.getLocation().getId())
+        ));
+
+        contextMenu.addItem("Find Usage", e -> e.getItem().ifPresent(this::showItemUsage));
+
+        contextMenu.addComponent(new Hr());
+
+        contextMenu.addItem("Delete", e -> e.getItem().ifPresent(this::confirmDeleteItem));
+    }
+
+    private void showItemUsage(ItemLocationPair pair) {
+        ItemData item = pair.getItem();
+        List<ItemUsageTracker.ItemUsage> usages = ItemUsageTracker.findItemUsages(adventureData, item.getId());
+
+        ConfirmDialog dialog = new ConfirmDialog();
+        dialog.setHeader("Item Usage: " + item.getId());
+        dialog.setWidth("700px");
+
+        if (usages.isEmpty()) {
+            dialog.setText("This item is not currently used in any commands.");
+        } else {
+            StringBuilder usageText = new StringBuilder();
+            usageText.append("This item is referenced ").append(usages.size()).append(" time(s):\n\n");
+
+            for (ItemUsageTracker.ItemUsage usage : usages) {
+                usageText.append("• ").append(usage.getDisplayText()).append("\n");
+            }
+
+            Span usageSpan = new Span(usageText.toString());
+            usageSpan.getStyle()
+                    .set("white-space", "pre-wrap")
+                    .set("font-family", "monospace")
+                    .set("font-size", "0.9em");
+
+            VerticalLayout content = new VerticalLayout(usageSpan);
+            content.setPadding(false);
+            dialog.add(content);
+        }
+
+        dialog.setConfirmText("Close");
+        dialog.open();
+    }
+
+    private void confirmDeleteItem(ItemLocationPair pair) {
+        ItemData item = pair.getItem();
+        LocationData location = pair.getLocation();
+        int usageCount = ItemUsageTracker.countItemUsages(adventureData, item.getId());
+
+        ConfirmDialog dialog = new ConfirmDialog();
+        dialog.setHeader("Delete Item");
+
+        if (usageCount > 0) {
+            dialog.setText("WARNING: This item is currently used in " + usageCount +
+                    " command(s) or location(s). Deleting it may cause issues with your adventure. " +
+                    "Are you sure you want to delete item '" + item.getId() + "'?");
+            dialog.setConfirmButtonTheme("error primary");
+        } else {
+            dialog.setText("Are you sure you want to delete item '" + item.getId() + "'?");
+            dialog.setConfirmButtonTheme("error primary");
+        }
+
+        dialog.setCancelable(true);
+        dialog.setConfirmText("Delete");
+
+        dialog.addConfirmListener(event -> {
+            String itemId = item.getId();
+
+            // Remove item from location's ItemContainer
+            if (location.getItemContainerData() != null) {
+                location.getItemContainerData().getItems().removeIf(i -> i != null && itemId.equals(i.getId()));
+            }
+
+            // Delete the item document from the database
+            itemService.deleteItem(adventureData.getId(), itemId);
+
+            // Update location in adventure's locationData Map
+            adventureData.getLocationData().put(location.getId(), location);
+
+            // Save adventure to update @DBRef references
+            adventureService.saveAdventureData(adventureData);
+
+            // Refresh the grid
+            gridContainer.removeAll();
+            fillGUI();
+        });
+
+        dialog.open();
     }
 
     /**
