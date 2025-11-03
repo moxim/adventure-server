@@ -27,6 +27,7 @@ import com.pdg.adventure.view.command.CommandsMenuView;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.direction.DirectionsMenuView;
+import com.pdg.adventure.view.item.ItemsMenuView;
 import com.pdg.adventure.view.support.RouteIds;
 
 @Route(value = "adventures/:adventureId/locations/:locationId/edit", layout = LocationsMainLayout.class)
@@ -115,7 +116,15 @@ public class LocationEditorView extends VerticalLayout
         ).ifPresent(e -> e.setData(adventureData, locationData)));
 
         Button manageItems = new Button("Manage Items");
-        manageItems.setEnabled(false);
+        manageItems.addClickListener(event -> UI.getCurrent().navigate(ItemsMenuView.class,
+                                                                       new RouteParameters(
+                                                                               new RouteParam(
+                                                                                       RouteIds.LOCATION_ID.getValue(),
+                                                                                       locationData.getId()),
+                                                                               new RouteParam(
+                                                                                       RouteIds.ADVENTURE_ID.getValue(),
+                                                                                       adventureData.getId()))
+        ).ifPresent(e -> e.setData(adventureData, locationData)));
 
         Button manageExits = new Button("Manage Exits");
         manageExits.addClickListener(event -> UI.getCurrent().navigate(DirectionsMenuView.class,
@@ -250,7 +259,7 @@ public class LocationEditorView extends VerticalLayout
         adventureData = anAdventureData;
         locationData = adventureData.getLocationData().getOrDefault(locationId, new LocationData());
         if (locationData.getId() == null || locationData.getId().isEmpty()) {
-            locationData.setId(java.util.UUID.randomUUID().toString());
+//            locationData.setId(java.util.UUID.randomUUID().toString());
             locationId = locationData.getId();
         }
 

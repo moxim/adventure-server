@@ -300,7 +300,7 @@ public class CommandEditorView extends VerticalLayout
         } else {
             // We're creating a new command or the specification changed
             command = new CommandData();
-            command.setId(UUID.randomUUID().toString()); // Ensure unique ID for grid
+//            command.setId(UUID.randomUUID().toString()); // Ensure unique ID for grid
             command.setCommandDescription(updatedCommandDescription);
         }
 

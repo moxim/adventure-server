@@ -5,7 +5,8 @@ public enum RouteIds {
     LOCATION_ID("locationId"),
     COMMAND_ID("commandId"),
     DIRECTION_ID("directionId"),
-    MESSAGE_ID("messageId");
+    MESSAGE_ID("messageId"),
+    ITEM_ID("itemId");
 
     private final String routeParam;
 

@@ -31,12 +31,15 @@ public class WordFilter {
             String typeName = word.getType().name();
             String text = word.getText();
             String searchTerm = filterString.trim();
+            // Show all items when no filter is applied
             if (searchTerm.isEmpty()) {
-                return false;
+                return true;
             }
+            // Filter by type name (case-insensitive match)
             if (typeName.startsWith(searchTerm.toUpperCase())) {
                 return true;
             }
+            // Filter by word text (case-insensitive match)
             return text.startsWith(searchTerm.toLowerCase());
         };
     }

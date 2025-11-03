@@ -62,19 +62,7 @@ public class LocationMapper implements Mapper<LocationData, Location> {
         mapperSupporter.addMappedLocation(location);
 
         location.setLight(aLocationData.getLumen());
-        // TODO: change in LocationData to be an Integer
-        location.setTimesVisited(aLocationData.isHasBeenVisited() ? 1 : 0);
-
-//        final Set<DirectionData> directionsData = aLocationData.getDirectionsData();
-//        for (DirectionData directionData : directionsData) {
-//            final GenericDirection direction = directionMapper.mapToBO(directionData);
-//            location.addDirection(direction);
-//        }
-//
-//        final CommandProviderData commandProviderData = aLocationData.getCommandProviderData();
-//        final GenericCommandProvider commandProvider = commandProviderMapper.mapToBO(commandProviderData);
-//        location.setCommandProvider(commandProvider);
-
+        location.setTimesVisited(aLocationData.getTimesVisited());
         return location;
     }
 

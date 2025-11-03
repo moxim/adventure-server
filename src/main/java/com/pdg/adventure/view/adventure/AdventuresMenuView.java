@@ -136,13 +136,13 @@ public class AdventuresMenuView extends VerticalLayout {
                         (ListDataProvider<AdventureData>) target.getDataProvider();
                 dataProvider.getItems().remove(adventure);
                 dataProvider.refreshAll();
-                adventure.getLocationData().keySet().stream().forEach(locationId -> {
-                    adventureService.deleteLocation(locationId);
-                });
-                adventure.getVocabularyData().getWords().stream().forEach(word -> {
-                    adventureService.deleteWord(word.getId());
-                });
-                adventureService.deleteVocabulary(adventure.getVocabularyData().getId());
+
+                // Delete adventure - cascade delete will automatically handle:
+                // - All messages (@CascadeDelete on messages field)
+                // - All items (@CascadeDelete on itemContainerData in locations)
+                // - All locations (@CascadeDelete on locationData field)
+                // - All words (@CascadeDelete on words in vocabularyData)
+                // - Vocabulary (@CascadeDelete on vocabularyData field)
                 adventureService.deleteAdventure(adventure.getId());
             }));
         }

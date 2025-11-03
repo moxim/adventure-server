@@ -65,7 +65,27 @@ public class GenericDirection
                 return description.getVerb() + " " + ArticleProvider.prependDefiniteArticle(description.getNoun());
             }
         }
-        return description.getVerb();
+        // Build full command description: verb [adjective] [noun]
+        return buildCommandDescription();
+    }
+
+    private String buildCommandDescription() {
+        StringBuilder result = new StringBuilder(description.getVerb());
+
+        String adjective = description.getAdjective();
+        String noun = description.getNoun();
+
+        if (!VocabularyData.EMPTY_STRING.equals(noun)) {
+            result.append(" the");
+
+            if (!VocabularyData.EMPTY_STRING.equals(adjective)) {
+                result.append(" ").append(adjective);
+            }
+
+            result.append(" ").append(noun);
+        }
+
+        return result.toString();
     }
 
     @Override
@@ -82,7 +102,7 @@ public class GenericDirection
 
             return result + ".";
         }
-        return description.getVerb();
+        return "You may " + buildCommandDescription() + ".";
     }
 
 //    public Command getCommand() {

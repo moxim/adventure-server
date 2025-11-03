@@ -112,12 +112,12 @@ class DirectionTest {
     @Test
     void getDescriptionsWithoutLocation() throws Exception {
         // given
-        GenericDirection noAdj = new GenericDirection(allLocations, moveCommand, destination.getId(), false);
+        GenericDirection direction = new GenericDirection(allLocations, moveCommand, destination.getId(), false);
 
         // when
 
         // then
-        assertThat(noAdj.getShortDescription()).isEqualTo("enter");
-        assertThat(noAdj.getLongDescription()).isEqualTo("enter");
+        assertThat(direction.getShortDescription()).isEqualTo("enter the glowing portal");
+        assertThat(direction.getLongDescription()).isEqualTo("You may enter the glowing portal.");
     }
 }

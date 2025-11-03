@@ -296,7 +296,7 @@ public class DirectionEditorView extends VerticalLayout
                     .findFirst()
                     .orElse(new DirectionData());
         if (directionData.getId() == null || directionData.getId().isEmpty()) {
-            directionData.setId(UUID.randomUUID().toString());
+//            directionData.setId(UUID.randomUUID().toString());
             directionId = directionData.getId();
         }
 

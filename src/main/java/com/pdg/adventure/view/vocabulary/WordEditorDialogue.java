@@ -1,7 +1,5 @@
 package com.pdg.adventure.view.vocabulary;
 
-import com.pdg.adventure.model.VocabularyData;
-import com.pdg.adventure.model.Word;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.Text;
@@ -21,6 +19,9 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 
 import java.util.*;
+
+import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.model.Word;
 
 public class WordEditorDialogue {
 
@@ -60,10 +61,6 @@ public class WordEditorDialogue {
         createWordField();
         createTypeSelector();
         createSynonymSelector();
-
-//        binder.bind(wordName, Word::getText, Word::setText);
-//        binder.bind(typeSelector, Word::getType, Word::setType);
-//        binder.bind(synonyms, Word::getSynonym, Word::setSynonym);
     }
 
     public void addGuiListener(GuiListener aGuiListener) {
@@ -93,20 +90,17 @@ public class WordEditorDialogue {
             }
         }
 
-//                    binder.readBean(currentWord);
-
         Dialog dialog = new Dialog();
         dialog.setModal(true);
         dialog.setDraggable(true);
-//        dialog.getElement().setAttribute("aria-label", anEditType.value + " word");
         dialog.getHeader().add(createDialogHeader(anEditType));
         dialog.getFooter().add(createDialogFooter(dialog)); // footer first, or saveButton is null
-        dialog.add(createDialogContent(aWordWrapper));
+        dialog.add(createDialogContent());
         dialog.open();
     }
 
 
-    private Component createDialogContent(DescribableWordAdapter aWordWrapper) {
+    private Component createDialogContent() {
 
         HorizontalLayout wordDefinition  = new HorizontalLayout();
         wordDefinition.add(wordText, typeSelector);
@@ -153,19 +147,9 @@ public class WordEditorDialogue {
     }
 
     private void validateIfSave() {
-//        try {
-//            binder.writeBean(currentWord);
-            if (!(typeSelector.getValue() == null && synonyms.getValue() == null)) {
-                saveButton.setEnabled(!wordText.isInvalid());
-                // saveButton.setEnabled(binder.isValid());
-                // saveButton.setEnabled(false);
-//                if (synonyms.getValue() != null) {
-//                    currentWord.setSynonym(synonyms.getValue());
-//                }
-            }
-//        } catch (ValidationException e) {
-//            throw new RuntimeException(e);
-//        }
+        if (!(typeSelector.getValue() == null && synonyms.getValue() == null)) {
+            saveButton.setEnabled(!wordText.isInvalid());
+        }
     }
 
     private Component createDialogFooter(Dialog dialog) {

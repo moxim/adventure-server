@@ -106,7 +106,7 @@ class AdventureBuilderTest {
     private LocationData createDummyLocationData(String aQualifier) {
         LocationData locationData = new LocationData();
         locationData.setId(aQualifier);
-        locationData.setHasBeenVisited(false);
+        locationData.setTimesVisited(66);
         locationData.setDescriptionData(createDescriptionData(aQualifier));
         locationData.setItemContainerData(createContainerData(aQualifier));
         return locationData;

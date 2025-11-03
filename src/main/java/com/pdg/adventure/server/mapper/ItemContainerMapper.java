@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.pdg.adventure.api.Containable;
 import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.ItemData;
@@ -42,7 +41,7 @@ public class ItemContainerMapper implements Mapper<ItemContainerData, GenericCon
         DescriptionProvider descriptionProvider = descriptionMapper.mapToBO(descriptionData);
         GenericContainer container = new GenericContainer(descriptionProvider, anItemContainerData.getMaxSize());
         container.setId(anItemContainerData.getId());
-        List<Containable> itemList = new ArrayList<>(anItemContainerData.getItems().size());
+        List<String> itemList = new ArrayList<>(anItemContainerData.getItems().size());
         // TODO: map this
 //        for (String itemId : anItemContainerData.getContents()) {
 //            container.add(allItems.get(itemId));

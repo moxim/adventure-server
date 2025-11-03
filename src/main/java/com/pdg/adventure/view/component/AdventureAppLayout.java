@@ -26,6 +26,11 @@ public class AdventureAppLayout extends AppLayout {
     private H2 viewTitle;
     private VerticalLayout drawer;
 
+    public AdventureAppLayout() {
+        String title = "Adventure Builder";
+        createHeader(title);
+    }
+
     public void createHeader(String aTitle) {
         final HorizontalLayout header = createMyHeader(aTitle);
         addToNavbar(header);

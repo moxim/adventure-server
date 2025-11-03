@@ -1,6 +1,7 @@
 package com.pdg.adventure.view.vocabulary;
 
 
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
 
@@ -10,11 +11,10 @@ import com.pdg.adventure.view.location.LocationMapView;
 public class VocabularyMainLayout extends AdventureAppLayout {
 
     public VocabularyMainLayout() {
-        String title = "Adventure Builder";
-        createHeader(title);
-
         String appName = "Vocabulary";
-        createDrawer(appName);
+        Image appImage = new Image("icons/grammar.gif", appName);
+        appImage.setMaxWidth("100px");
+        createDrawer(appName, appImage);
 
         RouterLink worldLink = new RouterLink("The World", LocationMapView.class);
         worldLink.setHighlightCondition(HighlightConditions.sameLocation());

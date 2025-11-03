@@ -1,15 +1,16 @@
 package com.pdg.adventure.view.message;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.CommandChainData;
 import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.action.MessageActionData;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import com.pdg.adventure.view.support.TrackedUsage;
 
 /**
  * Utility class for tracking message usage throughout an adventure.
@@ -20,7 +21,7 @@ public class MessageUsageTracker {
     /**
      * Data class representing a single usage of a message.
      */
-    public static class MessageUsage {
+    public static class MessageUsage implements TrackedUsage {
         private final String locationId;
         private final String locationDescription;
         private final String commandSpecification;

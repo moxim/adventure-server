@@ -1,5 +1,7 @@
 package com.pdg.adventure.view.message;
 
+import com.vaadin.flow.component.html.Image;
+
 import com.pdg.adventure.view.component.AdventureAppLayout;
 
 /**
@@ -9,11 +11,10 @@ import com.pdg.adventure.view.component.AdventureAppLayout;
 public class MessagesMainLayout extends AdventureAppLayout {
 
     public MessagesMainLayout() {
-        String title = "Adventure Builder";
-        createHeader(title);
-
         String appName = "Messages";
-        createDrawer(appName);
+        Image appImage = new Image("icons/scroll-with-quill.gif", appName);
+        appImage.setMaxWidth("100px");
+        createDrawer(appName, appImage);
 
         setPrimarySection(Section.NAVBAR);
     }

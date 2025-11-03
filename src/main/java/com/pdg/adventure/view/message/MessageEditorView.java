@@ -172,37 +172,45 @@ public class MessageEditorView extends VerticalLayout
             if (binder.validate().isOk()) {
                 binder.writeBean(mvm);
 
-                // Save or update message using MessageService
+                // Create or update message
+                MessageData message;
                 if (mvm.isNew()) {
                     // Create new message
-                    MessageData newMessage = messageService.createMessage(
+                    message = new MessageData(
                             adventureData.getId(),
                             mvm.getId(),
                             mvm.getMessageText()
                     );
-                    if (mvm.getCategory() != null) {
-                        newMessage.setCategory(mvm.getCategory());
-                    }
-                    if (mvm.getNotes() != null) {
-                        newMessage.setNotes(mvm.getNotes());
-                    }
-                    messageService.saveMessage(newMessage);
                 } else {
-                    // Update existing message (handles ID changes internally)
-                    MessageData updatedMessage = messageService.updateMessage(
-                            adventureData.getId(),
-                            originalMessageId != null ? originalMessageId : mvm.getId(),
-                            mvm.getId(),
-                            mvm.getMessageText()
-                    );
-                    if (mvm.getCategory() != null) {
-                        updatedMessage.setCategory(mvm.getCategory());
+                    // Get existing message or create new one
+                    message = adventureData.getMessages().get(originalMessageId != null ? originalMessageId : mvm.getId());
+                    if (message == null) {
+                        message = new MessageData(adventureData.getId(), mvm.getId(), mvm.getMessageText());
+                    } else {
+                        message.setMessageId(mvm.getId());
+                        message.setText(mvm.getMessageText());
+                        message.touch();
                     }
-                    if (mvm.getNotes() != null) {
-                        updatedMessage.setNotes(mvm.getNotes());
-                    }
-                    messageService.saveMessage(updatedMessage);
                 }
+
+                // Update message properties
+                if (mvm.getCategory() != null) {
+                    message.setCategory(mvm.getCategory());
+                }
+                if (mvm.getNotes() != null) {
+                    message.setNotes(mvm.getNotes());
+                }
+
+                // If message ID changed, remove old entry
+                if (originalMessageId != null && !originalMessageId.equals(mvm.getId())) {
+                    adventureData.getMessages().remove(originalMessageId);
+                }
+
+                // Add/update message in adventure's messages Map
+                adventureData.getMessages().put(mvm.getId(), message);
+
+                // Save adventure (triggers cascade save for message via @CascadeSave)
+                adventureService.saveAdventureData(adventureData);
 
                 // Update tracking variables
                 originalMessageId = mvm.getId();
@@ -281,10 +289,10 @@ public class MessageEditorView extends VerticalLayout
 
         // Load existing message or create new one
         if (messageId != null && !messageId.isEmpty()) {
-            Optional<MessageData> messageDataOpt = messageService.getMessageByIdForAdventure(
-                    adventureData.getId(), messageId);
-            if (messageDataOpt.isPresent()) {
-                mvm = new MessageViewModel(messageDataOpt.get());
+            // Load from adventure's messages Map (loaded via @DBRef)
+            MessageData messageData = adventureData.getMessages().get(messageId);
+            if (messageData != null) {
+                mvm = new MessageViewModel(messageData);
                 originalMessageId = messageId;
             } else {
                 // Message not found, create new one
