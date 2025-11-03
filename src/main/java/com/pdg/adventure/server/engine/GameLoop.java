@@ -1,5 +1,8 @@
 package com.pdg.adventure.server.engine;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 
@@ -13,6 +16,8 @@ import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.Parser;
 
 public class GameLoop {
+    private static final Logger LOG = LoggerFactory.getLogger(GameLoop.class);
+
     private final Parser parser;
 
     public GameLoop(Parser aParser) {
@@ -54,7 +59,7 @@ public class GameLoop {
                 Environment.tell(anException.getMessage());
                 endLoop = false;
             } catch (IOException | RuntimeException anException) {
-                anException.printStackTrace();
+                LOG.error("An error occurred during the game loop.", anException);
                 endLoop = false;
             }
         }
