@@ -14,6 +14,8 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -32,16 +34,18 @@ import com.pdg.adventure.view.support.RouteIds;
 public class MessageEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
 
+    private static final Logger LOG = LoggerFactory.getLogger(MessageEditorView.class);
+
     private final transient AdventureService adventureService;
     private final transient MessageService messageService;
     private final Binder<MessageViewModel> binder;
 
     private Button saveButton;
     private Button resetButton;
-    private TextField messageIdField;
-    private TextArea messageTextField;
-    private Div previewDiv;
-    private Div usageInfoDiv;
+    private final TextField messageIdField;
+    private final TextArea messageTextField;
+    private final Div previewDiv;
+    private final Div usageInfoDiv;
     private String pageTitle;
 
     private transient String messageId;
@@ -79,13 +83,10 @@ public class MessageEditorView extends VerticalLayout
         Span previewLabel = new Span("Preview:");
         previewLabel.getStyle().set("font-weight", "bold");
         previewDiv = new Div();
-        previewDiv.getStyle()
-                .set("border", "1px solid var(--lumo-contrast-20pct)")
-                .set("border-radius", "var(--lumo-border-radius-m)")
-                .set("padding", "var(--lumo-space-m)")
-                .set("background-color", "var(--lumo-contrast-5pct)")
-                .set("min-height", "60px")
-                .set("margin-top", "var(--lumo-space-s)");
+        previewDiv.getStyle().set("border", "1px solid var(--lumo-contrast-20pct)")
+                  .set("border-radius", "var(--lumo-border-radius-m)").set("padding", "var(--lumo-space-m)")
+                  .set("background-color", "var(--lumo-contrast-5pct)").set("min-height", "60px")
+                  .set("margin-top", "var(--lumo-space-s)");
 
         VerticalLayout previewSection = new VerticalLayout(previewLabel, previewDiv);
         previewSection.setPadding(false);
@@ -95,12 +96,9 @@ public class MessageEditorView extends VerticalLayout
         Span usageLabel = new Span("Usage:");
         usageLabel.getStyle().set("font-weight", "bold");
         usageInfoDiv = new Div();
-        usageInfoDiv.getStyle()
-                .set("border", "1px solid var(--lumo-contrast-20pct)")
-                .set("border-radius", "var(--lumo-border-radius-m)")
-                .set("padding", "var(--lumo-space-m)")
-                .set("background-color", "var(--lumo-contrast-5pct)")
-                .set("margin-top", "var(--lumo-space-s)");
+        usageInfoDiv.getStyle().set("border", "1px solid var(--lumo-contrast-20pct)")
+                    .set("border-radius", "var(--lumo-border-radius-m)").set("padding", "var(--lumo-space-m)")
+                    .set("background-color", "var(--lumo-contrast-5pct)").set("margin-top", "var(--lumo-space-s)");
 
         VerticalLayout usageSection = new VerticalLayout(usageLabel, usageInfoDiv);
         usageSection.setPadding(false);
@@ -109,18 +107,14 @@ public class MessageEditorView extends VerticalLayout
         final ResetBackSaveView resetBackSaveView = setUpNavigationButtons();
 
         // Bind fields
-        binder.forField(messageIdField)
-              .asRequired("Message ID is required")
+        binder.forField(messageIdField).asRequired("Message ID is required")
               .withValidator(id -> id != null && id.matches("^[a-zA-Z0-9_]+$"),
-                           "Message ID must contain only letters, numbers, and underscores")
-              .withValidator(id -> isMessageIdUnique(id),
-                           "A message with this ID already exists")
+                             "Message ID must contain only letters, numbers, and underscores")
+              .withValidator(id -> isMessageIdUnique(id), "A message with this ID already exists")
               .bind(MessageViewModel::getId, MessageViewModel::setId);
 
-        binder.forField(messageTextField)
-              .asRequired("Message text is required")
-              .withValidator(text -> text != null && !text.trim().isEmpty(),
-                           "Message text cannot be empty")
+        binder.forField(messageTextField).asRequired("Message text is required")
+              .withValidator(text -> text != null && !text.trim().isEmpty(), "Message text cannot be empty")
               .bind(MessageViewModel::getMessageText, MessageViewModel::setMessageText);
 
         // Update preview when message text changes
@@ -149,11 +143,9 @@ public class MessageEditorView extends VerticalLayout
         resetButton = resetBackSaveView.getReset();
         resetButton.setEnabled(false);
 
-        backButton.addClickListener(event ->
-            UI.getCurrent().navigate(MessagesMenuView.class,
-                new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                .ifPresent(e -> e.setData(adventureData))
-        );
+        backButton.addClickListener(event -> UI.getCurrent().navigate(MessagesMenuView.class, new RouteParameters(
+                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                                               .ifPresent(e -> e.setData(adventureData)));
 
         saveButton.addClickListener(event -> validateAndSave());
 
@@ -167,6 +159,31 @@ public class MessageEditorView extends VerticalLayout
         return resetBackSaveView;
     }
 
+    private boolean isMessageIdUnique(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            return false;
+        }
+
+        // If we're editing an existing message with the same ID, that's okay
+        if (originalMessageId != null && originalMessageId.equals(id)) {
+            return true;
+        }
+
+        // Check if another message with this ID exists
+        return adventureData == null || !messageService.messageExists(adventureData.getId(), id);
+    }
+
+    private void updatePreview() {
+        String text = messageTextField.getValue();
+        if (text == null || text.trim().isEmpty()) {
+            previewDiv.setText("(empty message)");
+            previewDiv.getStyle().set("font-style", "italic").set("color", "var(--lumo-secondary-text-color)");
+        } else {
+            previewDiv.setText(text);
+            previewDiv.getStyle().set("font-style", "normal").set("color", "var(--lumo-body-text-color)");
+        }
+    }
+
     private void validateAndSave() {
         try {
             if (binder.validate().isOk()) {
@@ -176,14 +193,11 @@ public class MessageEditorView extends VerticalLayout
                 MessageData message;
                 if (mvm.isNew()) {
                     // Create new message
-                    message = new MessageData(
-                            adventureData.getId(),
-                            mvm.getId(),
-                            mvm.getMessageText()
-                    );
+                    message = new MessageData(adventureData.getId(), mvm.getId(), mvm.getMessageText());
                 } else {
                     // Get existing message or create new one
-                    message = adventureData.getMessages().get(originalMessageId != null ? originalMessageId : mvm.getId());
+                    message = adventureData.getMessages()
+                                           .get(originalMessageId != null ? originalMessageId : mvm.getId());
                     if (message == null) {
                         message = new MessageData(adventureData.getId(), mvm.getId(), mvm.getMessageText());
                     } else {
@@ -227,39 +241,49 @@ public class MessageEditorView extends VerticalLayout
                 updateUsageInfo();
             }
         } catch (ValidationException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage());
         } catch (IllegalArgumentException e) {
             // Handle service exceptions (e.g., duplicate ID)
-            e.printStackTrace();
+            LOG.error(e.getMessage());
             // TODO: Show error notification to user
         }
     }
 
-    private void updatePreview() {
-        String text = messageTextField.getValue();
-        if (text == null || text.trim().isEmpty()) {
-            previewDiv.setText("(empty message)");
-            previewDiv.getStyle().set("font-style", "italic")
-                    .set("color", "var(--lumo-secondary-text-color)");
+    private void updateUsageInfo() {
+        if (messageId == null || messageId.isEmpty()) {
+            usageInfoDiv.removeAll();
+            usageInfoDiv.add(new Span("This is a new message. Usage information will be available after saving."));
+            usageInfoDiv.getStyle().set("font-style", "italic").set("color", "var(--lumo-secondary-text-color)");
+            return;
+        }
+
+        List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData, messageId);
+
+        usageInfoDiv.removeAll();
+        usageInfoDiv.getStyle().set("font-style", "normal").set("color", "var(--lumo-body-text-color)");
+
+        if (usages.isEmpty()) {
+            Span noUsageSpan = new Span("This message is not currently used anywhere in the adventure.");
+            noUsageSpan.getStyle().set("color", "var(--lumo-secondary-text-color)");
+            usageInfoDiv.add(noUsageSpan);
         } else {
-            previewDiv.setText(text);
-            previewDiv.getStyle().set("font-style", "normal")
-                    .set("color", "var(--lumo-body-text-color)");
-        }
-    }
+            Span usageCountSpan = new Span("Used in " + usages.size() + " location(s):");
+            usageCountSpan.getStyle().set("font-weight", "bold").set("display", "block").set("margin-bottom", "0.5em");
+            usageInfoDiv.add(usageCountSpan);
 
-    private boolean isMessageIdUnique(String id) {
-        if (id == null || id.trim().isEmpty()) {
-            return false;
-        }
+            VerticalLayout usageList = new VerticalLayout();
+            usageList.setPadding(false);
+            usageList.setSpacing(false);
+            usageList.getStyle().set("margin-left", "1em");
 
-        // If we're editing an existing message with the same ID, that's okay
-        if (originalMessageId != null && originalMessageId.equals(id)) {
-            return true;
-        }
+            for (MessageUsageTracker.MessageUsage usage : usages) {
+                Span usageItem = new Span("• " + usage.getDisplayText());
+                usageItem.getStyle().set("font-size", "0.9em").set("display", "block");
+                usageList.add(usageItem);
+            }
 
-        // Check if another message with this ID exists
-        return adventureData == null || !messageService.messageExists(adventureData.getId(), id);
+            usageInfoDiv.add(usageList);
+        }
     }
 
     @Override
@@ -308,42 +332,5 @@ public class MessageEditorView extends VerticalLayout
         updateUsageInfo();
         saveButton.setEnabled(false);
         resetButton.setEnabled(false);
-    }
-
-    private void updateUsageInfo() {
-        if (messageId == null || messageId.isEmpty()) {
-            usageInfoDiv.removeAll();
-            usageInfoDiv.add(new Span("This is a new message. Usage information will be available after saving."));
-            usageInfoDiv.getStyle().set("font-style", "italic").set("color", "var(--lumo-secondary-text-color)");
-            return;
-        }
-
-        List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData, messageId);
-
-        usageInfoDiv.removeAll();
-        usageInfoDiv.getStyle().set("font-style", "normal").set("color", "var(--lumo-body-text-color)");
-
-        if (usages.isEmpty()) {
-            Span noUsageSpan = new Span("This message is not currently used anywhere in the adventure.");
-            noUsageSpan.getStyle().set("color", "var(--lumo-secondary-text-color)");
-            usageInfoDiv.add(noUsageSpan);
-        } else {
-            Span usageCountSpan = new Span("Used in " + usages.size() + " location(s):");
-            usageCountSpan.getStyle().set("font-weight", "bold").set("display", "block").set("margin-bottom", "0.5em");
-            usageInfoDiv.add(usageCountSpan);
-
-            VerticalLayout usageList = new VerticalLayout();
-            usageList.setPadding(false);
-            usageList.setSpacing(false);
-            usageList.getStyle().set("margin-left", "1em");
-
-            for (MessageUsageTracker.MessageUsage usage : usages) {
-                Span usageItem = new Span("• " + usage.getDisplayText());
-                usageItem.getStyle().set("font-size", "0.9em").set("display", "block");
-                usageList.add(usageItem);
-            }
-
-            usageInfoDiv.add(usageList);
-        }
     }
 }
