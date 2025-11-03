@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.view.item.AllItemsMenuView;
 import com.pdg.adventure.view.location.LocationsMenuView;
@@ -191,6 +192,9 @@ public class AdventureEditorView extends VerticalLayout
 
     private void setUpNewEdit() {
         adventureData = new AdventureData();
+        ItemContainerData playerPocket = adventureData.getPlayerPocket();
+        playerPocket.getDescriptionData().setShortDescription("Player's Pocket");
+        playerPocket.setMaxSize(666);
         binder.setBean(adventureData);
         pageTitle = "A new adventure awaits!";
     }

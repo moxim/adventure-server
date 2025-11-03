@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.Direction;
+import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.support.DescriptionProvider;
@@ -71,10 +72,29 @@ class LocationTest {
 
     @Test
     void addDirection() {
+        // given
+        // direction is already created in test setup
+
+        // when
+        ExecutionResult result = sut.addDirection(direction);
+
+        // then
+        assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
+        assertThat(sut.getDirections()).containsExactly((GenericDirection) direction);
     }
 
     @Test
     void applyCommand() {
+        // given
+        // No direction added, so no commands will match
+        GenericCommandDescription commandDescription = new GenericCommandDescription("nonexistent");
+
+        // when
+        ExecutionResult result = sut.applyCommand(commandDescription);
+
+        // then
+        assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
+        assertThat(result.getResultMessage()).isEqualTo("You can't do that.");
     }
 
     @Test

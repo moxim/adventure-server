@@ -216,7 +216,7 @@ public class DirectionEditorView extends VerticalLayout
         return resetBackSaveView;
     }
 
-    private void validateSave(DirectionViewModel aDirectionViewModel) {
+    protected void validateSave(DirectionViewModel aDirectionViewModel) {
         if (binder.validate().isOk()) {
             askUserIfLocationLoopsAreOK(aDirectionViewModel);
         }

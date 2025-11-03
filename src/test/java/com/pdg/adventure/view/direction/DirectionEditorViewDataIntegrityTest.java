@@ -10,6 +10,7 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.action.MovePlayerActionData;
@@ -80,18 +81,22 @@ class DirectionEditorViewDataIntegrityTest {
 
     @Test
     void validateSave_withValidData_shouldCallAdventureService() {
-        //given
-        view.setUpLoading("direction-1");
-
         // given
+        view.setUpLoading("direction-1");
         view.setData(locationData, adventureData);
 
+        // Create a valid direction view model
+        DirectionViewModel directionViewModel = new DirectionViewModel(directionData);
+        directionViewModel.setDestinationId("location-2");
+        directionViewModel.setLocationId("location-1");
+        directionViewModel.setAdventureId("adventure-1");
+
         // when
-        // Note: validateSave is private, would need to trigger via button click in integration test
-        // or use reflection for unit testing
+        view.validateSave(directionViewModel);
 
         // then
-        // This test would verify the service call if we had access to validateSave
+        // Verify that the service was called to save the location data
+        verify(adventureService).saveLocationData(locationData);
     }
 
     @Test
