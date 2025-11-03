@@ -11,11 +11,14 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.view.item.AllItemsMenuView;
 import com.pdg.adventure.view.location.LocationsMenuView;
@@ -27,15 +30,15 @@ import com.pdg.adventure.view.vocabulary.VocabularyMenuView;
 public class AdventureEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
 
+    private static final Logger LOG = LoggerFactory.getLogger(AdventureEditorView.class);
+
     private final Button saveButton = new Button("Save");
     private final Button testButton = new Button("Test");
     private final TextField startLocation;
-    private String pageTitle;
-
     private final Binder<AdventureData> binder;
     private transient final AdventureService adventureService;
-
     AdventureData adventureData;
+    private String pageTitle;
 
     @Autowired
     public AdventureEditorView(AdventureService anAdventureService) {
@@ -46,38 +49,35 @@ public class AdventureEditorView extends VerticalLayout
         Button editLocationsButton = new Button("Manage Locations");
         editLocationsButton.addClickListener(event -> {
             if (binder.writeBeanIfValid(adventureData)) {
-                UI.getCurrent()
-                  .navigate(LocationsMenuView.class
+                UI.getCurrent().navigate(LocationsMenuView.class
 //                          , new RouteParameters(
 //                      new RouteParam("adventureId", adventureData.getId())));
 //            }});
-                  ).ifPresent(editor -> editor.setAdventureData(adventureData));
-        }});
+                ).ifPresent(editor -> editor.setAdventureData(adventureData));
+            }
+        });
 
         Button editVocabularyButton = new Button("Manage Vocabulary", e -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(VocabularyMenuView.class,
-                                new RouteParameters(
-                                        new RouteParam("adventureId", adventureData.getId())))
-                        .ifPresent(editor -> editor.setAdventureData(adventureData));
+                                         new RouteParameters(new RouteParam("adventureId", adventureData.getId())))
+                  .ifPresent(editor -> editor.setAdventureData(adventureData));
             }
         });
 
         Button editMessagesButton = new Button("Manage Messages", e -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(com.pdg.adventure.view.message.MessagesMenuView.class,
-                                new RouteParameters(
-                                        new RouteParam("adventureId", adventureData.getId())))
-                        .ifPresent(editor -> editor.setData(adventureData));
+                                         new RouteParameters(new RouteParam("adventureId", adventureData.getId())))
+                  .ifPresent(editor -> editor.setData(adventureData));
             }
         });
 
         Button editItemsButton = new Button("Manage Items", e -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(AllItemsMenuView.class,
-                                new RouteParameters(
-                                        new RouteParam("adventureId", adventureData.getId())))
-                        .ifPresent(editor -> editor.setData(adventureData));
+                                         new RouteParameters(new RouteParam("adventureId", adventureData.getId())))
+                  .ifPresent(editor -> editor.setData(adventureData));
             }
         });
 
@@ -100,7 +100,8 @@ public class AdventureEditorView extends VerticalLayout
         setMargin(true);
         setPadding(true);
 
-        final HorizontalLayout editRow = new HorizontalLayout(editVocabularyButton, editMessagesButton, editItemsButton, editLocationsButton, workflowButton);
+        final HorizontalLayout editRow = new HorizontalLayout(editVocabularyButton, editMessagesButton, editItemsButton,
+                                                              editLocationsButton, workflowButton);
 
         Button backButton = new Button("Back", event -> UI.getCurrent().navigate(AdventuresMenuView.class));
         backButton.addClickShortcut(Key.ESCAPE);
@@ -108,26 +109,6 @@ public class AdventureEditorView extends VerticalLayout
 
         add(titleStartRow, longDescription, editRow, testSaveRow);
         setHorizontalComponentAlignment(Alignment.CENTER, testButton, saveButton);
-    }
-
-    private TextField getStartLocationField() {
-        TextField field = new TextField("Start Location");
-        field.setReadOnly(true);
-        return field;
-    }
-
-    private TextField getAdventureIdTF() {
-        TextField field = new TextField("Adventure ID");
-        field.setReadOnly(true);
-        field.addValueChangeListener(event -> checkIfSaveAvailable());
-        binder.bind(field, AdventureData::getId, AdventureData::setId);
-        return field;
-    }
-
-    public void loadAdventure(String aAdventureId) {
-        adventureData = adventureService.findAdventureById(aAdventureId);
-        startLocation.setValue(ViewSupporter.getLocationsShortedDescription(adventureData.getLocationData().get(adventureData.getCurrentLocationId())));
-        binder.setBean(adventureData);
     }
 
     private void validateSave(AdventureData adventureData) {
@@ -146,20 +127,17 @@ public class AdventureEditorView extends VerticalLayout
             adventureService.saveAdventureData(adventureData);
             saveButton.setEnabled(false);
         } catch (ValidationException ve) {
-            ve.printStackTrace();
+            LOG.error(ve.getMessage());
         } catch (RuntimeException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage());
         }
     }
 
-    private TextArea getNotesArea() {
-        TextArea field = new TextArea("Notes");
-        field.setWidth("95%");
-        field.setMinHeight("200px");
-        field.setMaxHeight("350px");
-        field.setTooltipText("Use this to jot down notes about your adventure while developing it.");
+    private TextField getAdventureIdTF() {
+        TextField field = new TextField("Adventure ID");
+        field.setReadOnly(true);
         field.addValueChangeListener(event -> checkIfSaveAvailable());
-        binder.bind(field, AdventureData::getNotes, AdventureData::setNotes);
+        binder.bind(field, AdventureData::getId, AdventureData::setId);
         return field;
     }
 
@@ -170,6 +148,23 @@ public class AdventureEditorView extends VerticalLayout
         binder.forField(field).asRequired("You must provide a title.");
         binder.forField(field).bind(AdventureData::getTitle, AdventureData::setTitle);
         field.addValueChangeListener(event -> checkIfSaveAvailable());
+        return field;
+    }
+
+    private TextField getStartLocationField() {
+        TextField field = new TextField("Start Location");
+        field.setReadOnly(true);
+        return field;
+    }
+
+    private TextArea getNotesArea() {
+        TextArea field = new TextArea("Notes");
+        field.setWidth("95%");
+        field.setMinHeight("200px");
+        field.setMaxHeight("350px");
+        field.setTooltipText("Use this to jot down notes about your adventure while developing it.");
+        field.addValueChangeListener(event -> checkIfSaveAvailable());
+        binder.bind(field, AdventureData::getNotes, AdventureData::setNotes);
         return field;
     }
 
@@ -190,15 +185,25 @@ public class AdventureEditorView extends VerticalLayout
         checkIfSaveAvailable();
     }
 
+    private void setUpLoading(String anAdventureId) {
+        loadAdventure(anAdventureId);
+        pageTitle = "Edit Adventure #" + anAdventureId;
+    }
+
     private void setUpNewEdit() {
         adventureData = new AdventureData();
+        ItemContainerData playerPocket = adventureData.getPlayerPocket();
+        playerPocket.getDescriptionData().setShortDescription("Player's Pocket");
+        playerPocket.setMaxSize(666);
         binder.setBean(adventureData);
         pageTitle = "A new adventure awaits!";
     }
 
-    private void setUpLoading(String anAdventureId) {
-        loadAdventure(anAdventureId);
-        pageTitle = "Edit Adventure #" + anAdventureId;
+    public void loadAdventure(String aAdventureId) {
+        adventureData = adventureService.findAdventureById(aAdventureId);
+        startLocation.setValue(ViewSupporter.getLocationsShortedDescription(
+                adventureData.getLocationData().get(adventureData.getCurrentLocationId())));
+        binder.setBean(adventureData);
     }
 
     @Override

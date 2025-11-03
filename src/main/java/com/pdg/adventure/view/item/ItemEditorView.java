@@ -11,6 +11,8 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -34,6 +36,8 @@ import com.pdg.adventure.view.support.RouteIds;
 @RouteAlias(value = "adventures/:adventureId/locations/:locationId/items/new", layout = ItemsMainLayout.class)
 public class ItemEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ItemEditorView.class);
 
     private final transient AdventureService adventureService;
     private final transient ItemService itemService;
@@ -64,7 +68,8 @@ public class ItemEditorView extends VerticalLayout
         itemData = new ItemData();
         itemId = itemData.getId();
 
-        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this item.", ADJECTIVE, new VocabularyData());
+        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this item.", ADJECTIVE,
+                                                      new VocabularyData());
 
         nounSelector = new VocabularyPickerField("Noun", "The main theme of this item.", NOUN, new VocabularyData());
         nounSelector.setPlaceholder("Select a noun (required)");
@@ -88,12 +93,10 @@ public class ItemEditorView extends VerticalLayout
         final ResetBackSaveView resetBackSaveView = setUpNavigationButtons();
 
         // Bind fields
-        binder.forField(nounSelector)
-              .asRequired("Noun is required")
+        binder.forField(nounSelector).asRequired("Noun is required")
               .withValidator(word -> word != null && !word.getText().isEmpty(), "Please select a noun with text")
               .bind(ItemViewModel::getNoun, ItemViewModel::setNoun);
-        binder.forField(adjectiveSelector)
-              .bind(ItemViewModel::getAdjective, ItemViewModel::setAdjective);
+        binder.forField(adjectiveSelector).bind(ItemViewModel::getAdjective, ItemViewModel::setAdjective);
         binder.bind(shortDescription, ItemViewModel::getShortDescription, ItemViewModel::setShortDescription);
         binder.bind(longDescription, ItemViewModel::getLongDescription, ItemViewModel::setLongDescription);
         binder.bind(isContainableCheckbox, ItemViewModel::isContainable, ItemViewModel::setContainable);
@@ -121,32 +124,14 @@ public class ItemEditorView extends VerticalLayout
         add(idRow, h1, shortDescription, longDescription, checkboxRow, resetBackSaveView);
     }
 
-    private ResetBackSaveView setUpNavigationButtons() {
-        final ResetBackSaveView resetBackSaveView = new ResetBackSaveView();
-
-        Button backButton = resetBackSaveView.getBack();
-        saveButton = resetBackSaveView.getSave();
-        resetButton = resetBackSaveView.getReset();
-        resetButton.setEnabled(false);
-
-        backButton.addClickListener(event -> UI.getCurrent().navigate(ItemsMenuView.class,
-                                                                      new RouteParameters(
-                                                                              new RouteParam(
-                                                                                      RouteIds.LOCATION_ID.getValue(),
-                                                                                      locationData.getId()),
-                                                                              new RouteParam(
-                                                                                      RouteIds.ADVENTURE_ID.getValue(),
-                                                                                      adventureData.getId()))
-        ).ifPresent(editor -> editor.setData(adventureData, locationData)));
-        saveButton.addClickListener(event -> validateSave(ivm));
-        resetButton.addClickListener(event -> binder.readBean(ivm));
-        resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
-
-        return resetBackSaveView;
-    }
-
     private TextField getItemIdTF() {
         TextField field = new TextField("Item ID");
+        field.setReadOnly(true);
+        return field;
+    }
+
+    private TextField getAdventureIdTF() {
+        TextField field = new TextField("Adventure ID");
         field.setReadOnly(true);
         return field;
     }
@@ -158,9 +143,13 @@ public class ItemEditorView extends VerticalLayout
         return field;
     }
 
-    private TextField getAdventureIdTF() {
-        TextField field = new TextField("Adventure ID");
-        field.setReadOnly(true);
+    private TextArea getShortDescTextArea() {
+        TextArea field = new TextArea("Short description");
+        field.setWidth("95%");
+        field.setMinHeight("100px");
+        field.setMaxHeight("150px");
+        field.setTooltipText("If left empty, this will be derived from the provided noun and adjective.");
+        field.setValueChangeMode(ValueChangeMode.EAGER);
         return field;
     }
 
@@ -174,14 +163,23 @@ public class ItemEditorView extends VerticalLayout
         return field;
     }
 
-    private TextArea getShortDescTextArea() {
-        TextArea field = new TextArea("Short description");
-        field.setWidth("95%");
-        field.setMinHeight("100px");
-        field.setMaxHeight("150px");
-        field.setTooltipText("If left empty, this will be derived from the provided noun and adjective.");
-        field.setValueChangeMode(ValueChangeMode.EAGER);
-        return field;
+    private ResetBackSaveView setUpNavigationButtons() {
+        final ResetBackSaveView resetBackSaveView = new ResetBackSaveView();
+
+        Button backButton = resetBackSaveView.getBack();
+        saveButton = resetBackSaveView.getSave();
+        resetButton = resetBackSaveView.getReset();
+        resetButton.setEnabled(false);
+
+        backButton.addClickListener(event -> UI.getCurrent().navigate(ItemsMenuView.class, new RouteParameters(
+                                                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                                               .ifPresent(editor -> editor.setData(adventureData, locationData)));
+        saveButton.addClickListener(event -> validateSave(ivm));
+        resetButton.addClickListener(event -> binder.readBean(ivm));
+        resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
+
+        return resetBackSaveView;
     }
 
     private void validateSave(ItemViewModel anItemViewModel) {
@@ -199,9 +197,8 @@ public class ItemEditorView extends VerticalLayout
 
                 // Update or add item reference to the in-memory container
                 List<ItemData> items = locationData.getItemContainerData().getItems();
-                boolean itemExists = items.stream()
-                        .filter(item -> item != null)  // Filter out any null items
-                        .anyMatch(item -> item.getId().equals(savedItem.getId()));
+                boolean itemExists = items.stream().filter(item -> item != null)  // Filter out any null items
+                                          .anyMatch(item -> item.getId().equals(savedItem.getId()));
 
                 if (!itemExists) {
                     items.add(savedItem);
@@ -223,7 +220,7 @@ public class ItemEditorView extends VerticalLayout
                 saveButton.setEnabled(false);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage());
         }
     }
 
@@ -258,11 +255,8 @@ public class ItemEditorView extends VerticalLayout
 
         // Load item from in-memory container or create new
         if (itemId != null && !itemId.isEmpty()) {
-            itemData = locationData.getItemContainerData().getItems()
-                    .stream()
-                    .filter(item -> item.getId().equals(itemId))
-                    .findFirst()
-                    .orElseGet(() -> {
+            itemData = locationData.getItemContainerData().getItems().stream()
+                                   .filter(item -> item.getId().equals(itemId)).findFirst().orElseGet(() -> {
                         ItemData newItem = new ItemData();
 //                        newItem.setId(java.util.UUID.randomUUID().toString());
                         itemId = newItem.getId();

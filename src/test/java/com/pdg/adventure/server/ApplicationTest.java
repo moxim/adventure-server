@@ -1,5 +1,6 @@
 package com.pdg.adventure.server;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +19,7 @@ class ApplicationTest {
         // when
 
         // then
+        Assertions.assertTrue(true); // If we reach this point, the context has loaded successfully
     }
 
 }

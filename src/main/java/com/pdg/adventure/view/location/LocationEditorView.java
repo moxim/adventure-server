@@ -11,6 +11,8 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
@@ -34,6 +36,9 @@ import com.pdg.adventure.view.support.RouteIds;
 @RouteAlias(value = "adventures/:adventureId/locations/new", layout = LocationsMainLayout.class)
 public class LocationEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
+
+    private static final Logger LOG = LoggerFactory.getLogger(LocationEditorView.class);
+
     private static final int MIN_LUMEN = 0;
     private static final int MAX_LUMEN = 100;
     private static final int LUMEN_STEP = 1;
@@ -63,9 +68,11 @@ public class LocationEditorView extends VerticalLayout
         locationData = new LocationData();
         locationId = locationData.getId();
 
-        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this location.", ADJECTIVE, new VocabularyData());
+        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this location.", ADJECTIVE,
+                                                      new VocabularyData());
 
-        nounSelector = new VocabularyPickerField("Noun", "The main theme of this location.", NOUN, new VocabularyData());
+        nounSelector = new VocabularyPickerField("Noun", "The main theme of this location.", NOUN,
+                                                 new VocabularyData());
         nounSelector.setPlaceholder("Select a noun (required)");
 
         TextField locationIdTF = getLocationIdTF();
@@ -78,12 +85,10 @@ public class LocationEditorView extends VerticalLayout
         final ResetBackSaveView resetBackSaveView = setUpNavigationButtons();
 
         // Bind fields
-        binder.forField(nounSelector)
-              .asRequired("Noun is required")
+        binder.forField(nounSelector).asRequired("Noun is required")
               .withValidator(word -> word != null && !word.getText().isEmpty(), "Please select a noun with text")
               .bind(LocationViewModel::getNoun, LocationViewModel::setNoun);
-        binder.forField(adjectiveSelector)
-              .bind(LocationViewModel::getAdjective, LocationViewModel::setAdjective);
+        binder.forField(adjectiveSelector).bind(LocationViewModel::getAdjective, LocationViewModel::setAdjective);
         binder.bind(shortDescription, LocationViewModel::getShortDescription, LocationViewModel::setShortDescription);
         binder.bind(longDescription, LocationViewModel::getLongDescription, LocationViewModel::setLongDescription);
         binder.bind(lumen, LocationViewModel::getLumen, LocationViewModel::setLumen);
@@ -105,37 +110,22 @@ public class LocationEditorView extends VerticalLayout
         VerticalLayout hl = new VerticalLayout(h1, h2);
 
         Button manageCommands = new Button("Manage Commands");
-        manageCommands.addClickListener(event -> UI.getCurrent().navigate(CommandsMenuView.class,
-                                                                          new RouteParameters(
-                                                                                  new RouteParam(
-                                                                                          RouteIds.LOCATION_ID.getValue(),
-                                                                                          locationData.getId()),
-                                                                                  new RouteParam(
-                                                                                          RouteIds.ADVENTURE_ID.getValue(),
-                                                                                          adventureData.getId()))
-        ).ifPresent(e -> e.setData(adventureData, locationData)));
+        manageCommands.addClickListener(event -> UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
+                                                           new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                                                           new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                                                   .ifPresent(e -> e.setData(adventureData, locationData)));
 
         Button manageItems = new Button("Manage Items");
-        manageItems.addClickListener(event -> UI.getCurrent().navigate(ItemsMenuView.class,
-                                                                       new RouteParameters(
-                                                                               new RouteParam(
-                                                                                       RouteIds.LOCATION_ID.getValue(),
-                                                                                       locationData.getId()),
-                                                                               new RouteParam(
-                                                                                       RouteIds.ADVENTURE_ID.getValue(),
-                                                                                       adventureData.getId()))
-        ).ifPresent(e -> e.setData(adventureData, locationData)));
+        manageItems.addClickListener(event -> UI.getCurrent().navigate(ItemsMenuView.class, new RouteParameters(
+                                                        new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                                                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                                                .ifPresent(e -> e.setData(adventureData, locationData)));
 
         Button manageExits = new Button("Manage Exits");
-        manageExits.addClickListener(event -> UI.getCurrent().navigate(DirectionsMenuView.class,
-                                                                       new RouteParameters(
-                                                                               new RouteParam(
-                                                                                       RouteIds.LOCATION_ID.getValue(),
-                                                                                       locationData.getId()),
-                                                                               new RouteParam(
-                                                                                       RouteIds.ADVENTURE_ID.getValue(),
-                                                                                       adventureData.getId()))
-        ).ifPresent(e -> e.setData(adventureData, locationData)));
+        manageExits.addClickListener(event -> UI.getCurrent().navigate(DirectionsMenuView.class, new RouteParameters(
+                                                        new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                                                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                                                .ifPresent(e -> e.setData(adventureData, locationData)));
 
         setMargin(true);
         setPadding(true);
@@ -143,43 +133,6 @@ public class LocationEditorView extends VerticalLayout
         HorizontalLayout commandRow = new HorizontalLayout(manageCommands, manageItems, manageExits);
         HorizontalLayout idRow = new HorizontalLayout(locationIdTF, adventureIdTF);
         add(idRow, hl, shortDescription, longDescription, commandRow, resetBackSaveView);
-    }
-
-    private ResetBackSaveView setUpNavigationButtons() {
-        final ResetBackSaveView resetBackSaveView = new ResetBackSaveView();
-
-        Button backButton = resetBackSaveView.getBack();
-        saveButton = resetBackSaveView.getSave();
-        resetButton = resetBackSaveView.getReset();
-        resetButton.setEnabled(false);
-
-        backButton.addClickListener(event -> UI.getCurrent().navigate(LocationsMenuView.class).ifPresent(
-                                editor -> editor.setAdventureData(adventureData)));
-        saveButton.addClickListener(event -> validateSave(lvm));
-        resetButton.addClickListener(event -> binder.readBean(lvm));
-        resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
-
-        return resetBackSaveView;
-    }
-
-    private IntegerField getExitsField() {
-        IntegerField field = new IntegerField("Number of exits");
-        field.setReadOnly(true);
-//        binder.bind(field, LocationViewModel::getDefaultExits, null);
-        return field;
-    }
-
-    private IntegerField getLumenField() {
-        IntegerField field = new IntegerField("Lighting (Lumen)");
-        field.setMax(MAX_LUMEN);
-        field.setMin(MIN_LUMEN);
-        field.setStep(LUMEN_STEP);
-        field.setTooltipText(
-                "Set the lighting of this location. (" + MAX_LUMEN + " = max, " + MIN_LUMEN + " = total darkness)");
-        field.setValueChangeMode(ValueChangeMode.EAGER);
-//        field.addValueChangeListener(event -> checkIfSaveAvailable());
-//        binder.bind(field, LocationViewModel::getLumen, LocationViewModel::setLumen);
-        return field;
     }
 
     private TextField getLocationIdTF() {
@@ -196,6 +149,17 @@ public class LocationEditorView extends VerticalLayout
         return field;
     }
 
+    private TextArea getShortDescTextArea() {
+        TextArea field = new TextArea("Short description");
+        field.setWidth("95%");
+        field.setMinHeight("100px");
+        field.setMaxHeight("150px");
+        field.setTooltipText("If left empty, this will be derived from the provided noun and verb.");
+        field.setValueChangeMode(ValueChangeMode.EAGER);
+//        binder.bind(field, LocationViewModel::getShortDescription, LocationViewModel::setShortDescription);
+        return field;
+    }
+
     private TextArea getLongDescTextArea() {
         TextArea field = new TextArea("Long description");
         field.setWidth("95%");
@@ -207,16 +171,41 @@ public class LocationEditorView extends VerticalLayout
         return field;
     }
 
-
-    private TextArea getShortDescTextArea() {
-        TextArea field = new TextArea("Short description");
-        field.setWidth("95%");
-        field.setMinHeight("100px");
-        field.setMaxHeight("150px");
-        field.setTooltipText("If left empty, this will be derived from the provided noun and verb.");
+    private IntegerField getLumenField() {
+        IntegerField field = new IntegerField("Lighting (Lumen)");
+        field.setMax(MAX_LUMEN);
+        field.setMin(MIN_LUMEN);
+        field.setStep(LUMEN_STEP);
+        field.setTooltipText(
+                "Set the lighting of this location. (" + MAX_LUMEN + " = max, " + MIN_LUMEN + " = total darkness)");
         field.setValueChangeMode(ValueChangeMode.EAGER);
-//        binder.bind(field, LocationViewModel::getShortDescription, LocationViewModel::setShortDescription);
+//        field.addValueChangeListener(event -> checkIfSaveAvailable());
+//        binder.bind(field, LocationViewModel::getLumen, LocationViewModel::setLumen);
         return field;
+    }
+
+    private IntegerField getExitsField() {
+        IntegerField field = new IntegerField("Number of exits");
+        field.setReadOnly(true);
+//        binder.bind(field, LocationViewModel::getDefaultExits, null);
+        return field;
+    }
+
+    private ResetBackSaveView setUpNavigationButtons() {
+        final ResetBackSaveView resetBackSaveView = new ResetBackSaveView();
+
+        Button backButton = resetBackSaveView.getBack();
+        saveButton = resetBackSaveView.getSave();
+        resetButton = resetBackSaveView.getReset();
+        resetButton.setEnabled(false);
+
+        backButton.addClickListener(event -> UI.getCurrent().navigate(LocationsMenuView.class)
+                                               .ifPresent(editor -> editor.setAdventureData(adventureData)));
+        saveButton.addClickListener(event -> validateSave(lvm));
+        resetButton.addClickListener(event -> binder.readBean(lvm));
+        resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
+
+        return resetBackSaveView;
     }
 
     private void validateSave(LocationViewModel aLocationViewModel) {
@@ -230,7 +219,7 @@ public class LocationEditorView extends VerticalLayout
                 saveButton.setEnabled(false);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage());
         }
     }
 

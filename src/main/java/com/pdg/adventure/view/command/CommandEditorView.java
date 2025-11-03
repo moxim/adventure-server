@@ -15,10 +15,11 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import static com.pdg.adventure.model.Word.Type.*;
 
@@ -40,6 +41,9 @@ import com.pdg.adventure.view.support.RouteIds;
 @RouteAlias(value = "adventures/:adventureId/locations/:locationId/commands/new", layout = LocationsMainLayout.class)
 public class CommandEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CommandEditorView.class);
+
     private transient final AdventureService adventureService;
     private final Binder<CommandViewModel> binder;
     private final VocabularyPicker nounSelector;
@@ -61,7 +65,7 @@ public class CommandEditorView extends VerticalLayout
     private transient CommandData commandData;
     private transient ActionData originalActionData; // Store original action for reset
     private boolean actionEditorHasChanges = false; // Track if action editor has been modified
-    private Grid<CommandData> commandChainGrid; // Grid to display all commands in the chain
+    private final Grid<CommandData> commandChainGrid; // Grid to display all commands in the chain
     private transient CommandChainData currentCommandChain; // The command chain being edited
     private int selectedCommandIndex = 0; // Which command in the chain we're currently editing
 
@@ -71,17 +75,15 @@ public class CommandEditorView extends VerticalLayout
 
         verbSelector = new VocabularyPickerField("Verb", "You may filter on verbs.", VERB, new VocabularyData());
         verbSelector.setHelperText("Select at least a verb.");
-        adjectiveSelector = new VocabularyPickerField("Adjective", "You may filter on adjectives.", ADJECTIVE, new VocabularyData());
+        adjectiveSelector = new VocabularyPickerField("Adjective", "You may filter on adjectives.", ADJECTIVE,
+                                                      new VocabularyData());
         nounSelector = new VocabularyPickerField("Noun", "You may filter on nouns.", NOUN, new VocabularyData());
 
-        binder.forField(verbSelector)
-              .asRequired("Verb is required")
+        binder.forField(verbSelector).asRequired("Verb is required")
               .withValidator(word -> word != null && !word.getText().isEmpty(), "Please select a verb with text")
               .bind(CommandViewModel::getVerb, CommandViewModel::setVerb);
-        binder.forField(adjectiveSelector)
-              .bind(CommandViewModel::getAdjective, CommandViewModel::setAdjective);
-        binder.forField(nounSelector)
-              .bind(CommandViewModel::getNoun, CommandViewModel::setNoun);
+        binder.forField(adjectiveSelector).bind(CommandViewModel::getAdjective, CommandViewModel::setAdjective);
+        binder.forField(nounSelector).bind(CommandViewModel::getNoun, CommandViewModel::setNoun);
 
         binder.addStatusChangeListener(event -> {
             updateSaveButtonState();
@@ -251,7 +253,8 @@ public class CommandEditorView extends VerticalLayout
 
                 // Refresh the command chain grid to show updated data
                 if (currentCommandChain != null && !currentCommandChain.getCommands().isEmpty()) {
-                    ListDataProvider<CommandData> dataProvider = new ListDataProvider<>(currentCommandChain.getCommands());
+                    ListDataProvider<CommandData> dataProvider = new ListDataProvider<>(
+                            currentCommandChain.getCommands());
                     commandChainGrid.setDataProvider(dataProvider);
                     // Re-select the current command
                     if (selectedCommandIndex >= 0 && selectedCommandIndex < currentCommandChain.getCommands().size()) {
@@ -268,7 +271,7 @@ public class CommandEditorView extends VerticalLayout
                 resetButton.setEnabled(false);
             }
         } catch (ValidationException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage());
         }
     }
 
@@ -283,14 +286,13 @@ public class CommandEditorView extends VerticalLayout
         if (commandId != null && !commandId.isEmpty() && !commandId.equals(newSpecification)) {
             availableCommandsHelper.remove(commandId);
             // Remove old item from grid
-            aGridListDataView.getItems()
-                    .filter(item -> item.getShortDescription().equals(commandId))
-                    .findFirst()
-                    .ifPresent(aGridListDataView::removeItem);
+            aGridListDataView.getItems().filter(item -> item.getShortDescription().equals(commandId)).findFirst()
+                             .ifPresent(aGridListDataView::removeItem);
         }
 
         // Determine if we're editing an existing command or creating a new one
-        boolean isEditingExistingCommand = commandId != null && !commandId.isEmpty() && commandId.equals(newSpecification);
+        boolean isEditingExistingCommand = commandId != null && !commandId.isEmpty() &&
+                                           commandId.equals(newSpecification);
 
         CommandData command;
         if (isEditingExistingCommand && commandData != null) {

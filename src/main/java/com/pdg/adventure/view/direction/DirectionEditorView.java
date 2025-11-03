@@ -13,12 +13,13 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Predicate;
 
 import static com.pdg.adventure.model.Word.Type.*;
@@ -37,9 +38,10 @@ import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 @Route(value = "adventures/:adventureId/locations/:locationId/direction/:directionId/edit", layout = DirectionsMainLayout.class)
-@RouteAlias(value = "adventures/:adventureId/locations/:locationId/direction/new",  layout = DirectionsMainLayout.class)
+@RouteAlias(value = "adventures/:adventureId/locations/:locationId/direction/new", layout = DirectionsMainLayout.class)
 public class DirectionEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
+    private static final Logger LOG = LoggerFactory.getLogger(DirectionEditorView.class);
 
     private final transient AdventureService adventureService;
     private final Binder<DirectionViewModel> binder;
@@ -69,10 +71,13 @@ public class DirectionEditorView extends VerticalLayout
         directionData = new DirectionData();
         directionId = directionData.getId();
 
-        verbSelector = new VocabularyPickerField("Verb", "The action needed to follow this direction.", VERB, new VocabularyData());
+        verbSelector = new VocabularyPickerField("Verb", "The action needed to follow this direction.", VERB,
+                                                 new VocabularyData());
         verbSelector.setPlaceholder("Select a verb (required)");
-        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this direction.", ADJECTIVE, new VocabularyData());
-        nounSelector = new VocabularyPickerField("Noun", "A descriptive noun for this direction.", NOUN, new VocabularyData());
+        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this direction.", ADJECTIVE,
+                                                      new VocabularyData());
+        nounSelector = new VocabularyPickerField("Noun", "A descriptive noun for this direction.", NOUN,
+                                                 new VocabularyData());
 
         TextField directionIdTF = getDirectionIdTF();
         TextField locationIdTF = getLocationIdTF();
@@ -83,7 +88,8 @@ public class DirectionEditorView extends VerticalLayout
         destinationGrid = new Grid<>();
         destinationGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
         destinationGrid.addColumn(ViewSupporter::formatId).setHeader("Id").setAutoWidth(true).setFlexGrow(0);
-        destinationGrid.addColumn(ViewSupporter::formatDescription).setHeader("Short Description").setSortable(true).setAutoWidth(true);
+        destinationGrid.addColumn(ViewSupporter::formatDescription).setHeader("Short Description").setSortable(true)
+                       .setAutoWidth(true);
         destinationGrid.addSelectionListener(selectionEvent -> {
             directionId = selectionEvent.getFirstSelectedItem().map(LocationData::getId).orElse(null);
         });
@@ -96,33 +102,27 @@ public class DirectionEditorView extends VerticalLayout
         final ResetBackSaveView resetBackSaveView = setUpNavigationButtons();
 
         // Bind fields
-        binder.forField(verbSelector)
-              .asRequired("Verb is required")
+        binder.forField(verbSelector).asRequired("Verb is required")
               .withValidator(word -> word != null && !word.getText().isEmpty(), "Please select a verb with text")
               .bind(DirectionViewModel::getVerb, DirectionViewModel::setVerb);
-        binder.forField(adjectiveSelector)
-              .bind(DirectionViewModel::getAdjective, DirectionViewModel::setAdjective);
-        binder.forField(nounSelector)
-              .bind(DirectionViewModel::getNoun, DirectionViewModel::setNoun);
+        binder.forField(adjectiveSelector).bind(DirectionViewModel::getAdjective, DirectionViewModel::setAdjective);
+        binder.forField(nounSelector).bind(DirectionViewModel::getNoun, DirectionViewModel::setNoun);
         binder.bind(shortDescription, DirectionViewModel::getShortDescription, DirectionViewModel::setShortDescription);
         binder.bind(longDescription, DirectionViewModel::getLongDescription, DirectionViewModel::setLongDescription);
         binder.bindReadOnly(directionIdTF, DirectionViewModel::getId);
         binder.bindReadOnly(locationIdTF, DirectionViewModel::getLocationId);
         binder.bindReadOnly(adventureIdTF, DirectionViewModel::getAdventureId);
-        binder.forField(destinationGrid.asSingleSelect())
-              .asRequired("Destination is required")
-              .bind(
-                  // Getter: convert destinationId String to LocationData object
-                  dvm -> {
-                      String destId = dvm.getDestinationId();
-                      if (destId == null || adventureData == null) return null;
-                      return adventureData.getLocationData().get(destId);
-                  },
-                  // Setter: convert LocationData object to destinationId String
-                  (dvm, location) -> {
-                      dvm.setDestinationId(location != null ? location.getId() : null);
-                  }
-              );
+        binder.forField(destinationGrid.asSingleSelect()).asRequired("Destination is required").bind(
+                // Getter: convert destinationId String to LocationData object
+                dvm -> {
+                    String destId = dvm.getDestinationId();
+                    if (destId == null || adventureData == null) return null;
+                    return adventureData.getLocationData().get(destId);
+                },
+                // Setter: convert LocationData object to destinationId String
+                (dvm, location) -> {
+                    dvm.setDestinationId(location != null ? location.getId() : null);
+                });
 
         binder.addStatusChangeListener(event -> {
             boolean isValid = event.getBinder().isValid();
@@ -140,11 +140,10 @@ public class DirectionEditorView extends VerticalLayout
         Button manageCommands = new Button("Manage Commands");
         manageCommands.addClickListener(event -> {
             if (locationData != null && adventureData != null) {
-                UI.getCurrent().navigate(CommandsMenuView.class,
-                        new RouteParameters(
-                                new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))
-                ).ifPresent(e -> e.setData(adventureData, locationData));
+                UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
+                          new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                          new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                  .ifPresent(e -> e.setData(adventureData, locationData));
             }
         });
 
@@ -155,31 +154,6 @@ public class DirectionEditorView extends VerticalLayout
         HorizontalLayout idRow = new HorizontalLayout(directionIdTF, locationIdTF, adventureIdTF);
         add(idRow, hl, shortDescription, longDescription, commandRow, resetBackSaveView);
     }
-
-    private ResetBackSaveView setUpNavigationButtons() {
-        final ResetBackSaveView resetBackSaveView = new ResetBackSaveView();
-
-        Button backButton = resetBackSaveView.getBack();
-        saveButton = resetBackSaveView.getSave();
-        resetButton = resetBackSaveView.getReset();
-        resetButton.setEnabled(false);
-
-        backButton.addClickListener(event -> {
-            if (adventureData != null && locationData != null) {
-                UI.getCurrent().navigate(DirectionsMenuView.class,
-                        new RouteParameters(
-                                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
-                                new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()))
-                ).ifPresent(editor -> editor.setData(adventureData, locationData));
-            }
-        });
-        saveButton.addClickListener(event -> validateSave(dvm));
-        resetButton.addClickListener(event -> binder.readBean(dvm));
-        resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
-
-        return resetBackSaveView;
-    }
-
 
     private TextField getDirectionIdTF() {
         TextField field = new TextField("Direction ID");
@@ -199,16 +173,6 @@ public class DirectionEditorView extends VerticalLayout
         return field;
     }
 
-    private TextArea getLongDescTextArea() {
-        TextArea field = new TextArea("Long description");
-        field.setWidth("95%");
-        field.setMinHeight("200px");
-        field.setMaxHeight("350px");
-        field.setTooltipText("If left empty, this will be derived from the short description.");
-        field.setValueChangeMode(ValueChangeMode.EAGER);
-        return field;
-    }
-
     private TextArea getShortDescTextArea() {
         TextArea field = new TextArea("Short description");
         field.setWidth("95%");
@@ -219,9 +183,65 @@ public class DirectionEditorView extends VerticalLayout
         return field;
     }
 
-    private void validateSave(DirectionViewModel aDirectionViewModel) {
+    private TextArea getLongDescTextArea() {
+        TextArea field = new TextArea("Long description");
+        field.setWidth("95%");
+        field.setMinHeight("200px");
+        field.setMaxHeight("350px");
+        field.setTooltipText("If left empty, this will be derived from the short description.");
+        field.setValueChangeMode(ValueChangeMode.EAGER);
+        return field;
+    }
+
+    private ResetBackSaveView setUpNavigationButtons() {
+        final ResetBackSaveView resetBackSaveView = new ResetBackSaveView();
+
+        Button backButton = resetBackSaveView.getBack();
+        saveButton = resetBackSaveView.getSave();
+        resetButton = resetBackSaveView.getReset();
+        resetButton.setEnabled(false);
+
+        backButton.addClickListener(event -> {
+            if (adventureData != null && locationData != null) {
+                UI.getCurrent().navigate(DirectionsMenuView.class, new RouteParameters(
+                          new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                          new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId())))
+                  .ifPresent(editor -> editor.setData(adventureData, locationData));
+            }
+        });
+        saveButton.addClickListener(event -> validateSave(dvm));
+        resetButton.addClickListener(event -> binder.readBean(dvm));
+        resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
+
+        return resetBackSaveView;
+    }
+
+    protected void validateSave(DirectionViewModel aDirectionViewModel) {
         if (binder.validate().isOk()) {
             askUserIfLocationLoopsAreOK(aDirectionViewModel);
+        }
+    }
+
+    private void askUserIfLocationLoopsAreOK(DirectionViewModel aDirectionViewModel) {
+        if (directionId.equals(locationData.getId())) {
+            ConfirmDialog dialog = new ConfirmDialog();
+            dialog.setHeader("Dangerous Destination");
+            dialog.setText(
+                    "The selected destination is the same as the current location. This will trap the player if they follow this direction. Do you want to proceed?");
+            dialog.setCancelable(true);
+            dialog.setConfirmText("Proceed");
+            dialog.addConfirmListener(event -> {
+                // User confirmed, do nothing and allow save to proceed
+                saveData(aDirectionViewModel);
+            });
+            dialog.addCancelListener(event -> {
+                // User cancelled, throw an exception to prevent save
+                destinationGrid.select(null);
+            });
+            dialog.open();
+        } else {
+            // Destination is fine, proceed with save
+            saveData(aDirectionViewModel);
         }
     }
 
@@ -240,29 +260,7 @@ public class DirectionEditorView extends VerticalLayout
             adventureService.saveLocationData(locationData);
             saveButton.setEnabled(false);
         } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void askUserIfLocationLoopsAreOK(DirectionViewModel aDirectionViewModel) {
-        if (directionId.equals(locationData.getId())) {;
-            ConfirmDialog dialog = new ConfirmDialog();
-            dialog.setHeader("Dangerous Destination");
-            dialog.setText("The selected destination is the same as the current location. This will trap the player if they follow this direction. Do you want to proceed?");
-            dialog.setCancelable(true);
-            dialog.setConfirmText("Proceed");
-            dialog.addConfirmListener(event -> {
-                // User confirmed, do nothing and allow save to proceed
-                saveData(aDirectionViewModel);
-            });
-            dialog.addCancelListener(event -> {
-                // User cancelled, throw an exception to prevent save
-                destinationGrid.select(null);
-            });
-            dialog.open();
-        } else {
-            // Destination is fine, proceed with save
-            saveData(aDirectionViewModel);
+            LOG.error(e.getMessage());
         }
     }
 
@@ -292,9 +290,8 @@ public class DirectionEditorView extends VerticalLayout
         locationData = aLocationData;
 
         directionData = locationData.getDirectionsData().stream()
-                    .filter(direction -> direction.getId().equals(directionId))
-                    .findFirst()
-                    .orElse(new DirectionData());
+                                    .filter(direction -> direction.getId().equals(directionId)).findFirst()
+                                    .orElse(new DirectionData());
         if (directionData.getId() == null || directionData.getId().isEmpty()) {
 //            directionData.setId(UUID.randomUUID().toString());
             directionId = directionData.getId();
@@ -310,7 +307,7 @@ public class DirectionEditorView extends VerticalLayout
         Predicate<? super LocationData> predicate = loc -> !loc.getId().equals(locationData.getId());
         List<LocationData> locations = adventureData.getLocationData().values().stream()
 //                .filter(predicate)
-                .toList();
+                                                    .toList();
 
         destinationGrid.setItems(locations);
 
