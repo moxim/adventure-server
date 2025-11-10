@@ -89,38 +89,50 @@ public class MessageUsageTracker {
                 if (location.getCommandProviderData() != null &&
                     location.getCommandProviderData().getAvailableCommands() != null) {
 
-                    Map<String, CommandChainData> commands = location.getCommandProviderData().getAvailableCommands();
-
-                    for (Map.Entry<String, CommandChainData> commandEntry : commands.entrySet()) {
-                        String commandSpec = commandEntry.getKey();
-                        CommandChainData chain = commandEntry.getValue();
-
-                        if (chain != null && chain.getCommands() != null) {
-                            for (CommandData command : chain.getCommands()) {
-                                // Check primary action
-                                if (command.getAction() != null) {
-                                    checkAction(command.getAction(), locationEntry.getKey(), locationDesc,
-                                            commandSpec, "Primary Action", messageId, usages);
-                                }
-
-                                // Check follow-up actions
-                                if (command.getFollowUpActions() != null) {
-                                    int followUpIndex = 1;
-                                    for (ActionData followUpAction : command.getFollowUpActions()) {
-                                        checkAction(followUpAction, locationEntry.getKey(), locationDesc,
-                                                commandSpec, "Follow-up Action #" + followUpIndex,
-                                                messageId, usages);
-                                        followUpIndex++;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    addUsagesInLocaitonCommands(messageId, locationEntry, location, locationDesc, usages);
                 }
             }
         }
 
         return usages;
+    }
+
+    private static void addUsagesInLocaitonCommands(final String messageId, final Map.Entry<String, LocationData> locationEntry,
+                                                    final LocationData location, final String locationDesc,
+                                                    final List<MessageUsage> usages) {
+        Map<String, CommandChainData> commands = location.getCommandProviderData().getAvailableCommands();
+
+        for (Map.Entry<String, CommandChainData> commandEntry : commands.entrySet()) {
+            String commandSpec = commandEntry.getKey();
+            CommandChainData chain = commandEntry.getValue();
+
+            if (chain != null && chain.getCommands() != null) {
+                addUsagesInCommands(messageId, locationEntry, chain, locationDesc, commandSpec, usages);
+            }
+        }
+    }
+
+    private static void addUsagesInCommands(final String messageId, final Map.Entry<String, LocationData> locationEntry,
+                                            final CommandChainData chain, final String locationDesc, final String commandSpec,
+                                            final List<MessageUsage> usages) {
+        for (CommandData command : chain.getCommands()) {
+            // Check primary action
+            if (command.getAction() != null) {
+                checkAction(command.getAction(), locationEntry.getKey(), locationDesc,
+                            commandSpec, "Primary Action", messageId, usages);
+            }
+
+            // Check follow-up actions
+            if (command.getFollowUpActions() != null) {
+                int followUpIndex = 1;
+                for (ActionData followUpAction : command.getFollowUpActions()) {
+                    checkAction(followUpAction, locationEntry.getKey(), locationDesc,
+                                commandSpec, "Follow-up Action #" + followUpIndex,
+                                messageId, usages);
+                    followUpIndex++;
+                }
+            }
+        }
     }
 
     /**
@@ -129,9 +141,7 @@ public class MessageUsageTracker {
     private static void checkAction(ActionData action, String locationId, String locationDesc,
                                     String commandSpec, String context, String messageId,
                                     List<MessageUsage> usages) {
-        if (action instanceof MessageActionData) {
-            MessageActionData messageAction = (MessageActionData) action;
-            if (messageId.equals(messageAction.getMessageId())) {
+        if (action instanceof MessageActionData messageAction && messageId.equals(messageAction.getMessageId())) {
                 usages.add(new MessageUsage(
                         locationId,
                         locationDesc,
@@ -140,7 +150,7 @@ public class MessageUsageTracker {
                         context
                 ));
             }
-        }
+
     }
 
     /**

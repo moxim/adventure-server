@@ -128,27 +128,39 @@ public class LocationUsageTracker {
         if (directions != null) {
             for (DirectionData direction : directions) {
                 if (targetLocationId.equals(direction.getDestinationId())) {
-                    String directionName = direction.getDescriptionData() != null ?
-                            direction.getDescriptionData().getShortDescription() : "Unknown direction";
-                    if (directionName == null || directionName.isEmpty()) {
-                        List<LocationUsage> fromDirections = new ArrayList<>();
-                        checkCommandsInDirection(direction, sourceLocationId, sourceLocationDesc, targetLocationId, fromDirections);
-                        for (var usage : fromDirections) {
-                            usage.usageType = ("in Direction: " + usage.getUsageType());
-                        }
-                        usages.addAll(fromDirections);
-                    } else {
-                        usages.add(new LocationUsage(
-                                "Direction",
-                                sourceLocationId,
-                                sourceLocationDesc,
-                                "Direction '" + directionName + "'",
-                                null
-                        ));
-                    }
+                    addUsagesForMatchingDirection(sourceLocationId, sourceLocationDesc, targetLocationId, usages, direction);
                 }
             }
         }
+    }
+
+    private static void addUsagesForMatchingDirection(final String sourceLocationId, final String sourceLocationDesc,
+                                                      final String targetLocationId, final List<LocationUsage> usages,
+                                                      final DirectionData direction) {
+        String directionName = direction.getDescriptionData() != null ?
+                               direction.getDescriptionData().getShortDescription() : "Unknown direction";
+        if (directionName == null || directionName.isEmpty()) {
+            addUsagesFromDirection(sourceLocationId, sourceLocationDesc, targetLocationId, usages, direction);
+        } else {
+            usages.add(new LocationUsage(
+                    "Direction",
+                    sourceLocationId,
+                    sourceLocationDesc,
+                    "Direction '" + directionName + "'",
+                    null
+            ));
+        }
+    }
+
+    private static void addUsagesFromDirection(final String sourceLocationId, final String sourceLocationDesc,
+                                  final String targetLocationId, final List<LocationUsage> usages,
+                                  final DirectionData direction) {
+        List<LocationUsage> fromDirections = new ArrayList<>();
+        checkCommandsInDirection(direction, sourceLocationId, sourceLocationDesc, targetLocationId, fromDirections);
+        for (var usage : fromDirections) {
+            usage.usageType = ("in Direction: " + usage.getUsageType());
+        }
+        usages.addAll(fromDirections);
     }
 
     private static void checkCommandsInDirection(final DirectionData aDirection, String sourceLocationId,
@@ -223,8 +235,7 @@ public class LocationUsageTracker {
     private static void checkMoveAction(ActionData action, String sourceLocationId, String sourceLocationDesc,
                                        String commandSpec, String context, String targetLocationId,
                                        List<LocationUsage> usages) {
-        if (action instanceof MovePlayerActionData moveAction) {
-            if (targetLocationId.equals(moveAction.getLocationId())) {
+        if (action instanceof MovePlayerActionData moveAction && targetLocationId.equals(moveAction.getLocationId())) {
                 usages.add(new LocationUsage(
                         "Move Action",
                         sourceLocationId,
@@ -233,7 +244,7 @@ public class LocationUsageTracker {
                         commandSpec
                 ));
             }
-        }
+
     }
 
     /**
