@@ -182,7 +182,7 @@ class LocationMapperTest {
         assertThat(result.getId()).isEqualTo("mountain-peak");
         // Note: Location.getLight() returns 0 (hardcoded), not the actual lumen value
         // This appears to be a bug in the production code (line 150-152 in Location.java)
-        assertThat(result.getLumen()).isZero();
+        assertThat(result.getLumen()).isEqualTo(90);
         assertThat(result.getDescriptionData()).isEqualTo(descriptionData);
         assertThat(result.getItemContainerData()).isNotNull();
 
