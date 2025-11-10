@@ -14,7 +14,7 @@ import com.pdg.adventure.server.tangible.Thing;
 
 public class Location extends Thing implements Visitable, HasLight {
 
-    private final Container container;
+    private final Container itemContainer;
     private final Container directions;
     private long timesVisited;
     // TODO: reconsider having Location know about the player's pocket
@@ -23,22 +23,21 @@ public class Location extends Thing implements Visitable, HasLight {
 
     public Location(DescriptionProvider aDescriptionProvider, Container aPocket) {
         super(aDescriptionProvider);
-        container = new GenericContainer(aDescriptionProvider, 99);
+        itemContainer = aPocket;
         directions = new GenericContainer(aDescriptionProvider, true, 9999);
-//        pocket = aPocket;
         timesVisited = 0; // explicit, but redundant
     }
 
     public ExecutionResult addItem(Containable anItem) {
-        return container.add(anItem);
+        return itemContainer.add(anItem);
     }
 
     public ExecutionResult removeItem(Item anItem) {
-        return container.remove(anItem);
+        return itemContainer.remove(anItem);
     }
 
-    public GenericContainer getContainer() {
-        return (GenericContainer) container;
+    public GenericContainer getItemContainer() {
+        return (GenericContainer) itemContainer;
     }
 
     public ExecutionResult addDirection(Direction aDirection) {
@@ -79,7 +78,7 @@ public class Location extends Thing implements Visitable, HasLight {
     @Override
     public List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription) {
         List<CommandChain> availableCommands = new ArrayList<>(super.getMatchingCommandChain(aCommandDescription));
-        availableCommands.addAll(container.getMatchingCommandChain(aCommandDescription));
+        availableCommands.addAll(itemContainer.getMatchingCommandChain(aCommandDescription));
         availableCommands.addAll(directions.getMatchingCommandChain(aCommandDescription));
 
         // TODO: move this into interceptor chain
@@ -109,16 +108,16 @@ public class Location extends Thing implements Visitable, HasLight {
         }
 
         sb.append(System.lineSeparator());
-        if (!container.isEmpty()) {
+        if (!itemContainer.isEmpty()) {
             sb.append("You also see:").append(System.lineSeparator());
-            sb.append(container.listContents());
+            sb.append(itemContainer.listContents());
         }
 
         return sb.toString();
     }
 
     public boolean contains(Item anItem) {
-        return container.contains(anItem);
+        return itemContainer.contains(anItem);
     }
 
 
@@ -134,12 +133,12 @@ public class Location extends Thing implements Visitable, HasLight {
     @Override
     public String toString() {
         return "Location{" +
-                "container=" + container +
-                ", directions=" + directions +
-                ", hasBeenVisited=" + timesVisited +
+               "container=" + itemContainer +
+               ", directions=" + directions +
+               ", hasBeenVisited=" + timesVisited +
 //                ", pocket=" + pocket +
-                ", " + super.toString() +
-                '}';
+               ", " + super.toString() +
+               '}';
     }
 
     @Override

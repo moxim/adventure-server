@@ -9,7 +9,7 @@ public interface Container extends Actionable {
 
     List<Containable> getContents();
 
-    void setContents(List<Containable> aContainableList);
+    void setContents(List<? extends Containable> aContainableList);
 
     ExecutionResult add(Containable aThing);
 

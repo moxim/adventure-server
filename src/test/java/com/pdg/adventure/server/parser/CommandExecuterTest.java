@@ -129,7 +129,7 @@ class CommandExecutorTest {
         // given
         Item item = new Item(new DescriptionProvider("tree"), true);
         item.addCommand(new GenericCommand(partialCommand, successAction));
-        location.getContainer().add(item);
+        location.getItemContainer().add(item);
 
         // when
         final ExecutionResult result = sut.execute(partialCommand); // TODO: also test for complete command execution
@@ -143,7 +143,7 @@ class CommandExecutorTest {
         // given
         Item someTree = new Item(new DescriptionProvider("tree"), true);
         someTree.addCommand(new GenericCommand(partialCommand, successAction));
-        location.getContainer().add(someTree);
+        location.getItemContainer().add(someTree);
         Item anotherTree = new Item(new DescriptionProvider("tree"), true);
         anotherTree.addCommand(new GenericCommand(partialCommand, successAction));
         pocket.add(anotherTree);
@@ -162,10 +162,10 @@ class CommandExecutorTest {
         // given
         Item someTree = new Item(new DescriptionProvider("tree"), true);
         someTree.addCommand(new GenericCommand(partialCommand, successAction));
-        location.getContainer().add(someTree);
+        location.getItemContainer().add(someTree);
         Item bigTree = new Item(new DescriptionProvider("big", "tree"), true);
         bigTree.addCommand(new GenericCommand(bigTreeCommand, successAction));
-        location.getContainer().add(bigTree);
+        location.getItemContainer().add(bigTree);
         Item smallTree = new Item(new DescriptionProvider("small", "tree"), true);
         smallTree.addCommand(new GenericCommand(matchingCommand, successAction));
         pocket.add(smallTree);
@@ -182,7 +182,7 @@ class CommandExecutorTest {
         // given
         Item someTree = new Item(new DescriptionProvider("tree"), true);
         someTree.addCommand(new GenericCommand(partialCommand, successAction));
-        location.getContainer().add(someTree);
+        location.getItemContainer().add(someTree);
         Item anotherTree = new Item(new DescriptionProvider("small", "tree"), true);
         anotherTree.addCommand(new GenericCommand(matchingCommand, successAction));
         pocket.add(anotherTree);
