@@ -1,5 +1,10 @@
 package com.pdg.adventure.server;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.*;
+
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.Ided;
 import com.pdg.adventure.server.location.Location;
@@ -9,10 +14,6 @@ import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.*;
 
 @Component
 public class Adventure implements Ided {
@@ -60,7 +61,9 @@ public class Adventure implements Ided {
         for (Location location : aLocationList) {
             locationMap.put(location.getId(), location);
         }
-        currentLocationId = aLocationList.getFirst().getId();
+        if (currentLocationId == null || currentLocationId.isEmpty()) {
+            currentLocationId = aLocationList.getFirst().getId();
+        }
     }
 
     public List<Location> getLocations() {
