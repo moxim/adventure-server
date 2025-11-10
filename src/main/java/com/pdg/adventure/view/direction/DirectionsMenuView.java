@@ -86,7 +86,7 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
 
     private Grid<DirectionData> getGrid() {
         Grid<DirectionData> directionGrid = new Grid<>(DirectionData.class, false);
-        directionGrid.setMinWidth("500px");
+        directionGrid.setMinWidth("550px");
         directionGrid.setMinHeight("250px");
         directionGrid.setEmptyStateText("Create some exits.");
 

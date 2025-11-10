@@ -73,7 +73,7 @@ class ItemsMenuViewTest {
         // given
         view = new ItemsMenuView(adventureService, itemService);
 
-        ItemContainerData itemContainer = new ItemContainerData();
+        ItemContainerData itemContainer = new ItemContainerData("19");
         List<ItemData> items = new ArrayList<>();
 
         ItemData sword = createTestItem("item-1", "sword", "golden");
@@ -98,7 +98,7 @@ class ItemsMenuViewTest {
         // given
         view = new ItemsMenuView(adventureService, itemService);
 
-        ItemContainerData itemContainer = new ItemContainerData();
+        ItemContainerData itemContainer = new ItemContainerData("19");
         List<ItemData> items = new ArrayList<>();
 
         ItemData sword = createTestItem("item-1", "sword", "golden");
@@ -128,7 +128,7 @@ class ItemsMenuViewTest {
         // given
         view = new ItemsMenuView(adventureService, itemService);
 
-        ItemContainerData itemContainer = new ItemContainerData();
+        ItemContainerData itemContainer = new ItemContainerData("19");
         itemContainer.setItems(new ArrayList<>());
         locationData.setItemContainerData(itemContainer);
 

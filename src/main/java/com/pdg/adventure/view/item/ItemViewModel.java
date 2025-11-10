@@ -20,10 +20,12 @@ public final class ItemViewModel {
     private boolean isContainable;
     private boolean isWearable;
     private boolean isWorn;
+    private String locationId;
 
     public ItemViewModel(ItemData anItemData) {
         data = anItemData;
-        adventureId = "Your Adventure";
+        adventureId = data.getAdventureId();
+        locationId = data.getLocationId();
         id = data.getId();
         noun = data.getDescriptionData().getNoun();
         adjective = data.getDescriptionData().getAdjective();
@@ -72,5 +74,9 @@ public final class ItemViewModel {
     public void setWorn(boolean isWorn) {
         this.isWorn = isWorn;
         data.setWorn(isWorn);
+    }
+
+    public String getLocationId() {
+        return locationId;
     }
 }

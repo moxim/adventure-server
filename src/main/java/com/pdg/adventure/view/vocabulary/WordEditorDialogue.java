@@ -96,6 +96,7 @@ public class WordEditorDialogue {
         dialog.getHeader().add(createDialogHeader(anEditType));
         dialog.getFooter().add(createDialogFooter(dialog)); // footer first, or saveButton is null
         dialog.add(createDialogContent());
+        dialog.setMinWidth("40%");
         dialog.open();
     }
 

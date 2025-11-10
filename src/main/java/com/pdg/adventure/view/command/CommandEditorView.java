@@ -56,7 +56,7 @@ public class CommandEditorView extends VerticalLayout
     private Button resetButton;
     private Button cancelButton;
     private LocationData locationData;
-    private GridListDataView<DescribableCommandAdapter> gridListDataView;
+    private GridListDataView<CommandDescriptionAdapter> gridListDataView;
     private AdventureData adventureData;
     private CommandProviderData commandProviderData;
     private CommandDescriptionData commandDescriptionData;
@@ -171,10 +171,7 @@ public class CommandEditorView extends VerticalLayout
         cancelButton = resetBackSaveView.getCancel();
         cancelButton.setEnabled(false);
 
-        backButton.addClickListener(event -> UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
-                                                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                               .ifPresent(e -> e.setData(adventureData, locationData)));
+        backButton.addClickListener(event -> navigateBack());
         saveButton.addClickListener(event -> validateSave(commandProviderData));
         resetButton.addClickListener(event -> {
             binder.readBean(cvm);
@@ -185,6 +182,13 @@ public class CommandEditorView extends VerticalLayout
         resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
 
         return resetBackSaveView;
+    }
+
+    private void navigateBack() {
+        UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
+                                                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                                               .ifPresent(e -> e.setData(adventureData, locationData));
     }
 
     /**
@@ -266,16 +270,15 @@ public class CommandEditorView extends VerticalLayout
 
                 // Reset change tracking flags after successful save
                 actionEditorHasChanges = false;
-                saveButton.setEnabled(false);
-                cancelButton.setEnabled(false);
-                resetButton.setEnabled(false);
+
+                navigateBack();
             }
         } catch (ValidationException e) {
             LOG.error(e.getMessage());
         }
     }
 
-    private CommandData swivelTheSaveButton(GridListDataView<DescribableCommandAdapter> aGridListDataView) {
+    private CommandData swivelTheSaveButton(GridListDataView<CommandDescriptionAdapter> aGridListDataView) {
         // Use the commandDescriptionData that was updated via the binder
         final CommandDescriptionData updatedCommandDescription = cvm.getData();
         final String newSpecification = updatedCommandDescription.getCommandSpecification();
@@ -319,7 +322,7 @@ public class CommandEditorView extends VerticalLayout
             chainData.getCommands().add(command);
             availableCommandsHelper.put(newSpecification, chainData);
             // Add to grid only if it's truly new
-            aGridListDataView.addItem(new DescribableCommandAdapter(newSpecification));
+            aGridListDataView.addItem(new CommandDescriptionAdapter(newSpecification));
         } else if (!isEditingExistingCommand) {
             // Command specification already exists and we're adding a new variant (not editing existing)
             // Commands with the same description are chained together
@@ -356,7 +359,7 @@ public class CommandEditorView extends VerticalLayout
     }
 
     public void setData(AdventureData anAdventureData, LocationData aLocationData,
-                        GridListDataView<DescribableCommandAdapter> aGridListDataView) {
+                        GridListDataView<CommandDescriptionAdapter> aGridListDataView) {
         adventureData = anAdventureData;
         locationData = aLocationData;
         gridListDataView = aGridListDataView;

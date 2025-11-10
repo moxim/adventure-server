@@ -84,7 +84,7 @@ class AllItemsMenuViewTest {
         view = new AllItemsMenuView(adventureService, itemService);
 
         // Add items to location 1
-        ItemContainerData container1 = new ItemContainerData();
+        ItemContainerData container1 = new ItemContainerData("19");
         List<ItemData> items1 = new ArrayList<>();
         ItemData sword = createTestItem("item-1", "sword", "golden", "location-1");
         ItemData shield = createTestItem("item-2", "shield", "wooden", "location-1");
@@ -94,7 +94,7 @@ class AllItemsMenuViewTest {
         location1.setItemContainerData(container1);
 
         // Add items to location 2
-        ItemContainerData container2 = new ItemContainerData();
+        ItemContainerData container2 = new ItemContainerData("19");
         List<ItemData> items2 = new ArrayList<>();
         ItemData torch = createTestItem("item-3", "torch", "burning", "location-2");
         items2.add(torch);
@@ -121,7 +121,7 @@ class AllItemsMenuViewTest {
         view = new AllItemsMenuView(adventureService, itemService);
 
         // Add items with nulls to location 1
-        ItemContainerData container1 = new ItemContainerData();
+        ItemContainerData container1 = new ItemContainerData("19");
         List<ItemData> items1 = new ArrayList<>();
         ItemData sword = createTestItem("item-1", "sword", "golden", "location-1");
         items1.add(sword);
@@ -130,7 +130,7 @@ class AllItemsMenuViewTest {
         location1.setItemContainerData(container1);
 
         // Add items with nulls to location 2
-        ItemContainerData container2 = new ItemContainerData();
+        ItemContainerData container2 = new ItemContainerData("19");
         List<ItemData> items2 = new ArrayList<>();
         ItemData torch = createTestItem("item-2", "torch", "burning", "location-2");
         items2.add(null); // Null item (failed @DBRef)
@@ -159,11 +159,11 @@ class AllItemsMenuViewTest {
         view = new AllItemsMenuView(adventureService, itemService);
 
         // Both locations have empty item containers
-        ItemContainerData container1 = new ItemContainerData();
+        ItemContainerData container1 = new ItemContainerData("19");
         container1.setItems(new ArrayList<>());
         location1.setItemContainerData(container1);
 
-        ItemContainerData container2 = new ItemContainerData();
+        ItemContainerData container2 = new ItemContainerData("19");
         container2.setItems(new ArrayList<>());
         location2.setItemContainerData(container2);
 

@@ -3,37 +3,33 @@ package com.pdg.adventure.view.command;
 import lombok.Getter;
 
 import com.pdg.adventure.api.Describable;
-import com.pdg.adventure.model.Word;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
+import com.pdg.adventure.view.support.ViewSupporter;
 
-public class DescribableCommandAdapter implements Describable {
+public class CommandDescriptionAdapter implements Describable {
     @Getter
     private final CommandDescriptionData commandDescription;
 
-    public DescribableCommandAdapter(CommandDescriptionData aCommandDescription) {
+    public CommandDescriptionAdapter(CommandDescriptionData aCommandDescription) {
         commandDescription = aCommandDescription;
     }
 
-    public DescribableCommandAdapter(String aCommandSpecification) {
+    public CommandDescriptionAdapter(String aCommandSpecification) {
         commandDescription = new CommandDescriptionData(aCommandSpecification);
     }
 
     public String getVerb() {
-        return getWordTextSafely(commandDescription.getVerb());
+        return ViewSupporter.getWordText(commandDescription.getVerb());
     }
 
     @Override
     public String getAdjective() {
-        return getWordTextSafely(commandDescription.getAdjective());
+        return ViewSupporter.getWordText(commandDescription.getAdjective());
     }
 
     @Override
     public String getNoun() {
-        return getWordTextSafely(commandDescription.getNoun());
-    }
-
-    public String getWordTextSafely(Word aWord) {
-        return aWord != null ? aWord.getText() : "";
+        return ViewSupporter.getWordText(commandDescription.getNoun());
     }
 
     @Override

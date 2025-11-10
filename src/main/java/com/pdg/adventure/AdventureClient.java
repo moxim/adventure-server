@@ -1,7 +1,10 @@
 package com.pdg.adventure;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.List;
 
@@ -14,29 +17,25 @@ import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.mapper.VocabularyMapper;
 import com.pdg.adventure.server.storage.AdventureService;
-import com.pdg.adventure.server.storage.MessageService;
-import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 /**
  * The entry point of a Spring Boot application.
  */
-//@SpringBootApplication
+@SpringBootApplication
 public class AdventureClient implements CommandLineRunner {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AdventureClient.class);
 
     private final AdventureService adventureService;
     private final AdventureMapper adventureMapper;
-    private final MessageService messageService;
     private final AdventureConfig adventureConfig;
     private final VocabularyMapper vocabularyMapper;
 
-    public AdventureClient(AdventureService adventureService, AdventureMapper adventureMapper,
-                          MessageService messageService, AdventureConfig adventureConfig,
+    public AdventureClient(AdventureService adventureService, AdventureMapper adventureMapper, AdventureConfig adventureConfig,
                           VocabularyMapper vocabularyMapper) {
         this.adventureService = adventureService;
         this.adventureMapper = adventureMapper;
-        this.messageService = messageService;
         this.adventureConfig = adventureConfig;
         this.vocabularyMapper = vocabularyMapper;
     }
@@ -63,12 +62,21 @@ public class AdventureClient implements CommandLineRunner {
 
         MiniAdventure miniAdventure = new MiniAdventure(adventureConfig);
 
-        final String starrtLocationId = savedAdventure.getCurrentLocationId();
-        Location startLocation = adventureConfig.allLocations().get(starrtLocationId);
+        String startLocationId = savedAdventure.getCurrentLocationId();
+        Location startLocation = adventureConfig.allLocations().get(startLocationId);
+
+        if (startLocation == null) {
+            LOG.error("Warning: Could not find location with ID: '{}'", startLocationId);
+            LOG.error("Available location IDs: {}", adventureConfig.allLocations().keySet());
+            // Fallback to first available location
+            startLocation = savedAdventure.getLocations().getFirst();
+            LOG.error("Using fallback location: {}", startLocation.getId());
+        }
+
         Environment.setCurrentLocation(startLocation);
 
         Environment.setUpWorkflows();
-        Environment.setPocket(new GenericContainer(new DescriptionProvider("your pocket"), 5));
+        Environment.setPocket(savedAdventure.getPocket());
 
         miniAdventure.run();
     }

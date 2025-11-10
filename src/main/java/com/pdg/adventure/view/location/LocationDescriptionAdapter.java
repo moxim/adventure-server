@@ -9,13 +9,12 @@ public class LocationDescriptionAdapter implements Describable {
     private int usageCount;
 
     public LocationDescriptionAdapter(LocationData aLocationData) {
-        this.locationData = aLocationData;
-        this.usageCount = 0;
+        this(aLocationData, 0);
     }
 
     public LocationDescriptionAdapter(LocationData aLocationData, int aUsageCount) {
-        this.locationData = aLocationData;
-        this.usageCount = aUsageCount;
+        locationData = aLocationData;
+        usageCount = aUsageCount;
     }
 
     @Override
@@ -71,7 +70,7 @@ public class LocationDescriptionAdapter implements Describable {
         return usageCount;
     }
 
-    public void setUsageCount(int aUsageCount) {
-        this.usageCount = aUsageCount;
-    }
+//    public void setUsageCount(int aUsageCount) {
+//        usageCount = aUsageCount;
+//    }
 }

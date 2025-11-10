@@ -51,7 +51,7 @@ public class CommandsMenuView extends VerticalLayout
     private final Button resetButton;
     private final Button backButton;
     private final Button createButton;
-    private Grid<DescribableCommandAdapter> grid;
+    private Grid<CommandDescriptionAdapter> grid;
 //    private GridUnbufferedInlineEditor grid;
     private String pageTitle;
     private LocationData locationData;
@@ -59,7 +59,7 @@ public class CommandsMenuView extends VerticalLayout
     private TextField searchField;
     private CommandProviderData commandProviderData;
     private Set<CommandDescriptionData> availableCommands;
-    private GridListDataView<DescribableCommandAdapter> gridListDataView;
+    private GridListDataView<CommandDescriptionAdapter> gridListDataView;
 
     @Autowired
     public CommandsMenuView(AdventureService anAdventureService) {
@@ -133,12 +133,12 @@ public class CommandsMenuView extends VerticalLayout
         return grid;
     }
 
-    private Grid<DescribableCommandAdapter> getSimpleGrid() {
-        Grid<DescribableCommandAdapter> grid = new Grid<>(DescribableCommandAdapter.class, false);
+    private Grid<CommandDescriptionAdapter> getSimpleGrid() {
+        Grid<CommandDescriptionAdapter> grid = new Grid<>(CommandDescriptionAdapter.class, false);
         grid.setWidth(300, Unit.PIXELS);
-        grid.addColumn(DescribableCommandAdapter::getVerb).setHeader("Verb").setAutoWidth(true).setFlexGrow(0).setSortable(true);
-        grid.addColumn(DescribableCommandAdapter::getAdjective).setHeader("Adjective").setAutoWidth(true);
-        grid.addColumn(DescribableCommandAdapter::getNoun).setHeader("Noun").setAutoWidth(true);
+        grid.addColumn(CommandDescriptionAdapter::getVerb).setHeader("Verb").setAutoWidth(true).setFlexGrow(0).setSortable(true);
+        grid.addColumn(CommandDescriptionAdapter::getAdjective).setHeader("Adjective").setAutoWidth(true);
+        grid.addColumn(CommandDescriptionAdapter::getNoun).setHeader("Noun").setAutoWidth(true);
         return grid;
     }
 
@@ -158,17 +158,17 @@ public class CommandsMenuView extends VerticalLayout
         pageTitle = "Commands for location #" + locationId;
     }
 
-    private GridListDataView<DescribableCommandAdapter> fillGrid(CommandProviderData commandProviderData) {
+    private GridListDataView<CommandDescriptionAdapter> fillGrid(CommandProviderData commandProviderData) {
         final Map<String, CommandChainData> availableCommands = commandProviderData.getAvailableCommands();
-        final Set<DescribableCommandAdapter> commandDescriptionDataSet = new HashSet<>();
+        final Set<CommandDescriptionAdapter> commandDescriptionDataSet = new HashSet<>();
 
         for (Map.Entry<String, CommandChainData> entry : availableCommands.entrySet()) {
             String command = entry.getKey();
-            DescribableCommandAdapter commandDescription = new DescribableCommandAdapter(command);
+            CommandDescriptionAdapter commandDescription = new CommandDescriptionAdapter(command);
             commandDescriptionDataSet.add(commandDescription);
 //            CommandChainData commandChainData = entry.getValue();
 //            for (CommandDescriptionData commandDescriptionData : commandChainData.getCommands()) {
-//                DescribableCommandAdapter commandDescription = new DescribableCommandAdapter(
+//                CommandDescriptionAdapter commandDescription = new CommandDescriptionAdapter(
 //                  commandDescriptionData.getCommandSpecification()
 //                );
 //                commandDescriptionDataSet.add(commandDescription);
@@ -262,8 +262,8 @@ public class CommandsMenuView extends VerticalLayout
         }
     }
 
-    private class CommandContextMenu extends GridContextMenu<DescribableCommandAdapter> {
-        public CommandContextMenu(Grid<DescribableCommandAdapter> target) {
+    private class CommandContextMenu extends GridContextMenu<CommandDescriptionAdapter> {
+        public CommandContextMenu(Grid<CommandDescriptionAdapter> target) {
             super(target);
 
             addItem("Edit", e -> e.getItem().ifPresent(command -> {
