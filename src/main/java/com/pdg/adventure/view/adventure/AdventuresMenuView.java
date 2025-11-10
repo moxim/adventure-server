@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 @PageTitle("Your World Of Adventures")
@@ -97,7 +98,7 @@ public class AdventuresMenuView extends VerticalLayout {
 
     private void navigateToAdventureEditor(String aTargetAdventureId) {
         UI.getCurrent().navigate(AdventureEditorView.class,
-                                 new RouteParameters("adventureId", aTargetAdventureId)
+                                 new RouteParameters(RouteIds.ADVENTURE_ID.getValue(), aTargetAdventureId)
         );
 
     }

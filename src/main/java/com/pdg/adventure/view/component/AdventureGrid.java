@@ -7,6 +7,8 @@ import com.vaadin.flow.router.RouteParameters;
 
 import java.util.List;
 
+import com.pdg.adventure.view.support.RouteIds;
+
 public class AdventureGrid<T> extends Grid<T> {
     public AdventureGrid(Class<T> beanType, List<T> items) {
          super(beanType, false);
@@ -23,7 +25,7 @@ public class AdventureGrid<T> extends Grid<T> {
      public AdventureGrid<T> withDoubleClickNavigation(Class<? extends Component> targetView, String anAdventureId, String aLocationId) {
          addItemDoubleClickListener(e ->
              NavigationHelper.navigateTo(targetView, new RouteParameters(
-                 new RouteParam("adventureId", anAdventureId),
+                 new RouteParam(RouteIds.ADVENTURE_ID.getValue(), anAdventureId),
                  new RouteParam("locationId", aLocationId))));
          return this;
      }

@@ -18,7 +18,7 @@ public class Thing implements Describable, Actionable {
     @Setter
     private DescriptionProvider descriptionProvider;
     @Getter
-    private final CommandMatcher commandMatcher;
+    private final transient CommandMatcher commandMatcher;
     private GenericCommandProvider commandProvider;
 
     public Thing(DescriptionProvider aDescriptionProvider) {
@@ -134,12 +134,6 @@ public class Thing implements Describable, Actionable {
     public int hashCode() {
         return Objects.hash(id);
     }
-
-//    @Override
-//    public String toString() {
-//        return getShortDescription();
-//    }
-
 
     @Override
     public String toString() {

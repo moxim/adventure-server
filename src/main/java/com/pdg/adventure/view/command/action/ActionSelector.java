@@ -23,7 +23,7 @@ public class ActionSelector extends HorizontalLayout {
     private final AdventureData adventureData;
     private final ComboBox<ActionTypeDescriptor> actionTypeSelector;
     private final Button useButton;
-    private ActionEditorSelectedListener editorSelectedListener;
+    private transient ActionEditorSelectedListener editorSelectedListener;
 
     public ActionSelector(AdventureData adventureData) {
         this.adventureData = adventureData;
@@ -41,9 +41,9 @@ public class ActionSelector extends HorizontalLayout {
         useButton.setEnabled(false);
 
         // Enable the button only when an action is selected
-        actionTypeSelector.addValueChangeListener(e -> {
-            useButton.setEnabled(e.getValue() != null);
-        });
+        actionTypeSelector.addValueChangeListener(e ->
+            useButton.setEnabled(e.getValue() != null)
+        );
 
         // Handle the Use button click
         useButton.addClickListener(e -> {

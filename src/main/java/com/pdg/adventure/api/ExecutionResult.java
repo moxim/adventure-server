@@ -1,6 +1,8 @@
 package com.pdg.adventure.api;
 
-public interface ExecutionResult {
+import java.io.Serializable;
+
+public interface ExecutionResult extends Serializable {
     enum State {
         SUCCESS, FAILURE
     }

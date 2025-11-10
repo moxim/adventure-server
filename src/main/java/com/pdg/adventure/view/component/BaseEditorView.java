@@ -13,9 +13,9 @@ import com.pdg.adventure.view.support.RouteIds;
 
 public abstract class BaseEditorView<T> extends VerticalLayout implements HasDynamicTitle, BeforeEnterObserver,
         BeforeLeaveObserver {
+    protected final transient AdventureService adventureService;
     protected final Binder<T> binder;
     protected final ResetBackSaveView navigationButtons;
-    protected final AdventureService adventureService;
     protected String pageTitle;
     protected AdventureData adventureData;
     protected String adventureId;

@@ -42,7 +42,6 @@ public class MessageEditorView extends VerticalLayout
 
     private Button saveButton;
     private Button resetButton;
-    private final TextField messageIdField;
     private final TextArea messageTextField;
     private final Div previewDiv;
     private final Div usageInfoDiv;
@@ -64,6 +63,7 @@ public class MessageEditorView extends VerticalLayout
         // Build UI
         H4 title = new H4("Message Editor");
 
+        final TextField messageIdField;
         messageIdField = new TextField("Message ID");
         messageIdField.setPlaceholder("e.g., welcome_message, door_locked");
         messageIdField.setHelperText("Alphanumeric characters and underscores only");
@@ -110,7 +110,7 @@ public class MessageEditorView extends VerticalLayout
         binder.forField(messageIdField).asRequired("Message ID is required")
               .withValidator(id -> id != null && id.matches("^[a-zA-Z0-9_]+$"),
                              "Message ID must contain only letters, numbers, and underscores")
-              .withValidator(id -> isMessageIdUnique(id), "A message with this ID already exists")
+              .withValidator(this::isMessageIdUnique, "A message with this ID already exists")
               .bind(MessageViewModel::getId, MessageViewModel::setId);
 
         binder.forField(messageTextField).asRequired("Message text is required")
@@ -191,30 +191,10 @@ public class MessageEditorView extends VerticalLayout
                 binder.writeBean(mvm);
 
                 // Create or update message
-                MessageData message;
-                if (mvm.isNew()) {
-                    // Create new message
-                    message = new MessageData(adventureData.getId(), mvm.getId(), mvm.getMessageText());
-                } else {
-                    // Get existing message or create new one
-                    message = adventureData.getMessages()
-                                           .get(originalMessageId != null ? originalMessageId : mvm.getId());
-                    if (message == null) {
-                        message = new MessageData(adventureData.getId(), mvm.getId(), mvm.getMessageText());
-                    } else {
-                        message.setMessageId(mvm.getId());
-                        message.setText(mvm.getMessageText());
-                        message.touch();
-                    }
-                }
+                MessageData message = createRequiredMessage();
 
                 // Update message properties
-                if (mvm.getCategory() != null) {
-                    message.setCategory(mvm.getCategory());
-                }
-                if (mvm.getNotes() != null) {
-                    message.setNotes(mvm.getNotes());
-                }
+                updateMessageMetaData(message);
 
                 // If message ID changed, remove old entry
                 if (originalMessageId != null && !originalMessageId.equals(mvm.getId())) {
@@ -246,6 +226,35 @@ public class MessageEditorView extends VerticalLayout
             LOG.error(e.getMessage());
             // TODO: Show error notification to user
         }
+    }
+
+    private void updateMessageMetaData(final MessageData message) {
+        if (mvm.getCategory() != null) {
+            message.setCategory(mvm.getCategory());
+        }
+        if (mvm.getNotes() != null) {
+            message.setNotes(mvm.getNotes());
+        }
+    }
+
+    private MessageData createRequiredMessage() {
+        MessageData message;
+        if (mvm.isNew()) {
+            // Create new message
+            message = new MessageData(adventureData.getId(), mvm.getId(), mvm.getMessageText());
+        } else {
+            // Get existing message or create new one
+            message = adventureData.getMessages()
+                                   .get(originalMessageId != null ? originalMessageId : mvm.getId());
+            if (message == null) {
+                message = new MessageData(adventureData.getId(), mvm.getId(), mvm.getMessageText());
+            } else {
+                message.setMessageId(mvm.getId());
+                message.setText(mvm.getMessageText());
+                message.touch();
+            }
+        }
+        return message;
     }
 
     private void updateUsageInfo() {

@@ -7,7 +7,7 @@ import com.vaadin.flow.router.RouteParameters;
 import java.util.Optional;
 
 public class NavigationHelper {
-    public static Optional<? extends Component> navigateTo(Class<? extends Component> view, RouteParameters params) {
+    public static <T extends Component> Optional<T>  navigateTo(Class<T> view, RouteParameters params) {
         return UI.getCurrent().navigate(view, params);
     }
 }

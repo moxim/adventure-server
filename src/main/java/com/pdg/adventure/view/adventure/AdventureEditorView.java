@@ -22,6 +22,7 @@ import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.view.item.AllItemsMenuView;
 import com.pdg.adventure.view.location.LocationsMenuView;
+import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 import com.pdg.adventure.view.vocabulary.VocabularyMenuView;
 
@@ -60,7 +61,7 @@ public class AdventureEditorView extends VerticalLayout
         Button editVocabularyButton = new Button("Manage Vocabulary", e -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(VocabularyMenuView.class,
-                                         new RouteParameters(new RouteParam("adventureId", adventureData.getId())))
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
                   .ifPresent(editor -> editor.setAdventureData(adventureData));
             }
         });
@@ -68,7 +69,7 @@ public class AdventureEditorView extends VerticalLayout
         Button editMessagesButton = new Button("Manage Messages", e -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(com.pdg.adventure.view.message.MessagesMenuView.class,
-                                         new RouteParameters(new RouteParam("adventureId", adventureData.getId())))
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
                   .ifPresent(editor -> editor.setData(adventureData));
             }
         });
@@ -76,7 +77,7 @@ public class AdventureEditorView extends VerticalLayout
         Button editItemsButton = new Button("Manage Items", e -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(AllItemsMenuView.class,
-                                         new RouteParameters(new RouteParam("adventureId", adventureData.getId())))
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
                   .ifPresent(editor -> editor.setData(adventureData));
             }
         });
@@ -176,7 +177,7 @@ public class AdventureEditorView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<String> adventureId = event.getRouteParameters().get("adventureId");
+        Optional<String> adventureId = event.getRouteParameters().get(RouteIds.ADVENTURE_ID.getValue());
         if (adventureId.isPresent()) {
             setUpLoading(adventureId.get());
         } else {
