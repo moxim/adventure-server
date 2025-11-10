@@ -9,7 +9,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -252,7 +251,7 @@ class ItemUsageTrackerTest {
         }
 
         // Add item to location's ItemContainer
-        ItemContainerData itemContainer = new ItemContainerData();
+        ItemContainerData itemContainer = new ItemContainerData("19");
         List<ItemData> items = new ArrayList<>();
         ItemData item = new ItemData();
         item.setId(itemId);
@@ -272,7 +271,7 @@ class ItemUsageTrackerTest {
         location.setDescriptionData(descData);
 
         // Add item to location's ItemContainer with null items mixed in
-        ItemContainerData itemContainer = new ItemContainerData();
+        ItemContainerData itemContainer = new ItemContainerData("19");
         List<ItemData> items = new ArrayList<>();
         items.add(null); // Null item (failed @DBRef)
         ItemData item = new ItemData();

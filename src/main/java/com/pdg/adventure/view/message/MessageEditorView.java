@@ -143,20 +143,21 @@ public class MessageEditorView extends VerticalLayout
         resetButton = resetBackSaveView.getReset();
         resetButton.setEnabled(false);
 
-        backButton.addClickListener(event -> UI.getCurrent().navigate(MessagesMenuView.class, new RouteParameters(
-                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                               .ifPresent(e -> e.setData(adventureData)));
-
+        backButton.addClickListener(event -> navigateBack());
         saveButton.addClickListener(event -> validateAndSave());
-
         resetButton.addClickListener(event -> {
             binder.readBean(mvm);
             updatePreview();
         });
-
         resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
 
         return resetBackSaveView;
+    }
+
+    private void navigateBack() {
+        UI.getCurrent().navigate(MessagesMenuView.class, new RouteParameters(
+                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                                               .ifPresent(e -> e.setData(adventureData));
     }
 
     private boolean isMessageIdUnique(String id) {
@@ -230,15 +231,13 @@ public class MessageEditorView extends VerticalLayout
                 originalMessageId = mvm.getId();
                 messageId = mvm.getId();
 
-                // Reset change tracking
-                saveButton.setEnabled(false);
-                resetButton.setEnabled(false);
-
                 // Mark as no longer new
                 mvm.setNew(false);
 
                 // Update usage info
                 updateUsageInfo();
+
+                navigateBack();
             }
         } catch (ValidationException e) {
             LOG.error(e.getMessage());
@@ -314,14 +313,10 @@ public class MessageEditorView extends VerticalLayout
         // Load existing message or create new one
         if (messageId != null && !messageId.isEmpty()) {
             // Load from adventure's messages Map (loaded via @DBRef)
-            MessageData messageData = adventureData.getMessages().get(messageId);
-            if (messageData != null) {
-                mvm = new MessageViewModel(messageData);
-                originalMessageId = messageId;
-            } else {
-                // Message not found, create new one
-                mvm = new MessageViewModel();
-            }
+            MessageData messageData = adventureData.getMessages().getOrDefault(messageId, new MessageData());
+            mvm = new MessageViewModel(messageData);
+            messageId = messageData.getMessageId();
+            originalMessageId = messageId;
         } else {
             // Creating a new message
             mvm = new MessageViewModel();

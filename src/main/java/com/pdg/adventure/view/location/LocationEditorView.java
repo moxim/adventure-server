@@ -138,14 +138,12 @@ public class LocationEditorView extends VerticalLayout
     private TextField getLocationIdTF() {
         TextField field = new TextField("Location ID");
         field.setReadOnly(true);
-//        binder.bindReadOnly(field, LocationViewModel::getId);
         return field;
     }
 
     private TextField getAdventureIdTF() {
         TextField field = new TextField("Adventure ID");
         field.setReadOnly(true);
-//        binder.bindReadOnly(field, LocationViewModel::getAdventureId);
         return field;
     }
 
@@ -156,7 +154,6 @@ public class LocationEditorView extends VerticalLayout
         field.setMaxHeight("150px");
         field.setTooltipText("If left empty, this will be derived from the provided noun and verb.");
         field.setValueChangeMode(ValueChangeMode.EAGER);
-//        binder.bind(field, LocationViewModel::getShortDescription, LocationViewModel::setShortDescription);
         return field;
     }
 
@@ -179,15 +176,12 @@ public class LocationEditorView extends VerticalLayout
         field.setTooltipText(
                 "Set the lighting of this location. (" + MAX_LUMEN + " = max, " + MIN_LUMEN + " = total darkness)");
         field.setValueChangeMode(ValueChangeMode.EAGER);
-//        field.addValueChangeListener(event -> checkIfSaveAvailable());
-//        binder.bind(field, LocationViewModel::getLumen, LocationViewModel::setLumen);
         return field;
     }
 
     private IntegerField getExitsField() {
         IntegerField field = new IntegerField("Number of exits");
         field.setReadOnly(true);
-//        binder.bind(field, LocationViewModel::getDefaultExits, null);
         return field;
     }
 
@@ -199,8 +193,7 @@ public class LocationEditorView extends VerticalLayout
         resetButton = resetBackSaveView.getReset();
         resetButton.setEnabled(false);
 
-        backButton.addClickListener(event -> UI.getCurrent().navigate(LocationsMenuView.class)
-                                               .ifPresent(editor -> editor.setAdventureData(adventureData)));
+        backButton.addClickListener(event -> navigateBack());
         saveButton.addClickListener(event -> validateSave(lvm));
         resetButton.addClickListener(event -> binder.readBean(lvm));
         resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
@@ -208,12 +201,16 @@ public class LocationEditorView extends VerticalLayout
         return resetBackSaveView;
     }
 
+    private void navigateBack() {
+        UI.getCurrent().navigate(LocationsMenuView.class)
+                                               .ifPresent(editor -> editor.setAdventureData(adventureData));
+    }
+
     private void validateSave(LocationViewModel aLocationViewModel) {
         try {
             if (binder.validate().isOk()) {
                 binder.writeBean(aLocationViewModel);
                 final LocationData locationData = aLocationViewModel.getData();
-//                adventureService.saveLocationData(locationData); // need to save location first to ensure it has an ID
                 adventureData.getLocationData().put(aLocationViewModel.getId(), locationData);
                 adventureService.saveAdventureData(adventureData);
                 saveButton.setEnabled(false);
@@ -247,10 +244,7 @@ public class LocationEditorView extends VerticalLayout
     public void setData(AdventureData anAdventureData) {
         adventureData = anAdventureData;
         locationData = adventureData.getLocationData().getOrDefault(locationId, new LocationData());
-        if (locationData.getId() == null || locationData.getId().isEmpty()) {
-//            locationData.setId(java.util.UUID.randomUUID().toString());
-            locationId = locationData.getId();
-        }
+        locationId = locationData.getId();
 
         VocabularyData vocabularyData = adventureData.getVocabularyData();
         adjectiveSelector.populate(vocabularyData.getWords(ADJECTIVE));

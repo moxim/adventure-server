@@ -18,11 +18,16 @@ public class LocationData extends ThingData {
     @DBRef(lazy = false)
     @CascadeSave
     @CascadeDelete
-    private ItemContainerData itemContainerData = new ItemContainerData();
+    private ItemContainerData itemContainerData;
     private Set<DirectionData> directionsData = new HashSet<>();
 
     private int timesVisited;
     private int lumen= 50;
+
+    public LocationData() {
+        timesVisited = 0;
+        itemContainerData = new ItemContainerData(getId());
+    }
 
     @Override
     public String toString() {

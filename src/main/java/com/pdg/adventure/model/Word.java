@@ -15,9 +15,7 @@ import com.pdg.adventure.model.basic.BasicData;
 public class Word extends BasicData {
     private String text;
     private Type type;
-    // TODO: using DBRef doesn't resolve the synonym
-    @DBRef//(lazy = true)
-//    @CascadeSave
+    @DBRef
     private Word synonym;
 
     protected Word() {

@@ -36,11 +36,11 @@ class LocationTest {
         // given
 
         // when
-        boolean success = TestSupporter.addItemToBoolean(sut.getContainer(), mouse);
+        boolean success = TestSupporter.addItemToBoolean(sut.getItemContainer(), mouse);
 
         // then
         assertThat(success).isTrue();
-        assertThat(mouse.getParentContainer()).isEqualTo(sut.getContainer());
+        assertThat(mouse.getParentContainer()).isEqualTo(sut.getItemContainer());
         assertThat(sut.contains(mouse)).isTrue();
     }
 
@@ -50,7 +50,7 @@ class LocationTest {
         assertThat(sut.contains(mouse)).isFalse();
 
         // when
-        boolean success = TestSupporter.removeItemToBoolean(sut.getContainer(), mouse);
+        boolean success = TestSupporter.removeItemToBoolean(sut.getItemContainer(), mouse);
 
         // then
         assertThat(success).isFalse();
@@ -63,7 +63,7 @@ class LocationTest {
         sut.addItem(mouse);
 
         // when
-        boolean success = TestSupporter.removeItemToBoolean(sut.getContainer(), mouse);
+        boolean success = TestSupporter.removeItemToBoolean(sut.getItemContainer(), mouse);
 
         // then
         assertThat(success).isTrue();

@@ -98,6 +98,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         backButton.addClickShortcut(Key.ESCAPE);
 
         VerticalLayout leftSide = new VerticalLayout(startLocationTF, numberOfLocations, edit, create, backButton);
+        leftSide.setMaxWidth("30%");
 
         searchField = new TextField();
         searchField.setWidth("50%");
@@ -110,8 +111,10 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         gridContainer.setSizeFull();
 
         VerticalLayout rightSide = new VerticalLayout(searchField, gridContainer);
+        rightSide.setSizeFull();
 
         HorizontalLayout jumpRow = new HorizontalLayout(leftSide, rightSide);
+        jumpRow.setSizeFull();
 
         setMargin(true);
         setPadding(true);
@@ -131,9 +134,6 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         gridProvider.addColumn(LocationDescriptionAdapter::getUsageCount, "Used");
 
         Grid<LocationDescriptionAdapter> grid = gridProvider.getGrid();
-        grid.setWidth("500px");
-        grid.setHeight("500px");
-        grid.setEmptyStateText("Create some locations.");
 
         List<LocationDescriptionAdapter> locationDescriptions = new ArrayList<>(locations.size());
         for (LocationData location : locations) {
@@ -173,10 +173,11 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         }, locationDescriptions, searchField);
 
         LocationDataContextMenu contextMenu = new LocationDataContextMenu(grid);
-        // TODO remove this again, it's only here to test if the contextmenu works
-        if (contextMenu.getItems().size() < 13) {
-            grid.setHeight("300px");
-        }
+
+        grid.setWidthFull();
+        grid.setMaxWidth("900px");
+        grid.setHeight("500px");
+        grid.setEmptyStateText("No locations found. Create some to get the story going.");
 
         return grid;
     }

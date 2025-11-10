@@ -71,7 +71,7 @@ public class LocationMapper implements Mapper<LocationData, Location> {
         result.setId(aLocation.getId());
         result.setLumen(aLocation.getLight());
         result.setDescriptionData(descriptionMapper.mapToDO(aLocation.getDescriptionProvider()));
-        result.setItemContainerData(itemContainerMapper.mapToDO(aLocation.getContainer()));
+        result.setItemContainerData(itemContainerMapper.mapToDO(aLocation.getItemContainer()));
 //        for (DirectionData directionData : directionMapper.mapToDOs(aLocation.getDirections())) {
 //            result.getDirectionsData().add(directionData);
 //        }

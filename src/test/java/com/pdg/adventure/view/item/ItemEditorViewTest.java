@@ -49,7 +49,7 @@ class ItemEditorViewTest {
         locationData.setDescriptionData(new DescriptionData("Test Location", "A test location"));
 
         // Create item container
-        ItemContainerData itemContainer = new ItemContainerData();
+        ItemContainerData itemContainer = new ItemContainerData("19");
         itemContainer.setItems(new ArrayList<>());
         locationData.setItemContainerData(itemContainer);
 

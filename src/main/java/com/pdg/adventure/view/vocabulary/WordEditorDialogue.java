@@ -8,6 +8,8 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -19,6 +21,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
@@ -81,11 +84,20 @@ public class WordEditorDialogue {
                 Word synonym = currentWord.getSynonym();
                 if (synonym != null) {
                     synonyms.setValue(synonym);
+                } else {
+                    synonyms.clear();
                 }
+                // Update synonym dropdown to exclude current word
+                updateSynonymItems();
                 break;
             }
             case NEW: {
                 currentWord = new Word("", Word.Type.NOUN);
+                wordText.clear();
+                typeSelector.setValue(Word.Type.NOUN); // Default to NOUN
+                synonyms.clear();
+                // Reset synonym dropdown to show all words
+                updateSynonymItems();
                 break;
             }
         }
@@ -96,6 +108,14 @@ public class WordEditorDialogue {
         dialog.getHeader().add(createDialogHeader(anEditType));
         dialog.getFooter().add(createDialogFooter(dialog)); // footer first, or saveButton is null
         dialog.add(createDialogContent());
+        dialog.setMinWidth("40%");
+
+        // Handle synonym change to set proper type selector state
+        handleSynonymChange();
+
+        // Trigger initial validation
+        validateAndUpdateSaveButton();
+
         dialog.open();
     }
 
@@ -119,15 +139,40 @@ public class WordEditorDialogue {
         synonyms = new ComboBox<>("Synonyms");
         synonyms.setItems(wordItemFilter, vocabularyData.getWords());
         synonyms.setItemLabelGenerator(Word::getText);
-        synonyms.addValueChangeListener(e -> validateIfSave());
+        synonyms.addValueChangeListener(e -> {
+            handleSynonymChange();
+            validateAndUpdateSaveButton();
+        });
         synonyms.setHelperText("A synonym has precedence over a type.");
         synonyms.setTooltipText("You may filter on a word's type or text.");
+    }
+
+    /**
+     * Handles changes to the synonym selector.
+     * When a synonym is selected, the type selector is disabled since type is inherited.
+     */
+    private void handleSynonymChange() {
+        Word selectedSynonym = synonyms.getValue();
+        if (selectedSynonym != null) {
+            // Disable type selector and set it to the synonym's type
+            typeSelector.setEnabled(false);
+            typeSelector.setValue(selectedSynonym.getType());
+            typeSelector.setHelperText("Type inherited from synonym: " + selectedSynonym.getText());
+        } else {
+            // Re-enable type selector
+            typeSelector.setEnabled(true);
+            typeSelector.setHelperText(null);
+            // Set default type if none selected
+            if (typeSelector.getValue() == null) {
+                typeSelector.setValue(Word.Type.NOUN);
+            }
+        }
     }
 
     private void createWordField() {
         wordText = new TextField("Word");
         wordText.setRequired(true);
-        wordText.addValueChangeListener(e -> validateIfSave());
+        wordText.addValueChangeListener(e -> validateAndUpdateSaveButton());
         wordText.setValueChangeMode(ValueChangeMode.EAGER);
         wordText.focus();
         wordText.setHelperText("Combine with a synonym or a type.");
@@ -141,14 +186,61 @@ public class WordEditorDialogue {
         typeSelector.setLabel("Type");
         List<Word.Type> typeList = new ArrayList<>();
         Collections.addAll(typeList, Word.Type.values());
-        typeSelector.addValueChangeListener(e -> validateIfSave());
+        typeSelector.addValueChangeListener(e -> validateAndUpdateSaveButton());
         typeSelector.setItems(typeList);
         typeSelector.setRenderer(new ComponentRenderer<Component, Word.Type>(wordType -> new Text(wordType.name())));
     }
 
-    private void validateIfSave() {
-        if (!(typeSelector.getValue() == null && synonyms.getValue() == null)) {
-            saveButton.setEnabled(!wordText.isInvalid());
+    /**
+     * Validates the form and updates the save button state.
+     * Requirements:
+     * - Word text must not be empty or whitespace
+     * - Either type OR synonym must be selected (mutually exclusive if synonym is selected)
+     * - If synonym is selected, it cannot be the current word (in edit mode)
+     */
+    private void validateAndUpdateSaveButton() {
+        boolean isValid = isFormValid();
+        saveButton.setEnabled(isValid);
+    }
+
+    /**
+     * Checks if the form is valid for saving.
+     * Package-private for testing.
+     */
+    boolean isFormValid() {
+        // Word text must not be empty
+        String text = wordText.getValue();
+        if (text == null || text.trim().isEmpty()) {
+            return false;
+        }
+
+        // When synonym is selected, type can be ignored (it will be inherited)
+        Word selectedSynonym = synonyms.getValue();
+        Word.Type selectedType = typeSelector.getValue();
+
+        // Must have either a synonym or a type
+        if (selectedSynonym == null && selectedType == null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Updates the synonym dropdown items, filtering out the current word when in edit mode.
+     * Package-private for testing.
+     */
+    void updateSynonymItems() {
+        ComboBox.ItemFilter<Word> wordItemFilter = WordFilter.filterByTypeOrText();
+
+        if (editType == EditType.EDIT && currentWord != null) {
+            // Filter out the current word to prevent self-reference
+            Collection<Word> availableWords = vocabularyData.getWords().stream()
+                    .filter(word -> !word.equals(currentWord))
+                    .collect(Collectors.toList());
+            synonyms.setItems(wordItemFilter, availableWords);
+        } else {
+            synonyms.setItems(wordItemFilter, vocabularyData.getWords());
         }
     }
 
@@ -160,47 +252,142 @@ public class WordEditorDialogue {
         cancelButton.addClickShortcut(Key.ESCAPE);
 
         saveButton.addClickListener(e -> {
-            if (editType == EditType.EDIT) {
-                final Optional<Word> existingWord = vocabularyData.findWord(wordText.getValue());
-                if (existingWord.isPresent() && !existingWord.get().equals(currentWord)) {
-                    wordText.setErrorMessage(String.format(VocabularyData.DUPLICATE_WORD_TEXT, wordText.getValue()));
-                    wordText.setInvalid(true);
-                    return;
-                };
-                final Optional<Word> word = vocabularyData.removeWord(currentWord.getText());
-                if (word.isPresent()) {
-                    final Word editedWord = word.get();
-                    final Word desiredSynonym = synonyms.getValue();
-                    if (desiredSynonym == null) {
-                        editedWord.setSynonym(null);
-                        editedWord.setType(typeSelector.getValue());
-                    } else {
-                        final Word rootSynonym = desiredSynonym.getSynonym();
-                        if (rootSynonym != null && rootSynonym.equals(editedWord)) {
-                            throw new RuntimeException("Synonym loop detected: " + editedWord.getText());
-                        }
-                        editedWord.setSynonym(Objects.requireNonNullElse(rootSynonym, desiredSynonym));
-                        editedWord.setType(desiredSynonym.getType());
-                    }
-                    editedWord.setText(wordText.getValue());
-                    vocabularyData.addWord(editedWord);
+            try {
+                if (editType == EditType.EDIT) {
+                    saveEditedWord(dialog);
                 } else {
-                    throw new RuntimeException("Word not found: " + currentWord.getText());
+                    saveNewWord(dialog);
                 }
-            } else { // EditType.NEW
-                if (synonyms.getValue() == null) {
-                    vocabularyData.createWord(wordText.getValue(), typeSelector.getValue());
-                } else {
-                    vocabularyData.createSynonym(wordText.getValue(), synonyms.getValue());
-                }
+            } catch (IllegalArgumentException ex) {
+                showErrorNotification(ex.getMessage());
+            } catch (Exception ex) {
+                showErrorNotification("An unexpected error occurred: " + ex.getMessage());
             }
-            dialog.close();
-            notifyListeners(true);
         });
 
         HorizontalLayout hl = new HorizontalLayout();
         hl.add(cancelButton, saveButton);
         return hl;
+    }
+
+    /**
+     * Saves a new word to the vocabulary.
+     */
+    private void saveNewWord(Dialog dialog) {
+        String newWordText = wordText.getValue().toLowerCase().trim();
+
+        // Check for duplicate
+        if (vocabularyData.findWord(newWordText).isPresent()) {
+            wordText.setErrorMessage(String.format(VocabularyData.DUPLICATE_WORD_TEXT, newWordText));
+            wordText.setInvalid(true);
+            return;
+        }
+
+        Word selectedSynonym = synonyms.getValue();
+        if (selectedSynonym == null) {
+            // Create word with type
+            vocabularyData.createWord(newWordText, typeSelector.getValue());
+        } else {
+            // Create synonym
+            vocabularyData.createSynonym(newWordText, selectedSynonym);
+        }
+
+        dialog.close();
+        notifyListeners(true);
+        showSuccessNotification("Word '" + newWordText + "' created successfully");
+    }
+
+    /**
+     * Saves an edited word to the vocabulary.
+     */
+    private void saveEditedWord(Dialog dialog) {
+        String newWordText = wordText.getValue().toLowerCase().trim();
+
+        // Check if word text changed and if new text already exists
+        if (!currentWord.getText().equals(newWordText)) {
+            Optional<Word> existingWord = vocabularyData.findWord(newWordText);
+            if (existingWord.isPresent()) {
+                wordText.setErrorMessage(String.format(VocabularyData.DUPLICATE_WORD_TEXT, newWordText));
+                wordText.setInvalid(true);
+                return;
+            }
+        }
+
+        // Remove the old word
+        Optional<Word> wordToEdit = vocabularyData.removeWord(currentWord.getText());
+        if (!wordToEdit.isPresent()) {
+            throw new IllegalArgumentException("Word not found: " + currentWord.getText());
+        }
+
+        Word editedWord = wordToEdit.get();
+        Word desiredSynonym = synonyms.getValue();
+
+        if (desiredSynonym == null) {
+            // No synonym, use type
+            editedWord.setSynonym(null);
+            editedWord.setType(typeSelector.getValue());
+        } else {
+            // Check for circular reference before setting synonym
+            if (hasCircularReference(editedWord, desiredSynonym)) {
+                // Re-add the word back since we're not saving
+                vocabularyData.addWord(editedWord);
+                showErrorNotification("Cannot create circular synonym reference");
+                return;
+            }
+
+            // Set synonym (and get root if needed)
+            Word rootSynonym = desiredSynonym.getSynonym();
+            editedWord.setSynonym(Objects.requireNonNullElse(rootSynonym, desiredSynonym));
+            editedWord.setType(desiredSynonym.getType());
+        }
+
+        editedWord.setText(newWordText);
+        vocabularyData.addWord(editedWord);
+
+        dialog.close();
+        notifyListeners(true);
+        showSuccessNotification("Word updated successfully");
+    }
+
+    /**
+     * Checks if setting the synonym would create a circular reference.
+     * This checks the entire chain to detect cycles at any depth.
+     * Package-private for testing.
+     *
+     * @param word The word being edited
+     * @param proposedSynonym The synonym we want to set
+     * @return true if a circular reference would be created
+     */
+    boolean hasCircularReference(Word word, Word proposedSynonym) {
+        Set<String> visited = new HashSet<>();
+        visited.add(word.getText());
+
+        Word current = proposedSynonym;
+        while (current != null) {
+            if (visited.contains(current.getText())) {
+                return true; // Found a cycle
+            }
+            visited.add(current.getText());
+            current = current.getSynonym();
+        }
+
+        return false;
+    }
+
+    /**
+     * Shows a success notification to the user.
+     */
+    private void showSuccessNotification(String message) {
+        Notification notification = Notification.show(message, 3000, Notification.Position.BOTTOM_START);
+        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+    }
+
+    /**
+     * Shows an error notification to the user.
+     */
+    private void showErrorNotification(String message) {
+        Notification notification = Notification.show(message, 5000, Notification.Position.BOTTOM_START);
+        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
     }
 
     private void createSaveButton() {

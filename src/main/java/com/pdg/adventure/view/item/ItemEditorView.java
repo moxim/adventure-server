@@ -50,7 +50,6 @@ public class ItemEditorView extends VerticalLayout
     private String pageTitle;
 
     private transient String itemId;
-    private transient String locationId;
     private transient ItemData itemData;
     private transient ItemViewModel ivm;
     private transient AdventureData adventureData;
@@ -103,6 +102,7 @@ public class ItemEditorView extends VerticalLayout
         binder.bind(isWearableCheckbox, ItemViewModel::isWearable, ItemViewModel::setWearable);
         binder.bind(isWornCheckbox, ItemViewModel::isWorn, ItemViewModel::setWorn);
         binder.bindReadOnly(itemIdTF, ItemViewModel::getId);
+        binder.bindReadOnly(locationIdTF, ItemViewModel::getLocationId);
         binder.bindReadOnly(adventureIdTF, ItemViewModel::getAdventureId);
 
         binder.addStatusChangeListener(event -> {
@@ -139,7 +139,6 @@ public class ItemEditorView extends VerticalLayout
     private TextField getLocationIdTF() {
         TextField field = new TextField("Location ID");
         field.setReadOnly(true);
-        field.setValue(locationId != null ? locationId : "");
         return field;
     }
 
@@ -171,15 +170,19 @@ public class ItemEditorView extends VerticalLayout
         resetButton = resetBackSaveView.getReset();
         resetButton.setEnabled(false);
 
-        backButton.addClickListener(event -> UI.getCurrent().navigate(ItemsMenuView.class, new RouteParameters(
-                                                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                               .ifPresent(editor -> editor.setData(adventureData, locationData)));
+        backButton.addClickListener(event -> navigateBack());
         saveButton.addClickListener(event -> validateSave(ivm));
         resetButton.addClickListener(event -> binder.readBean(ivm));
         resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
 
         return resetBackSaveView;
+    }
+
+    private void navigateBack() {
+        UI.getCurrent().navigate(ItemsMenuView.class, new RouteParameters(
+                                                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                                               .ifPresent(editor -> editor.setData(adventureData, locationData));
     }
 
     private void validateSave(ItemViewModel anItemViewModel) {
@@ -217,7 +220,7 @@ public class ItemEditorView extends VerticalLayout
                 adventureData.getLocationData().put(locationData.getId(), locationData);
                 adventureService.saveAdventureData(adventureData);
 
-                saveButton.setEnabled(false);
+                navigateBack();
             }
         } catch (Exception e) {
             LOG.error(e.getMessage());
@@ -227,9 +230,6 @@ public class ItemEditorView extends VerticalLayout
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         final Optional<String> optionalItemId = event.getRouteParameters().get(RouteIds.ITEM_ID.getValue());
-        final Optional<String> optionalLocationId = event.getRouteParameters().get(RouteIds.LOCATION_ID.getValue());
-
-        optionalLocationId.ifPresent(id -> locationId = id);
 
         if (optionalItemId.isPresent()) {
             itemId = optionalItemId.get();
@@ -256,17 +256,14 @@ public class ItemEditorView extends VerticalLayout
         // Load item from in-memory container or create new
         if (itemId != null && !itemId.isEmpty()) {
             itemData = locationData.getItemContainerData().getItems().stream()
-                                   .filter(item -> item.getId().equals(itemId)).findFirst().orElseGet(() -> {
-                        ItemData newItem = new ItemData();
-//                        newItem.setId(java.util.UUID.randomUUID().toString());
-                        itemId = newItem.getId();
-                        return newItem;
-                    });
+                                   .filter(item -> item.getId().equals(itemId)).findFirst()
+                                   .orElseGet(ItemData::new);
         } else {
             itemData = new ItemData();
-//            itemData.setId(java.util.UUID.randomUUID().toString());
-            itemId = itemData.getId();
         }
+        itemId = itemData.getId();
+        itemData.setAdventureId(adventureData.getId());
+        itemData.setLocationId(locationData.getId());
 
         VocabularyData vocabularyData = adventureData.getVocabularyData();
         adjectiveSelector.populate(vocabularyData.getWords(ADJECTIVE));

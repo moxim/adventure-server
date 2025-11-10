@@ -264,7 +264,7 @@ public class MiniAdventure {
         GenericCommand dropAndRemoveCommand = new GenericCommand(dropCommandDescription, new DropAction(anItem,
                                                                                                         new ContainerSupplier(
                                                                                                                 Environment.getCurrentLocation()
-                                                                                                                           .getContainer()),
+                                                                                                                           .getItemContainer()),
                                                                                                         allMessages));
         PreCondition wornCondition = new WornCondition(anItem);
         dropAndRemoveCommand.addPreCondition(wornCondition);
@@ -274,7 +274,7 @@ public class MiniAdventure {
         GenericCommand dropCommand = new GenericCommand(dropCommandDescription, new DropAction(anItem,
                                                                                                new ContainerSupplier(
                                                                                                        Environment.getCurrentLocation()
-                                                                                                                  .getContainer()),
+                                                                                                                  .getItemContainer()),
                                                                                                allMessages));
         dropCommand.addPreCondition(new NotCondition(wornCondition));
         dropCommand.addPreCondition(new CarriedCondition(anItem));
@@ -335,7 +335,7 @@ public class MiniAdventure {
                                                                               allMessages));
         cutSuccessfully.addPreCondition(knifeCarried);
         cutSuccessfully.addFollowUpAction(new CreateAction(pelt, rabbit::getParentContainer, allMessages));
-        cutSuccessfully.addFollowUpAction(new CreateAction(skinnedRabbit, location::getContainer, allMessages));
+        cutSuccessfully.addFollowUpAction(new CreateAction(skinnedRabbit, location::getItemContainer, allMessages));
         cutSuccessfully.addFollowUpAction(new DestroyAction(rabbit, allMessages));
         rabbit.addCommand(cutSuccessfully);
         setUpLookCommands(rabbit);

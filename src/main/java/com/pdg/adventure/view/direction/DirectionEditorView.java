@@ -93,11 +93,12 @@ public class DirectionEditorView extends VerticalLayout
         destinationGrid.addSelectionListener(selectionEvent -> {
             directionId = selectionEvent.getFirstSelectedItem().map(LocationData::getId).orElse(null);
         });
+        destinationGrid.setSizeFull();
 
         Div gridContainer = new Div();
         gridContainer.add(destinationGrid);
-        gridContainer.setWidth("100%");
-        gridContainer.setHeight("300px");
+        gridContainer.setWidth("90%");
+        gridContainer.setMinHeight("200px");
 
         final ResetBackSaveView resetBackSaveView = setUpNavigationButtons();
 
@@ -133,9 +134,6 @@ public class DirectionEditorView extends VerticalLayout
         });
 
         HorizontalLayout h1 = new HorizontalLayout(verbSelector, adjectiveSelector, nounSelector);
-        VerticalLayout h2 = new VerticalLayout(gridContainer);
-
-        VerticalLayout hl = new VerticalLayout(h1, h2);
 
         Button manageCommands = new Button("Manage Commands");
         manageCommands.addClickListener(event -> {
@@ -152,7 +150,7 @@ public class DirectionEditorView extends VerticalLayout
 
         HorizontalLayout commandRow = new HorizontalLayout(manageCommands);
         HorizontalLayout idRow = new HorizontalLayout(directionIdTF, locationIdTF, adventureIdTF);
-        add(idRow, hl, shortDescription, longDescription, commandRow, resetBackSaveView);
+        add(idRow, h1, gridContainer, shortDescription, longDescription, commandRow, resetBackSaveView);
     }
 
     private TextField getDirectionIdTF() {
@@ -175,7 +173,7 @@ public class DirectionEditorView extends VerticalLayout
 
     private TextArea getShortDescTextArea() {
         TextArea field = new TextArea("Short description");
-        field.setWidth("95%");
+        field.setWidth("90%");
         field.setMinHeight("100px");
         field.setMaxHeight("150px");
         field.setTooltipText("If left empty, this will be derived from the provided noun and verb.");
@@ -185,7 +183,7 @@ public class DirectionEditorView extends VerticalLayout
 
     private TextArea getLongDescTextArea() {
         TextArea field = new TextArea("Long description");
-        field.setWidth("95%");
+        field.setWidth("90%");
         field.setMinHeight("200px");
         field.setMaxHeight("350px");
         field.setTooltipText("If left empty, this will be derived from the short description.");
@@ -201,19 +199,21 @@ public class DirectionEditorView extends VerticalLayout
         resetButton = resetBackSaveView.getReset();
         resetButton.setEnabled(false);
 
-        backButton.addClickListener(event -> {
-            if (adventureData != null && locationData != null) {
-                UI.getCurrent().navigate(DirectionsMenuView.class, new RouteParameters(
-                          new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
-                          new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId())))
-                  .ifPresent(editor -> editor.setData(adventureData, locationData));
-            }
-        });
+        backButton.addClickListener(event -> navigateBack());
         saveButton.addClickListener(event -> validateSave(dvm));
         resetButton.addClickListener(event -> binder.readBean(dvm));
         resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
 
         return resetBackSaveView;
+    }
+
+    private void navigateBack() {
+        if (adventureData != null && locationData != null) {
+            UI.getCurrent().navigate(DirectionsMenuView.class, new RouteParameters(
+                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                      new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId())))
+              .ifPresent(editor -> editor.setData(adventureData, locationData));
+        }
     }
 
     protected void validateSave(DirectionViewModel aDirectionViewModel) {
@@ -258,7 +258,8 @@ public class DirectionEditorView extends VerticalLayout
             directionsData.add(directionData);
 
             adventureService.saveLocationData(locationData);
-            saveButton.setEnabled(false);
+
+            navigateBack();
         } catch (Exception e) {
             LOG.error(e.getMessage());
         }

@@ -47,7 +47,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         adventureService = anAdventureService;
         setSizeFull();
 
-        Button backButton = new Button("Back to Adventure", event ->
+        Button backButton = new Button("Back", event ->
             UI.getCurrent().navigate(AdventureEditorView.class,
                 new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
         );
@@ -96,10 +96,6 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
 
     private Grid<MessageViewModel> createGrid() {
         Grid<MessageViewModel> messageGrid = new Grid<>(MessageViewModel.class, false);
-        messageGrid.setMinWidth("600px");
-        messageGrid.setMinHeight("300px");
-        messageGrid.setEmptyStateText("No messages yet. Create one to get started.");
-        messageGrid.setSizeFull();
 
         messageGrid.addColumn(MessageViewModel::getId)
                 .setHeader("Message ID")
@@ -136,6 +132,11 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
 
         // Context menu
         createContextMenu(messageGrid);
+
+        messageGrid.setSizeFull();
+        messageGrid.setMaxWidth("900px");
+        messageGrid.setHeight("00px");
+        messageGrid.setEmptyStateText("No messages yet. Create one to get started.");
 
         return messageGrid;
     }

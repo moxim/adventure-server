@@ -39,7 +39,7 @@ public class GenericContainer extends Item implements Container {
     }
 
     @Override
-    public void setContents(List<Containable> aContainableList) {
+    public void setContents(List<? extends Containable> aContainableList) {
         contents = new ArrayList<>(aContainableList);
     }
 

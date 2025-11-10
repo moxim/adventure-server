@@ -68,7 +68,7 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
         locationSelector.setItemLabelGenerator(ViewSupporter::formatDescription);
         locationSelector.setPlaceholder("Select location");
         locationSelector.setTooltipText("Select which location to create the new item in");
-        locationSelector.setWidthFull();
+        locationSelector.setWidth("50%");
 
         // Create item button
         createButton = new Button("Create Item", event -> {
@@ -83,13 +83,14 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
             createButton.setEnabled(event.getValue() != null)
         );
 
-        backButton = new Button("Back to Adventure", event -> {
+        backButton = new Button("Back", event -> {
             UI.getCurrent().navigate(AdventureEditorView.class,
                     new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
         });
         backButton.addClickShortcut(Key.ESCAPE);
 
         VerticalLayout leftSide = new VerticalLayout(numberOfItems, locationSelector, createButton, backButton);
+        leftSide.setMaxWidth("30%");
 
         searchField = new TextField();
         searchField.setWidth("50%");
@@ -101,6 +102,7 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
 
         gridContainer = new Div();
         gridContainer.setSizeFull();
+//        gridContainer.setMaxWidth("550px");
 
         VerticalLayout rightSide = new VerticalLayout(searchField, gridContainer);
         rightSide.setSizeFull();
@@ -143,7 +145,8 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
             .setHeader("Wearable")
             .setAutoWidth(true);
 
-        grid.setWidth("900px");
+        grid.setWidthFull();
+        grid.setMaxWidth("900px");
         grid.setHeight("500px");
         grid.setEmptyStateText("No items found. Create items from location views.");
 

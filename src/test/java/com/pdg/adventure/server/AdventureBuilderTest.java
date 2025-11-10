@@ -129,7 +129,7 @@ class AdventureBuilderTest {
     }
 
     private ItemContainerData createContainerData(String aQualifier) {
-        ItemContainerData itemContainerData = new ItemContainerData();
+        ItemContainerData itemContainerData = new ItemContainerData("19");
         itemContainerData.setId(aQualifier);
         itemContainerData.setMaxSize(99);
         itemContainerData.setDescriptionData(createDescriptionData(aQualifier + "_Container"));
