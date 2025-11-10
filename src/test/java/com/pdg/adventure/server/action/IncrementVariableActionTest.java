@@ -10,15 +10,15 @@ import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
 class IncrementVariableActionTest {
-    private static final String varName = "t";
+    private static final String VAR_NAME = "t";
     private final VariableProvider variableProvider = new VariableProvider();
-    private IncrementVariableAction sut = new IncrementVariableAction(varName, "1", variableProvider,
+    private IncrementVariableAction sut = new IncrementVariableAction(VAR_NAME, "1", variableProvider,
                                                                       new MessagesHolder());
 
     @Test
     void executeWithAlphaString() {
         // given
-        variableProvider.set(new Variable(varName, "wrongValue"));
+        variableProvider.set(new Variable(VAR_NAME, "wrongValue"));
 
         // when
         Throwable thrown = catchThrowable(() -> sut.execute());
@@ -30,12 +30,12 @@ class IncrementVariableActionTest {
     @Test
     void executeWithNumericString() {
         // given
-        variableProvider.set(new Variable(varName, "2"));
+        variableProvider.set(new Variable(VAR_NAME, "2"));
 
         // when
        sut.execute();
 
         // then
-        assertThat(variableProvider.get(varName).aValue()).isEqualTo("3");
+        assertThat(variableProvider.get(VAR_NAME).aValue()).isEqualTo("3");
     }
 }

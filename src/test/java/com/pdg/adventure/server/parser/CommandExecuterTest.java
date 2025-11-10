@@ -195,8 +195,4 @@ class CommandExecutorTest {
         assertThat(result.getResultMessage()).isEqualTo("What do you want to climb?");
     }
 
-    @Test
-    void clarifyExecutionOutcome() {
-    }
-
 }

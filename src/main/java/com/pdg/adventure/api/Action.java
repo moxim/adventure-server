@@ -1,7 +1,8 @@
 package com.pdg.adventure.api;
 
-public interface Action {
-    ExecutionResult execute();
+import java.io.Serializable;
 
+public interface Action extends Serializable {
+    ExecutionResult execute();
     String getActionName();
 }

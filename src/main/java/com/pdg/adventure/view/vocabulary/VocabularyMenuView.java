@@ -1,11 +1,5 @@
 package com.pdg.adventure.view.vocabulary;
 
-import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.VocabularyData;
-import com.pdg.adventure.model.Word;
-import com.pdg.adventure.server.storage.AdventureService;
-import com.pdg.adventure.view.adventure.AdventureEditorView;
-import com.pdg.adventure.view.support.GridProvider;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -24,6 +18,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.view.adventure.AdventureEditorView;
+import com.pdg.adventure.view.support.GridProvider;
+import com.pdg.adventure.view.support.RouteIds;
 
 @Route(value = "adventures/:adventureId/vocabulary", layout = VocabularyMainLayout.class)
 @RouteAlias(value = "adventures/vocabulary", layout = VocabularyMainLayout.class)
@@ -78,7 +80,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         back = new Button("Back", event -> {
             UI.getCurrent().navigate(AdventureEditorView.class,
                     new RouteParameters(
-                            new RouteParam("adventureId", adventureData.getId()))
+                            new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))
             );
         });
         back.addClickShortcut(Key.ESCAPE);
