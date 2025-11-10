@@ -148,6 +148,6 @@ public class Location extends Thing implements Visitable, HasLight {
 
     @Override
     public int getLight() {
-        return 0;
+        return lumen;
     }
 }
