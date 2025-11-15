@@ -32,10 +32,9 @@ public class MoveItemActionMapper extends ActionMapper<MoveItemActionData, MoveI
 
     @Override
     public MoveItemActionData mapToDO(MoveItemAction action) {
-        MoveItemActionData data = new MoveItemActionData();
-        data.setThingId(action.getTarget().getId());
-        data.setDestinationId(action.getDestination().getId());
-        return data;
+        return new MoveItemActionData(
+                action.getTarget().getId(),
+                action.getDestination().getId());
     }
 
     @Override

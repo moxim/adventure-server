@@ -1,5 +1,6 @@
 package com.pdg.adventure.model.basic;
 
+import com.github.f4b6a3.ulid.Ulid;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.CreatedDate;
@@ -8,7 +9,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.Instant;
-import java.util.UUID;
 
 import com.pdg.adventure.api.Ided;
 
@@ -34,7 +34,8 @@ public class BasicData implements Ided {
     private Instant updatedAt;
 
     public BasicData() {
-        id = UUID.randomUUID().toString();
+        id = Ulid.fast().toLowerCase();
+//        id = UUID.randomUUID().toString();
         createdAt = Instant.now();
         updatedAt = Instant.now();
     }

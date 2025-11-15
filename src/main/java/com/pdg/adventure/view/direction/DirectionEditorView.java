@@ -71,13 +71,10 @@ public class DirectionEditorView extends VerticalLayout
         directionData = new DirectionData();
         directionId = directionData.getId();
 
-        verbSelector = new VocabularyPickerField("Verb", "The action needed to follow this direction.", VERB,
-                                                 new VocabularyData());
+        verbSelector = new VocabularyPickerField("Verb", "The action needed to follow this direction.");
         verbSelector.setPlaceholder("Select a verb (required)");
-        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this direction.", ADJECTIVE,
-                                                      new VocabularyData());
-        nounSelector = new VocabularyPickerField("Noun", "A descriptive noun for this direction.", NOUN,
-                                                 new VocabularyData());
+        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this direction.");
+        nounSelector = new VocabularyPickerField("Noun", "A descriptive noun for this direction.");
 
         TextField directionIdTF = getDirectionIdTF();
         TextField locationIdTF = getLocationIdTF();

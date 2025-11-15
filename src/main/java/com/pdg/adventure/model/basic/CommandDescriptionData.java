@@ -23,6 +23,12 @@ public class CommandDescriptionData extends BasicDescriptionData {
         setCommandSpecification(aCommandSpec);
     }
 
+    public CommandDescriptionData(final Word aSelectedVerb, final Word anAdjective, final Word aNoun) {
+        verb = aSelectedVerb;
+        setAdjective(anAdjective);
+        setNoun(aNoun);
+    }
+
     public String getCommandSpecification() {
         String verbText = verb != null && verb.getText() != null ? verb.getText() : "";
         String adjectiveText = getAdjective() != null && getAdjective().getText() != null ? getAdjective().getText() : "";
@@ -42,6 +48,10 @@ public class CommandDescriptionData extends BasicDescriptionData {
             result.append(nounText);
 //        }
         return result.toString();
+    }
+
+    public Word getSafeVerb() {
+        return verb != null ? verb : new Word("", Word.Type.VERB);
     }
 
     // TODO: this must not be possible as it is bypassing the vocabulary

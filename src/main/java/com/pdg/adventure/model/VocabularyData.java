@@ -26,9 +26,28 @@ public class VocabularyData extends BasicData {
     @CascadeDelete
     private Map<String, Word> words;
 
-    // TODO: keep a list of words that point to the same synonym, to be able to remove the synonym and appoint a new synonym
+    @DBRef(lazy = false)
+    private Word takeWord;
+    @DBRef(lazy = false)
+    private Word dropWord;
 
-//    @PersistenceInstantiator
+    @DBRef(lazy = false)
+    private Word inventoryWord;
+    @DBRef(lazy = false)
+    private Word lookWord;
+    @DBRef(lazy = false)
+    private Word examineWord;
+    @DBRef(lazy = false)
+    private Word goWord;
+    @DBRef(lazy = false)
+    private Word helpWord;
+    @DBRef(lazy = false)
+    private Word quitWord;
+    @DBRef(lazy = false)
+    private Word saveWord;
+    @DBRef(lazy = false)
+    private Word loadWord;
+
     public VocabularyData() {
         this(new HashMap<>());
     }
@@ -42,7 +61,6 @@ public class VocabularyData extends BasicData {
         Word newWord = words.get(lowerText);
         if (newWord == null) {
             newWord = new Word(lowerText, aType);
-//            newWord.setId(UUID.randomUUID().toString());
             words.put(lowerText, newWord);
         } else {
             if (newWord.getSynonym() == null) {

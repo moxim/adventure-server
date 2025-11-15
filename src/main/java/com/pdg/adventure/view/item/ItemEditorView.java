@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -18,13 +19,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Optional;
 
-import static com.pdg.adventure.model.Word.Type.ADJECTIVE;
-import static com.pdg.adventure.model.Word.Type.NOUN;
+import static com.pdg.adventure.model.Word.Type.*;
 
-import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.ItemData;
-import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.model.*;
+import com.pdg.adventure.model.action.ActionData;
+import com.pdg.adventure.model.action.MoveItemActionData;
+import com.pdg.adventure.model.action.TakeActionData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
+import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.server.storage.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
@@ -54,6 +56,7 @@ public class ItemEditorView extends VerticalLayout
     private transient ItemViewModel ivm;
     private transient AdventureData adventureData;
     private transient LocationData locationData;
+    private List<Word> allVerbs;
 
     @Autowired
     public ItemEditorView(AdventureService anAdventureService, ItemService anItemService) {
@@ -67,10 +70,8 @@ public class ItemEditorView extends VerticalLayout
         itemData = new ItemData();
         itemId = itemData.getId();
 
-        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this item.", ADJECTIVE,
-                                                      new VocabularyData());
-
-        nounSelector = new VocabularyPickerField("Noun", "The main theme of this item.", NOUN, new VocabularyData());
+        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this item.");
+        nounSelector = new VocabularyPickerField("Noun", "The main theme of this item.");
         nounSelector.setPlaceholder("Select a noun (required)");
 
         TextField itemIdTF = getItemIdTF();
@@ -82,6 +83,14 @@ public class ItemEditorView extends VerticalLayout
         // Checkboxes for item properties
         Checkbox isContainableCheckbox = new Checkbox("Can be picked up / Is containable");
         isContainableCheckbox.setTooltipText("If checked, this item can be picked up and placed in containers.");
+
+        // Add value change listener to show verb selection dialog when checked
+        isContainableCheckbox.addValueChangeListener(event -> {
+            // Only show dialog when checkbox is checked (not when unchecked) and not from programmatic changes
+            if (event.getValue() && event.isFromClient()) {
+                showVerbSelectionDialog(isContainableCheckbox, allVerbs);
+            }
+        });
 
         Checkbox isWearableCheckbox = new Checkbox("Is wearable");
         isWearableCheckbox.setTooltipText("If checked, this item can be worn by the player.");
@@ -185,6 +194,70 @@ public class ItemEditorView extends VerticalLayout
                                                .ifPresent(editor -> editor.setData(adventureData, locationData));
     }
 
+    private void showVerbSelectionDialog(Checkbox aCheckbox, List<Word> allVerbs) {
+        VocabularyData vocabularyData = adventureData.getVocabularyData();
+        Word takeVerb = vocabularyData.getTakeWord();
+        Word dropVerb = vocabularyData.getDropWord();
+        if (dropVerb == null || takeVerb == null) {
+            Notification.show("Please select verbs to allow a player to handle this item in the vocabulary seciton.", 3000, Notification.Position.MIDDLE);
+        } else {
+            LOG.info("Selected verbs: {} and {} for item: {}", takeVerb.getText(), dropVerb.getText(), itemData.getId());
+            addPickupCommands(takeVerb, dropVerb, itemData);
+        }
+    }
+
+    private void addPickupCommands(final Word aTakeVerb, final Word aDropVerb, final ItemData anItem) {
+        final var takeCommandData = getTakeCommandData(aTakeVerb, anItem);
+        anItem.getCommandProviderData().add(takeCommandData);
+
+        final var dropCommandData = getDropCommandData(aDropVerb, anItem);
+        anItem.getCommandProviderData().add(dropCommandData);
+
+        /*
+        GenericCommand takeFailCommand = new GenericCommand(getCommandDescription, new MessageAction(
+                String.format(allMessages.getMessage("-13"), anItem.getEnrichedBasicDescription()), allMessages));
+        takeFailCommand.addPreCondition(new CarriedCondition(anItem));
+        anItem.addCommand(takeFailCommand);
+
+        GenericCommand takeCommand = new GenericCommand(getCommandDescription, new TakeAction(anItem,
+                                                                                              new ContainerSupplier(
+                                                                                                      Environment.getPocket()),
+                                                                                              allMessages));
+        takeCommand.addPreCondition(new NotCondition(new CarriedCondition(anItem)));
+        takeCommand.addPreCondition(new PresentCondition(anItem));
+        anItem.addCommand(takeCommand);
+        GenericCommandDescription dropCommandDescription = new GenericCommandDescription("drop", anItem);
+        GenericCommand dropAndRemoveCommand = new GenericCommand(dropCommandDescription, new DropAction(anItem,
+                                                                                                        new ContainerSupplier(
+                                                                                                                Environment.getCurrentLocation()
+                                                                                                                           .getItemContainer()),
+                                                                                                        allMessages));
+*/
+    }
+
+    private CommandData getTakeCommandData(final Word aVerb, final ItemData anItem) {
+        final var takeCommandData = getRawCommandData(aVerb, anItem);
+        final var takeActionData = new TakeActionData();
+        ActionData takeAction = new MoveItemActionData(anItem.getId(), adventureData.getPlayerPocket().getId());
+        takeCommandData.setAction(takeAction);
+        return takeCommandData;
+    }
+
+    private CommandData getDropCommandData(final Word aVerb, final ItemData anItem) {
+        final var dropCommandData = getRawCommandData(aVerb, anItem);
+        ActionData dropAction = new MoveItemActionData(anItem.getId(), null);
+        dropCommandData.setAction(dropAction);
+        return dropCommandData;
+    }
+
+    private CommandData getRawCommandData(final Word aTakeVerb, final ItemData anItem) {
+        DescriptionData itemDescription = anItem.getDescriptionData();
+        CommandDescriptionData commandDescription = new CommandDescriptionData(aTakeVerb,
+                                                                               itemDescription.getAdjective(),
+                                                                               itemDescription.getNoun());
+        return new CommandData(commandDescription);
+    }
+
     private void validateSave(ItemViewModel anItemViewModel) {
         try {
             if (binder.validate().isOk()) {
@@ -268,6 +341,10 @@ public class ItemEditorView extends VerticalLayout
         VocabularyData vocabularyData = adventureData.getVocabularyData();
         adjectiveSelector.populate(vocabularyData.getWords(ADJECTIVE));
         nounSelector.populate(vocabularyData.getWords(NOUN));
+        allVerbs = vocabularyData.getWords(VERB).stream()
+                .filter(w -> w.getSynonym() == null)
+                .toList();
+
 
         saveButton.setEnabled(false);
         ivm = new ItemViewModel(itemData);

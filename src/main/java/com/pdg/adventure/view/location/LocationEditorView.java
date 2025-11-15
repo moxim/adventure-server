@@ -68,11 +68,9 @@ public class LocationEditorView extends VerticalLayout
         locationData = new LocationData();
         locationId = locationData.getId();
 
-        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this location.", ADJECTIVE,
-                                                      new VocabularyData());
+        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this location.");
 
-        nounSelector = new VocabularyPickerField("Noun", "The main theme of this location.", NOUN,
-                                                 new VocabularyData());
+        nounSelector = new VocabularyPickerField("Noun", "The main theme of this location.");
         nounSelector.setPlaceholder("Select a noun (required)");
 
         TextField locationIdTF = getLocationIdTF();

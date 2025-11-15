@@ -73,11 +73,10 @@ public class CommandEditorView extends VerticalLayout
         adventureService = anAdventureService;
         binder = new Binder<>(CommandViewModel.class);
 
-        verbSelector = new VocabularyPickerField("Verb", "You may filter on verbs.", VERB, new VocabularyData());
+        verbSelector = new VocabularyPickerField("Verb", "You may filter on verbs.");
         verbSelector.setHelperText("Select at least a verb.");
-        adjectiveSelector = new VocabularyPickerField("Adjective", "You may filter on adjectives.", ADJECTIVE,
-                                                      new VocabularyData());
-        nounSelector = new VocabularyPickerField("Noun", "You may filter on nouns.", NOUN, new VocabularyData());
+        adjectiveSelector = new VocabularyPickerField("Adjective", "You may filter on adjectives.");
+        nounSelector = new VocabularyPickerField("Noun", "You may filter on nouns.");
 
         binder.forField(verbSelector).asRequired("Verb is required")
               .withValidator(word -> word != null && !word.getText().isEmpty(), "Please select a verb with text")

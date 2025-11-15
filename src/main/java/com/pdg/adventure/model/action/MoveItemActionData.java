@@ -8,4 +8,12 @@ import lombok.EqualsAndHashCode;
 public class MoveItemActionData extends ActionData {
     private String thingId;
     private String destinationId;
+
+    public MoveItemActionData() {
+    }
+
+    public MoveItemActionData(final String anItemId, final String aContainerId) {
+        thingId = anItemId;
+        destinationId = aContainerId;
+    }
 }

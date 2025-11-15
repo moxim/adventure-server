@@ -27,6 +27,7 @@ public class VocabularyMapper implements Mapper<VocabularyData, Vocabulary> {
         Vocabulary vocabulary = mapperSupporter.getVocabulary();
         Collection<Word> words = from.getWords();
         vocabulary.setWords(words);
+
         return vocabulary;
     }
 

@@ -65,6 +65,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         messageCount.getStyle().set("align-self", "center");
 
         VerticalLayout leftSide = new VerticalLayout(createButton, backButton, messageCount);
+        leftSide.setMaxWidth("30%");
 
         TextField searchField = new TextField();
         searchField.setWidth("50%");
