@@ -56,7 +56,7 @@ public class AdventureMapper implements Mapper<AdventureData, Adventure> {
         adventure.setLocations(locationList);
         adventure.setCurrentLocationId(anAdventureData.getCurrentLocationId());
         adventure.setPocket(containerMapper.mapToBO(anAdventureData.getPlayerPocket()));
-        updateAdventureConfig(adventure);
+//        updateAdventureConfig(adventure);
         return adventure;
     }
 

@@ -127,11 +127,22 @@ public class ItemEditorView extends VerticalLayout
         Checkbox isContainableCheckbox = new Checkbox("Can be picked up / Is containable");
         isContainableCheckbox.setTooltipText("If checked, this item can be picked up and placed in containers.");
 
-        // Add value change listener to show verb selection dialog when checked
+        // Add value change listener to handle both checking and unchecking
         isContainableCheckbox.addValueChangeListener(event -> {
-            // Only show dialog when checkbox is checked (not when unchecked) and not from programmatic changes
-            if (event.getValue() && event.isFromClient()) {
-                showVerbSelectionDialog(isContainableCheckbox, allVerbs);
+            // Only process user interactions, not programmatic changes
+            if (!event.isFromClient()) {
+                return;
+            }
+
+            if (Boolean.TRUE.equals(event.getValue())) {
+                // Checkbox was checked - show verb selection dialog
+                if (!tryToAddPickUpCommands(itemData, adventureData.getVocabularyData())) {
+                    // Revert checkbox state if adding commands failed
+                    isContainableCheckbox.setValue(false);
+                }
+            } else {
+                // Checkbox was unchecked - remove take/drop commands
+                removePickupCommands(itemData);
             }
         });
 
@@ -199,24 +210,65 @@ public class ItemEditorView extends VerticalLayout
                                                .ifPresent(editor -> editor.setData(adventureData, locationData));
     }
 
-    private void showVerbSelectionDialog(Checkbox aCheckbox, List<Word> allVerbs) {
-        VocabularyData vocabularyData = adventureData.getVocabularyData();
-        Word takeVerb = vocabularyData.getTakeWord();
-        Word dropVerb = vocabularyData.getDropWord();
+    private boolean tryToAddPickUpCommands(final ItemData anItemData, final VocabularyData aVocabularyData) {
+        Word takeVerb = aVocabularyData.getTakeWord();
+        Word dropVerb = aVocabularyData.getDropWord();
         if (dropVerb == null || takeVerb == null) {
             Notification.show("Please select verbs to allow a player to handle this item in the vocabulary seciton.", 3000, Notification.Position.MIDDLE);
+            return false;
         } else {
-            LOG.info("Selected verbs: {} and {} for item: {}", takeVerb.getText(), dropVerb.getText(), itemData.getId());
-            addPickupCommands(takeVerb, dropVerb, itemData);
+            LOG.info("Selected verbs: {} and {} for item: {}", takeVerb.getText(), dropVerb.getText(), anItemData.getId());
+            createPickupCommands(takeVerb, dropVerb, anItemData);
+            Notification.show("Take and drop commands added", 2000, Notification.Position.BOTTOM_START);
         }
+        return true;
     }
 
-    private void addPickupCommands(final Word aTakeVerb, final Word aDropVerb, final ItemData anItem) {
-        final var takeCommandData = createTakeCommandData(aTakeVerb, anItem);
-        anItem.getCommandProviderData().add(takeCommandData);
+    private void removePickupCommands(ItemData anItemData) {
+        if (anItemData == null || anItemData.getCommandProviderData() == null) {
+            return;
+        }
 
-        final var dropCommandData = createDropCommandData(aDropVerb, anItem);
-        anItem.getCommandProviderData().add(dropCommandData);
+        CommandProviderData commandProvider = anItemData.getCommandProviderData();
+
+        // Iterate through all command chains and remove take/drop actions
+        commandProvider.getAvailableCommands().entrySet().removeIf(entry -> {
+            CommandChainData commandChain = entry.getValue();
+            if (commandChain == null || commandChain.getCommands() == null) {
+                return false;
+            }
+
+            // Remove commands with TakeActionData or DropActionData
+            commandChain.getCommands().removeIf(command -> {
+                if (command.getAction() == null) {
+                    return false;
+                }
+                final CommandData rawTakeCommandData = getRawCommandData(adventureData.getVocabularyData().getTakeWord(),
+                                                                         anItemData);
+                final CommandData rawDropCommandData = getRawCommandData(adventureData.getVocabularyData().getDropWord(),
+                                                                         anItemData);
+            return command.getCommandDescription().getCommandSpecification().equals(rawTakeCommandData.getCommandDescription().getCommandSpecification())
+                   ||
+                   command.getCommandDescription().getCommandSpecification().equals(rawDropCommandData.getCommandDescription().getCommandSpecification());
+            });
+
+            // Remove the entire command chain if it's now empty
+            return commandChain.getCommands().isEmpty();
+        });
+
+        LOG.info("Removed take/drop commands from item: {}", anItemData.getId());
+        Notification.show("Take and drop commands removed", 2000, Notification.Position.BOTTOM_START);
+    }
+
+    private void createPickupCommands(final Word aTakeVerb, final Word aDropVerb, final ItemData anItemData) {
+        // First remove any existing take/drop commands to avoid duplicates
+        removePickupCommands(anItemData);
+
+        final var takeCommandData = createTakeCommandData(aTakeVerb, anItemData);
+        anItemData.getCommandProviderData().add(takeCommandData);
+
+        final var dropCommandData = createDropCommandData(aDropVerb, anItemData);
+        anItemData.getCommandProviderData().add(dropCommandData);
 
         /*
         GenericCommand takeFailCommand = new GenericCommand(getCommandDescription, new MessageAction(
