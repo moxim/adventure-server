@@ -6,14 +6,20 @@ import java.util.function.Supplier;
 
 public class ContainerSupplier implements Supplier<Container> {
 
-    private final Container container;
+    private final Supplier<Container> containerResolver;
 
+    // Constructor for eager resolution (when you already have the container)
     public ContainerSupplier(Container aContainer) {
-        container = aContainer;
+        this.containerResolver = () -> aContainer;
+    }
+
+    // Constructor for lazy resolution (when you need to defer container lookup)
+    public ContainerSupplier(Supplier<Container> aContainerResolver) {
+        this.containerResolver = aContainerResolver;
     }
 
     @Override
     public Container get() {
-        return container;
+        return containerResolver.get();
     }
 }

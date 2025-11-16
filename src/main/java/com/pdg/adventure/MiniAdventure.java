@@ -75,7 +75,13 @@ public class MiniAdventure {
         allWords.createSynonym("bye", "quit");
         allWords.createNewWord("describe", Word.Type.VERB);
         allWords.createSynonym("look", "describe");
+        allWords.createSynonym("l", "describe");
+        allWords.createSynonym("desc", "describe");
+        allWords.createSynonym("examine", "describe");
+        allWords.createSynonym("x", "describe");
         allWords.createNewWord("help", Word.Type.VERB);
+        allWords.createNewWord("inventory", Word.Type.VERB);
+        allWords.createSynonym("i", "inventory");
 
         setUpWorkflowCommands();
 

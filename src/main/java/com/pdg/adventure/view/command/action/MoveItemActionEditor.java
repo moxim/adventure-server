@@ -175,7 +175,7 @@ public class MoveItemActionEditor extends ActionEditorComponent {
     }
 
     /**
-     * Formats a label for an item container, showing either "Player's Pocket" or the location name.
+     * Formats a label for an item container, showing either "your pocket" or the location name.
      */
     private String formatContainerLabel(ItemContainerData container) {
         if (container == null) {
@@ -185,7 +185,7 @@ public class MoveItemActionEditor extends ActionEditorComponent {
         // Check if this is the player's pocket
         if (adventureData.getPlayerPocket() != null &&
             container.getId().equals(adventureData.getPlayerPocket().getId())) {
-            return "Player's Pocket";
+            return "your pocket";
         }
 
         // Find the location that contains this container

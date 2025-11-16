@@ -29,6 +29,7 @@ import com.pdg.adventure.model.DirectionData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
+import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.command.CommandsMenuView;
@@ -246,6 +247,10 @@ public class DirectionEditorView extends VerticalLayout
         try {
             binder.writeBean(aDirectionViewModel);
             final DirectionData directionData = aDirectionViewModel.getData();
+            final DescriptionData locationDescriptionData = locationData.getDescriptionData();
+            final DescriptionData directionDescriptionData = directionData.getDescriptionData();
+            directionDescriptionData.setAdjective(locationDescriptionData.getAdjective());
+            directionDescriptionData.setNoun(locationDescriptionData.getNoun());
 
             final MovePlayerActionData movePlayerActionData = new MovePlayerActionData();
             movePlayerActionData.setLocationId(aDirectionViewModel.getDestinationId());
@@ -290,10 +295,6 @@ public class DirectionEditorView extends VerticalLayout
         directionData = locationData.getDirectionsData().stream()
                                     .filter(direction -> direction.getId().equals(directionId)).findFirst()
                                     .orElse(new DirectionData());
-        if (directionData.getId() == null || directionData.getId().isEmpty()) {
-//            directionData.setId(UUID.randomUUID().toString());
-            directionId = directionData.getId();
-        }
 
         VocabularyData vocabularyData = adventureData.getVocabularyData();
         verbSelector.populate(vocabularyData.getWords(VERB));

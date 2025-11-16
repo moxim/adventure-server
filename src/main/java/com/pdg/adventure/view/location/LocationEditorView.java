@@ -23,6 +23,7 @@ import static com.pdg.adventure.model.Word.Type.NOUN;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.command.CommandsMenuView;
@@ -209,6 +210,11 @@ public class LocationEditorView extends VerticalLayout
             if (binder.validate().isOk()) {
                 binder.writeBean(aLocationViewModel);
                 final LocationData locationData = aLocationViewModel.getData();
+                final DescriptionData locationDescriptionData = locationData.getDescriptionData();
+                final DescriptionData containerDescriptionData = locationData.getItemContainerData()
+                                                                             .getDescriptionData();
+                containerDescriptionData.setAdjective(locationDescriptionData.getAdjective());
+                containerDescriptionData.setNoun(locationDescriptionData.getNoun());
                 adventureData.getLocationData().put(aLocationViewModel.getId(), locationData);
                 adventureService.saveAdventureData(adventureData);
                 saveButton.setEnabled(false);

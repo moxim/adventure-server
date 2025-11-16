@@ -9,10 +9,12 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
+import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
@@ -27,20 +29,24 @@ public class MapperSupporter {
     @Getter
     private final MessagesHolder messagesHolder;
     @Getter
-    private final Map<String, Item> allItems;
+    private final Map<String, Item> mappedItems;
     @Getter
     private final Map<String, Location> mappedLocations;
+    @Getter
+    private Map<String, Container> mappedContainers;
 
     private final Map<Class<?>, Mapper<?, ?>> mapperMap;
     private final AdventureConfig adventureConfig;
+
 
     public MapperSupporter(AdventureConfig anAdventureConfig) {
         adventureConfig = anAdventureConfig;
         variableProvider = adventureConfig.allVariables();
         messagesHolder = adventureConfig.allMessages();
-        allItems = adventureConfig.allItems();
+        mappedItems = adventureConfig.allItems();
         vocabulary = adventureConfig.allWords();
         mappedLocations = adventureConfig.allLocations();
+        mappedContainers = adventureConfig.allContainers();
         mapperMap = new HashMap<>();
     }
 
@@ -85,15 +91,31 @@ public class MapperSupporter {
 
     public String toString() {
         return "[MapperSupporter] " +
-                "vocabulary: " + vocabulary + ", " +
-                "variableProvider: " + variableProvider + ", " +
-                "messagesHolder: " + messagesHolder + ", " +
-                "allItems: " + allItems + ", " +
-                "mappedLocations: " + mappedLocations + ", " +
-                "mapperMap: " + mapperMap;
+               "vocabulary: " + vocabulary + ", " +
+               "variableProvider: " + variableProvider + ", " +
+               "messagesHolder: " + messagesHolder + ", " +
+               "allItems: " + mappedItems + ", " +
+               "mappedLocations: " + mappedLocations + ", " +
+               "mapperMap: " + mapperMap;
     }
 
     private AdventureConfig getAdventrueConfig() {
         return adventureConfig;
+    }
+
+    public void addMappedItem(final Item anItem) {
+        mappedItems.put(anItem.getId(), anItem);
+    }
+
+    public Item getMappedItem(final String anId) {
+        return mappedItems.get(anId);
+    }
+
+    public Container getMappedContainer(final String aParentContainerId) {
+        return mappedContainers.get(aParentContainerId);
+    }
+
+    public void addMappedContainer(final GenericContainer aContainer) {
+        mappedContainers.put(aContainer.getId(), aContainer);
     }
 }

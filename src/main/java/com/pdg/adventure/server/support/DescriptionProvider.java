@@ -86,6 +86,9 @@ public class DescriptionProvider implements Ided {
             result.append(adjective).append(" ");
         }
         result.append(noun);
+        if (result.isEmpty()) {
+            result.append(getShortDescription());
+        }
         return result.toString();
     }
 

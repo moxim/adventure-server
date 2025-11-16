@@ -22,8 +22,7 @@ import java.util.Optional;
 import static com.pdg.adventure.model.Word.Type.*;
 
 import com.pdg.adventure.model.*;
-import com.pdg.adventure.model.action.ActionData;
-import com.pdg.adventure.model.action.MoveItemActionData;
+import com.pdg.adventure.model.action.DropActionData;
 import com.pdg.adventure.model.action.TakeActionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
@@ -81,16 +80,7 @@ public class ItemEditorView extends VerticalLayout
         TextArea longDescription = getLongDescTextArea();
 
         // Checkboxes for item properties
-        Checkbox isContainableCheckbox = new Checkbox("Can be picked up / Is containable");
-        isContainableCheckbox.setTooltipText("If checked, this item can be picked up and placed in containers.");
-
-        // Add value change listener to show verb selection dialog when checked
-        isContainableCheckbox.addValueChangeListener(event -> {
-            // Only show dialog when checkbox is checked (not when unchecked) and not from programmatic changes
-            if (event.getValue() && event.isFromClient()) {
-                showVerbSelectionDialog(isContainableCheckbox, allVerbs);
-            }
-        });
+        final var isContainableCheckbox = createIsContainableCheckbox();
 
         Checkbox isWearableCheckbox = new Checkbox("Is wearable");
         isWearableCheckbox.setTooltipText("If checked, this item can be worn by the player.");
@@ -131,6 +121,21 @@ public class ItemEditorView extends VerticalLayout
 
         HorizontalLayout idRow = new HorizontalLayout(itemIdTF, locationIdTF, adventureIdTF);
         add(idRow, h1, shortDescription, longDescription, checkboxRow, resetBackSaveView);
+    }
+
+    private Checkbox createIsContainableCheckbox() {
+        Checkbox isContainableCheckbox = new Checkbox("Can be picked up / Is containable");
+        isContainableCheckbox.setTooltipText("If checked, this item can be picked up and placed in containers.");
+
+        // Add value change listener to show verb selection dialog when checked
+        isContainableCheckbox.addValueChangeListener(event -> {
+            // Only show dialog when checkbox is checked (not when unchecked) and not from programmatic changes
+            if (event.getValue() && event.isFromClient()) {
+                showVerbSelectionDialog(isContainableCheckbox, allVerbs);
+            }
+        });
+
+        return isContainableCheckbox;
     }
 
     private TextField getItemIdTF() {
@@ -207,10 +212,10 @@ public class ItemEditorView extends VerticalLayout
     }
 
     private void addPickupCommands(final Word aTakeVerb, final Word aDropVerb, final ItemData anItem) {
-        final var takeCommandData = getTakeCommandData(aTakeVerb, anItem);
+        final var takeCommandData = createTakeCommandData(aTakeVerb, anItem);
         anItem.getCommandProviderData().add(takeCommandData);
 
-        final var dropCommandData = getDropCommandData(aDropVerb, anItem);
+        final var dropCommandData = createDropCommandData(aDropVerb, anItem);
         anItem.getCommandProviderData().add(dropCommandData);
 
         /*
@@ -235,18 +240,19 @@ public class ItemEditorView extends VerticalLayout
 */
     }
 
-    private CommandData getTakeCommandData(final Word aVerb, final ItemData anItem) {
+    private CommandData createTakeCommandData(final Word aVerb, final ItemData anItem) {
         final var takeCommandData = getRawCommandData(aVerb, anItem);
         final var takeActionData = new TakeActionData();
-        ActionData takeAction = new MoveItemActionData(anItem.getId(), adventureData.getPlayerPocket().getId());
-        takeCommandData.setAction(takeAction);
+        takeActionData.setThingId(anItem.getId());
+        takeCommandData.setAction(takeActionData);
         return takeCommandData;
     }
 
-    private CommandData getDropCommandData(final Word aVerb, final ItemData anItem) {
+    private CommandData createDropCommandData(final Word aVerb, final ItemData anItem) {
         final var dropCommandData = getRawCommandData(aVerb, anItem);
-        ActionData dropAction = new MoveItemActionData(anItem.getId(), null);
-        dropCommandData.setAction(dropAction);
+        DropActionData dropActionData = new DropActionData();
+        dropActionData.setThingId(anItem.getId());
+        dropCommandData.setAction(dropActionData);
         return dropCommandData;
     }
 
@@ -267,6 +273,7 @@ public class ItemEditorView extends VerticalLayout
                 // Set adventure and location IDs
                 itemData.setAdventureId(adventureData.getId());
                 itemData.setLocationId(locationData.getId());
+                itemData.setParentContainerId(locationData.getItemContainerData().getId());
 
                 // Save item to items collection first (required for @DBRef to work)
                 ItemData savedItem = itemService.saveItem(itemData);

@@ -14,18 +14,22 @@ import com.pdg.adventure.server.tangible.Thing;
 
 public class Location extends Thing implements Visitable, HasLight {
 
-    private final Container itemContainer;
     private final Container directions;
+    private Container itemContainer;
     private long timesVisited;
     // TODO: reconsider having Location know about the player's pocket
 //    private final Container pocket;
     private int lumen;
 
+    public Location(DescriptionProvider aDescriptionProvider) {
+        super(aDescriptionProvider);
+        directions = new GenericContainer(aDescriptionProvider, true, 9999);
+    }
+
     public Location(DescriptionProvider aDescriptionProvider, Container aPocket) {
         super(aDescriptionProvider);
         itemContainer = aPocket;
         directions = new GenericContainer(aDescriptionProvider, true, 9999);
-        timesVisited = 0; // explicit, but redundant
     }
 
     public ExecutionResult addItem(Containable anItem) {
@@ -149,5 +153,9 @@ public class Location extends Thing implements Visitable, HasLight {
     @Override
     public int getLight() {
         return lumen;
+    }
+
+    public void setItemContainer(final Container aItemContainer) {
+        itemContainer = aItemContainer;
     }
 }

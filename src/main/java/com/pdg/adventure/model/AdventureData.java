@@ -49,7 +49,7 @@ public class AdventureData extends BasicData {
 
     public AdventureData(VocabularyData aVocabularyData) {
         vocabularyData = aVocabularyData;
-        playerPocket = new ItemContainerData("the player's pocket");
+        playerPocket = new ItemContainerData("your pocket");
         locationData = new HashMap<>();
         messages = new HashMap<>();
         currentLocationId = "";

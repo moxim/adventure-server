@@ -54,10 +54,7 @@ public class LocationMapper implements Mapper<LocationData, Location> {
             throw new IllegalArgumentException("DescriptionProvider is null");
         }
 
-        final ItemContainerData itemContainerData = aLocationData.getItemContainerData();
-        final Container itemContainer = itemContainerMapper.mapToBO(itemContainerData);
-
-        Location location = new Location(descriptionProvider, itemContainer);
+        Location location = new Location(descriptionProvider);
         location.setId(aLocationData.getId());
         mapperSupporter.addMappedLocation(location);
 
@@ -85,18 +82,33 @@ public class LocationMapper implements Mapper<LocationData, Location> {
         }
 
         for (LocationData locationData : aDataObjectList) {
-            final Set<DirectionData> directionsData = locationData.getDirectionsData();
             Location location = mapperSupporter.getMappedLocation(locationData.getId());
-            for (DirectionData directionData : directionsData) {
-                final GenericDirection direction = directionMapper.mapToBO(directionData);
-                location.addDirection(direction);
-            }
-            final CommandProviderData commandProviderData = locationData.getCommandProviderData();
-            final GenericCommandProvider commandProvider = commandProviderMapper.mapToBO(commandProviderData);
-            location.setCommandProvider(commandProvider);
+            mapLocationDirections(locationData, location);
+            mapLocationItems(locationData, location);
+            mapLocationCommands(locationData, location);
         }
 
         return result;
+    }
+
+    private void mapLocationItems(final LocationData aLocationData, final Location aLocation) {
+        final ItemContainerData itemContainerData = aLocationData.getItemContainerData();
+        final Container itemContainer = itemContainerMapper.mapToBO(itemContainerData);
+        aLocation.setItemContainer(itemContainer);
+    }
+
+    private void mapLocationCommands(final LocationData locationData, final Location location) {
+        final CommandProviderData commandProviderData = locationData.getCommandProviderData();
+        final GenericCommandProvider commandProvider = commandProviderMapper.mapToBO(commandProviderData);
+        location.setCommandProvider(commandProvider);
+    }
+
+    private void mapLocationDirections(final LocationData locationData, final Location location) {
+        final Set<DirectionData> directionsData = locationData.getDirectionsData();
+        for (DirectionData directionData : directionsData) {
+            final GenericDirection direction = directionMapper.mapToBO(directionData);
+            location.addDirection(direction);
+        }
     }
 
     public List<LocationData> mapToDOs(List<Location> aBusinessObjectList) {

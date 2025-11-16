@@ -194,7 +194,7 @@ public class AdventureEditorView extends VerticalLayout
     private void setUpNewEdit() {
         adventureData = new AdventureData();
         ItemContainerData playerPocket = adventureData.getPlayerPocket();
-        playerPocket.getDescriptionData().setShortDescription("Player's Pocket");
+        playerPocket.getDescriptionData().setShortDescription("your pocket");
         playerPocket.setMaxSize(666);
         binder.setBean(adventureData);
         pageTitle = "A new adventure awaits!";

@@ -61,7 +61,7 @@ public class Adventure implements Ided {
         for (Location location : aLocationList) {
             locationMap.put(location.getId(), location);
         }
-        if (currentLocationId == null || currentLocationId.isEmpty()) {
+        if (!aLocationList.isEmpty() && (currentLocationId == null || currentLocationId.isEmpty())) {
             currentLocationId = aLocationList.getFirst().getId();
         }
     }
