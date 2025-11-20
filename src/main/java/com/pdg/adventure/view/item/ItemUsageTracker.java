@@ -214,6 +214,20 @@ public class ItemUsageTracker {
     }
 
     /**
+     * Find all non-location-container usages of an item (e.g., command actions).
+     * This is useful for showing users what references prevent an item from being deleted.
+     * @param adventureData The adventure to search
+     * @param itemId The item ID to find
+     * @return List of ItemUsage objects excluding location container references
+     */
+    public static List<ItemUsage> findItemUsagesExcludingLocationContainers(AdventureData adventureData, String itemId) {
+        List<ItemUsage> allUsages = findItemUsages(adventureData, itemId);
+        return allUsages.stream()
+                .filter(usage -> !"Location Item".equals(usage.getUsageType()))
+                .toList();
+    }
+
+    /**
      * Check if an item is referenced anywhere in the adventure.
      * @param adventureData The adventure to search
      * @param itemId The item ID to check

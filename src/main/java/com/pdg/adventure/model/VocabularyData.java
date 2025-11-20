@@ -16,6 +16,28 @@ import com.pdg.adventure.server.storage.mongo.CascadeSave;
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class VocabularyData extends BasicData {
+
+    public static final String YES_TEXT = "yes";
+    public static final String NO_TEXT = "no";
+
+    public static final String VERB_TEXT = "verb";
+    public static final String ADJECTIVE_TEXT = "adjective";
+    public static final String NOUN_TEXT = "noun";
+
+    public static final String CONTAINABLE_TEXT = "containable";
+    public static final String WEARABLE_TEXT = "wearable";
+    public static final String WORN_TEXT = "worn";
+
+    public static final String SHORT_TEXT = "Short Description";
+    public static final String LONG_TEXT = "Long Description";
+
+    public static final String CREATE_TEXT = "Create";
+    public static final String DELETE_TEXT = "Delete";
+    public static final String EDIT_TEXT = "Edit";
+    public static final String BACK_TEXT = "Back";
+    public static final String SAVE_TEXT = "Save";
+    public static final String CANCEL_TEXT = "Cancel";
+
     public static final String UNKNOWN_WORD_TEXT = "Word '%s' is not present, yet!";
     public static final String PRESENT_WORD_HAS_DIFFERENT_TYPE_TEXT = "Word '%s' is already present, but has a synonym of different type!";
     public static final String DUPLICATE_WORD_TEXT = "Word '%s' is already present!";

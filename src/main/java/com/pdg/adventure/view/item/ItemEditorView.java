@@ -135,6 +135,7 @@ public class ItemEditorView extends VerticalLayout
             }
 
             if (Boolean.TRUE.equals(event.getValue())) {
+                binder.writeBeanIfValid(ivm);
                 // Checkbox was checked - show verb selection dialog
                 if (!tryToAddPickUpCommands(itemData, adventureData.getVocabularyData())) {
                     // Revert checkbox state if adding commands failed
@@ -214,7 +215,7 @@ public class ItemEditorView extends VerticalLayout
         Word takeVerb = aVocabularyData.getTakeWord();
         Word dropVerb = aVocabularyData.getDropWord();
         if (dropVerb == null || takeVerb == null) {
-            Notification.show("Please select verbs to allow a player to handle this item in the vocabulary seciton.", 3000, Notification.Position.MIDDLE);
+            Notification.show("Please select verbs to allow a player to handle this item in the vocabulary section.", 3000, Notification.Position.MIDDLE);
             return false;
         } else {
             LOG.info("Selected verbs: {} and {} for item: {}", takeVerb.getText(), dropVerb.getText(), anItemData.getId());

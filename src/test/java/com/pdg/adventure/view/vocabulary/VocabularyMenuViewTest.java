@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.storage.AdventureService;
 
 /**
@@ -26,6 +26,9 @@ class VocabularyMenuViewTest {
 
     @Mock
     private AdventureService adventureService;
+
+    @Mock
+    private AdventureConfig adventureConfig;
 
     private VocabularyMenuView view;
     private AdventureData adventureData;
@@ -44,7 +47,7 @@ class VocabularyMenuViewTest {
     @Test
     void constructor_shouldCreateViewWithAllComponents() {
         // when
-        view = new VocabularyMenuView(adventureService);
+        view = new VocabularyMenuView(adventureService, adventureConfig);
 
         // then
         assertThat(view).isNotNull();
@@ -53,7 +56,7 @@ class VocabularyMenuViewTest {
     @Test
     void setAdventureData_shouldPopulateGridWithWords() {
         // given
-        view = new VocabularyMenuView(adventureService);
+        view = new VocabularyMenuView(adventureService, adventureConfig);
 
         Word sword = createTestWord("sword", Word.Type.NOUN);
         Word golden = createTestWord("golden", Word.Type.ADJECTIVE);
@@ -73,7 +76,7 @@ class VocabularyMenuViewTest {
     @Test
     void setAdventureData_withMultipleWords_shouldPreserveAllWords() {
         // given
-        view = new VocabularyMenuView(adventureService);
+        view = new VocabularyMenuView(adventureService, adventureConfig);
 
         Word sword = createTestWord("sword", Word.Type.NOUN);
         Word shield = createTestWord("shield", Word.Type.NOUN);
@@ -115,7 +118,7 @@ class VocabularyMenuViewTest {
     @Test
     void setAdventureData_withEmptyVocabulary_shouldHandleEmptyState() {
         // given
-        view = new VocabularyMenuView(adventureService);
+        view = new VocabularyMenuView(adventureService, adventureConfig);
 
         // Vocabulary has no words added (empty by default)
 

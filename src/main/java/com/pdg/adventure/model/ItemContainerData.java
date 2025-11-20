@@ -35,7 +35,7 @@ public class ItemContainerData extends ItemData {
     public ItemContainerData(String locationId) {
         maxSize = 10; // default max size
         holdingDirections = false;
-        getDescriptionData().setShortDescription("Items of %s");
+        getDescriptionData().setShortDescription(String.format("Items of %s", locationId));
     }
 
     @Override

@@ -28,6 +28,7 @@ import java.util.List;
 import static com.pdg.adventure.model.Word.Type.VERB;
 
 import com.pdg.adventure.model.*;
+import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
 import com.pdg.adventure.view.component.VocabularyPickerField;
@@ -40,11 +41,12 @@ import com.pdg.adventure.view.support.RouteIds;
 public class VocabularyMenuView extends VerticalLayout implements SaveListener, GuiListener {
 
     private transient final AdventureService adventureService;
+    private transient final AdventureConfig adventureConfig;
     private AdventureData adventureData;
     private VocabularyData vocabularyData;
 
-    private Button create;
     private Button edit;
+    private Button create;
     private Button back;
     private Button save;
     private TextField searchField;
@@ -52,10 +54,12 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     private VocabularyPickerField takeSelector;
     private VocabularyPickerField dropSelector;
     private DescribableWordAdapter currentWordAdapter;
+    private WordUsageTracker wordUsageTracker;
 
     @Autowired
-    public VocabularyMenuView(AdventureService anAdventureService) {
+    public VocabularyMenuView(AdventureService anAdventureService, AdventureConfig anAdventureConfig) {
         adventureService = anAdventureService;
+        adventureConfig = anAdventureConfig;
         setSizeFull();
         createGUI();
     }
@@ -70,20 +74,73 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
 
     private VerticalLayout createFarSide() {
         takeSelector = new VocabularyPickerField("Taker");
-        takeSelector.setHelperText("A verb used for taking items.");
-        takeSelector.addValueChangeListener(event -> {vocabularyData.setTakeWord(event.getValue());});
+        takeSelector.setHelperText("A verb used for taking items. Can be changed unless used as a command in any item.");
+        takeSelector.addValueChangeListener(event -> {
+            Word newValue = event.getValue();
+            if (newValue != null && !event.isFromClient()) {
+                // Programmatic change, allow it
+                return;
+            }
+
+            Word oldValue = event.getOldValue();
+
+            // Check if trying to clear or change an existing value
+            if (oldValue != null && (newValue == null || !oldValue.getId().equals(newValue.getId()))) {
+                // Check if the old value is used in any item commands
+                List<WordUsage> usages = wordUsageTracker.checkWordIsNotUsedInLocations(oldValue);
+                if (!usages.isEmpty()) {
+                    showWordIsBusyNotification("Take", newValue, oldValue, usages);
+                    takeSelector.setValue(oldValue);
+                    return;
+                }
+            }
+
+            // Allow setting or changing the value
+            vocabularyData.setTakeWord(newValue);
+        });
 
         dropSelector = new VocabularyPickerField("Dropper");
-        dropSelector.setHelperText("A verb used for dropping items.");
-        dropSelector.addValueChangeListener(event -> {vocabularyData.setDropWord(event.getValue());});
+        dropSelector.setHelperText("A verb used for dropping items. Can be changed unless used as a command in any item.");
+        dropSelector.addValueChangeListener(event -> {
+            Word newValue = event.getValue();
+            if (newValue != null && !event.isFromClient()) {
+                // Programmatic change, allow it
+                return;
+            }
+
+            Word oldValue = event.getOldValue();
+
+            // Check if trying to clear or change an existing value
+            if (oldValue != null && (newValue == null || !oldValue.getId().equals(newValue.getId()))) {
+                // Check if the old value is used in any item commands
+                List<WordUsage> usages = wordUsageTracker.checkWordIsNotUsedInLocations(oldValue);
+                if (!usages.isEmpty()) {
+                    showWordIsBusyNotification("Drop", newValue, oldValue, usages);
+                    dropSelector.setValue(oldValue);
+                    return;
+                }
+            }
+
+            // Allow setting or changing the value
+            vocabularyData.setDropWord(newValue);
+        });
 
         NativeLabel specialLabel = new NativeLabel("Special Verbs");
         specialLabel.getStyle().set("font-weight", "bold")
                 .set("font-size", "var(--lumo-font-size-l)")
                 .set("margin-bottom", "var(--lumo-space-s)");
         final VerticalLayout verticalLayout = new VerticalLayout(specialLabel, takeSelector, dropSelector);
-//        verticalLayout.getStyle().set("font-size", "var(--lumo-font-size-l)");
         return verticalLayout;
+    }
+
+    private void showWordIsBusyNotification(final String aWordType, final Word newValue, final Word oldValue,
+                                                   final List<WordUsage> aUsageList) {
+        String action = newValue == null ? "cleared" : "changed";
+        StringBuilder notificationText = new StringBuilder(aWordType + " verb '" + oldValue.getText() + "' cannot be " + action +
+                " because it is used as a command in one or more items");
+        notificationText.append(wordUsageTracker.createUsagesText(aUsageList, 5));
+
+        Notification.show(notificationText.toString(), 4000, Notification.Position.MIDDLE);
     }
 
     private VerticalLayout createRightSide() {
@@ -128,21 +185,6 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     }
 
 
-    private void fillGUI() {
-        vocabularyData = adventureData.getVocabularyData();
-        gridContainer.removeAll();
-        SerializablePredicate<DescribableWordAdapter> filter = WordFilter.filterByTypeTextOrSynonym(searchField);
-        gridContainer.add(getVocabularyGrid(vocabularyData, searchField, filter));
-        takeSelector.populate(vocabularyData.getWords(VERB).stream().filter(word -> word.getSynonym() == null).toList());
-        if (vocabularyData.getTakeWord() != null) {
-            takeSelector.setValue(vocabularyData.getTakeWord());
-        }
-        dropSelector.populate(vocabularyData.getWords(VERB).stream().filter(word -> word.getSynonym() == null).toList());
-        if (vocabularyData.getDropWord() != null) {
-            dropSelector.setValue(vocabularyData.getDropWord());
-        }
-    }
-
     private Grid<DescribableWordAdapter> getVocabularyGrid(VocabularyData aVocabularyData, TextField aSearchField, SerializablePredicate<DescribableWordAdapter> aFilter) {
         GridProvider<DescribableWordAdapter> gridProvider = new GridProvider<>(DescribableWordAdapter.class);
         gridProvider.addColumn(DescribableWordAdapter::getType, "Type");
@@ -161,7 +203,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
 
         gridProvider.addItemDoubleClickListener(e -> {
             final DescribableWordAdapter wordAdapter = e.getItem();
-            enterWordDialouge(wordAdapter);
+            createWordInfoDialog(WordEditorDialogue.EditType.EDIT, wordAdapter);
         });
 
         gridProvider.addSelectionListener(  selectedWord   -> {
@@ -176,25 +218,33 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         return grid;
     }
 
-    private void enterWordDialouge(final DescribableWordAdapter aWordAdapter) {
-        createWordInfoDialog(WordEditorDialogue.EditType.EDIT, aWordAdapter);
-    }
 
     public void setAdventureData(AdventureData anAdventureData) {
         adventureData = anAdventureData;
+        vocabularyData = adventureData.getVocabularyData();
+        wordUsageTracker = new WordUsageTracker(adventureData, vocabularyData);
+
         updateGui();
     }
 
     @Override
     public void updateGui() {
-        fillGUI();
+        gridContainer.removeAll();
+        SerializablePredicate<DescribableWordAdapter> filter = WordFilter.filterByTypeTextOrSynonym(searchField);
+        gridContainer.add(getVocabularyGrid(vocabularyData, searchField, filter));
+        takeSelector.populate(vocabularyData.getWords(VERB).stream().filter(word -> word.getSynonym() == null).toList());
+        if (vocabularyData.getTakeWord() != null) {
+            takeSelector.setValue(vocabularyData.getTakeWord());
+        }
+        dropSelector.populate(vocabularyData.getWords(VERB).stream().filter(word -> word.getSynonym() == null).toList());
+        if (vocabularyData.getDropWord() != null) {
+            dropSelector.setValue(vocabularyData.getDropWord());
+        }
     }
 
     @Override
     public void persistData() {
         adventureService.saveAdventureData(adventureData);
-//        adventureService.saveWordData(adventureData.getVocabularyData().getWords());
-//        adventureService.saveVocabularyData(adventureData.getVocabularyData());
     }
 
     private void createContextMenu(Grid<DescribableWordAdapter> grid, GridListDataView<DescribableWordAdapter> dataView) {
@@ -244,7 +294,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         contextMenu.addGridContextMenuOpenedListener(event -> {
             event.getItem().ifPresent(wordAdapter -> {
                 Word word = wordAdapter.getWord();
-                List<WordUsage> usages = getAllWordUsages(word);
+                List<WordUsage> usages = wordUsageTracker.getAllWordUsages(word);
                 boolean isUsed = !usages.isEmpty();
 
                 // Disable "Delete" if word is used anywhere
@@ -253,105 +303,9 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         });
     }
 
-    private List<WordUsage> getAllWordUsages(Word targetWord) {
-        List<WordUsage> usages = new ArrayList<>();
-        if (adventureData == null || targetWord == null) {
-            return usages;
-        }
-
-        // Check synonyms
-        if (vocabularyData != null) {
-            for (Word word : vocabularyData.getWords()) {
-                if (word.getSynonym() != null && word.getSynonym().getId().equals(targetWord.getId())) {
-                    usages.add(new WordUsage("Synonym", word.getText() + " (" + word.getType() + ")", "Word"));
-                }
-            }
-        }
-
-        // Check locations
-        if (adventureData.getLocationData() != null) {
-            for (LocationData location : adventureData.getLocationData().values()) {
-                checkDescriptionUsage(location.getDescriptionData(), targetWord, "Location", location.getId(), usages);
-                checkCommandProviderUsage(location.getCommandProviderData(), targetWord, "Location", location.getId(), usages);
-
-                // Check directions in this location
-                if (location.getDirectionsData() != null) {
-                    for (DirectionData direction : location.getDirectionsData()) {
-                        checkDescriptionUsage(direction.getDescriptionData(), targetWord, "Direction", direction.getId(), usages);
-                        checkCommandProviderUsage(direction.getCommandProviderData(), targetWord, "Direction", direction.getId(), usages);
-                        checkCommandDataUsage(direction.getCommandData(), targetWord, "Direction", direction.getId(), usages);
-                    }
-                }
-
-                // Check items in this location
-                if (location.getItemContainerData() != null && location.getItemContainerData().getItems() != null) {
-                    for (ItemData item : location.getItemContainerData().getItems()) {
-                        if (item != null) {
-                            checkDescriptionUsage(item.getDescriptionData(), targetWord, "Item", item.getId(), usages);
-                            checkCommandProviderUsage(item.getCommandProviderData(), targetWord, "Item", item.getId(), usages);
-                        }
-                    }
-                }
-            }
-        }
-
-        return usages;
-    }
-
-    private void checkDescriptionUsage(com.pdg.adventure.model.basic.DescriptionData description, Word targetWord, String type, String id, List<WordUsage> usages) {
-        if (description == null) return;
-
-        if (description.getAdjective() != null && description.getAdjective().getId().equals(targetWord.getId())) {
-            usages.add(new WordUsage("Adjective", id, type));
-        }
-        if (description.getNoun() != null && description.getNoun().getId().equals(targetWord.getId())) {
-            usages.add(new WordUsage("Noun", id, type));
-        }
-    }
-
-    private void checkCommandProviderUsage(CommandProviderData commandProvider, Word targetWord, String type, String id, List<WordUsage> usages) {
-        if (commandProvider == null || commandProvider.getAvailableCommands() == null) return;
-
-        for (CommandChainData commandChain : commandProvider.getAvailableCommands().values()) {
-            if (commandChain != null && commandChain.getCommands() != null) {
-                for (CommandData command : commandChain.getCommands()) {
-                    checkCommandDataUsage(command, targetWord, type, id, usages);
-                }
-            }
-        }
-    }
-
-    private void checkCommandDataUsage(CommandData command, Word targetWord, String type, String id, List<WordUsage> usages) {
-        if (command == null || command.getCommandDescription() == null) return;
-
-        com.pdg.adventure.model.basic.CommandDescriptionData cmdDesc = command.getCommandDescription();
-        if (cmdDesc.getVerb() != null && cmdDesc.getVerb().getId().equals(targetWord.getId())) {
-            usages.add(new WordUsage("Verb in Command", id, type));
-        }
-        if (cmdDesc.getAdjective() != null && cmdDesc.getAdjective().getId().equals(targetWord.getId())) {
-            usages.add(new WordUsage("Adjective in Command", id, type));
-        }
-        if (cmdDesc.getNoun() != null && cmdDesc.getNoun().getId().equals(targetWord.getId())) {
-            usages.add(new WordUsage("Noun in Command", id, type));
-        }
-    }
-
-    // Helper class to store usage information
-    private static class WordUsage {
-        final String usageType;
-        final String itemId;
-        final String itemType;
-
-        WordUsage(String usageType, String itemId, String itemType) {
-            this.usageType = usageType;
-            this.itemId = itemId;
-            this.itemType = itemType;
-        }
-    }
-
     private void showWordUsages(DescribableWordAdapter wordAdapter) {
         Word word = wordAdapter.getWord();
-        List<WordUsage> usages = getAllWordUsages(word);
+        List<WordUsage> usages = wordUsageTracker.getAllWordUsages(word);
 
         if (usages.isEmpty()) {
             Notification.show("Word '" + word.getText() + "' is not used anywhere.",
@@ -365,29 +319,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         dialog.setCancelable(true);
         dialog.setConfirmText("Close");
 
-        // Build the message with grouped usages
-        StringBuilder message = new StringBuilder();
-        message.append("Found ").append(usages.size()).append(" usage(s):\n\n");
-
-        // Group usages by type
-        java.util.Map<String, List<WordUsage>> groupedUsages = new java.util.HashMap<>();
-        for (WordUsage usage : usages) {
-            String key = usage.itemType;
-            groupedUsages.computeIfAbsent(key, k -> new ArrayList<>()).add(usage);
-        }
-
-        // Display grouped usages
-        for (String groupType : groupedUsages.keySet()) {
-            message.append("▶ ").append(groupType).append("s:\n");
-            for (WordUsage usage : groupedUsages.get(groupType)) {
-                message.append("  • ").append(usage.itemId);
-                if (!usage.usageType.equals(groupType)) {
-                    message.append(" (").append(usage.usageType).append(")");
-                }
-                message.append("\n");
-            }
-            message.append("\n");
-        }
+        final StringBuilder message = wordUsageTracker.createUsagesText(usages, 16);
 
         dialog.setText(message.toString());
         dialog.open();
@@ -397,7 +329,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         Word word = wordAdapter.getWord();
 
         // Check if word is used anywhere
-        List<WordUsage> usages = getAllWordUsages(word);
+        List<WordUsage> usages = wordUsageTracker.getAllWordUsages(word);
         if (!usages.isEmpty()) {
             // Build detailed error message
             StringBuilder message = new StringBuilder();
