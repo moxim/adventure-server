@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,7 +32,8 @@ class MessageActionMapperTest {
 
     @BeforeEach
     void setUp() {
-        when(adventureConfig.allMessages()).thenReturn(messagesHolder);
+        // must do this to avoid NPEs in mapper methods and to avoid Mockito strictness issues
+        Mockito.lenient().when(adventureConfig.allMessages()).thenReturn(messagesHolder);
         mapper = new MessageActionMapper(mapperSupporter, adventureConfig);
     }
 

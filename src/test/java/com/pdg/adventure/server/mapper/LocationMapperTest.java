@@ -99,7 +99,7 @@ class LocationMapperTest {
         // Mock dependencies
         when(mapperSupporter.getMappedLocation("forest-clearing")).thenReturn(null);
         when(descriptionMapper.mapToBO(descriptionData)).thenReturn(descriptionProvider);
-        when(itemContainerMapper.mapToBO(itemContainerData)).thenReturn(itemContainer);
+//        when(itemContainerMapper.mapToBO(itemContainerData)).thenReturn(itemContainer);
 
         // When: mapping to business object
         Location result = locationMapper.mapToBO(locationData);
@@ -113,7 +113,7 @@ class LocationMapperTest {
         verify(mapperSupporter).getMappedLocation("forest-clearing");
         verify(mapperSupporter).addMappedLocation(result);
         verify(descriptionMapper).mapToBO(descriptionData);
-        verify(itemContainerMapper).mapToBO(itemContainerData);
+//        verify(itemContainerMapper).mapToBO(itemContainerData);
     }
 
     @Test

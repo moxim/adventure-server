@@ -5,8 +5,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-import com.pdg.adventure.api.Container;
-import com.pdg.adventure.api.Containable;
 import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
@@ -19,7 +17,6 @@ import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.GenericContainer;
-import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 @Service
@@ -59,7 +56,7 @@ public class AdventureMapper implements Mapper<AdventureData, Adventure> {
 //        updateAdventureConfig(adventure);
         return adventure;
     }
-
+/*
     private void updateAdventureConfig(final Adventure adventure) {
         // Clear existing data to prevent stale references
         adventureConfig.allLocations().clear();
@@ -90,9 +87,9 @@ public class AdventureMapper implements Mapper<AdventureData, Adventure> {
         }
     }
 
+
     /**
      * Recursively collects all items from a container and its nested containers.
-     */
     private void collectItemsRecursively(Container container, Map<String, Item> allItems) {
         if (container == null) {
             return;
@@ -126,7 +123,6 @@ public class AdventureMapper implements Mapper<AdventureData, Adventure> {
 
     /**
      * Recursively collects all containers from a container and its nested items.
-     */
     private void collectContainersRecursively(Container container, Map<String, Container> allContainers) {
         if (container == null) {
             return;
@@ -152,7 +148,7 @@ public class AdventureMapper implements Mapper<AdventureData, Adventure> {
             }
         }
     }
-
+*/
     public AdventureData mapToDO(Adventure anAdventure) {
         final Vocabulary vocabulary = anAdventure.getVocabulary();
         final VocabularyData vocabularyData = vocabularyMapper.mapToDO(vocabulary);
