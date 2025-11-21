@@ -137,8 +137,8 @@ class DirectionEditorViewTest {
         assertThat(adventureData.getLocationData().values())
                 .hasSize(3);
         assertThat(adventureData.getLocationData().values()
-                .stream()
-                .filter(loc -> !loc.getId().equals(locationData.getId())))
+                                .stream()
+                                .filter(loc -> !loc.getId().equals(locationData.getId())))
                 .hasSize(2);
     }
 }

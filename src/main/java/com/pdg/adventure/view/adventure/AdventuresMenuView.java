@@ -33,7 +33,7 @@ public class AdventuresMenuView extends VerticalLayout {
     private transient final AdventureService adventureService;
 
     private String targetAdventureId;
-    private Button runAdventure;
+    private final Button runAdventure;
 
     @Autowired
     public AdventuresMenuView(AdventureService anAdventureService) {

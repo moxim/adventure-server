@@ -1,13 +1,14 @@
 package com.pdg.adventure.view.command.action;
 
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+
 import com.pdg.adventure.model.action.ActionData;
 
 /**
  * Base abstract class for all action editors.
  * Each action type should extend this class and implement the buildUI method
  * to create its specific user interface.
- *
+ * <p>
  * Note: The UI is not built in the constructor. After construction, call initialize()
  * to trigger the UI building. This allows subclasses to set their fields before buildUI() is called.
  */

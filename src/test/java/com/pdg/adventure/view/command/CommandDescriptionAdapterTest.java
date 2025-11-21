@@ -2,10 +2,10 @@ package com.pdg.adventure.view.command;
 
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class CommandDescriptionAdapterTest {
 
@@ -24,7 +24,7 @@ class CommandDescriptionAdapterTest {
         CommandDescriptionAdapter adapter = new CommandDescriptionAdapter(commandDescriptionData);
 
         // Then
-        assertThat(adapter.getCommandDescription()).isSameAs(commandDescriptionData);
+        assertThat(adapter.commandDescription()).isSameAs(commandDescriptionData);
         assertThat(adapter.getVerb()).isEqualTo("get");
         assertThat(adapter.getAdjective()).isEqualTo("rusty");
         assertThat(adapter.getNoun()).isEqualTo("key");
@@ -57,8 +57,8 @@ class CommandDescriptionAdapterTest {
         CommandDescriptionAdapter adapter = new CommandDescriptionAdapter(commandSpec);
 
         // Then
-        assertThat(adapter.getCommandDescription()).isNotNull();
-        assertThat(adapter.getCommandDescription().getCommandSpecification()).isEqualTo(commandSpec);
+        assertThat(adapter.commandDescription()).isNotNull();
+        assertThat(adapter.commandDescription().getCommandSpecification()).isEqualTo(commandSpec);
         assertThat(adapter.getShortDescription()).isEqualTo(commandSpec);
     }
 

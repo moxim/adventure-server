@@ -37,7 +37,8 @@ public class ItemMapper implements Mapper<ItemData, Item> {
     }
 
     public Item mapToBO(ItemData anItemData) {
-        final Item item = new Item(descriptionMapper.mapToBO(anItemData.getDescriptionData()), anItemData.isContainable());
+        final Item item = new Item(descriptionMapper.mapToBO(anItemData.getDescriptionData()),
+                                   anItemData.isContainable());
         item.setId(anItemData.getId());
         item.setIsWearable(anItemData.isWearable());
         item.setIsWorn(anItemData.isWorn());

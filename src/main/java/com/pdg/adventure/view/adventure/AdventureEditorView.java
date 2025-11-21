@@ -61,7 +61,8 @@ public class AdventureEditorView extends VerticalLayout
         Button editVocabularyButton = new Button("Manage Vocabulary", e -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(VocabularyMenuView.class,
-                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                            adventureData.getId())))
                   .ifPresent(editor -> editor.setAdventureData(adventureData));
             }
         });
@@ -69,7 +70,8 @@ public class AdventureEditorView extends VerticalLayout
         Button editMessagesButton = new Button("Manage Messages", e -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(com.pdg.adventure.view.message.MessagesMenuView.class,
-                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                            adventureData.getId())))
                   .ifPresent(editor -> editor.setData(adventureData));
             }
         });
@@ -77,7 +79,8 @@ public class AdventureEditorView extends VerticalLayout
         Button editItemsButton = new Button("Manage Items", e -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(AllItemsMenuView.class,
-                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                            adventureData.getId())))
                   .ifPresent(editor -> editor.setData(adventureData));
             }
         });

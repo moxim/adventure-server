@@ -36,15 +36,16 @@ public class DescriptionProvider implements Ided {
 
     public DescriptionProvider(Word adjective, Word noun) {
 //        validateParameters(noun);
-        this.adjective = adjective != null && adjective.getText() != null ? adjective.getText() : VocabularyData.EMPTY_STRING;
+        this.adjective = adjective != null && adjective.getText() != null ? adjective.getText() :
+                         VocabularyData.EMPTY_STRING;
         this.noun = noun.getText();
         this.id = UUID.randomUUID().toString();
     }
 
     public DescriptionProvider(DescriptionData descriptionData) {
         this(
-            descriptionData.getAdjective() != null ? descriptionData.getAdjective().getText() : null,
-            descriptionData.getNoun() != null ? descriptionData.getNoun().getText() : ""
+                descriptionData.getAdjective() != null ? descriptionData.getAdjective().getText() : null,
+                descriptionData.getNoun() != null ? descriptionData.getNoun().getText() : ""
         );
         setShortDescription(descriptionData.getShortDescription() != null ? descriptionData.getShortDescription() : "");
         setLongDescription(descriptionData.getLongDescription() != null ? descriptionData.getLongDescription() : "");
@@ -70,7 +71,8 @@ public class DescriptionProvider implements Ided {
     }
 
     public String getEnrichedShortDescription(String description) {
-        return ArticleProvider.prependIndefiniteArticle(description != null && !description.isEmpty() ? description : getBasicDescription());
+        return ArticleProvider.prependIndefiniteArticle(
+                description != null && !description.isEmpty() ? description : getBasicDescription());
     }
 
     public String getLongDescription() {
@@ -109,11 +111,11 @@ public class DescriptionProvider implements Ided {
     @Override
     public String toString() {
         return "DescriptionProvider{" +
-                "id='" + id + '\'' +
-                ", noun='" + noun + '\'' +
-                ", adjective='" + adjective + '\'' +
-                ", shortDescription='" + shortDescription + '\'' +
-                ", longDescription='" + longDescription + '\'' +
-                '}';
+               "id='" + id + '\'' +
+               ", noun='" + noun + '\'' +
+               ", adjective='" + adjective + '\'' +
+               ", shortDescription='" + shortDescription + '\'' +
+               ", longDescription='" + longDescription + '\'' +
+               '}';
     }
 }

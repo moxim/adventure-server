@@ -34,7 +34,7 @@ public class AdventureConfig {
     }
 
     @Bean
-    public Map<String, Container> allContainers()  {
+    public Map<String, Container> allContainers() {
         return allContainers;
     }
 

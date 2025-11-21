@@ -79,13 +79,14 @@ public class CascadeDeleteHelper {
                 Object mapValue = entry.getValue();
                 if (mapValue != null) {
                     count++;
-                    LOG.info("Processing map entry: key={}, valueType={}", entry.getKey(), mapValue.getClass().getSimpleName());
+                    LOG.info("Processing map entry: key={}, valueType={}", entry.getKey(),
+                             mapValue.getClass().getSimpleName());
                     deleteEntity(mapValue, processedObjects);
                 } else {
                     LOG.warn("Map entry with key={} has null value", entry.getKey());
                 }
             }
-        LOG.info("Processed {} entries from map", count);
+            LOG.info("Processed {} entries from map", count);
         } else if (value instanceof Iterable<?> iterable) {
             // Handle List/Set: Delete each element
             LOG.info("Processing collection/list with items");

@@ -41,8 +41,9 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
 
         Button backButton = new Button("Back", event -> UI.getCurrent().navigate(LocationEditorView.class,
                                                                                  new RouteParameters(
-                                                                                         new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                                                        adventureData.getId()),
+                                                                                         new RouteParam(
+                                                                                                 RouteIds.ADVENTURE_ID.getValue(),
+                                                                                                 adventureData.getId()),
                                                                                          new RouteParam(
                                                                                                  RouteIds.LOCATION_ID.getValue(),
                                                                                                  locationData.getId())))
@@ -51,10 +52,12 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
 
         Button create = new Button("Create Exit", e -> UI.getCurrent().navigate(DirectionEditorView.class,
                                                                                 new RouteParameters(
-                                                                                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                                                       adventureData.getId()),
-                                                                                        new RouteParam(RouteIds.LOCATION_ID.getValue(),
-                                                                                                       locationData.getId())))
+                                                                                        new RouteParam(
+                                                                                                RouteIds.ADVENTURE_ID.getValue(),
+                                                                                                adventureData.getId()),
+                                                                                        new RouteParam(
+                                                                                                RouteIds.LOCATION_ID.getValue(),
+                                                                                                locationData.getId())))
                                                          .ifPresent(editor -> editor.setData(locationData,
                                                                                              adventureData)));
 
@@ -149,10 +152,10 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
 
     private void navigateToDirectionEditor(String aDirectionId) {
         UI.getCurrent().navigate(DirectionEditorView.class,
-                new RouteParameters(
-                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
-                        new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                        new RouteParam(RouteIds.DIRECTION_ID.getValue(), aDirectionId)))
+                                 new RouteParameters(
+                                         new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                                         new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                                         new RouteParam(RouteIds.DIRECTION_ID.getValue(), aDirectionId)))
           .ifPresent(editor -> editor.setData(locationData, adventureData));
     }
 

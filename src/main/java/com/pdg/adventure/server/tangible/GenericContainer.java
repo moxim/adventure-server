@@ -59,7 +59,7 @@ public class GenericContainer extends Item implements Container {
         Containable result = null;
         for (Containable containable : contents) {
             if (containable.getNoun().equals(aNoun) &&
-                    (VocabularyData.EMPTY_STRING.equals(anAdjective) || containable.getAdjective().equals(anAdjective))) {
+                (VocabularyData.EMPTY_STRING.equals(anAdjective) || containable.getAdjective().equals(anAdjective))) {
                 result = containable;
                 break;
             }
@@ -78,10 +78,10 @@ public class GenericContainer extends Item implements Container {
 
         if (!isEmpty()) {
             for (int i = 0; i < contents.size() - 1; i++) {
-                 sb.append(getDescription(contents.get(i))).append(", ").append(System.getProperty("line.separator"));
-             }
-             sb.append(getDescription(contents.get(contents.size() - 1))).append(".");
-         } else {
+                sb.append(getDescription(contents.get(i))).append(", ").append(System.getProperty("line.separator"));
+            }
+            sb.append(getDescription(contents.get(contents.size() - 1))).append(".");
+        } else {
             sb.append("nothing.");
         }
 
@@ -125,7 +125,7 @@ public class GenericContainer extends Item implements Container {
         ExecutionResult result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
         if (!contents.remove(anItem)) {
             result.setResultMessage(String.format("There is no %s in %s.", anItem.getShortDescription(),
-                    getEnrichedBasicDescription()));
+                                                  getEnrichedBasicDescription()));
             result.setExecutionState(ExecutionResult.State.FAILURE);
         }
         return result;
@@ -136,7 +136,8 @@ public class GenericContainer extends Item implements Container {
         final List<Containable> items = ItemIdentifier.findItems(this, aCommandDescription);
         List<CommandChain> result = new ArrayList<>();
         if (holdsDirections) {
-            result.addAll(getCommandMatcher().getMatchingCommandsFromCommandProvider(getContents(), aCommandDescription));
+            result.addAll(
+                    getCommandMatcher().getMatchingCommandsFromCommandProvider(getContents(), aCommandDescription));
         } else {
             result.addAll(getCommandMatcher().getMatchingCommands(items, aCommandDescription));
         }
@@ -147,10 +148,10 @@ public class GenericContainer extends Item implements Container {
     @Override
     public String toString() {
         return "GenericContainer{" +
-                "maxSize=" + maxSize +
-                ", holdsDirections=" + holdsDirections +
-                ", contents=" + contents +
-                ", " + super.toString() +
-                '}';
+               "maxSize=" + maxSize +
+               ", holdsDirections=" + holdsDirections +
+               ", contents=" + contents +
+               ", " + super.toString() +
+               '}';
     }
 }

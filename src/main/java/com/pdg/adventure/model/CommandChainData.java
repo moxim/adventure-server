@@ -1,10 +1,10 @@
 package com.pdg.adventure.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.pdg.adventure.model.basic.BasicData;
 

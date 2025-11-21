@@ -5,7 +5,10 @@ import lombok.EqualsAndHashCode;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.pdg.adventure.model.basic.BasicData;
@@ -40,7 +43,8 @@ public class VocabularyData extends BasicData {
     public static final String CANCEL_TEXT = "Cancel";
 
     public static final String UNKNOWN_WORD_TEXT = "Word '%s' is not present, yet!";
-    public static final String PRESENT_WORD_HAS_DIFFERENT_TYPE_TEXT = "Word '%s' is already present, but has a synonym of different type!";
+    public static final String PRESENT_WORD_HAS_DIFFERENT_TYPE_TEXT
+            = "Word '%s' is already present, but has a synonym of different type!";
     public static final String DUPLICATE_WORD_TEXT = "Word '%s' is already present!";
     public static final String EMPTY_STRING = "";
 
@@ -108,7 +112,8 @@ public class VocabularyData extends BasicData {
 
     public Word createSynonym(String aNewSynonym, String anExistingWord) {
         String lowerExistingWord = anExistingWord.toLowerCase();
-        Word word = findWord(lowerExistingWord).orElseThrow(() -> new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, anExistingWord)));
+        Word word = findWord(lowerExistingWord).orElseThrow(
+                () -> new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, anExistingWord)));
         return createSynonym(aNewSynonym, word);
     }
 

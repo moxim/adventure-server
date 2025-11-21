@@ -3,7 +3,7 @@ package com.pdg.adventure.model.basic;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.model.Word;
@@ -51,7 +51,7 @@ class CommandDescriptionDataTest {
     }
 
     @Test
-    void createNewDataWithSpec(){
+    void createNewDataWithSpec() {
         // given
         String commandSpec = "climb" + CommandDescription.COMMAND_SEPARATOR + "small" +
                              CommandDescription.COMMAND_SEPARATOR + "raft";

@@ -12,13 +12,13 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AutoRegisterMapper {
-    
+
     /**
      * Optional priority for registration order (lower numbers = higher priority)
      * Useful when mappers have dependencies on each other
      */
     int priority() default 100;
-    
+
     /**
      * Optional description for documentation purposes
      */

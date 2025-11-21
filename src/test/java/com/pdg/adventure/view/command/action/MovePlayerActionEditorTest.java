@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.model.basic.DescriptionData;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class MovePlayerActionEditorTest {
 

@@ -13,7 +13,7 @@ import com.pdg.adventure.server.testhelper.TestSupporter;
 class LowerThanConditionTest {
     private static final String varName = "t";
     private final VariableProvider variableProvider = new VariableProvider();
-    private LowerThanCondition sut = new LowerThanCondition(varName, 2, variableProvider);
+    private final LowerThanCondition sut = new LowerThanCondition(varName, 2, variableProvider);
 
     @Test
     void testVariableMeetsCondition() {

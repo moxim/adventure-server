@@ -30,13 +30,15 @@ public class SetVariableActionMapper extends ActionMapper<SetVariableActionData,
 
     @Override
     public SetVariableAction mapToBO(SetVariableActionData from) {
-        SetVariableAction setVariableAction = new SetVariableAction(from.getVariableName(), from.getVariableValue(), variableProvider, messagesHolder);
+        SetVariableAction setVariableAction = new SetVariableAction(from.getVariableName(), from.getVariableValue(),
+                                                                    variableProvider, messagesHolder);
         return setVariableAction;
     }
 
     @Override
     public SetVariableActionData mapToDO(SetVariableAction from) {
-        SetVariableActionData setVariableActionData = new SetVariableActionData(from.getVariableName(), from.getVariableValue());
+        SetVariableActionData setVariableActionData = new SetVariableActionData(from.getVariableName(),
+                                                                                from.getVariableValue());
         return setVariableActionData;
     }
 }

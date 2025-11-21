@@ -28,9 +28,10 @@ public class ItemService {
 
     /**
      * Create a new item.
+     *
      * @param adventureId The adventure ID
-     * @param locationId The location ID
-     * @param itemData The item data
+     * @param locationId  The location ID
+     * @param itemData    The item data
      * @return The created item
      */
     public ItemData createItem(@Nonnull String adventureId, @Nonnull String locationId, @Nonnull ItemData itemData) {
@@ -46,6 +47,7 @@ public class ItemService {
 
     /**
      * Update an existing item.
+     *
      * @param itemData The item data to update
      * @return The updated item
      */
@@ -53,7 +55,8 @@ public class ItemService {
     public ItemData updateItem(@Nonnull ItemData itemData) {
         LOG.info("Updating item: {} for adventure: {}", itemData.getId(), itemData.getAdventureId());
 
-        Optional<ItemData> existingItem = itemRepository.findByAdventureIdAndId(itemData.getAdventureId(), itemData.getId());
+        Optional<ItemData> existingItem = itemRepository.findByAdventureIdAndId(itemData.getAdventureId(),
+                                                                                itemData.getId());
 
         if (existingItem.isEmpty()) {
             LOG.warn("Item {} not found for adventure {}", itemData.getId(), itemData.getAdventureId());
@@ -66,6 +69,7 @@ public class ItemService {
 
     /**
      * Save an item (create or update).
+     *
      * @param itemData The item to save
      * @return The saved item
      */
@@ -77,8 +81,9 @@ public class ItemService {
 
     /**
      * Delete an item.
+     *
      * @param adventureId The adventure ID
-     * @param itemId The item ID
+     * @param itemId      The item ID
      */
     public void deleteItem(@Nonnull String adventureId, @Nonnull String itemId) {
         LOG.info("Deleting item: {} for adventure: {}", itemId, adventureId);
@@ -87,6 +92,7 @@ public class ItemService {
 
     /**
      * Get all items for an adventure.
+     *
      * @param adventureId The adventure ID
      * @return List of items
      */
@@ -97,8 +103,9 @@ public class ItemService {
 
     /**
      * Get all items in a location.
+     *
      * @param adventureId The adventure ID
-     * @param locationId The location ID
+     * @param locationId  The location ID
      * @return List of items
      */
     public List<ItemData> getItemsForLocation(@Nonnull String adventureId, @Nonnull String locationId) {
@@ -108,8 +115,9 @@ public class ItemService {
 
     /**
      * Get a specific item.
+     *
      * @param adventureId The adventure ID
-     * @param itemId The item ID
+     * @param itemId      The item ID
      * @return Optional containing the item if found
      */
     public Optional<ItemData> getItemById(@Nonnull String adventureId, @Nonnull String itemId) {
@@ -120,8 +128,9 @@ public class ItemService {
     /**
      * Delete all items in a location.
      * Useful when deleting a location.
+     *
      * @param adventureId The adventure ID
-     * @param locationId The location ID
+     * @param locationId  The location ID
      */
     public void deleteAllItemsForLocation(@Nonnull String adventureId, @Nonnull String locationId) {
         LOG.info("Deleting all items for location: {} in adventure: {}", locationId, adventureId);
@@ -131,6 +140,7 @@ public class ItemService {
     /**
      * Delete all items for an adventure.
      * Useful when deleting an entire adventure.
+     *
      * @param adventureId The adventure ID
      */
     public void deleteAllItemsForAdventure(@Nonnull String adventureId) {
@@ -140,8 +150,9 @@ public class ItemService {
 
     /**
      * Count items in a location.
+     *
      * @param adventureId The adventure ID
-     * @param locationId The location ID
+     * @param locationId  The location ID
      * @return Number of items
      */
     public long countItemsInLocation(@Nonnull String adventureId, @Nonnull String locationId) {
@@ -150,6 +161,7 @@ public class ItemService {
 
     /**
      * Count items for an adventure.
+     *
      * @param adventureId The adventure ID
      * @return Number of items
      */

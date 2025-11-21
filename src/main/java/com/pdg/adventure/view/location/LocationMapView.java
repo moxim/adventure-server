@@ -13,23 +13,25 @@ import org.github.legioth.imagemap.ImageMap;
 public class LocationMapView extends FormLayout {
 
     public LocationMapView() {
-        
+
         setSizeFull();
 
         Div div = new Div();
         ImageMap imageMap =
 //                new ImageMap("https://thelordsofmidnight.com/blog/wp-content/uploads/2012/12/overview_map"
 //                                                 + ".png", "World map");
-        new ImageMap(new StreamResource("islandMap.jpg",
-                                        () -> getClass().getResourceAsStream("/META-INF/resources/images/islandMap"
-                                                                                     + ".jpg")), "islandMap");
-        for (int x = 0; x < 2451; x+=100) {
-            for (int y = 0; y < 2628; y+=100) {
+                new ImageMap(new StreamResource("islandMap.jpg",
+                                                () -> getClass().getResourceAsStream(
+                                                        "/META-INF/resources/images/islandMap"
+                                                        + ".jpg")), "islandMap");
+        for (int x = 0; x < 2451; x += 100) {
+            for (int y = 0; y < 2628; y += 100) {
                 int finalX = x;
                 int finalY = y;
                 imageMap.addArea(x, y, 100, 100).addClickListener(event ->
-                      Notification.show(
-                              "Location " + (finalX / 100) + " : " + (finalY / 100)));
+                                                                          Notification.show(
+                                                                                  "Location " + (finalX / 100) + " : " +
+                                                                                  (finalY / 100)));
             }
         }
         div.add(imageMap);

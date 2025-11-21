@@ -27,7 +27,7 @@ public class LocationUsageTracker {
         private final String commandSpecification;
 
         public LocationUsage(String usageType, String sourceLocationId, String sourceLocationDescription,
-                           String context, String commandSpecification) {
+                             String context, String commandSpecification) {
             this.usageType = usageType;
             this.sourceLocationId = sourceLocationId;
             this.sourceLocationDescription = sourceLocationDescription;
@@ -76,8 +76,9 @@ public class LocationUsageTracker {
 
     /**
      * Find all usages of a specific location in an adventure.
+     *
      * @param adventureData The adventure to search
-     * @param locationId The location ID to find
+     * @param locationId    The location ID to find
      * @return List of LocationUsage objects describing where the location is referenced
      */
     public static List<LocationUsage> findLocationUsages(AdventureData adventureData, String locationId) {
@@ -105,7 +106,7 @@ public class LocationUsageTracker {
                 LocationData location = locationEntry.getValue();
                 String sourceLocationId = locationEntry.getKey();
                 String sourceLocationDesc = location.getDescriptionData() != null ?
-                        location.getDescriptionData().getShortDescription() : null;
+                                            location.getDescriptionData().getShortDescription() : null;
 
                 // Check directions from this location
                 checkDirections(location, sourceLocationId, sourceLocationDesc, locationId, usages);
@@ -122,13 +123,14 @@ public class LocationUsageTracker {
      * Check if any directions from the source location lead to the target location.
      */
     private static void checkDirections(LocationData sourceLocation, String sourceLocationId,
-                                       String sourceLocationDesc, String targetLocationId,
-                                       List<LocationUsage> usages) {
+                                        String sourceLocationDesc, String targetLocationId,
+                                        List<LocationUsage> usages) {
         Set<DirectionData> directions = sourceLocation.getDirectionsData();
         if (directions != null) {
             for (DirectionData direction : directions) {
                 if (targetLocationId.equals(direction.getDestinationId())) {
-                    addUsagesForMatchingDirection(sourceLocationId, sourceLocationDesc, targetLocationId, usages, direction);
+                    addUsagesForMatchingDirection(sourceLocationId, sourceLocationDesc, targetLocationId, usages,
+                                                  direction);
                 }
             }
         }
@@ -153,8 +155,8 @@ public class LocationUsageTracker {
     }
 
     private static void addUsagesFromDirection(final String sourceLocationId, final String sourceLocationDesc,
-                                  final String targetLocationId, final List<LocationUsage> usages,
-                                  final DirectionData direction) {
+                                               final String targetLocationId, final List<LocationUsage> usages,
+                                               final DirectionData direction) {
         List<LocationUsage> fromDirections = new ArrayList<>();
         checkCommandsInDirection(direction, sourceLocationId, sourceLocationDesc, targetLocationId, fromDirections);
         for (var usage : fromDirections) {
@@ -164,8 +166,8 @@ public class LocationUsageTracker {
     }
 
     private static void checkCommandsInDirection(final DirectionData aDirection, String sourceLocationId,
-                                               String sourceLocationDesc, String targetLocationId,
-                                               List<LocationUsage> usages) {
+                                                 String sourceLocationDesc, String targetLocationId,
+                                                 List<LocationUsage> usages) {
         if (aDirection.getCommandProviderData() == null ||
             aDirection.getCommandProviderData().getAvailableCommands() == null) {
             return;
@@ -174,15 +176,16 @@ public class LocationUsageTracker {
         Map<String, CommandChainData> commands = aDirection.getCommandProviderData().getAvailableCommands();
         checkCommandChains(sourceLocationId, sourceLocationDesc, targetLocationId, usages, commands);
 
-        checkCommand(sourceLocationId, sourceLocationDesc, targetLocationId, usages, aDirection.getCommandData(), aDirection.getCommandData().getCommandDescription().getCommandSpecification());
+        checkCommand(sourceLocationId, sourceLocationDesc, targetLocationId, usages, aDirection.getCommandData(),
+                     aDirection.getCommandData().getCommandDescription().getCommandSpecification());
     }
 
     /**
      * Check if any command actions in the location move to the target location.
      */
     private static void checkCommandActions(LocationData sourceLocation, String sourceLocationId,
-                                           String sourceLocationDesc, String targetLocationId,
-                                           List<LocationUsage> usages) {
+                                            String sourceLocationDesc, String targetLocationId,
+                                            List<LocationUsage> usages) {
         if (sourceLocation.getCommandProviderData() == null ||
             sourceLocation.getCommandProviderData().getAvailableCommands() == null) {
             return;
@@ -194,8 +197,8 @@ public class LocationUsageTracker {
     }
 
     private static void checkCommandChains(final String sourceLocationId, final String sourceLocationDesc,
-                                  final String targetLocationId, final List<LocationUsage> usages,
-                                  final Map<String, CommandChainData> commands) {
+                                           final String targetLocationId, final List<LocationUsage> usages,
+                                           final Map<String, CommandChainData> commands) {
         for (Map.Entry<String, CommandChainData> commandEntry : commands.entrySet()) {
             String commandSpec = commandEntry.getKey();
             CommandChainData chain = commandEntry.getValue();
@@ -233,24 +236,25 @@ public class LocationUsageTracker {
      * Check if an action is a MovePlayerAction targeting the location and add to usages list if it does.
      */
     private static void checkMoveAction(ActionData action, String sourceLocationId, String sourceLocationDesc,
-                                       String commandSpec, String context, String targetLocationId,
-                                       List<LocationUsage> usages) {
+                                        String commandSpec, String context, String targetLocationId,
+                                        List<LocationUsage> usages) {
         if (action instanceof MovePlayerActionData moveAction && targetLocationId.equals(moveAction.getLocationId())) {
-                usages.add(new LocationUsage(
-                        "Move Action",
-                        sourceLocationId,
-                        sourceLocationDesc,
-                        context,
-                        commandSpec
-                ));
-            }
+            usages.add(new LocationUsage(
+                    "Move Action",
+                    sourceLocationId,
+                    sourceLocationDesc,
+                    context,
+                    commandSpec
+            ));
+        }
 
     }
 
     /**
      * Count how many times a location is referenced in an adventure.
+     *
      * @param adventureData The adventure to search
-     * @param locationId The location ID to count
+     * @param locationId    The location ID to count
      * @return Number of times the location is referenced
      */
     public static int countLocationUsages(AdventureData adventureData, String locationId) {
@@ -259,8 +263,9 @@ public class LocationUsageTracker {
 
     /**
      * Check if a location is referenced anywhere in the adventure.
+     *
      * @param adventureData The adventure to search
-     * @param locationId The location ID to check
+     * @param locationId    The location ID to check
      * @return true if the location is referenced at least once
      */
     public static boolean isLocationUsed(AdventureData adventureData, String locationId) {

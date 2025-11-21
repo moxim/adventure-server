@@ -161,8 +161,8 @@ public class MessageEditorView extends VerticalLayout
 
     private void navigateBack() {
         UI.getCurrent().navigate(MessagesMenuView.class, new RouteParameters(
-                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                               .ifPresent(e -> e.setData(adventureData));
+                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+          .ifPresent(e -> e.setData(adventureData));
     }
 
     private boolean isMessageIdUnique(String id) {
@@ -278,7 +278,8 @@ public class MessageEditorView extends VerticalLayout
             usageInfoDiv.add(noUsageSpan);
         } else {
             Span usageCountSpan = new Span("Used in " + usages.size() + " location(s):");
-            usageCountSpan.getStyle().set(FONT_WEIGHT_TEXT, "bold").set("display", "block").set("margin-bottom", "0.5em");
+            usageCountSpan.getStyle().set(FONT_WEIGHT_TEXT, "bold").set("display", "block")
+                          .set("margin-bottom", "0.5em");
             usageInfoDiv.add(usageCountSpan);
 
             VerticalLayout usageList = new VerticalLayout();

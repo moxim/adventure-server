@@ -23,12 +23,15 @@ class LocationTest {
     private final Container pocket = new GenericContainer(new DescriptionProvider("your pocket"), 5);
     private final Map<String, Location> allLocations = new HashMap<>();
     private final Location sut = new Location(new DescriptionProvider("small", "perch"), pocket);
+
     {
         allLocations.put(sut.getId(), sut);
     }
+
     private final Direction direction = new GenericDirection(allLocations,
                                                              new GenericCommand(
-                                                                     new GenericCommandDescription("loop"), null), sut.getId());
+                                                                     new GenericCommandDescription("loop"), null),
+                                                             sut.getId());
     private final Item mouse = new Item(new DescriptionProvider("mouse"), true);
 
     @Test

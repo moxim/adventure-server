@@ -2,7 +2,8 @@ package com.pdg.adventure.server.support;
 
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 class DescriptionProviderTest {
 
@@ -14,7 +15,7 @@ class DescriptionProviderTest {
 
         // then
         Throwable thrown = catchThrowable(() ->
-                new DescriptionProvider((String) null)
+                                                  new DescriptionProvider((String) null)
         );
         assertThat(thrown).isNull(); // Changed to isNull() since null noun is allowed in current implementation
     }

@@ -17,7 +17,7 @@ import com.pdg.adventure.view.support.TrackedUsage;
  * Scans command actions to find references to specific items.
  */
 public class ItemUsageTracker {
-        public static final String LOCATION_ITEM_TEXT = "Location Item";
+    public static final String LOCATION_ITEM_TEXT = "Location Item";
 
     /**
      * Data class representing a single usage of an item.
@@ -30,7 +30,7 @@ public class ItemUsageTracker {
         private final String commandSpecification;
 
         ItemUsage(String usageType, String sourceLocationId, String sourceLocationDescription,
-                        String context, String commandSpecification) {
+                  String context, String commandSpecification) {
             this.usageType = usageType;
             this.sourceLocationId = sourceLocationId;
             this.sourceLocationDescription = sourceLocationDescription;
@@ -63,7 +63,8 @@ public class ItemUsageTracker {
             sb.append(usageType).append(": ");
 
             if (LOCATION_ITEM_TEXT.equals(usageType)) {
-                sb.append("In location '").append(sourceLocationDescription != null ? sourceLocationDescription : sourceLocationId).append("'");
+                sb.append("In location '")
+                  .append(sourceLocationDescription != null ? sourceLocationDescription : sourceLocationId).append("'");
             } else {
                 String locationName = sourceLocationDescription != null ? sourceLocationDescription : sourceLocationId;
                 sb.append("In '").append(locationName).append("' | Command: ")
@@ -76,8 +77,9 @@ public class ItemUsageTracker {
 
     /**
      * Find all usages of a specific item in an adventure.
+     *
      * @param adventureData The adventure to search
-     * @param itemId The item ID to find
+     * @param itemId        The item ID to find
      * @return List of ItemUsage objects describing where the item is referenced
      */
     public static List<ItemUsage> findItemUsages(AdventureData adventureData, String itemId) {
@@ -98,18 +100,19 @@ public class ItemUsageTracker {
         return usages;
     }
 
-    private static void scanSingleLocationForItemUsage(final String itemId, final Map.Entry<String, LocationData> locationEntry,
-                                  final List<ItemUsage> usages) {
+    private static void scanSingleLocationForItemUsage(final String itemId,
+                                                       final Map.Entry<String, LocationData> locationEntry,
+                                                       final List<ItemUsage> usages) {
         LocationData location = locationEntry.getValue();
         String sourceLocationId = locationEntry.getKey();
         String sourceLocationDesc = location.getDescriptionData() != null ?
-                location.getDescriptionData().getShortDescription() : null;
+                                    location.getDescriptionData().getShortDescription() : null;
 
         // Check if item is in this location's ItemContainer
         if (location.getItemContainerData() != null &&
             location.getItemContainerData().getItems() != null) {
             boolean itemInLocation = location.getItemContainerData().getItems().stream()
-                    .anyMatch(item -> item != null && itemId.equals(item.getId()));
+                                             .anyMatch(item -> item != null && itemId.equals(item.getId()));
 
             if (itemInLocation) {
                 usages.add(new ItemUsage(
@@ -130,8 +133,8 @@ public class ItemUsageTracker {
      * Check if any command actions in the location reference the target item.
      */
     private static void checkCommandActions(LocationData sourceLocation, String sourceLocationId,
-                                          String sourceLocationDesc, String targetItemId,
-                                          List<ItemUsage> usages) {
+                                            String sourceLocationDesc, String targetItemId,
+                                            List<ItemUsage> usages) {
         if (sourceLocation.getCommandProviderData() == null ||
             sourceLocation.getCommandProviderData().getAvailableCommands() == null) {
             return;
@@ -144,14 +147,16 @@ public class ItemUsageTracker {
             CommandChainData chain = commandEntry.getValue();
 
             if (chain != null && chain.getCommands() != null) {
-                scanCommandChainForItemUsage(sourceLocationId, sourceLocationDesc, targetItemId, usages, chain, commandSpec);
+                scanCommandChainForItemUsage(sourceLocationId, sourceLocationDesc, targetItemId, usages, chain,
+                                             commandSpec);
             }
         }
     }
 
     private static void scanCommandChainForItemUsage(final String sourceLocationId, final String sourceLocationDesc,
-                                  final String targetItemId, final List<ItemUsage> usages, final CommandChainData chain,
-                                  final String commandSpec) {
+                                                     final String targetItemId, final List<ItemUsage> usages,
+                                                     final CommandChainData chain,
+                                                     final String commandSpec) {
         for (CommandData command : chain.getCommands()) {
             // Check primary action
             if (command.getAction() != null) {
@@ -176,8 +181,8 @@ public class ItemUsageTracker {
      * Check if an action references the target item and add to usages list if it does.
      */
     private static void checkItemAction(BasicData action, String sourceLocationId, String sourceLocationDesc,
-                                       String commandSpec, String context, String targetItemId,
-                                       List<ItemUsage> usages) {
+                                        String commandSpec, String context, String targetItemId,
+                                        List<ItemUsage> usages) {
         String thingId = null;
         String actionType = null;
 
@@ -204,7 +209,7 @@ public class ItemUsageTracker {
             actionType = "Remove Action";
         }
 
-        if (thingId != null && targetItemId.equals(thingId)) {
+        if (targetItemId.equals(thingId)) {
             usages.add(new ItemUsage(
                     actionType,
                     sourceLocationId,
@@ -217,8 +222,9 @@ public class ItemUsageTracker {
 
     /**
      * Count how many times an item is referenced in an adventure.
+     *
      * @param adventureData The adventure to search
-     * @param itemId The item ID to count
+     * @param itemId        The item ID to count
      * @return Number of times the item is referenced
      */
     public static int countItemUsages(AdventureData adventureData, String itemId) {
@@ -228,21 +234,24 @@ public class ItemUsageTracker {
     /**
      * Find all non-location-container usages of an item (e.g., command actions).
      * This is useful for showing users what references prevent an item from being deleted.
+     *
      * @param adventureData The adventure to search
-     * @param itemId The item ID to find
+     * @param itemId        The item ID to find
      * @return List of ItemUsage objects excluding location container references
      */
-    public static List<ItemUsage> findItemUsagesExcludingLocationContainers(AdventureData adventureData, String itemId) {
+    public static List<ItemUsage> findItemUsagesExcludingLocationContainers(AdventureData adventureData,
+                                                                            String itemId) {
         List<ItemUsage> allUsages = findItemUsages(adventureData, itemId);
         return allUsages.stream()
-                .filter(usage -> !LOCATION_ITEM_TEXT.equals(usage.getUsageType()))
-                .toList();
+                        .filter(usage -> !LOCATION_ITEM_TEXT.equals(usage.getUsageType()))
+                        .toList();
     }
 
     /**
      * Check if an item is referenced anywhere in the adventure.
+     *
      * @param adventureData The adventure to search
-     * @param itemId The item ID to check
+     * @param itemId        The item ID to check
      * @return true if the item is referenced at least once
      */
     public static boolean isItemUsed(AdventureData adventureData, String itemId) {

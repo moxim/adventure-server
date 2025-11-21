@@ -41,8 +41,8 @@ public class ItemContainerData extends ItemData {
     @Override
     public String toString() {
         return "ItemContainerData{" +
-                "id=" + getId() +
-                ", itemCount=" + items.size() +
-                "}";
+               "id=" + getId() +
+               ", itemCount=" + items.size() +
+               "}";
     }
 }

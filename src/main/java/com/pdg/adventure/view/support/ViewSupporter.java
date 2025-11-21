@@ -132,7 +132,8 @@ public class ViewSupporter {
     public static String formatDescription(DescriptionData aDescriptionData) {
         String shortDescription = aDescriptionData.getShortDescription();
         if (shortDescription.isEmpty()) {
-            shortDescription = getWordText(aDescriptionData.getNoun()) + " " + getWordText(aDescriptionData.getAdjective());
+            shortDescription = getWordText(aDescriptionData.getNoun()) + " " +
+                               getWordText(aDescriptionData.getAdjective());
         }
         return restrictToLength(shortDescription, 48);
     }
@@ -206,8 +207,8 @@ public class ViewSupporter {
                                  VocabularyData aVocabulary, Word.Type aType, DescriptionData aDescriptionData) {
         locationDataBinder.bind(aField, locationData -> getWordText(getWord(aDescriptionData, aType)),
                                 (locationData, word) -> {
-            setWord(aVocabulary, word, aType, aDescriptionData);
-        });
+                                    setWord(aVocabulary, word, aType, aDescriptionData);
+                                });
     }
 
     private static void setWord(VocabularyData aVocabulary, String aWordText, Word.Type aType,
@@ -254,7 +255,8 @@ public class ViewSupporter {
         return dialog;
     }
 
-    public static void showUsages(final String aHeader, String aType, String anItemId, final List<? extends TrackedUsage> usages) {
+    public static void showUsages(final String aHeader, String aType, String anItemId,
+                                  final List<? extends TrackedUsage> usages) {
         ConfirmDialog dialog = new ConfirmDialog();
         dialog.setHeader(aHeader + ": " + anItemId);
         dialog.setWidth("700px");
@@ -263,7 +265,8 @@ public class ViewSupporter {
             dialog.setText("This " + aType + " is not currently used in any commands.");
         } else {
             StringBuilder usageText = new StringBuilder();
-            usageText.append("This ").append(aType).append(" is referenced ").append(usages.size()).append(" time(s):\n\n");
+            usageText.append("This ").append(aType).append(" is referenced ").append(usages.size())
+                     .append(" time(s):\n\n");
 
             for (TrackedUsage usage : usages) {
                 usageText.append("• ").append(usage.getDisplayText()).append("\n");
@@ -271,9 +274,9 @@ public class ViewSupporter {
 
             Span usageSpan = new Span(usageText.toString());
             usageSpan.getStyle()
-                    .set("white-space", "pre-wrap")
-                    .set("font-family", "monospace")
-                    .set("font-size", "0.9em");
+                     .set("white-space", "pre-wrap")
+                     .set("font-family", "monospace")
+                     .set("font-size", "0.9em");
 
             VerticalLayout content = new VerticalLayout(usageSpan);
             content.setPadding(false);

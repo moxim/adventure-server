@@ -33,7 +33,7 @@ public class MapperSupporter {
     @Getter
     private final Map<String, Location> mappedLocations;
     @Getter
-    private Map<String, Container> mappedContainers;
+    private final Map<String, Container> mappedContainers;
 
     private final Map<Class<?>, Mapper<?, ?>> mapperMap;
     private final AdventureConfig adventureConfig;

@@ -1,12 +1,13 @@
 package com.pdg.adventure.server.tangible;
 
-import com.pdg.adventure.api.ExecutionResult;
-import com.pdg.adventure.api.Container;
-import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.testhelper.TestSupporter;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import com.pdg.adventure.api.Container;
+import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.server.support.DescriptionProvider;
+import com.pdg.adventure.server.testhelper.TestSupporter;
 
 class ContainerTest {
     private static final int CONTAINER_MAX_SIZE = 3;

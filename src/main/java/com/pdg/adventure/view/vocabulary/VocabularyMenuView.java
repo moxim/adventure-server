@@ -74,7 +74,8 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
 
     private VerticalLayout createFarSide() {
         takeSelector = new VocabularyPickerField("Taker");
-        takeSelector.setHelperText("A verb used for taking items. Can be changed unless used as a command in any item.");
+        takeSelector.setHelperText(
+                "A verb used for taking items. Can be changed unless used as a command in any item.");
         takeSelector.addValueChangeListener(event -> {
             Word newValue = event.getValue();
             if (newValue != null && !event.isFromClient()) {
@@ -92,7 +93,8 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         });
 
         dropSelector = new VocabularyPickerField("Dropper");
-        dropSelector.setHelperText("A verb used for dropping items. Can be changed unless used as a command in any item.");
+        dropSelector.setHelperText(
+                "A verb used for dropping items. Can be changed unless used as a command in any item.");
         dropSelector.addValueChangeListener(event -> {
             Word newValue = event.getValue();
             if (newValue != null && !event.isFromClient()) {
@@ -111,8 +113,8 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
 
         NativeLabel specialLabel = new NativeLabel("Special Verbs");
         specialLabel.getStyle().set("font-weight", "bold")
-                .set("font-size", "var(--lumo-font-size-l)")
-                .set("margin-bottom", "var(--lumo-space-s)");
+                    .set("font-size", "var(--lumo-font-size-l)")
+                    .set("margin-bottom", "var(--lumo-space-s)");
         final VerticalLayout verticalLayout = new VerticalLayout(specialLabel, takeSelector, dropSelector);
         return verticalLayout;
     }
@@ -132,13 +134,13 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     }
 
     private void showWordIsBusyNotification(final String aWordType, final Word newValue, final Word oldValue,
-                                                   final List<WordUsage> aUsageList) {
+                                            final List<WordUsage> aUsageList) {
         String action = newValue == null ? "cleared" : "changed";
-        StringBuilder notificationText = new StringBuilder(aWordType + " verb '" + oldValue.getText() + "' cannot be " + action +
-                " because it is used as a command in one or more items");
-        notificationText.append(wordUsageTracker.createUsagesText(aUsageList, 5));
+        String notificationText = aWordType + " verb '" + oldValue.getText() + "' cannot be " + action +
+                                  " because it is used as a command in one or more items" +
+                                  wordUsageTracker.createUsagesText(aUsageList, 5);
 
-        Notification.show(notificationText.toString(), 4000, Notification.Position.MIDDLE);
+        Notification.show(notificationText, 4000, Notification.Position.MIDDLE);
     }
 
     private VerticalLayout createRightSide() {
@@ -156,13 +158,17 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     }
 
     private VerticalLayout createLeftSide() {
-        edit = new Button("Edit Word", e -> {createWordInfoDialog(WordEditorDialogue.EditType.EDIT, currentWordAdapter );});
+        edit = new Button("Edit Word", e -> {
+            createWordInfoDialog(WordEditorDialogue.EditType.EDIT, currentWordAdapter);
+        });
         edit.setEnabled(false);
-        create = new Button("Create Word", e -> {createWordInfoDialog(WordEditorDialogue.EditType.NEW, null);});
+        create = new Button("Create Word", e -> {
+            createWordInfoDialog(WordEditorDialogue.EditType.NEW, null);
+        });
         back = new Button("Back", event -> {
             UI.getCurrent().navigate(AdventureEditorView.class,
-                    new RouteParameters(
-                            new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))
+                                     new RouteParameters(
+                                             new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))
             );
         });
         back.addClickShortcut(Key.ESCAPE);
@@ -183,7 +189,8 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     }
 
 
-    private Grid<DescribableWordAdapter> getVocabularyGrid(VocabularyData aVocabularyData, TextField aSearchField, SerializablePredicate<DescribableWordAdapter> aFilter) {
+    private Grid<DescribableWordAdapter> getVocabularyGrid(VocabularyData aVocabularyData, TextField aSearchField,
+                                                           SerializablePredicate<DescribableWordAdapter> aFilter) {
         GridProvider<DescribableWordAdapter> gridProvider = new GridProvider<>(DescribableWordAdapter.class);
         gridProvider.addColumn(DescribableWordAdapter::getType, "Type");
         gridProvider.addColumn(DescribableWordAdapter::getSynonym, "Synonym");
@@ -203,7 +210,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
             createWordInfoDialog(WordEditorDialogue.EditType.EDIT, wordAdapter);
         });
 
-        gridProvider.addSelectionListener(  selectedWord   -> {
+        gridProvider.addSelectionListener(selectedWord -> {
             final DescribableWordAdapter wordAdapter = selectedWord.getFirstSelectedItem().orElse(null);
             currentWordAdapter = wordAdapter;
             edit.setEnabled(wordAdapter != null);
@@ -229,11 +236,13 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         gridContainer.removeAll();
         SerializablePredicate<DescribableWordAdapter> filter = WordFilter.filterByTypeTextOrSynonym(searchField);
         gridContainer.add(getVocabularyGrid(vocabularyData, searchField, filter));
-        takeSelector.populate(vocabularyData.getWords(VERB).stream().filter(word -> word.getSynonym() == null).toList());
+        takeSelector.populate(
+                vocabularyData.getWords(VERB).stream().filter(word -> word.getSynonym() == null).toList());
         if (vocabularyData.getTakeWord() != null) {
             takeSelector.setValue(vocabularyData.getTakeWord());
         }
-        dropSelector.populate(vocabularyData.getWords(VERB).stream().filter(word -> word.getSynonym() == null).toList());
+        dropSelector.populate(
+                vocabularyData.getWords(VERB).stream().filter(word -> word.getSynonym() == null).toList());
         if (vocabularyData.getDropWord() != null) {
             dropSelector.setValue(vocabularyData.getDropWord());
         }
@@ -244,22 +253,23 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         adventureService.saveAdventureData(adventureData);
     }
 
-    private void createContextMenu(Grid<DescribableWordAdapter> grid, GridListDataView<DescribableWordAdapter> dataView) {
+    private void createContextMenu(Grid<DescribableWordAdapter> grid,
+                                   GridListDataView<DescribableWordAdapter> dataView) {
         GridContextMenu<DescribableWordAdapter> contextMenu = grid.addContextMenu();
 
         // Create a span to display the word text
         Span wordTextSpan = new Span();
         wordTextSpan.getStyle()
-                .set("font-style", "italic")
-                .set("color", "var(--lumo-secondary-text-color)")
-                .set("padding", "var(--lumo-space-s)")
-                .set("display", "block")
-                .set("max-width", "400px");
+                    .set("font-style", "italic")
+                    .set("color", "var(--lumo-secondary-text-color)")
+                    .set("padding", "var(--lumo-space-s)")
+                    .set("display", "block")
+                    .set("max-width", "400px");
 
         // Update the word text when the context menu opens
         contextMenu.addGridContextMenuOpenedListener(event -> {
             event.getItem().ifPresent(wordAdapter -> {
-                Word word = wordAdapter.getWord();
+                Word word = wordAdapter.word();
                 wordTextSpan.setText("\"" + word.getText() + "\" (" + word.getType() + ")");
             });
         });
@@ -273,7 +283,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         // Edit option
         contextMenu.addItem("Edit", event -> {
             event.getItem().ifPresent(wordAdapter ->
-                    createWordInfoDialog(WordEditorDialogue.EditType.EDIT, wordAdapter)
+                                              createWordInfoDialog(WordEditorDialogue.EditType.EDIT, wordAdapter)
             );
         });
 
@@ -290,7 +300,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         // Dynamically enable/disable menu items based on word usage
         contextMenu.addGridContextMenuOpenedListener(event -> {
             event.getItem().ifPresent(wordAdapter -> {
-                Word word = wordAdapter.getWord();
+                Word word = wordAdapter.word();
                 List<WordUsage> usages = wordUsageTracker.getAllWordUsages(word);
                 boolean isUsed = !usages.isEmpty();
 
@@ -301,12 +311,12 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     }
 
     private void showWordUsages(DescribableWordAdapter wordAdapter) {
-        Word word = wordAdapter.getWord();
+        Word word = wordAdapter.word();
         List<WordUsage> usages = wordUsageTracker.getAllWordUsages(word);
 
         if (usages.isEmpty()) {
             Notification.show("Word '" + word.getText() + "' is not used anywhere.",
-                    3000, Notification.Position.MIDDLE);
+                              3000, Notification.Position.MIDDLE);
             return;
         }
 
@@ -322,8 +332,9 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         dialog.open();
     }
 
-    private void confirmDeleteWord(DescribableWordAdapter wordAdapter, GridListDataView<DescribableWordAdapter> dataView) {
-        Word word = wordAdapter.getWord();
+    private void confirmDeleteWord(DescribableWordAdapter wordAdapter,
+                                   GridListDataView<DescribableWordAdapter> dataView) {
+        Word word = wordAdapter.word();
 
         // Check if word is used anywhere
         List<WordUsage> usages = wordUsageTracker.getAllWordUsages(word);
@@ -331,8 +342,8 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
             // Build detailed error message
             StringBuilder message = new StringBuilder();
             message.append("Cannot delete word '").append(word.getText())
-                    .append("' because it is used in ").append(usages.size())
-                    .append(" place(s):\n\n");
+                   .append("' because it is used in ").append(usages.size())
+                   .append(" place(s):\n\n");
 
             // Group usages by type
             java.util.Map<String, Integer> usageCounts = new java.util.HashMap<>();
@@ -362,8 +373,8 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     }
 
     private ConfirmDialog getConfirmDialog(final DescribableWordAdapter wordAdapter,
-                                                    final GridListDataView<DescribableWordAdapter> dataView,
-                                                    final Word word) {
+                                           final GridListDataView<DescribableWordAdapter> dataView,
+                                           final Word word) {
         ConfirmDialog dialog = new ConfirmDialog();
         dialog.setHeader("Delete Word");
         dialog.setText("Are you sure you want to delete the word '" + word.getText() + "' (" + word.getType() + ")?");
@@ -383,7 +394,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
             dataView.removeItem(wordAdapter);
 
             Notification.show("Word '" + word.getText() + "' deleted successfully.",
-                    3000, Notification.Position.BOTTOM_START);
+                              3000, Notification.Position.BOTTOM_START);
         });
         return dialog;
     }

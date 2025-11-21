@@ -148,9 +148,9 @@ public class MoveItemActionEditor extends ActionEditorComponent {
      */
     private ItemData findItemById(List<ItemData> items, String itemId) {
         return items.stream()
-                .filter(item -> item.getId().equals(itemId))
-                .findFirst()
-                .orElse(null);
+                    .filter(item -> item.getId().equals(itemId))
+                    .findFirst()
+                    .orElse(null);
     }
 
     /**
@@ -205,8 +205,8 @@ public class MoveItemActionEditor extends ActionEditorComponent {
      */
     private ItemContainerData findContainerById(List<ItemContainerData> containers, String containerId) {
         return containers.stream()
-                .filter(container -> container.getId().equals(containerId))
-                .findFirst()
-                .orElse(null);
+                         .filter(container -> container.getId().equals(containerId))
+                         .findFirst()
+                         .orElse(null);
     }
 }

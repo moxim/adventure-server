@@ -24,10 +24,12 @@ public class WordUsageTracker {
 
         // Check if this word is the take or drop verb
         if (vocabularyData != null) {
-            if (vocabularyData.getTakeWord() != null && vocabularyData.getTakeWord().getId().equals(targetWord.getId())) {
+            if (vocabularyData.getTakeWord() != null &&
+                vocabularyData.getTakeWord().getId().equals(targetWord.getId())) {
                 usages.add(new WordUsage("Take Verb", "Special verb for picking up items", "Special"));
             }
-            if (vocabularyData.getDropWord() != null && vocabularyData.getDropWord().getId().equals(targetWord.getId())) {
+            if (vocabularyData.getDropWord() != null &&
+                vocabularyData.getDropWord().getId().equals(targetWord.getId())) {
                 usages.add(new WordUsage("Drop Verb", "Special verb for dropping items", "Special"));
             }
 
@@ -67,7 +69,8 @@ public class WordUsageTracker {
         return usages;
     }
 
-    private void checkWordIsNotUsedInItemsOfLocation(final Word targetWord, final LocationData location, final List<WordUsage> usages) {
+    private void checkWordIsNotUsedInItemsOfLocation(final Word targetWord, final LocationData location,
+                                                     final List<WordUsage> usages) {
         for (ItemData item : location.getItemContainerData().getItems()) {
             if (item != null) {
                 checkDescriptionUsage(item.getDescriptionData(), targetWord, "Item", item.getId(), usages);
@@ -77,7 +80,8 @@ public class WordUsageTracker {
         }
     }
 
-    private void checkWordIsNotUsedInDirectionsOfLocation(final Word targetWord, final LocationData location, final List<WordUsage> usages) {
+    private void checkWordIsNotUsedInDirectionsOfLocation(final Word targetWord, final LocationData location,
+                                                          final List<WordUsage> usages) {
         for (DirectionData direction : location.getDirectionsData()) {
             checkDescriptionUsage(direction.getDescriptionData(), targetWord, DIRECTION_TEXT, direction.getId(),
                                   usages);
@@ -88,7 +92,8 @@ public class WordUsageTracker {
         }
     }
 
-    private void checkDescriptionUsage(com.pdg.adventure.model.basic.DescriptionData description, Word targetWord, String type, String id, List<WordUsage> usages) {
+    private void checkDescriptionUsage(com.pdg.adventure.model.basic.DescriptionData description, Word targetWord,
+                                       String type, String id, List<WordUsage> usages) {
         if (description == null) return;
 
         if (description.getAdjective() != null && description.getAdjective().getId().equals(targetWord.getId())) {
@@ -99,7 +104,8 @@ public class WordUsageTracker {
         }
     }
 
-    private void checkCommandProviderUsage(CommandProviderData commandProvider, Word targetWord, String type, String id, List<WordUsage> usages) {
+    private void checkCommandProviderUsage(CommandProviderData commandProvider, Word targetWord, String type, String id,
+                                           List<WordUsage> usages) {
         if (commandProvider == null || commandProvider.getAvailableCommands() == null) return;
 
         for (CommandChainData commandChain : commandProvider.getAvailableCommands().values()) {
@@ -111,7 +117,8 @@ public class WordUsageTracker {
         }
     }
 
-    private void checkCommandDataUsage(CommandData command, Word targetWord, String type, String id, List<WordUsage> usages) {
+    private void checkCommandDataUsage(CommandData command, Word targetWord, String type, String id,
+                                       List<WordUsage> usages) {
         if (command == null || command.getCommandDescription() == null) return;
 
         com.pdg.adventure.model.basic.CommandDescriptionData cmdDesc = command.getCommandDescription();
@@ -134,7 +141,7 @@ public class WordUsageTracker {
         // Group usages by type
         java.util.Map<String, List<WordUsage>> groupedUsages = new java.util.HashMap<>();
 
-        for (var i = 0; i < Math.min(usages.size(),Math.max(usages.size(), maxUsagesToShow)); i++) {
+        for (var i = 0; i < Math.min(usages.size(), Math.max(usages.size(), maxUsagesToShow)); i++) {
             WordUsage usage = usages.get(i);
             String key = usage.itemType;
             groupedUsages.computeIfAbsent(key, k -> new ArrayList<>()).add(usage);

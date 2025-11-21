@@ -47,21 +47,21 @@ public class DescribeAction extends AbstractAction {
         OllamaChatModel chatModel = OllamaChatModel.builder().ollamaApi(ollamaApi).defaultOptions(
                 OllamaOptions.builder().model(OllamaModel.LLAMA3_2_1B)
                              .temperature(0.5) // Less randomness
-                .build()).build();
+                             .build()).build();
 
         ChatClient chatClient = ChatClient.builder(chatModel).build();
 
         System.out.println("Request: " + aRequest);
 
         ChatClient.ChatClientRequestSpec chatResponse =
-            chatClient.prompt()
-                  .system("""
-                  You are an author of fantasy novels like the lord of the rings. You will now be presented with
-                  a short description of a location in a fantasy world along with obvious exits. 
-                  Please elaborate on the following so that it sounds like a short excerpt of you novels,
-                  but only use 100 words and do mention the exits.
-                  """)
-                  .user(aRequest);
+                chatClient.prompt()
+                          .system("""
+                                          You are an author of fantasy novels like the lord of the rings. You will now be presented with
+                                          a short description of a location in a fantasy world along with obvious exits. 
+                                          Please elaborate on the following so that it sounds like a short excerpt of you novels,
+                                          but only use 100 words and do mention the exits.
+                                          """)
+                          .user(aRequest);
 
         String response = chatResponse.call().content();
         return response;

@@ -202,7 +202,7 @@ public class LocationEditorView extends VerticalLayout
 
     private void navigateBack() {
         UI.getCurrent().navigate(LocationsMenuView.class)
-                                               .ifPresent(editor -> editor.setAdventureData(adventureData));
+          .ifPresent(editor -> editor.setAdventureData(adventureData));
     }
 
     private void validateSave(LocationViewModel aLocationViewModel) {

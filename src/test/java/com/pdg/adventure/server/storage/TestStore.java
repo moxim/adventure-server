@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface TestStore  extends MongoRepository<Parent, String> {
+public interface TestStore extends MongoRepository<Parent, String> {
 
 }
 

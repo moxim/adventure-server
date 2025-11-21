@@ -12,7 +12,7 @@ public final class DirectionViewModel {
     private String adventureId;
     private String locationId;
     // these attributes can be edited
-    private String id;
+    private final String id;
     private String destinationId;
     private Word verb;
     private Word adjective;

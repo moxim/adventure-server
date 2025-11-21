@@ -12,8 +12,8 @@ import com.pdg.adventure.server.support.VariableProvider;
 class IncrementVariableActionTest {
     private static final String VAR_NAME = "t";
     private final VariableProvider variableProvider = new VariableProvider();
-    private IncrementVariableAction sut = new IncrementVariableAction(VAR_NAME, "1", variableProvider,
-                                                                      new MessagesHolder());
+    private final IncrementVariableAction sut = new IncrementVariableAction(VAR_NAME, "1", variableProvider,
+                                                                            new MessagesHolder());
 
     @Test
     void executeWithAlphaString() {
@@ -33,7 +33,7 @@ class IncrementVariableActionTest {
         variableProvider.set(new Variable(VAR_NAME, "2"));
 
         // when
-       sut.execute();
+        sut.execute();
 
         // then
         assertThat(variableProvider.get(VAR_NAME).aValue()).isEqualTo("3");

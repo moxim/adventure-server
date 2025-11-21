@@ -35,8 +35,8 @@ class DirectionTest {
 
     private final GenericCommandDescription directionDescription = new GenericCommandDescription("enter", destination);
     private final GenericCommand moveCommand = new GenericCommand(directionDescription,
-                                                                      new MovePlayerAction(destination,
-                                                                                           new MessagesHolder()));
+                                                                  new MovePlayerAction(destination,
+                                                                                       new MessagesHolder()));
     private final GenericDirection sut = new GenericDirection(allLocations, moveCommand, destination.getId(), true);
 
     @Test

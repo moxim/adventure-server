@@ -106,8 +106,8 @@ public class GenericCommandProvider implements CommandProvider {
     @Override
     public String toString() {
         return "GenericCommandProvider{" +
-                "availableCommands=" + availableCommands +
-                ", id='" + id + '\'' +
-                '}';
+               "availableCommands=" + availableCommands +
+               ", id='" + id + '\'' +
+               '}';
     }
 }

@@ -18,7 +18,8 @@ public class UuidIdGenerationMongoEventListener extends AbstractMongoEventListen
 
     @Override
     public void onBeforeConvert(BeforeConvertEvent<Ided> event) {
-        LOG.debug("UuidIdGenerationMongoEventListener.onBeforeConvert: {}", event.getSource().getClass().getSimpleName());
+        LOG.debug("UuidIdGenerationMongoEventListener.onBeforeConvert: {}",
+                  event.getSource().getClass().getSimpleName());
         Ided source = event.getSource();
         if (source.getId() == null || source.getId().isEmpty()) {
             final String id = Ulid.fast().toString();

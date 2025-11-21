@@ -22,7 +22,7 @@ import com.pdg.adventure.api.Ided;
 @Order(Ordered.LOWEST_PRECEDENCE)  // Run after other listeners (like UuidIdGenerationMongoEventListener)
 public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Object> {
     private final ThreadLocal<Set<Object>> processedObjects = ThreadLocal.withInitial(HashSet::new);
-            // Per-thread to avoid cycles
+    // Per-thread to avoid cycles
     private final ThreadLocal<Integer> eventDepth = ThreadLocal.withInitial(() -> 0);
 
     private static final Logger LOG = LoggerFactory.getLogger(CascadeSaveMongoEventListener.class);
@@ -68,7 +68,7 @@ public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Ob
 
                 if (fieldValue instanceof Ided) {
                     uuidIdGenerationMongoEventListener.onBeforeConvert(
-                        new BeforeConvertEvent<>((Ided) fieldValue, null)
+                            new BeforeConvertEvent<>((Ided) fieldValue, null)
                     );
                 }
 
@@ -146,7 +146,7 @@ public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Ob
                 if (item != null) {
                     if (item instanceof Ided) {
                         uuidIdGenerationMongoEventListener.onBeforeConvert(
-                            new BeforeConvertEvent<>((Ided) item, null)
+                                new BeforeConvertEvent<>((Ided) item, null)
                         );
                     }
                     mongoTemplate.save(item);
@@ -159,7 +159,7 @@ public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Ob
                 if (mapValue != null) {
                     if (mapValue instanceof Ided) {
                         uuidIdGenerationMongoEventListener.onBeforeConvert(
-                            new BeforeConvertEvent<>((Ided) mapValue, null)
+                                new BeforeConvertEvent<>((Ided) mapValue, null)
                         );
                     }
                     mongoTemplate.save(mapValue);
@@ -180,12 +180,12 @@ public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Ob
     private boolean isEmbeddedObject(Field field, Object value) {
         // Embedded if: not @DBRef, value is a non-primitive object (not String, Number, etc.), and not a collection/map
         return !field.isAnnotationPresent(DBRef.class)
-                && !value.getClass().isPrimitive()
-                && !String.class.isAssignableFrom(value.getClass())
-                && !Number.class.isAssignableFrom(value.getClass())
-                && !Boolean.class.isAssignableFrom(value.getClass())
-                && !Enum.class.isAssignableFrom(value.getClass())
-                && !(value instanceof Iterable<?>)
-                && !(value instanceof Map);
+               && !value.getClass().isPrimitive()
+               && !String.class.isAssignableFrom(value.getClass())
+               && !Number.class.isAssignableFrom(value.getClass())
+               && !Boolean.class.isAssignableFrom(value.getClass())
+               && !Enum.class.isAssignableFrom(value.getClass())
+               && !(value instanceof Iterable<?>)
+               && !(value instanceof Map);
     }
 }

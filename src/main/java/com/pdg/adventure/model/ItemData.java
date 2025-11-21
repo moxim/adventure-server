@@ -27,7 +27,8 @@ public class ItemData extends ThingData {
      */
     private String locationId;
 
-    private boolean isContainable; // i.e. can be picked up and put into a container (like a pocket, location, chest, etc)
+    private boolean isContainable;
+            // i.e. can be picked up and put into a container (like a pocket, location, chest, etc)
     private String parentContainerId; // The container this item is in (if any)
     private boolean isWearable;
     private boolean isWorn;
@@ -45,11 +46,11 @@ public class ItemData extends ThingData {
     @Override
     public String toString() {
         return "ItemData{" +
-                "id=" + getId() +
-                "isContainable=" + isContainable +
-                ", isWearable=" + isWearable +
-                ", isWorn=" + isWorn +
-                ", parentContainer=" + parentContainerId +
-                '}';
+               "id=" + getId() +
+               "isContainable=" + isContainable +
+               ", isWearable=" + isWearable +
+               ", isWorn=" + isWorn +
+               ", parentContainer=" + parentContainerId +
+               '}';
     }
 }

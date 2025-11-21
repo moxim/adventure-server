@@ -77,7 +77,7 @@ public class WordEditorDialogue {
         editType = anEditType;
         switch (anEditType) {
             case EDIT: {
-                currentWord = aWordWrapper.getWord();
+                currentWord = aWordWrapper.word();
                 wordText.setValue(currentWord.getText());
                 typeSelector.setValue(currentWord.getType());
                 Word synonym = currentWord.getSynonym();
@@ -121,7 +121,7 @@ public class WordEditorDialogue {
 
     private Component createDialogContent() {
 
-        HorizontalLayout wordDefinition  = new HorizontalLayout();
+        HorizontalLayout wordDefinition = new HorizontalLayout();
         wordDefinition.add(wordText, typeSelector);
 
         VerticalLayout fieldLayout = new VerticalLayout(wordDefinition, synonyms);
@@ -231,8 +231,8 @@ public class WordEditorDialogue {
         if (editType == EditType.EDIT && currentWord != null) {
             // Filter out the current word to prevent self-reference
             Collection<Word> availableWords = vocabularyData.getWords().stream()
-                    .filter(word -> !word.equals(currentWord))
-                    .toList();
+                                                            .filter(word -> !word.equals(currentWord))
+                                                            .toList();
             synonyms.setItems(wordItemFilter, availableWords);
         } else {
             synonyms.setItems(wordItemFilter, vocabularyData.getWords());
@@ -349,7 +349,7 @@ public class WordEditorDialogue {
      * This checks the entire chain to detect cycles at any depth.
      * Package-private for testing.
      *
-     * @param word The word being edited
+     * @param word            The word being edited
      * @param proposedSynonym The synonym we want to set
      * @return true if a circular reference would be created
      */
@@ -407,8 +407,8 @@ public class WordEditorDialogue {
         H2 header = new H2(anEditType.value + " word");
         header.addClassName("draggable");
         header.getStyle().set("margin", "0").set("font-size", "1.5em")
-                .set("font-weight", "bold").set("cursor", "move")
-                .set("padding", "var(--lumo-space-m) 0").set("flex", "1");
+              .set("font-weight", "bold").set("cursor", "move")
+              .set("padding", "var(--lumo-space-m) 0").set("flex", "1");
 
         return header;
     }

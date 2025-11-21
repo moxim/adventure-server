@@ -38,7 +38,8 @@ public class ItemsMenuView extends VerticalLayout implements BeforeEnterObserver
 
         edit = new Button("Edit Item", e -> {
             UI.getCurrent().navigate(ItemEditorView.class,
-                                     new RouteParameters(new RouteParam(RouteIds.ITEM_ID.getValue(), itemViewSupporter.getTargetItemId()),
+                                     new RouteParameters(new RouteParam(RouteIds.ITEM_ID.getValue(),
+                                                                        itemViewSupporter.getTargetItemId()),
                                                          new RouteParam(RouteIds.LOCATION_ID.getValue(),
                                                                         locationData.getId()),
                                                          new RouteParam(RouteIds.ADVENTURE_ID.getValue(),

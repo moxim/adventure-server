@@ -35,7 +35,8 @@ public class CommandDescriptionMapper implements Mapper<CommandDescriptionData, 
     @Override
     public CommandDescription mapToBO(CommandDescriptionData aCommandDescriptionData) {
         var verb = aCommandDescriptionData.getVerb() == null ? "" : aCommandDescriptionData.getVerb().getText();
-        var adjective = aCommandDescriptionData.getAdjective() == null ? "" : aCommandDescriptionData.getAdjective().getText();
+        var adjective = aCommandDescriptionData.getAdjective() == null ? "" :
+                        aCommandDescriptionData.getAdjective().getText();
         var noun = aCommandDescriptionData.getNoun() == null ? "" : aCommandDescriptionData.getNoun().getText();
         CommandDescription result = new GenericCommandDescription(verb, adjective, noun);
         result.setId(aCommandDescriptionData.getId());

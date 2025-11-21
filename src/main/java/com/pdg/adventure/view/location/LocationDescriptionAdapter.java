@@ -9,7 +9,7 @@ import com.pdg.adventure.view.support.ViewSupporter;
 public class LocationDescriptionAdapter implements Describable {
     private final LocationData locationData;
     @Getter
-    private int usageCount;
+    private final int usageCount;
 
     public LocationDescriptionAdapter(LocationData aLocationData, int aUsageCount) {
         locationData = aLocationData;
@@ -28,7 +28,8 @@ public class LocationDescriptionAdapter implements Describable {
 
     @Override
     public String getBasicDescription() {
-        return ViewSupporter.getWordText(locationData.getDescriptionData().getAdjective()) + " " + ViewSupporter.getWordText(locationData.getDescriptionData().getNoun());
+        return ViewSupporter.getWordText(locationData.getDescriptionData().getAdjective()) + " " +
+               ViewSupporter.getWordText(locationData.getDescriptionData().getNoun());
     }
 
     @Override

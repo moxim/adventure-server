@@ -42,7 +42,8 @@ public class ItemIdentifier {
         return matchingItems;
     }
 
-    private static <T extends Containable> List<Containable> addItemsByName(List<T> aListOfItems, String aNoun, String anAdjective) {
+    private static <T extends Containable> List<Containable> addItemsByName(List<T> aListOfItems, String aNoun,
+                                                                            String anAdjective) {
         final List<Containable> matchingItems = new ArrayList<>();
         for (T item : aListOfItems) {
             if (item.getNoun().equals(aNoun) && item.getAdjective().equals(anAdjective)) {

@@ -4,7 +4,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
@@ -34,7 +33,7 @@ public class ActionSelector extends HorizontalLayout {
         // Create the dropdown with all available action types
         actionTypeSelector = new ComboBox<>("Select Action Type");
         actionTypeSelector.setItems(getAvailableActionTypes());
-        actionTypeSelector.setItemLabelGenerator(ActionTypeDescriptor::getDisplayName);
+        actionTypeSelector.setItemLabelGenerator(ActionTypeDescriptor::displayName);
         actionTypeSelector.setPlaceholder("Choose an action...");
         actionTypeSelector.setWidthFull();
 
@@ -45,7 +44,7 @@ public class ActionSelector extends HorizontalLayout {
 
         // Enable the button only when an action is selected
         actionTypeSelector.addValueChangeListener(e ->
-            useButton.setEnabled(e.getValue() != null)
+                                                          useButton.setEnabled(e.getValue() != null)
         );
 
         // Handle the Use button click
@@ -113,22 +112,12 @@ public class ActionSelector extends HorizontalLayout {
     }
 
     /**
-     * Descriptor for an action type, containing display information and a factory method.
-     */
-    @Getter
-    private static class ActionTypeDescriptor {
-        private final String displayName;
-        private final String description;
-        private final Supplier<ActionData> actionFactory;
-
-        public ActionTypeDescriptor(String displayName, String description, Supplier<ActionData> actionFactory) {
-            this.displayName = displayName;
-            this.description = description;
-            this.actionFactory = actionFactory;
-        }
+         * Descriptor for an action type, containing display information and a factory method.
+         */
+        private record ActionTypeDescriptor(String displayName, String description, Supplier<ActionData> actionFactory) {
 
         public ActionData createActionData() {
-            return actionFactory.get();
+                return actionFactory.get();
+            }
         }
-    }
 }

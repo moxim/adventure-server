@@ -174,7 +174,7 @@ class MessageServiceTest {
         // Then
         assertThat(result).hasSize(2);
         assertThat(result).extracting(MessageData::getMessageId)
-                .containsExactly("msg1", "msg2");
+                          .containsExactly("msg1", "msg2");
     }
 
     @Test

@@ -29,7 +29,9 @@ public class GridProvider<T extends Describable> {
         grid.addThemeVariants(GridVariant.LUMO_WRAP_CELL_CONTENT);
     }
 
-    public Grid<T> getGrid() {return grid;}
+    public Grid<T> getGrid() {
+        return grid;
+    }
 
     public void addColumn(ValueProvider<T, ?> valueProvider, String aName) {
         grid.addColumn(valueProvider).setHeader(aName);
@@ -63,7 +65,7 @@ public class GridProvider<T extends Describable> {
         grid.addItemDoubleClickListener(aListener);
     }
 
-    public void setFilter(SerializablePredicate<T> aFilter , List<T> aListOfThings, TextField aSearchField) {
+    public void setFilter(SerializablePredicate<T> aFilter, List<T> aListOfThings, TextField aSearchField) {
         final GridListDataView<T> dataView = grid.setItems(aListOfThings);
         aSearchField.addValueChangeListener(e -> dataView.refreshAll());
         dataView.addFilter(aFilter);

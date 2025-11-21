@@ -1,12 +1,5 @@
 package com.pdg.adventure.server.mapper;
 
-import com.pdg.adventure.api.*;
-import com.pdg.adventure.model.CommandData;
-import com.pdg.adventure.model.action.ActionData;
-import com.pdg.adventure.model.basic.CommandDescriptionData;
-import com.pdg.adventure.model.condition.PreConditionData;
-import com.pdg.adventure.server.parser.GenericCommand;
-import com.pdg.adventure.server.support.MapperSupporter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +14,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.pdg.adventure.api.*;
+import com.pdg.adventure.model.CommandData;
+import com.pdg.adventure.model.action.ActionData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
+import com.pdg.adventure.model.condition.PreConditionData;
+import com.pdg.adventure.server.parser.GenericCommand;
+import com.pdg.adventure.server.support.MapperSupporter;
+
 /**
  * Comprehensive unit tests for CommandMapper covering all major code paths:
  * 1. Basic command mapping (BO ↔ DO)
@@ -31,7 +32,7 @@ import static org.mockito.Mockito.*;
  * 6. Dynamic action mapper resolution
  * 7. Multiple follow-up actions
  * 8. Complex command scenarios
- *
+ * <p>
  * These tests maximize code coverage by testing:
  * - mapToBO: lines 29-50 (all branches)
  * - mapToDO: lines 53-63 (all branches)

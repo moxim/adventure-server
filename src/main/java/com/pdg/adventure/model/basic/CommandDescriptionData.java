@@ -31,23 +31,23 @@ public class CommandDescriptionData extends BasicDescriptionData {
 
     public String getCommandSpecification() {
         String verbText = verb != null && verb.getText() != null ? verb.getText() : "";
-        String adjectiveText = getAdjective() != null && getAdjective().getText() != null ? getAdjective().getText() : "";
+        String adjectiveText = getAdjective() != null && getAdjective().getText() != null ? getAdjective().getText() :
+                               "";
         String nounText = getNoun() != null && getNoun().getText() != null ? getNoun().getText() : "";
-        StringBuilder result = new StringBuilder();
-//        if (!verbText.isEmpty()) {
-            result.append(verbText);
+        //        if (!verbText.isEmpty()) {
+        String result = verbText +
 //        }
 //        if (!adjectiveText.isEmpty()) {
 //            if (result.length() > 0)
-                result.append(CommandDescription.COMMAND_SEPARATOR);
-            result.append(adjectiveText);
+                        CommandDescription.COMMAND_SEPARATOR +
+                        adjectiveText +
 //        }
 //        if (!nounText.isEmpty()) {
 //            if (result.length() > 0)
-                result.append(CommandDescription.COMMAND_SEPARATOR);
-            result.append(nounText);
+                        CommandDescription.COMMAND_SEPARATOR +
+                        nounText;
 //        }
-        return result.toString();
+        return result;
     }
 
     public Word getSafeVerb() {

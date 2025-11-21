@@ -3,12 +3,7 @@ package com.pdg.adventure.view.vocabulary;
 import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.model.Word;
 
-public class DescribableWordAdapter implements Describable {
-    private final Word word;
-
-    public DescribableWordAdapter(Word aWord) {
-        word = aWord;
-    }
+public record DescribableWordAdapter(Word word) implements Describable {
 
     public String getType() {
         return word.getType().name();
@@ -57,10 +52,6 @@ public class DescribableWordAdapter implements Describable {
     @Override
     public void setId(String anId) {
         word.setId(anId);
-    }
-
-    public Word getWord() {
-        return word;
     }
 
     public String getSynonym() {

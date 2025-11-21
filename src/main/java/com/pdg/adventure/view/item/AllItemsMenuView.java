@@ -115,7 +115,6 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
     }
 
 
-
     private void filterItems(String searchTerm) {
         if (dataProvider != null) {
             if (searchTerm == null || searchTerm.trim().isEmpty()) {

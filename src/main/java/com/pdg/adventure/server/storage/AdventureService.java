@@ -49,8 +49,8 @@ public class AdventureService {
         if (byId.isPresent()) {
             result = byId.get();
         } else {
-           result = new LocationData();
-           result.setId(UUID.randomUUID().toString());
+            result = new LocationData();
+            result.setId(UUID.randomUUID().toString());
         }
         return result;
     }
@@ -107,8 +107,8 @@ public class AdventureService {
         if (byId.isPresent()) {
             result = byId.get();
         } else {
-           result = new AdventureData();
-           result.setId(UUID.randomUUID().toString());
+            result = new AdventureData();
+            result.setId(UUID.randomUUID().toString());
         }
         postProcess(result);
         return result;

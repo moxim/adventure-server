@@ -13,7 +13,7 @@ import com.pdg.adventure.server.testhelper.TestSupporter;
 class GreaterThanConditionTest {
     private static final String VAR_NAME = "t";
     private final VariableProvider variableProvider = new VariableProvider();
-    private final  GreaterThanCondition sut = new GreaterThanCondition(VAR_NAME, 2, variableProvider);
+    private final GreaterThanCondition sut = new GreaterThanCondition(VAR_NAME, 2, variableProvider);
 
     @Test
     void testVariableMeetsCondition() {
@@ -39,7 +39,7 @@ class GreaterThanConditionTest {
     }
 
     @Test
-    void testVariableFailsCondition(){
+    void testVariableFailsCondition() {
         // given
         variableProvider.set(new Variable(VAR_NAME, "1"));
 

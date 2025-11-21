@@ -31,8 +31,9 @@ public class AdventureClient implements CommandLineRunner {
     private final AdventureConfig adventureConfig;
     private final VocabularyMapper vocabularyMapper;
 
-    public AdventureClient(AdventureService adventureService, AdventureMapper adventureMapper, AdventureConfig adventureConfig,
-                          VocabularyMapper vocabularyMapper) {
+    public AdventureClient(AdventureService adventureService, AdventureMapper adventureMapper,
+                           AdventureConfig adventureConfig,
+                           VocabularyMapper vocabularyMapper) {
         this.adventureService = adventureService;
         this.adventureMapper = adventureMapper;
         this.adventureConfig = adventureConfig;
@@ -64,7 +65,8 @@ public class AdventureClient implements CommandLineRunner {
         final var adventureLocations = savedAdventure.getLocations();
 
         if (adventureLocations.isEmpty()) {
-            LOG.error("The adventure '{}' has no locations defined. Please add locations and try again.", adventureData.getTitle());
+            LOG.error("The adventure '{}' has no locations defined. Please add locations and try again.",
+                      adventureData.getTitle());
             return;
         }
 
@@ -92,7 +94,7 @@ public class AdventureClient implements CommandLineRunner {
         miniAdventure.run();
     }
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         //        LaunchUtil.launchBrowserInDevelopmentMode(
         SpringApplication.run(AdventureClient.class, args)
         //        )

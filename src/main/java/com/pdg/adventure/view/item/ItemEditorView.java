@@ -19,7 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Optional;
 
-import static com.pdg.adventure.model.Word.Type.*;
+import static com.pdg.adventure.model.Word.Type.ADJECTIVE;
+import static com.pdg.adventure.model.Word.Type.NOUN;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.action.DropActionData;
@@ -205,19 +206,21 @@ public class ItemEditorView extends VerticalLayout
 
     private void navigateBack() {
         UI.getCurrent().navigate(ItemsMenuView.class, new RouteParameters(
-                                                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                               .ifPresent(editor -> editor.setData(adventureData, locationData));
+                  new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+          .ifPresent(editor -> editor.setData(adventureData, locationData));
     }
 
     private boolean tryToAddPickUpCommands(final ItemData anItemData, final VocabularyData aVocabularyData) {
         Word takeVerb = aVocabularyData.getTakeWord();
         Word dropVerb = aVocabularyData.getDropWord();
         if (dropVerb == null || takeVerb == null) {
-            Notification.show("Please select verbs to allow a player to handle this item in the vocabulary section.", 3000, Notification.Position.MIDDLE);
+            Notification.show("Please select verbs to allow a player to handle this item in the vocabulary section.",
+                              3000, Notification.Position.MIDDLE);
             return false;
         } else {
-            LOG.info("Selected verbs: {} and {} for item: {}", takeVerb.getText(), dropVerb.getText(), anItemData.getId());
+            LOG.info("Selected verbs: {} and {} for item: {}", takeVerb.getText(), dropVerb.getText(),
+                     anItemData.getId());
             createPickupCommands(takeVerb, dropVerb, anItemData);
             Notification.show("Take and drop commands added", 2000, Notification.Position.BOTTOM_START);
         }
@@ -243,13 +246,17 @@ public class ItemEditorView extends VerticalLayout
                 if (command.getAction() == null) {
                     return false;
                 }
-                final CommandData rawTakeCommandData = getRawCommandData(adventureData.getVocabularyData().getTakeWord(),
-                                                                         anItemData);
-                final CommandData rawDropCommandData = getRawCommandData(adventureData.getVocabularyData().getDropWord(),
-                                                                         anItemData);
-            return command.getCommandDescription().getCommandSpecification().equals(rawTakeCommandData.getCommandDescription().getCommandSpecification())
-                   ||
-                   command.getCommandDescription().getCommandSpecification().equals(rawDropCommandData.getCommandDescription().getCommandSpecification());
+                final CommandData rawTakeCommandData = getRawCommandData(
+                        adventureData.getVocabularyData().getTakeWord(),
+                        anItemData);
+                final CommandData rawDropCommandData = getRawCommandData(
+                        adventureData.getVocabularyData().getDropWord(),
+                        anItemData);
+                return command.getCommandDescription().getCommandSpecification()
+                              .equals(rawTakeCommandData.getCommandDescription().getCommandSpecification())
+                       ||
+                       command.getCommandDescription().getCommandSpecification()
+                              .equals(rawDropCommandData.getCommandDescription().getCommandSpecification());
             });
 
             // Remove the entire command chain if it's now empty

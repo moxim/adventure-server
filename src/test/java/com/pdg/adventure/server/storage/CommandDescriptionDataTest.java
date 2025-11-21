@@ -24,7 +24,7 @@ import com.pdg.adventure.server.storage.mongo.UuidIdGenerationMongoEventListener
 class CommandDescriptionDataTest {
 
     @Test
-    @DirtiesContext(methodMode=DirtiesContext.MethodMode.BEFORE_METHOD)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     void testSomething(@Autowired MongoTemplate mongoTemplate) {
         CommandDescriptionData command = new CommandDescriptionData();
 

@@ -68,11 +68,11 @@ public class Item extends Thing implements Containable, Wearable {
     @Override
     public String toString() {
         return "Item{" +
-                "isContainable=" + isContainable +
-                ", parentContainer (Id)=" + (parentContainer == null ? "null" : parentContainer.getId()) +
-                ", isWearable=" + isWearable +
-                ", isWorn=" + isWorn +
-                ", " + super.toString() +
-                '}';
+               "isContainable=" + isContainable +
+               ", parentContainer (Id)=" + (parentContainer == null ? "null" : parentContainer.getId()) +
+               ", isWearable=" + isWearable +
+               ", isWorn=" + isWorn +
+               ", " + super.toString() +
+               '}';
     }
 }

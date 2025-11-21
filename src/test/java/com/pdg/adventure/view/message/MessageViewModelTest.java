@@ -126,8 +126,8 @@ class MessageViewModelTest {
 
         // Then
         assertThat(preview).hasSize(23). // 20 chars + "..."
-            startsWith("This is a very long").
-            endsWith("...");
+                                                 startsWith("This is a very long").
+                                         endsWith("...");
     }
 
     @Test
@@ -182,7 +182,8 @@ class MessageViewModelTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"invalid message", "invalid-message!", "invalid@message", "invalid#message", "", "   ", "\t", "\n"})
+    @ValueSource(strings = {"invalid message", "invalid-message!", "invalid@message", "invalid#message", "", "   ",
+                            "\t", "\n"})
     @NullSource
     void isValidId_shouldReturnFalse_forInvalidIds(String arg) {
         // Given

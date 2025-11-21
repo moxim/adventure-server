@@ -183,9 +183,9 @@ public class CommandEditorView extends VerticalLayout
 
     private void navigateBack() {
         UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
-                                                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                               .ifPresent(e -> e.setData(adventureData, locationData));
+                  new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+          .ifPresent(e -> e.setData(adventureData, locationData));
     }
 
     /**

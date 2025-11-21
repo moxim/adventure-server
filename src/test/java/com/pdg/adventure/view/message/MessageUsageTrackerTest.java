@@ -40,7 +40,8 @@ class MessageUsageTrackerTest {
     @NullSource
     void findMessageUsages_shouldReturnEmpty_whenMessageIdIsNull(String argMessageId) {
         // When
-        List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData, argMessageId);
+        List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData,
+                                                                                              argMessageId);
 
         // Then
         assertThat(usages).isEmpty();
@@ -59,11 +60,11 @@ class MessageUsageTrackerTest {
         // Then
         assertThat(usages).hasSize(1);
         MessageUsageTracker.MessageUsage usage = usages.get(0);
-        assertThat(usage.getLocationId()).isEqualTo("loc1");
-        assertThat(usage.getLocationDescription()).isEqualTo("Hall");
-        assertThat(usage.getCommandSpecification()).isEqualTo("get key");
-        assertThat(usage.getActionType()).isEqualTo("Message Action");
-        assertThat(usage.getContext()).isEqualTo("Primary Action");
+        assertThat(usage.locationId()).isEqualTo("loc1");
+        assertThat(usage.locationDescription()).isEqualTo("Hall");
+        assertThat(usage.commandSpecification()).isEqualTo("get key");
+        assertThat(usage.actionType()).isEqualTo("Message Action");
+        assertThat(usage.context()).isEqualTo("Primary Action");
     }
 
     @Test
@@ -94,8 +95,8 @@ class MessageUsageTrackerTest {
 
         // Then
         assertThat(usages).hasSize(2);
-        assertThat(usages).extracting(MessageUsageTracker.MessageUsage::getLocationId)
-                .containsExactlyInAnyOrder("loc1", "loc2");
+        assertThat(usages).extracting(MessageUsageTracker.MessageUsage::locationId)
+                          .containsExactlyInAnyOrder("loc1", "loc2");
     }
 
     @Test
@@ -105,7 +106,8 @@ class MessageUsageTrackerTest {
         adventureData.getLocationData().put("loc1", location);
 
         // When
-        List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData, "target_msg");
+        List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData,
+                                                                                              "target_msg");
 
         // Then
         assertThat(usages).isEmpty();
@@ -123,9 +125,9 @@ class MessageUsageTrackerTest {
 
         // Then
         assertThat(usages).hasSize(1);
-        assertThat(usages.get(0).getLocationDescription()).isNullOrEmpty();
-        assertThat(usages.get(0).getLocationId()).isEqualTo("loc1");
-        assertThat(usages.get(0).getCommandSpecification()).isEqualTo("look around");
+        assertThat(usages.get(0).locationDescription()).isNullOrEmpty();
+        assertThat(usages.get(0).locationId()).isEqualTo("loc1");
+        assertThat(usages.get(0).commandSpecification()).isEqualTo("look around");
     }
 
     @Test
@@ -216,7 +218,7 @@ class MessageUsageTrackerTest {
     // Helper methods
 
     private LocationData createLocationWithMessage(String locationId, String description,
-                                                    String commandSpec, String messageId) {
+                                                   String commandSpec, String messageId) {
         LocationData location = new LocationData();
         location.setId(locationId);
 

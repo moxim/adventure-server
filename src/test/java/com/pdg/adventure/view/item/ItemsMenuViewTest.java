@@ -114,9 +114,9 @@ class ItemsMenuViewTest {
 
         // then
         List<ItemData> nonNullItems = locationData.getItemContainerData().getItems()
-                .stream()
-                .filter(item -> item != null)
-                .toList();
+                                                  .stream()
+                                                  .filter(item -> item != null)
+                                                  .toList();
 
         assertThat(nonNullItems)
                 .hasSize(1)

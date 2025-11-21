@@ -11,12 +11,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.CommandChainData;
-import com.pdg.adventure.model.CommandProviderData;
-import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.model.VocabularyData;
-import com.pdg.adventure.model.Word;
+import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.storage.AdventureService;
 

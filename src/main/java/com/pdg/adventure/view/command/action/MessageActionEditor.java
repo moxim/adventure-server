@@ -38,9 +38,9 @@ public class MessageActionEditor extends ActionEditorComponent {
 
         // Load available messages from adventure's messages Map (loaded via @DBRef)
         List<String> messageIds = adventureData.getMessages().values().stream()
-                .map(MessageData::getMessageId)
-                .sorted()
-                .collect(Collectors.toList());
+                                               .map(MessageData::getMessageId)
+                                               .sorted()
+                                               .collect(Collectors.toList());
 
         messageIdComboBox = new ComboBox<>("Message ID");
         messageIdComboBox.setPlaceholder("Select a message from the catalog");
@@ -65,12 +65,12 @@ public class MessageActionEditor extends ActionEditorComponent {
         // Message preview
         messagePreview = new Div();
         messagePreview.getStyle()
-                .set("border", "1px solid var(--lumo-contrast-20pct)")
-                .set("border-radius", "var(--lumo-border-radius-m)")
-                .set("padding", "var(--lumo-space-m)")
-                .set("background-color", "var(--lumo-contrast-5pct)")
-                .set("margin-top", "var(--lumo-space-s)")
-                .set("min-height", "60px");
+                      .set("border", "1px solid var(--lumo-contrast-20pct)")
+                      .set("border-radius", "var(--lumo-border-radius-m)")
+                      .set("padding", "var(--lumo-space-m)")
+                      .set("background-color", "var(--lumo-contrast-5pct)")
+                      .set("margin-top", "var(--lumo-space-s)")
+                      .set("min-height", "60px");
 
         Span previewLabel = new Span("Message Preview:");
         previewLabel.getStyle().set("font-weight", "bold");

@@ -93,9 +93,9 @@ class ActionEditorFactoryTest {
 
         // When & Then
         assertThatThrownBy(() -> ActionEditorFactory.createEditor(unsupportedAction, adventureData))
-            .isInstanceOf(UnsupportedOperationException.class)
-            .hasMessageContaining("No editor available for action type")
-            .hasMessageContaining("UnsupportedActionData");
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("No editor available for action type")
+                .hasMessageContaining("UnsupportedActionData");
     }
 
     @Test

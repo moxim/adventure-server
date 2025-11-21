@@ -52,7 +52,7 @@ public class MiniAdventure {
 
     private static final String SMALL_TEXT = "small";
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         final MiniAdventure game = new MiniAdventure(new AdventureConfig());
         game.setup();
         game.run();
@@ -127,8 +127,9 @@ public class MiniAdventure {
     private void setUpWorkflowCommands() {
         GenericCommandDescription helpCommandDescription = new GenericCommandDescription("help");
         GenericCommand helpCommand = new GenericCommand(helpCommandDescription, new MessageAction("""
-                Look around, examine items, take or drop items, maybe wear items, enter or leave locations.
-                Or quit.""", allMessages));
+                                                                                                          Look around, examine items, take or drop items, maybe wear items, enter or leave locations.
+                                                                                                          Or quit.""",
+                                                                                                  allMessages));
         Environment.getWorkflow().addInterceptorCommand(helpCommandDescription, helpCommand);
 
         GenericCommandDescription inventoryCommandDescription = new GenericCommandDescription("inventory");
@@ -207,8 +208,8 @@ public class MiniAdventure {
 
         GenericCommandDescription enterPortalCommandDescription = new GenericCommandDescription("enter", portal);
         GenericCommand enterPortalCommand = new GenericCommand(enterPortalCommandDescription,
-                                                                   new MovePlayerAction(portal,
-                                                                                        allMessages));
+                                                               new MovePlayerAction(portal,
+                                                                                    allMessages));
         enterPortalCommand.addPreCondition(new WornCondition(ring));
 
         Command enterCommand2 = new GenericCommand(enterPortalCommandDescription,
@@ -223,8 +224,8 @@ public class MiniAdventure {
 
         GenericCommandDescription enterHouseCommandDescription = new GenericCommandDescription("enter", house);
         GenericCommand enterHouseCommand = new GenericCommand(enterHouseCommandDescription,
-                                                                  new MovePlayerAction(house,
-                                                                                       allMessages));
+                                                              new MovePlayerAction(house,
+                                                                                   allMessages));
         GenericDirection toHouse = new GenericDirection(allLocations, enterHouseCommand, house.getId(), true);
 
         setUpLookCommands(toHouse);
@@ -232,15 +233,15 @@ public class MiniAdventure {
 
         GenericCommandDescription leavePortalCommandDescription = new GenericCommandDescription("leave", location);
         GenericCommand leaveCommand = new GenericCommand(leavePortalCommandDescription,
-                                                             new MovePlayerAction(location,
-                                                                                  allMessages));
+                                                         new MovePlayerAction(location,
+                                                                              allMessages));
         GenericDirection toLocation = new GenericDirection(allLocations, leaveCommand, location.getId());
         portal.addDirection(toLocation);
 
         GenericCommandDescription leaveHouseCommandDescription = new GenericCommandDescription("north", location);
         leaveCommand = new GenericCommand(leaveHouseCommandDescription,
-                                            new MovePlayerAction(location,
-                                                                 allMessages));
+                                          new MovePlayerAction(location,
+                                                               allMessages));
         toLocation = new GenericDirection(allLocations, leaveCommand, location.getId());
         house.addDirection(toLocation);
     }
@@ -422,7 +423,8 @@ public class MiniAdventure {
         allMessages.addMessage("10", "You are in a small brick hut.");
         allMessages.addMessage("11", "This is a small hut made of bricks. There is nothing in here.");
         allMessages.addMessage("12",
-                               "There seems to be an invisible barrier. You need some sort of key to enter " + "the portal.");
+                               "There seems to be an invisible barrier. You need some sort of key to enter " +
+                               "the portal.");
         allMessages.addMessage("14", "pair of leathery gloves");
         allMessages.addMessage("15", "These gloves would withstand any harsh treatment!");
         allMessages.addMessage("16", "a small knife");

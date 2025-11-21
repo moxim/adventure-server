@@ -26,12 +26,18 @@ public class GridUnbufferedInlineEditor extends VerticalLayout {
     private final Grid<CommandDescriptionData> grid = new Grid<>(CommandDescriptionData.class, false);
     private final GridListDataView<CommandDescriptionData> listDataView;
 
-    public GridUnbufferedInlineEditor(Set<CommandDescriptionData> aListOfCommandDescriptions, VocabularyData aVocabularyData,
+    public GridUnbufferedInlineEditor(Set<CommandDescriptionData> aListOfCommandDescriptions,
+                                      VocabularyData aVocabularyData,
                                       Button aSaveButton) {
         Grid<CommandDescriptionData> grid = new Grid<>(CommandDescriptionData.class, false);
-        Grid.Column<CommandDescriptionData> verbColumn = grid.addColumn(cdd -> wordToTextConverter(CommandDescriptionData::getVerb, cdd)).setHeader("Verb").setWidth("25%").setFlexGrow(0);
-        Grid.Column<CommandDescriptionData> adjectiveColumn = grid.addColumn(cdd -> wordToTextConverter(CommandDescriptionData::getAdjective, cdd)).setHeader("Adjective").setWidth("40%").setFlexGrow(0);
-        Grid.Column<CommandDescriptionData> nounColumn = grid.addColumn(cdd -> wordToTextConverter(CommandDescriptionData::getNoun, cdd)).setHeader("Noun");
+        Grid.Column<CommandDescriptionData> verbColumn = grid.addColumn(
+                                                                     cdd -> wordToTextConverter(CommandDescriptionData::getVerb, cdd)).setHeader("Verb").setWidth("25%")
+                                                             .setFlexGrow(0);
+        Grid.Column<CommandDescriptionData> adjectiveColumn = grid.addColumn(
+                                                                          cdd -> wordToTextConverter(CommandDescriptionData::getAdjective, cdd)).setHeader("Adjective")
+                                                                  .setWidth("40%").setFlexGrow(0);
+        Grid.Column<CommandDescriptionData> nounColumn = grid.addColumn(
+                cdd -> wordToTextConverter(CommandDescriptionData::getNoun, cdd)).setHeader("Noun");
         grid.setEmptyStateText("Create some commands.");
 
         Binder<CommandDescriptionData> binder = new BeanValidationBinder<>(CommandDescriptionData.class);
@@ -47,15 +53,15 @@ public class GridUnbufferedInlineEditor extends VerticalLayout {
         List<Word> availableNouns = new LinkedList<>();
 
         aVocabularyData.getWords().forEach(word -> {
-                   switch (word.getType()) {
-                       case VERB -> availableVerbs.add(word);
-                       case ADJECTIVE -> availableAdjectives.add(word);
-                       case NOUN -> availableNouns.add(word);
-                       default -> {
-                       }
-                       // do nothing
-                   }
-               }
+                                               switch (word.getType()) {
+                                                   case VERB -> availableVerbs.add(word);
+                                                   case ADJECTIVE -> availableAdjectives.add(word);
+                                                   case NOUN -> availableNouns.add(word);
+                                                   default -> {
+                                                   }
+                                                   // do nothing
+                                               }
+                                           }
         );
         verbField.setItems(availableVerbs);
         verbField.setWidthFull();
@@ -124,8 +130,10 @@ public class GridUnbufferedInlineEditor extends VerticalLayout {
         listDataView.addItem(newCommandDescription);
     }
 
-    private String wordToTextConverter(Function<CommandDescriptionData, Word> wordFunction, CommandDescriptionData aCommandDescriptionData) {
-        return wordFunction.apply(aCommandDescriptionData) == null ? "" : wordFunction.apply(aCommandDescriptionData).getText();
+    private String wordToTextConverter(Function<CommandDescriptionData, Word> wordFunction,
+                                       CommandDescriptionData aCommandDescriptionData) {
+        return wordFunction.apply(aCommandDescriptionData) == null ? "" :
+               wordFunction.apply(aCommandDescriptionData).getText();
     }
 
     private static void addCloseHandler(Component textField, Editor<CommandDescriptionData> editor) {

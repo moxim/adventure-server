@@ -138,9 +138,9 @@ public class Thing implements Describable, Actionable {
     @Override
     public String toString() {
         return "Thing{" +
-                "descriptionProvider=" + descriptionProvider +
-                ", commandProvider=" + commandProvider +
-                ", id='" + id + '\'' +
-                '}';
+               "descriptionProvider=" + descriptionProvider +
+               ", commandProvider=" + commandProvider +
+               ", id='" + id + '\'' +
+               '}';
     }
 }

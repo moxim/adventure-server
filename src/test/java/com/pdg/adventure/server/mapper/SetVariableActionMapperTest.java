@@ -19,11 +19,11 @@ import com.pdg.adventure.server.support.VariableProvider;
 @SpringBootTest
 class SetVariableActionMapperTest {
 
-    private AdventureConfig adventureConfig;
+    private final AdventureConfig adventureConfig;
 
-    private MapperSupporter mapperSupporter;
-    private MessagesHolder messagesHolder;
-    private VariableProvider variableProvider;
+    private final MapperSupporter mapperSupporter;
+    private final MessagesHolder messagesHolder;
+    private final VariableProvider variableProvider;
 
     @Autowired
     SetVariableActionMapper setVariableActionMapper;

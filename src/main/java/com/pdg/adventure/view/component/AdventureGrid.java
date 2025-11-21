@@ -11,27 +11,28 @@ import com.pdg.adventure.view.support.RouteIds;
 
 public class AdventureGrid<T> extends Grid<T> {
     public AdventureGrid(Class<T> beanType, List<T> items) {
-         super(beanType, false);
-         setSizeFull();
-         setItems(items);
-         setEmptyStateText("No items available.");
-     }
+        super(beanType, false);
+        setSizeFull();
+        setItems(items);
+        setEmptyStateText("No items available.");
+    }
 
-     public AdventureGrid<T> withColumn(String property, String header) {
-         addColumn(item -> getProperty(item, property)).setHeader(header).setAutoWidth(true);
-         return this;
-     }
+    public AdventureGrid<T> withColumn(String property, String header) {
+        addColumn(item -> getProperty(item, property)).setHeader(header).setAutoWidth(true);
+        return this;
+    }
 
-     public AdventureGrid<T> withDoubleClickNavigation(Class<? extends Component> targetView, String anAdventureId, String aLocationId) {
-         addItemDoubleClickListener(e ->
-             NavigationHelper.navigateTo(targetView, new RouteParameters(
-                 new RouteParam(RouteIds.ADVENTURE_ID.getValue(), anAdventureId),
-                 new RouteParam("locationId", aLocationId))));
-         return this;
-     }
+    public AdventureGrid<T> withDoubleClickNavigation(Class<? extends Component> targetView, String anAdventureId,
+                                                      String aLocationId) {
+        addItemDoubleClickListener(e ->
+                                           NavigationHelper.navigateTo(targetView, new RouteParameters(
+                                                   new RouteParam(RouteIds.ADVENTURE_ID.getValue(), anAdventureId),
+                                                   new RouteParam("locationId", aLocationId))));
+        return this;
+    }
 
-     private Object getProperty(T item, String property) {
-         // Simplified property access; replace with reflection or specific getters
-         return property;
-     }
+    private Object getProperty(T item, String property) {
+        // Simplified property access; replace with reflection or specific getters
+        return property;
+    }
 }

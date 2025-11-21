@@ -17,7 +17,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @Theme(value = "adventureBuilder")
 @NpmPackage(value = "@vaadin-component-factory/vcf-nav", version = "1.1.3")
 @PWA(name = "Adventure Builder", shortName = "Adventure",
-        offlineResources = { "./images/adventure.png"},
+        offlineResources = {"./images/adventure.png"},
         offlinePath = "offline.html")
 public class AdventureBuilderServer implements AppShellConfigurator
         // extends SpringBootServletInitializer

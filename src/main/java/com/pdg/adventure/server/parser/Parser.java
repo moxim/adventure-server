@@ -28,7 +28,7 @@ public class Parser {
         String lowerCaseInput = anInput.toLowerCase();
 
         try (
-        Scanner scanner = new Scanner(lowerCaseInput)) {
+                Scanner scanner = new Scanner(lowerCaseInput)) {
             while (scanner.hasNext()) {
                 String token = scanner.next();
                 Optional<Word> optionalWord = vocabulary.findWord(token);
@@ -40,7 +40,8 @@ public class Parser {
                 populate(simpleSentence, word.getSynonym() == null ? word : word.getSynonym());
             }
         }
-        return new GenericCommandDescription(simpleSentence.getVerb(), simpleSentence.getAdjective(), simpleSentence.getNoun());
+        return new GenericCommandDescription(simpleSentence.getVerb(), simpleSentence.getAdjective(),
+                                             simpleSentence.getNoun());
     }
 
     private void populate(SimpleSentence aSentence, Word aWord) {

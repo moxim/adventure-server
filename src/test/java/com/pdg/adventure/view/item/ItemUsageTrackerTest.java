@@ -12,7 +12,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.pdg.adventure.model.*;
+import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.ItemContainerData;
+import com.pdg.adventure.model.ItemData;
+import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.basic.DescriptionData;
 
 /**
@@ -85,7 +88,7 @@ class ItemUsageTrackerTest {
         // Then
         assertThat(usages).hasSize(2);
         assertThat(usages).extracting(ItemUsageTracker.ItemUsage::getSourceLocationId)
-                .containsExactlyInAnyOrder("loc1", "loc2");
+                          .containsExactlyInAnyOrder("loc1", "loc2");
     }
 
     @Test

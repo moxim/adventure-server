@@ -142,10 +142,10 @@ class AllItemsMenuViewTest {
         // then
         // Count non-null items across all locations
         long nonNullCount = adventureData.getLocationData().values().stream()
-                .filter(loc -> loc.getItemContainerData() != null)
-                .flatMap(loc -> loc.getItemContainerData().getItems().stream())
-                .filter(Objects::nonNull)
-                .count();
+                                         .filter(loc -> loc.getItemContainerData() != null)
+                                         .flatMap(loc -> loc.getItemContainerData().getItems().stream())
+                                         .filter(Objects::nonNull)
+                                         .count();
 
         assertThat(nonNullCount).isEqualTo(2);
     }

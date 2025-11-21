@@ -96,18 +96,18 @@ class VocabularyMenuViewTest {
 
         // Verify words by type
         List<Word> nouns = vocabularyData.getWords().stream()
-                .filter(w -> w.getType() == Word.Type.NOUN)
-                .toList();
+                                         .filter(w -> w.getType() == Word.Type.NOUN)
+                                         .toList();
         assertThat(nouns).hasSize(2);
 
         List<Word> adjectives = vocabularyData.getWords().stream()
-                .filter(w -> w.getType() == Word.Type.ADJECTIVE)
-                .toList();
+                                              .filter(w -> w.getType() == Word.Type.ADJECTIVE)
+                                              .toList();
         assertThat(adjectives).hasSize(2);
 
         List<Word> verbs = vocabularyData.getWords().stream()
-                .filter(w -> w.getType() == Word.Type.VERB)
-                .toList();
+                                         .filter(w -> w.getType() == Word.Type.VERB)
+                                         .toList();
         assertThat(verbs).hasSize(1);
     }
 

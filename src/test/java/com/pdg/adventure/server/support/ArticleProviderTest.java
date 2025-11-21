@@ -7,7 +7,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ArticleProviderTest {
     @ParameterizedTest
-    @ValueSource(strings = {"b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "y", "z"})
+    @ValueSource(strings = {"b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w",
+                            "x", "y", "z"})
     void prependUnknownArticleForConsonants(String aConstant) {
         // given
         // when
@@ -29,7 +30,7 @@ class ArticleProviderTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"my " , "your ", "his ", "her ", "its ", "our " , "their ", "a ", "an ", "the ", "some "})
+    @ValueSource(strings = {"my ", "your ", "his ", "her ", "its ", "our ", "their ", "a ", "an ", "the ", "some "})
     void prependUnknownArticleForPronounsOrArticles(String aPronoun) {
         // given
         // when

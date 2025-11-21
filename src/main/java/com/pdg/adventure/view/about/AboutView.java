@@ -23,7 +23,8 @@ public class AboutView extends VerticalLayout {
 
         add(new H2("@ PDG Software 2022 - 2026"));
         add(new Paragraph("The place where your imagination can run wild! 🤗"));
-        add(new Paragraph(new Html("<a href=\"https://www.flaticon.com/free-animated-icons/localization\" title=\"localization animated icons\">Localization animated icons created by Freepik - Flaticon</a>)")));
+        add(new Paragraph(new Html(
+                "<a href=\"https://www.flaticon.com/free-animated-icons/localization\" title=\"localization animated icons\">Localization animated icons created by Freepik - Flaticon</a>)")));
 
         setSizeFull();
         setJustifyContentMode(JustifyContentMode.CENTER);
