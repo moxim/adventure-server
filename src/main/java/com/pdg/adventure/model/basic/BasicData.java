@@ -35,7 +35,6 @@ public class BasicData implements Ided {
 
     public BasicData() {
         id = Ulid.fast().toLowerCase();
-//        id = UUID.randomUUID().toString();
         createdAt = Instant.now();
         updatedAt = Instant.now();
     }

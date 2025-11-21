@@ -174,9 +174,8 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
 
         LocationDataContextMenu contextMenu = new LocationDataContextMenu(grid);
 
-        grid.setWidthFull();
-        grid.setMaxWidth("900px");
-        grid.setHeight("500px");
+
+        ViewSupporter.setSize(grid);
         grid.setEmptyStateText("No locations found. Create some to get the story going.");
 
         return grid;

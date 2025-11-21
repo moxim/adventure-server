@@ -41,23 +41,19 @@ import com.pdg.adventure.view.support.ViewSupporter;
 public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObserver {
 
     private final transient AdventureService adventureService;
-    private final transient ItemService itemService;
     private final Div gridContainer;
-    private final TextField searchField;
-    private final Button backButton;
     private final Button createButton;
     private final ComboBox<LocationData> locationSelector;
     private final IntegerField numberOfItems;
     private transient ItemViewSupporter itemViewSupporter;
     private transient AdventureData adventureData;
-    private transient ListDataProvider<ItemLocationPair> dataProvider;
+    private ListDataProvider<ItemLocationPair> dataProvider;
 
     @Autowired
     public AllItemsMenuView(AdventureService anAdventureService, ItemService anItemService) {
         setSizeFull();
 
         adventureService = anAdventureService;
-        itemService = anItemService;
 
         numberOfItems = new IntegerField("Total Items:");
         numberOfItems.setReadOnly(true);
@@ -79,18 +75,22 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
         });
         createButton.setIcon(new Icon(VaadinIcon.PLUS));
         createButton.setEnabled(false);
-        locationSelector.addValueChangeListener(event -> createButton.setEnabled(event.getValue() != null));
+        locationSelector.addValueChangeListener(
+                event -> createButton.setEnabled(event.getValue() != null));
 
-        backButton = new Button("Back", event -> {
-            UI.getCurrent().navigate(AdventureEditorView.class, new RouteParameters(
-                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
-        });
+        Button backButton = new Button("Back",
+                                       event -> UI.getCurrent().navigate(AdventureEditorView.class, new RouteParameters(
+                                               new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                              adventureData.getId()))));
         backButton.addClickShortcut(Key.ESCAPE);
 
         VerticalLayout leftSide = new VerticalLayout(numberOfItems, locationSelector, createButton, backButton);
         leftSide.setMaxWidth("30%");
 
-        searchField = new TextField();
+        gridContainer = new Div();
+        gridContainer.setSizeFull();
+
+        TextField searchField = new TextField();
         searchField.setWidth("50%");
         searchField.setPlaceholder("Find item");
         searchField.setTooltipText("Find items by ID, noun, adjective, or description");
@@ -98,11 +98,11 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
         searchField.setValueChangeMode(ValueChangeMode.EAGER);
         searchField.addValueChangeListener(e -> filterItems(e.getValue()));
 
-        gridContainer = new Div();
-        gridContainer.setSizeFull();
-//        gridContainer.setMaxWidth("550px");
+        Div searchFieldContainer = new Div();
+        searchFieldContainer.setWidthFull();
+        searchFieldContainer.add(searchField);
 
-        VerticalLayout rightSide = new VerticalLayout(searchField, gridContainer);
+        VerticalLayout rightSide = new VerticalLayout(searchFieldContainer, gridContainer);
         rightSide.setSizeFull();
 
         HorizontalLayout mainRow = new HorizontalLayout(leftSide, rightSide);
@@ -114,15 +114,7 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
         add(mainRow);
     }
 
-    private void navigateToCreateItem(String locationId) {
-        UI.getCurrent().navigate(ItemEditorView.class,
-                                 new RouteParameters(new RouteParam(RouteIds.LOCATION_ID.getValue(), locationId),
-                                                     new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                    adventureData.getId()))).ifPresent(e -> {
-            LocationData location = adventureData.getLocationData().get(locationId);
-            e.setData(adventureData, location);
-        });
-    }
+
 
     private void filterItems(String searchTerm) {
         if (dataProvider != null) {
@@ -132,16 +124,28 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
                 String lowerCaseSearchTerm = searchTerm.toLowerCase();
                 dataProvider.setFilter(pair -> {
                     ItemData item = pair.item();
+                    String id = item.getId().toLowerCase();
                     String adjective = item.getDescriptionData().getSafeAdjective().toLowerCase();
                     String noun = item.getDescriptionData().getSafeNoun().toLowerCase();
                     String shortDesc = item.getDescriptionData().getShortDescription().toLowerCase();
                     String locationDesc = ViewSupporter.formatDescription(pair.location()).toLowerCase();
 
-                    return adjective.contains(lowerCaseSearchTerm) || noun.contains(lowerCaseSearchTerm) ||
+                    return id.contains(lowerCaseSearchTerm) ||
+                           adjective.contains(lowerCaseSearchTerm) || noun.contains(lowerCaseSearchTerm) ||
                            shortDesc.contains(lowerCaseSearchTerm) || locationDesc.contains(lowerCaseSearchTerm);
                 });
             }
         }
+    }
+
+    private void navigateToCreateItem(String locationId) {
+        UI.getCurrent().navigate(ItemEditorView.class,
+                                 new RouteParameters(new RouteParam(RouteIds.LOCATION_ID.getValue(), locationId),
+                                                     new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                    adventureData.getId()))).ifPresent(e -> {
+            LocationData location = adventureData.getLocationData().get(locationId);
+            e.setData(adventureData, location);
+        });
     }
 
     @Override
@@ -183,14 +187,17 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
 
         numberOfItems.setValue(itemPairs.size());
         gridContainer.removeAll();
-        gridContainer.add(getItemsGrid(itemPairs));
+        gridContainer.add(getItemLocationPairGrid(itemPairs));
     }
 
-    private Grid<ItemLocationPair> getItemsGrid(List<ItemLocationPair> itemPairs) {
+    private Grid<ItemLocationPair> getItemLocationPairGrid(List<ItemLocationPair> itemPairs) {
         Grid<ItemLocationPair> grid = new Grid<>(ItemLocationPair.class, false);
 
+        grid.addColumn(pair -> pair.item().getId())
+            .setHeader(VocabularyData.ID_TEXT).setSortable(true).setAutoWidth(true).setFlexGrow(0);
+
         grid.addColumn(pair -> pair.item().getDescriptionData().getSafeAdjective())
-            .setHeader(VocabularyData.ADJECTIVE_TEXT).setSortable(true);
+            .setHeader(VocabularyData.ADJECTIVE_TEXT);
 
         grid.addColumn(pair -> pair.item().getDescriptionData().getSafeNoun()).setHeader(VocabularyData.NOUN_TEXT)
             .setSortable(true);
@@ -210,9 +217,8 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
         grid.addColumn(pair -> pair.item().isWorn() ? VocabularyData.YES_TEXT : VocabularyData.NO_TEXT)
             .setHeader(VocabularyData.WORN_TEXT).setAutoWidth(true);
 
-        grid.setWidthFull();
-        grid.setMaxWidth("900px");
-        grid.setHeight("500px");
+
+        ViewSupporter.setSize(grid);
         grid.setEmptyStateText("Create some items.");
 
         dataProvider = new ListDataProvider<>(itemPairs);
@@ -264,11 +270,5 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
         LocationData location = pair.location();
 
         itemViewSupporter.confirmDeleteItem(location, item);
-    }
-
-    /**
-         * Helper class to pair an item with its location for display purposes.
-         */
-        private record ItemLocationPair(ItemData item, LocationData location) {
     }
 }

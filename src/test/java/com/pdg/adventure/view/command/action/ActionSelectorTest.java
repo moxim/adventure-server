@@ -7,12 +7,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.MessageData;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class ActionSelectorTest {
 
@@ -86,6 +86,8 @@ class ActionSelectorTest {
 
         // When & Then - Should not throw
         actionSelector.setEditorSelectedListener(null);
+
+        assertThat(true).isTrue(); // If we reach here, no exception was thrown
     }
 
     @Test

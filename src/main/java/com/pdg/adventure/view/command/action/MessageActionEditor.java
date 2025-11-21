@@ -4,12 +4,14 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
-import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.MessageData;
-import com.pdg.adventure.model.action.MessageActionData;
+import com.vaadin.flow.dom.Style;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.MessageData;
+import com.pdg.adventure.model.action.MessageActionData;
 
 /**
  * Editor component for MessageActionData.
@@ -83,8 +85,7 @@ public class MessageActionEditor extends ActionEditorComponent {
                 messageActionData.setMessageId(null);
                 messagePreview.removeAll();
                 Span emptySpan = new Span("(No message selected)");
-                emptySpan.getStyle().set("font-style", "italic")
-                        .set("color", "var(--lumo-secondary-text-color)");
+                setStyle(emptySpan.getStyle());
                 messagePreview.add(emptySpan);
             }
         });
@@ -94,8 +95,7 @@ public class MessageActionEditor extends ActionEditorComponent {
             updateMessagePreview(messageActionData.getMessageId());
         } else {
             Span emptySpan = new Span("(No message selected)");
-            emptySpan.getStyle().set("font-style", "italic")
-                    .set("color", "var(--lumo-secondary-text-color)");
+            setStyle(emptySpan.getStyle());
             messagePreview.add(emptySpan);
         }
 
@@ -112,11 +112,14 @@ public class MessageActionEditor extends ActionEditorComponent {
             messagePreview.add(textSpan);
         } else {
             Span warningSpan = new Span("⚠ Message ID '" + messageId + "' not found in catalog");
-            warningSpan.getStyle()
-                    .set("color", "var(--lumo-error-text-color)")
-                    .set("font-style", "italic");
+            setStyle(warningSpan.getStyle());
             messagePreview.add(warningSpan);
         }
+    }
+
+    private void setStyle(Style aStyle) {
+        aStyle.set("font-style", "italic")
+              .set("color", "var(--lumo-secondary-text-color)");
     }
 
     @Override

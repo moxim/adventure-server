@@ -27,13 +27,15 @@ import java.util.List;
 
 import static com.pdg.adventure.model.Word.Type.VERB;
 
-import com.pdg.adventure.model.*;
-import com.pdg.adventure.server.AdventureConfig;
+import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
+import com.pdg.adventure.view.support.ViewSupporter;
 
 @Route(value = "adventures/:adventureId/vocabulary", layout = VocabularyMainLayout.class)
 @RouteAlias(value = "adventures/vocabulary", layout = VocabularyMainLayout.class)
@@ -41,7 +43,6 @@ import com.pdg.adventure.view.support.RouteIds;
 public class VocabularyMenuView extends VerticalLayout implements SaveListener, GuiListener {
 
     private transient final AdventureService adventureService;
-    private transient final AdventureConfig adventureConfig;
     private AdventureData adventureData;
     private VocabularyData vocabularyData;
 
@@ -54,12 +55,11 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     private VocabularyPickerField takeSelector;
     private VocabularyPickerField dropSelector;
     private DescribableWordAdapter currentWordAdapter;
-    private WordUsageTracker wordUsageTracker;
+    private transient WordUsageTracker wordUsageTracker;
 
     @Autowired
-    public VocabularyMenuView(AdventureService anAdventureService, AdventureConfig anAdventureConfig) {
+    public VocabularyMenuView(AdventureService anAdventureService) {
         adventureService = anAdventureService;
-        adventureConfig = anAdventureConfig;
         setSizeFull();
         createGUI();
     }
@@ -85,15 +85,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
             Word oldValue = event.getOldValue();
 
             // Check if trying to clear or change an existing value
-            if (oldValue != null && (newValue == null || !oldValue.getId().equals(newValue.getId()))) {
-                // Check if the old value is used in any item commands
-                List<WordUsage> usages = wordUsageTracker.checkWordIsNotUsedInLocations(oldValue);
-                if (!usages.isEmpty()) {
-                    showWordIsBusyNotification("Take", newValue, oldValue, usages);
-                    takeSelector.setValue(oldValue);
-                    return;
-                }
-            }
+            if (checkIfValueAlreadyExists(oldValue, newValue, "Take", takeSelector)) return;
 
             // Allow setting or changing the value
             vocabularyData.setTakeWord(newValue);
@@ -111,15 +103,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
             Word oldValue = event.getOldValue();
 
             // Check if trying to clear or change an existing value
-            if (oldValue != null && (newValue == null || !oldValue.getId().equals(newValue.getId()))) {
-                // Check if the old value is used in any item commands
-                List<WordUsage> usages = wordUsageTracker.checkWordIsNotUsedInLocations(oldValue);
-                if (!usages.isEmpty()) {
-                    showWordIsBusyNotification("Drop", newValue, oldValue, usages);
-                    dropSelector.setValue(oldValue);
-                    return;
-                }
-            }
+            if (checkIfValueAlreadyExists(oldValue, newValue, "Drop", dropSelector)) return;
 
             // Allow setting or changing the value
             vocabularyData.setDropWord(newValue);
@@ -131,6 +115,20 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
                 .set("margin-bottom", "var(--lumo-space-s)");
         final VerticalLayout verticalLayout = new VerticalLayout(specialLabel, takeSelector, dropSelector);
         return verticalLayout;
+    }
+
+    private boolean checkIfValueAlreadyExists(final Word oldValue, final Word newValue, final String Take,
+                                              final VocabularyPickerField takeSelector) {
+        if (oldValue != null && (newValue == null || !oldValue.getId().equals(newValue.getId()))) {
+            // Check if the old value is used in any item commands
+            List<WordUsage> usages = wordUsageTracker.checkWordIsNotUsedInLocations(oldValue);
+            if (!usages.isEmpty()) {
+                showWordIsBusyNotification(Take, newValue, oldValue, usages);
+                takeSelector.setValue(oldValue);
+                return true;
+            }
+        }
+        return false;
     }
 
     private void showWordIsBusyNotification(final String aWordType, final Word newValue, final Word oldValue,
@@ -190,8 +188,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         gridProvider.addColumn(DescribableWordAdapter::getType, "Type");
         gridProvider.addColumn(DescribableWordAdapter::getSynonym, "Synonym");
         Grid<DescribableWordAdapter> grid = gridProvider.getGrid();
-        grid.setWidth("500px");
-        grid.setHeight("500px");
+        ViewSupporter.setSize(grid);
 
         List<DescribableWordAdapter> wordList = new ArrayList<>();
         for (Word word : aVocabularyData.getWords()) {
@@ -377,6 +374,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         dialog.addConfirmListener(event -> {
             // Remove word from vocabulary
             vocabularyData.getWords().remove(word);
+            adventureService.deleteWord(word);
 
             // Save changes
             persistData();

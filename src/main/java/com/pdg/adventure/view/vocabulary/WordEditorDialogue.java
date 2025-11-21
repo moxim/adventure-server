@@ -21,7 +21,6 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
@@ -219,11 +218,7 @@ public class WordEditorDialogue {
         Word.Type selectedType = typeSelector.getValue();
 
         // Must have either a synonym or a type
-        if (selectedSynonym == null && selectedType == null) {
-            return false;
-        }
-
-        return true;
+        return selectedSynonym != null || selectedType != null;
     }
 
     /**
@@ -237,7 +232,7 @@ public class WordEditorDialogue {
             // Filter out the current word to prevent self-reference
             Collection<Word> availableWords = vocabularyData.getWords().stream()
                     .filter(word -> !word.equals(currentWord))
-                    .collect(Collectors.toList());
+                    .toList();
             synonyms.setItems(wordItemFilter, availableWords);
         } else {
             synonyms.setItems(wordItemFilter, vocabularyData.getWords());
@@ -315,7 +310,7 @@ public class WordEditorDialogue {
 
         // Remove the old word
         Optional<Word> wordToEdit = vocabularyData.removeWord(currentWord.getText());
-        if (!wordToEdit.isPresent()) {
+        if (wordToEdit.isEmpty()) {
             throw new IllegalArgumentException("Word not found: " + currentWord.getText());
         }
 

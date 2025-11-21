@@ -3,7 +3,6 @@ package com.pdg.adventure.server.storage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -12,7 +11,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.ItemData;
 
@@ -74,7 +74,7 @@ class ItemServiceTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(itemId);
-        assertThat(result.getModifiedDate()).isNotNull();
+        assertThat(result.getUpdatedAt()).isNotNull();
         verify(itemRepository).findByAdventureIdAndId(adventureId, itemId);
         verify(itemRepository).save(itemData);
     }

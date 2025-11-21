@@ -32,6 +32,7 @@ public class ItemViewSupporter {
     private final LocationData locationData;
     private final Div gridContainer;
     private final Button edit;
+
     @Getter
     private String targetItemId;
 
@@ -93,10 +94,11 @@ public class ItemViewSupporter {
 
     private Grid<ItemData> getItemsGrid(List<ItemData> items) {
         Grid<ItemData> grid = new Grid<>(ItemData.class, false);
+
+        grid.addColumn(ItemData::getId).setHeader(VocabularyData.ID_TEXT).setSortable(true).setAutoWidth(true).setFlexGrow(0);
         grid.addColumn(item -> item.getDescriptionData().getSafeAdjective()).setHeader(VocabularyData.ADJECTIVE_TEXT);
-        grid.addColumn(item -> item.getDescriptionData().getSafeNoun()).setHeader(VocabularyData.NOUN_TEXT);
-        grid.addColumn(item -> item.getDescriptionData().getShortDescription()).setHeader(VocabularyData.SHORT_TEXT)
-            .setAutoWidth(true);
+        grid.addColumn(item -> item.getDescriptionData().getSafeNoun()).setHeader(VocabularyData.NOUN_TEXT).setSortable(true);
+        grid.addColumn(ViewSupporter::formatDescription).setHeader(VocabularyData.SHORT_TEXT).setSortable(true).setAutoWidth(true);
 
         grid.addColumn(item -> item.isContainable() ? VocabularyData.YES_TEXT : VocabularyData.NO_TEXT)
             .setHeader(VocabularyData.CONTAINABLE_TEXT);
@@ -105,8 +107,8 @@ public class ItemViewSupporter {
         grid.addColumn(item -> item.isWorn() ? VocabularyData.YES_TEXT : VocabularyData.NO_TEXT)
             .setHeader(VocabularyData.WORN_TEXT);
 
-        grid.setWidth("800px");
-        grid.setHeight("500px");
+
+        ViewSupporter.setSize(grid);
         grid.setEmptyStateText("Create some items.");
 
         grid.setItems(items);

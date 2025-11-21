@@ -173,7 +173,7 @@ public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Ob
         }
 
         if (value instanceof Ided) {
-            LOG.debug("Value: ", value);
+            LOG.debug("Value: ", value.getClass().getSimpleName() + " with id: " + ((Ided) value).getId());
         }
     }
 

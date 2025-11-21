@@ -55,7 +55,6 @@ public class ItemEditorView extends VerticalLayout
     private transient ItemViewModel ivm;
     private transient AdventureData adventureData;
     private transient LocationData locationData;
-    private List<Word> allVerbs;
 
     @Autowired
     public ItemEditorView(AdventureService anAdventureService, ItemService anItemService) {
@@ -321,15 +320,15 @@ public class ItemEditorView extends VerticalLayout
         try {
             if (binder.validate().isOk()) {
                 binder.writeBean(anItemViewModel);
-                final ItemData itemData = anItemViewModel.getData();
+                final ItemData modelItemData = anItemViewModel.getData();
 
                 // Set adventure and location IDs
-                itemData.setAdventureId(adventureData.getId());
-                itemData.setLocationId(locationData.getId());
-                itemData.setParentContainerId(locationData.getItemContainerData().getId());
+                modelItemData.setAdventureId(adventureData.getId());
+                modelItemData.setLocationId(locationData.getId());
+                modelItemData.setParentContainerId(locationData.getItemContainerData().getId());
 
                 // Save item to items collection first (required for @DBRef to work)
-                ItemData savedItem = itemService.saveItem(itemData);
+                ItemData savedItem = itemService.saveItem(modelItemData);
 
                 // Update or add item reference to the in-memory container
                 List<ItemData> items = locationData.getItemContainerData().getItems();
@@ -401,10 +400,6 @@ public class ItemEditorView extends VerticalLayout
         VocabularyData vocabularyData = adventureData.getVocabularyData();
         adjectiveSelector.populate(vocabularyData.getWords(ADJECTIVE));
         nounSelector.populate(vocabularyData.getWords(NOUN));
-        allVerbs = vocabularyData.getWords(VERB).stream()
-                .filter(w -> w.getSynonym() == null)
-                .toList();
-
 
         saveButton.setEnabled(false);
         ivm = new ItemViewModel(itemData);

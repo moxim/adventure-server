@@ -17,8 +17,6 @@ public class Location extends Thing implements Visitable, HasLight {
     private final Container directions;
     private Container itemContainer;
     private long timesVisited;
-    // TODO: reconsider having Location know about the player's pocket
-//    private final Container pocket;
     private int lumen;
 
     public Location(DescriptionProvider aDescriptionProvider) {
@@ -84,11 +82,6 @@ public class Location extends Thing implements Visitable, HasLight {
         List<CommandChain> availableCommands = new ArrayList<>(super.getMatchingCommandChain(aCommandDescription));
         availableCommands.addAll(itemContainer.getMatchingCommandChain(aCommandDescription));
         availableCommands.addAll(directions.getMatchingCommandChain(aCommandDescription));
-
-        // TODO: move this into interceptor chain
-//        chain = pocket.getMatchingCommandChain(aCommandDescription);
-//        availableCommands.addAll(chain);
-
         return availableCommands;
     }
 

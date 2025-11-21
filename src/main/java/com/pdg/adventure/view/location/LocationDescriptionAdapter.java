@@ -1,16 +1,15 @@
 package com.pdg.adventure.view.location;
 
+import lombok.Getter;
+
 import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 public class LocationDescriptionAdapter implements Describable {
     private final LocationData locationData;
+    @Getter
     private int usageCount;
-
-    public LocationDescriptionAdapter(LocationData aLocationData) {
-        this(aLocationData, 0);
-    }
 
     public LocationDescriptionAdapter(LocationData aLocationData, int aUsageCount) {
         locationData = aLocationData;
@@ -65,12 +64,4 @@ public class LocationDescriptionAdapter implements Describable {
     public int getLumen() {
         return locationData.getLumen();
     }
-
-    public int getUsageCount() {
-        return usageCount;
-    }
-
-//    public void setUsageCount(int aUsageCount) {
-//        usageCount = aUsageCount;
-//    }
 }

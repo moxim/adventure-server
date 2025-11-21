@@ -11,7 +11,6 @@ import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.Adventure;
-import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
@@ -28,18 +27,15 @@ public class AdventureMapper implements Mapper<AdventureData, Adventure> {
     private final Mapper<VocabularyData, Vocabulary> vocabularyMapper;
     private final Mapper<LocationData, Location> locationMapper;
     private final Mapper<ItemContainerData, GenericContainer> containerMapper;
-    private final AdventureConfig adventureConfig;
 
     public AdventureMapper(MapperSupporter aMapperSupporter,
                            VocabularyMapper aVocabularyMapper,
                            LocationMapper aLocationMapper,
-                           ItemContainerMapper aContainerMapper,
-                           AdventureConfig anAdventureConfig) {
+                           ItemContainerMapper aContainerMapper) {
         mapperSupporter = aMapperSupporter;
         vocabularyMapper = aVocabularyMapper;
         locationMapper = aLocationMapper;
         containerMapper = aContainerMapper;
-        adventureConfig = anAdventureConfig;
         mapperSupporter.registerMapper(AdventureData.class, Adventure.class, this);
     }
 
@@ -53,102 +49,9 @@ public class AdventureMapper implements Mapper<AdventureData, Adventure> {
         adventure.setLocations(locationList);
         adventure.setCurrentLocationId(anAdventureData.getCurrentLocationId());
         adventure.setPocket(containerMapper.mapToBO(anAdventureData.getPlayerPocket()));
-//        updateAdventureConfig(adventure);
         return adventure;
     }
-/*
-    private void updateAdventureConfig(final Adventure adventure) {
-        // Clear existing data to prevent stale references
-        adventureConfig.allLocations().clear();
-        adventureConfig.allItems().clear();
-        adventureConfig.allContainers().clear();
 
-        // Populate locations
-        for (Location location : adventure.getLocations()) {
-            adventureConfig.allLocations().put(location.getId(), location);
-        }
-
-        // Collect all items recursively from all containers
-        for (Location location : adventure.getLocations()) {
-            collectItemsRecursively(location.getItemContainer(), adventureConfig.allItems());
-        }
-        // Also collect from player pocket
-        collectItemsRecursively(adventure.getPocket(), adventureConfig.allItems());
-
-        // Collect all containers recursively
-        // Add player pocket
-        adventureConfig.allContainers().put(adventure.getPocket().getId(), adventure.getPocket());
-
-        // Add location containers and nested containers
-        for (Location location : adventure.getLocations()) {
-            GenericContainer itemContainer = location.getItemContainer();
-            adventureConfig.allContainers().put(itemContainer.getId(), itemContainer);
-            collectContainersRecursively(itemContainer, adventureConfig.allContainers());
-        }
-    }
-
-
-    /**
-     * Recursively collects all items from a container and its nested containers.
-    private void collectItemsRecursively(Container container, Map<String, Item> allItems) {
-        if (container == null) {
-            return;
-        }
-
-        // Get contents from the container
-        List<Containable> contents;
-        if (container instanceof GenericContainer genericContainer) {
-            contents = genericContainer.getContents();
-        } else {
-            // If it's not a GenericContainer, we can't access contents
-            return;
-        }
-
-        if (contents == null) {
-            return;
-        }
-
-        // Process each item in the container
-        for (Containable containable : contents) {
-            if (containable instanceof Item item) {
-                allItems.put(item.getId(), item);
-
-                // If the item is also a container, recurse into it
-                if (item instanceof Container nestedContainer) {
-                    collectItemsRecursively(nestedContainer, allItems);
-                }
-            }
-        }
-    }
-
-    /**
-     * Recursively collects all containers from a container and its nested items.
-    private void collectContainersRecursively(Container container, Map<String, Container> allContainers) {
-        if (container == null) {
-            return;
-        }
-
-        // Get contents from the container
-        List<Containable> contents;
-        if (container instanceof GenericContainer genericContainer) {
-            contents = genericContainer.getContents();
-        } else {
-            return;
-        }
-
-        if (contents == null) {
-            return;
-        }
-
-        // Process each item - if it's a container, add it and recurse
-        for (Containable containable : contents) {
-            if (containable instanceof Container nestedContainer) {
-                allContainers.put(nestedContainer.getId(), nestedContainer);
-                collectContainersRecursively(nestedContainer, allContainers);
-            }
-        }
-    }
-*/
     public AdventureData mapToDO(Adventure anAdventure) {
         final Vocabulary vocabulary = anAdventure.getVocabulary();
         final VocabularyData vocabularyData = vocabularyMapper.mapToDO(vocabulary);

@@ -2,6 +2,7 @@ package com.pdg.adventure.view.support;
 
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -33,7 +34,7 @@ public class ViewSupporter {
     }
 
     public static String formatId(String anIdedData) {
-        return anIdedData.substring(0, 8);
+        return anIdedData.substring(0, 26);
     }
 
     public static void populateStartLocation(AdventureData anAdventureData, TextField aStartLocation) {
@@ -81,10 +82,11 @@ public class ViewSupporter {
         }
 
         String shortDescription = adjective + " " + noun;
-        if (shortDescription.length() > 20) {
-            shortDescription = shortDescription.substring(0, 20) + "...";
-        }
-        return shortDescription;
+        return restrictToLength(shortDescription, 48);
+    }
+
+    public static String formatDescription(LocationData aLocationData) {
+        return formatDescription(aLocationData.getDescriptionData());
     }
 
     public static String formatDescription(ItemData anItem) {
@@ -116,27 +118,30 @@ public class ViewSupporter {
             }
             command.append(noun);
         }
-        return command.toString();
+        return restrictToLength(command.toString(), 48);
     }
 
     public static String formatDescription(Describable aDescribable) {
         String shortDescription = aDescribable.getShortDescription();
         if (shortDescription.isEmpty()) {
-            shortDescription = aDescribable.getNoun() + " / " + aDescribable.getAdjective();
+            shortDescription = getShortDescription(aDescribable.getNoun(), aDescribable.getAdjective());
         }
-        return shortDescription;
+        return restrictToLength(shortDescription, 48);
     }
 
     public static String formatDescription(DescriptionData aDescriptionData) {
         String shortDescription = aDescriptionData.getShortDescription();
         if (shortDescription.isEmpty()) {
-            shortDescription = getWordText(aDescriptionData.getNoun()) + " / " + getWordText(aDescriptionData.getAdjective());
+            shortDescription = getWordText(aDescriptionData.getNoun()) + " " + getWordText(aDescriptionData.getAdjective());
         }
-        return shortDescription;
+        return restrictToLength(shortDescription, 48);
     }
 
-    public static String formatDescription(LocationData aLocationData) {
-        return formatDescription(aLocationData.getDescriptionData());
+    private static String restrictToLength(String aText, int maxLength) {
+        if (aText.length() <= maxLength) {
+            return aText;
+        }
+        return aText.substring(0, maxLength) + "...";
     }
 
     public static void bindField(Binder<DirectionData> binder, ComboBox<String> field, VocabularyData aVocabulary,
@@ -277,5 +282,13 @@ public class ViewSupporter {
 
         dialog.setConfirmText("Close");
         dialog.open();
+    }
+
+    public static void setSize(Grid<?> aGrid) {
+        aGrid.setSizeFull();
+        aGrid.setMaxWidth("900px");
+        aGrid.setMaxHeight("500px");
+        aGrid.setMinWidth("550px");
+        aGrid.setMinHeight("250px");
     }
 }

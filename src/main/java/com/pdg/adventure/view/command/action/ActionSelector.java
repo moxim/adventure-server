@@ -4,6 +4,8 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +25,7 @@ public class ActionSelector extends HorizontalLayout {
     private final AdventureData adventureData;
     private final ComboBox<ActionTypeDescriptor> actionTypeSelector;
     private final Button useButton;
+    @Setter
     private transient ActionEditorSelectedListener editorSelectedListener;
 
     public ActionSelector(AdventureData adventureData) {
@@ -50,7 +53,7 @@ public class ActionSelector extends HorizontalLayout {
             ActionTypeDescriptor selectedType = actionTypeSelector.getValue();
             if (selectedType != null) {
                 ActionEditorComponent editor = createEditor(selectedType);
-                if (editorSelectedListener != null && editor != null) {
+                if (editorSelectedListener != null) {
                     editorSelectedListener.onEditorSelected(editor);
                 }
             }
@@ -102,13 +105,6 @@ public class ActionSelector extends HorizontalLayout {
     }
 
     /**
-     * Sets the listener that will be notified when an editor is selected.
-     */
-    public void setEditorSelectedListener(ActionEditorSelectedListener listener) {
-        this.editorSelectedListener = listener;
-    }
-
-    /**
      * Listener interface for when an action editor is selected.
      */
     @FunctionalInterface
@@ -119,6 +115,7 @@ public class ActionSelector extends HorizontalLayout {
     /**
      * Descriptor for an action type, containing display information and a factory method.
      */
+    @Getter
     private static class ActionTypeDescriptor {
         private final String displayName;
         private final String description;
@@ -128,14 +125,6 @@ public class ActionSelector extends HorizontalLayout {
             this.displayName = displayName;
             this.description = description;
             this.actionFactory = actionFactory;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public String getDescription() {
-            return description;
         }
 
         public ActionData createActionData() {

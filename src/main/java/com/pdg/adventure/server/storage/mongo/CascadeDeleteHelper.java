@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -72,18 +71,7 @@ public class CascadeDeleteHelper {
     }
 
     private void deleteReferencedEntities(Object value, Set<Object> processedObjects) {
-        if (value instanceof Iterable<?> iterable && !(value instanceof Map)) {
-            // Handle List/Set: Delete each element
-            LOG.info("Processing collection/list with items");
-            int count = 0;
-            for (Object item : iterable) {
-                if (item != null) {
-                    count++;
-                    deleteEntity(item, processedObjects);
-                }
-            }
-            LOG.info("Processed {} items from collection", count);
-        } else if (value instanceof Map<?, ?> map) {
+        if (value instanceof Map<?, ?> map) {
             // Handle Map: Delete each value
             LOG.info("Processing map with {} entries", map.size());
             int count = 0;
@@ -97,7 +85,18 @@ public class CascadeDeleteHelper {
                     LOG.warn("Map entry with key={} has null value", entry.getKey());
                 }
             }
-            LOG.info("Processed {} entries from map", count);
+        LOG.info("Processed {} entries from map", count);
+        } else if (value instanceof Iterable<?> iterable) {
+            // Handle List/Set: Delete each element
+            LOG.info("Processing collection/list with items");
+            int count = 0;
+            for (Object item : iterable) {
+                if (item != null) {
+                    count++;
+                    deleteEntity(item, processedObjects);
+                }
+            }
+            LOG.info("Processed {} items from collection", count);
         } else {
             // Handle single object
             deleteEntity(value, processedObjects);

@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
@@ -134,9 +133,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         // Context menu
         createContextMenu(messageGrid);
 
-        messageGrid.setSizeFull();
-        messageGrid.setMaxWidth("900px");
-        messageGrid.setHeight("00px");
+        ViewSupporter.setSize(messageGrid);
         messageGrid.setEmptyStateText("No messages yet. Create one to get started.");
 
         return messageGrid;
@@ -297,7 +294,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
                     int usageCount = MessageUsageTracker.countMessageUsages(adventureData, msgData.getMessageId());
                     return new MessageViewModel(msgData, usageCount);
                 })
-                .collect(Collectors.toList());
+                .toList();
 
             dataProvider = new ListDataProvider<>(messages);
             grid.setDataProvider(dataProvider);

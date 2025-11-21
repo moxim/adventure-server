@@ -7,6 +7,7 @@ import com.pdg.adventure.model.*;
 
 public class WordUsageTracker {
 
+    private static final String DIRECTION_TEXT = "Direction";
     private final AdventureData adventureData;
     private final VocabularyData vocabularyData;
 
@@ -29,10 +30,8 @@ public class WordUsageTracker {
             if (vocabularyData.getDropWord() != null && vocabularyData.getDropWord().getId().equals(targetWord.getId())) {
                 usages.add(new WordUsage("Drop Verb", "Special verb for dropping items", "Special"));
             }
-        }
 
-        // Check synonyms
-        if (vocabularyData != null) {
+            // Check synonyms
             for (Word word : vocabularyData.getWords()) {
                 if (word.getSynonym() != null && word.getSynonym().getId().equals(targetWord.getId())) {
                     usages.add(new WordUsage("Synonym", word.getText() + " (" + word.getType() + ")", "Word"));
@@ -56,29 +55,37 @@ public class WordUsageTracker {
 
                 // Check directions in this location
                 if (location.getDirectionsData() != null) {
-                    for (DirectionData direction : location.getDirectionsData()) {
-                        checkDescriptionUsage(direction.getDescriptionData(), targetWord, "Direction", direction.getId(),
-                                              usages);
-                        checkCommandProviderUsage(direction.getCommandProviderData(), targetWord, "Direction", direction.getId(),
-                                                  usages);
-                        checkCommandDataUsage(direction.getCommandData(), targetWord, "Direction", direction.getId(),
-                                              usages);
-                    }
+                    checkWordIsNotUsedInDirectionsOfLocation(targetWord, location, usages);
                 }
 
                 // Check items in this location
                 if (location.getItemContainerData() != null && location.getItemContainerData().getItems() != null) {
-                    for (ItemData item : location.getItemContainerData().getItems()) {
-                        if (item != null) {
-                            checkDescriptionUsage(item.getDescriptionData(), targetWord, "Item", item.getId(), usages);
-                            checkCommandProviderUsage(item.getCommandProviderData(), targetWord, "Item", item.getId(),
-                                                      usages);
-                        }
-                    }
+                    checkWordIsNotUsedInItemsOfLocation(targetWord, location, usages);
                 }
             }
         }
         return usages;
+    }
+
+    private void checkWordIsNotUsedInItemsOfLocation(final Word targetWord, final LocationData location, final List<WordUsage> usages) {
+        for (ItemData item : location.getItemContainerData().getItems()) {
+            if (item != null) {
+                checkDescriptionUsage(item.getDescriptionData(), targetWord, "Item", item.getId(), usages);
+                checkCommandProviderUsage(item.getCommandProviderData(), targetWord, "Item", item.getId(),
+                                          usages);
+            }
+        }
+    }
+
+    private void checkWordIsNotUsedInDirectionsOfLocation(final Word targetWord, final LocationData location, final List<WordUsage> usages) {
+        for (DirectionData direction : location.getDirectionsData()) {
+            checkDescriptionUsage(direction.getDescriptionData(), targetWord, DIRECTION_TEXT, direction.getId(),
+                                  usages);
+            checkCommandProviderUsage(direction.getCommandProviderData(), targetWord, DIRECTION_TEXT, direction.getId(),
+                                      usages);
+            checkCommandDataUsage(direction.getCommandData(), targetWord, DIRECTION_TEXT, direction.getId(),
+                                  usages);
+        }
     }
 
     private void checkDescriptionUsage(com.pdg.adventure.model.basic.DescriptionData description, Word targetWord, String type, String id, List<WordUsage> usages) {

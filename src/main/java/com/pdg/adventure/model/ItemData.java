@@ -5,8 +5,6 @@ import lombok.EqualsAndHashCode;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.Instant;
-
 /**
  * Item data stored in MongoDB.
  * Items are stored in their own collection for better scalability and querying.
@@ -34,16 +32,6 @@ public class ItemData extends ThingData {
     private boolean isWearable;
     private boolean isWorn;
 
-    /**
-     * Timestamp when the item was created.
-     */
-    private Instant createdDate;
-
-    /**
-     * Timestamp when the item was last modified.
-     */
-    private Instant modifiedDate;
-
 //    private boolean isOpenable;
 //    private boolean isOpen;
 //    private boolean isLockable;
@@ -53,19 +41,6 @@ public class ItemData extends ThingData {
 //    private double volume;
 //    private double capacity;
 //    private boolean isTransparent;
-
-    public ItemData() {
-        this.createdDate = Instant.now();
-        this.modifiedDate = Instant.now();
-    }
-
-    /**
-     * Update the modified timestamp.
-     * Should be called before saving updates.
-     */
-    public void touch() {
-        this.modifiedDate = Instant.now();
-    }
 
     @Override
     public String toString() {

@@ -6,10 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -147,7 +144,7 @@ class AllItemsMenuViewTest {
         long nonNullCount = adventureData.getLocationData().values().stream()
                 .filter(loc -> loc.getItemContainerData() != null)
                 .flatMap(loc -> loc.getItemContainerData().getItems().stream())
-                .filter(item -> item != null)
+                .filter(Objects::nonNull)
                 .count();
 
         assertThat(nonNullCount).isEqualTo(2);

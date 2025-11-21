@@ -29,7 +29,7 @@ public class TakeActionMapper extends ActionMapper<TakeActionData, TakeAction> {
     public TakeAction mapToBO(final TakeActionData aTakeActionData) {
         TakeAction action = new TakeAction(
                 adventureConfig.allItems().get(aTakeActionData.getThingId()),
-                new ContainerSupplier(() -> Environment.getPocket()),
+                new ContainerSupplier(Environment::getPocket),
                 adventureConfig.allMessages());
         return action;
     }

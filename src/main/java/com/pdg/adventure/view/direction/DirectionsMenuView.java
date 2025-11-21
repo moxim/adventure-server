@@ -86,11 +86,6 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
 
     private Grid<DirectionData> getGrid() {
         Grid<DirectionData> directionGrid = new Grid<>(DirectionData.class, false);
-        directionGrid.setMinWidth("550px");
-        directionGrid.setMinHeight("250px");
-        directionGrid.setEmptyStateText("Create some exits.");
-
-        directionGrid.setSizeFull();
 
         directionGrid.addColumn(ViewSupporter::formatId).setHeader("Id").setAutoWidth(true).setFlexGrow(0);
         directionGrid.addColumn(directionData -> ViewSupporter.formatDescription(
@@ -101,17 +96,21 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
                      .setHeader("DestinationId");
         directionGrid.getColumns().forEach(column -> column.setAutoWidth(true));
 
-        directionGrid.addItemDoubleClickListener(e -> UI.getCurrent().navigate(DirectionEditorView.class,
-                                                                               new RouteParameters(
-                                                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                                                      adventureData.getId()),
-                                                                                       new RouteParam(RouteIds.LOCATION_ID.getValue(),
-                                                                                                      locationData.getId()),
-                                                                                       new RouteParam(RouteIds.DIRECTION_ID.getValue(),
-                                                                                                      e.getItem()
-                                                                                                       .getId())))
-                                                        .ifPresent(
-                                                                editor -> editor.setData(locationData, adventureData)));
+        directionGrid.addItemDoubleClickListener(
+                e -> UI.getCurrent().navigate(DirectionEditorView.class,
+                                              new RouteParameters(
+                                                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                     adventureData.getId()),
+                                                      new RouteParam(RouteIds.LOCATION_ID.getValue(),
+                                                                     locationData.getId()),
+                                                      new RouteParam(RouteIds.DIRECTION_ID.getValue(),
+                                                                     e.getItem()
+                                                                      .getId())))
+                       .ifPresent(
+                               editor -> editor.setData(locationData, adventureData)));
+
+        ViewSupporter.setSize(directionGrid);
+        directionGrid.setEmptyStateText("Create some exits.");
 
         return directionGrid;
     }

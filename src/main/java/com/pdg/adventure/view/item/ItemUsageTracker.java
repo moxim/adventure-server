@@ -17,6 +17,7 @@ import com.pdg.adventure.view.support.TrackedUsage;
  * Scans command actions to find references to specific items.
  */
 public class ItemUsageTracker {
+        public static final String LOCATION_ITEM_TEXT = "Location Item";
 
     /**
      * Data class representing a single usage of an item.
@@ -28,7 +29,7 @@ public class ItemUsageTracker {
         private final String context;
         private final String commandSpecification;
 
-        public ItemUsage(String usageType, String sourceLocationId, String sourceLocationDescription,
+        ItemUsage(String usageType, String sourceLocationId, String sourceLocationDescription,
                         String context, String commandSpecification) {
             this.usageType = usageType;
             this.sourceLocationId = sourceLocationId;
@@ -61,7 +62,7 @@ public class ItemUsageTracker {
             StringBuilder sb = new StringBuilder();
             sb.append(usageType).append(": ");
 
-            if ("Location Item".equals(usageType)) {
+            if (LOCATION_ITEM_TEXT.equals(usageType)) {
                 sb.append("In location '").append(sourceLocationDescription != null ? sourceLocationDescription : sourceLocationId).append("'");
             } else {
                 String locationName = sourceLocationDescription != null ? sourceLocationDescription : sourceLocationId;
@@ -90,34 +91,39 @@ public class ItemUsageTracker {
         Map<String, LocationData> locations = adventureData.getLocationData();
         if (locations != null) {
             for (Map.Entry<String, LocationData> locationEntry : locations.entrySet()) {
-                LocationData location = locationEntry.getValue();
-                String sourceLocationId = locationEntry.getKey();
-                String sourceLocationDesc = location.getDescriptionData() != null ?
-                        location.getDescriptionData().getShortDescription() : null;
-
-                // Check if item is in this location's ItemContainer
-                if (location.getItemContainerData() != null &&
-                    location.getItemContainerData().getItems() != null) {
-                    boolean itemInLocation = location.getItemContainerData().getItems().stream()
-                            .anyMatch(item -> item != null && itemId.equals(item.getId()));
-
-                    if (itemInLocation) {
-                        usages.add(new ItemUsage(
-                                "Location Item",
-                                sourceLocationId,
-                                sourceLocationDesc,
-                                "Item is in this location",
-                                null
-                        ));
-                    }
-                }
-
-                // Check command actions in this location
-                checkCommandActions(location, sourceLocationId, sourceLocationDesc, itemId, usages);
+                scanSingleLocationForItemUsage(itemId, locationEntry, usages);
             }
         }
 
         return usages;
+    }
+
+    private static void scanSingleLocationForItemUsage(final String itemId, final Map.Entry<String, LocationData> locationEntry,
+                                  final List<ItemUsage> usages) {
+        LocationData location = locationEntry.getValue();
+        String sourceLocationId = locationEntry.getKey();
+        String sourceLocationDesc = location.getDescriptionData() != null ?
+                location.getDescriptionData().getShortDescription() : null;
+
+        // Check if item is in this location's ItemContainer
+        if (location.getItemContainerData() != null &&
+            location.getItemContainerData().getItems() != null) {
+            boolean itemInLocation = location.getItemContainerData().getItems().stream()
+                    .anyMatch(item -> item != null && itemId.equals(item.getId()));
+
+            if (itemInLocation) {
+                usages.add(new ItemUsage(
+                        LOCATION_ITEM_TEXT,
+                        sourceLocationId,
+                        sourceLocationDesc,
+                        "Item is in this location",
+                        null
+                ));
+            }
+        }
+
+        // Check command actions in this location
+        checkCommandActions(location, sourceLocationId, sourceLocationDesc, itemId, usages);
     }
 
     /**
@@ -138,23 +144,29 @@ public class ItemUsageTracker {
             CommandChainData chain = commandEntry.getValue();
 
             if (chain != null && chain.getCommands() != null) {
-                for (CommandData command : chain.getCommands()) {
-                    // Check primary action
-                    if (command.getAction() != null) {
-                        checkItemAction(command.getAction(), sourceLocationId, sourceLocationDesc,
-                                commandSpec, "Primary Action", targetItemId, usages);
-                    }
+                scanCommandChainForItemUsage(sourceLocationId, sourceLocationDesc, targetItemId, usages, chain, commandSpec);
+            }
+        }
+    }
 
-                    // Check follow-up actions
-                    if (command.getFollowUpActions() != null) {
-                        int followUpIndex = 1;
-                        for (ActionData followUpAction : command.getFollowUpActions()) {
-                            checkItemAction(followUpAction, sourceLocationId, sourceLocationDesc,
+    private static void scanCommandChainForItemUsage(final String sourceLocationId, final String sourceLocationDesc,
+                                  final String targetItemId, final List<ItemUsage> usages, final CommandChainData chain,
+                                  final String commandSpec) {
+        for (CommandData command : chain.getCommands()) {
+            // Check primary action
+            if (command.getAction() != null) {
+                checkItemAction(command.getAction(), sourceLocationId, sourceLocationDesc,
+                                commandSpec, "Primary Action", targetItemId, usages);
+            }
+
+            // Check follow-up actions
+            if (command.getFollowUpActions() != null) {
+                int followUpIndex = 1;
+                for (ActionData followUpAction : command.getFollowUpActions()) {
+                    checkItemAction(followUpAction, sourceLocationId, sourceLocationDesc,
                                     commandSpec, "Follow-up Action #" + followUpIndex,
                                     targetItemId, usages);
-                            followUpIndex++;
-                        }
-                    }
+                    followUpIndex++;
                 }
             }
         }
@@ -223,7 +235,7 @@ public class ItemUsageTracker {
     public static List<ItemUsage> findItemUsagesExcludingLocationContainers(AdventureData adventureData, String itemId) {
         List<ItemUsage> allUsages = findItemUsages(adventureData, itemId);
         return allUsages.stream()
-                .filter(usage -> !"Location Item".equals(usage.getUsageType()))
+                .filter(usage -> !LOCATION_ITEM_TEXT.equals(usage.getUsageType()))
                 .toList();
     }
 

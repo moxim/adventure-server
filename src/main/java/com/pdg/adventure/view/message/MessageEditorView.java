@@ -6,6 +6,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -35,6 +36,10 @@ public class MessageEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
 
     private static final Logger LOG = LoggerFactory.getLogger(MessageEditorView.class);
+    private static final String FONT_WEIGHT_TEXT = "font-weight";
+    private static final String FONT_STYLE_TEXT = "font-style";
+    private static final String FONT_COLOR_TEXT = "color";
+    private static final String FONT_SECONDARY_COLOR_TEXT = "var(--lumo-secondary-text-color)";
 
     private final transient AdventureService adventureService;
     private final transient MessageService messageService;
@@ -81,7 +86,7 @@ public class MessageEditorView extends VerticalLayout
 
         // Preview section
         Span previewLabel = new Span("Preview:");
-        previewLabel.getStyle().set("font-weight", "bold");
+        previewLabel.getStyle().set(FONT_WEIGHT_TEXT, "bold");
         previewDiv = new Div();
         previewDiv.getStyle().set("border", "1px solid var(--lumo-contrast-20pct)")
                   .set("border-radius", "var(--lumo-border-radius-m)").set("padding", "var(--lumo-space-m)")
@@ -94,7 +99,7 @@ public class MessageEditorView extends VerticalLayout
 
         // Usage info section
         Span usageLabel = new Span("Usage:");
-        usageLabel.getStyle().set("font-weight", "bold");
+        usageLabel.getStyle().set(FONT_WEIGHT_TEXT, "bold");
         usageInfoDiv = new Div();
         usageInfoDiv.getStyle().set("border", "1px solid var(--lumo-contrast-20pct)")
                     .set("border-radius", "var(--lumo-border-radius-m)").set("padding", "var(--lumo-space-m)")
@@ -178,10 +183,10 @@ public class MessageEditorView extends VerticalLayout
         String text = messageTextField.getValue();
         if (text == null || text.trim().isEmpty()) {
             previewDiv.setText("(empty message)");
-            previewDiv.getStyle().set("font-style", "italic").set("color", "var(--lumo-secondary-text-color)");
+            previewDiv.getStyle().set(FONT_STYLE_TEXT, "italic").set(FONT_COLOR_TEXT, FONT_SECONDARY_COLOR_TEXT);
         } else {
             previewDiv.setText(text);
-            previewDiv.getStyle().set("font-style", "normal").set("color", "var(--lumo-body-text-color)");
+            previewDiv.getStyle().set(FONT_STYLE_TEXT, "normal").set(FONT_COLOR_TEXT, "var(--lumo-body-text-color)");
         }
     }
 
@@ -219,12 +224,9 @@ public class MessageEditorView extends VerticalLayout
 
                 navigateBack();
             }
-        } catch (ValidationException e) {
+        } catch (ValidationException | IllegalArgumentException e) {
             LOG.error(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            // Handle service exceptions (e.g., duplicate ID)
-            LOG.error(e.getMessage());
-            // TODO: Show error notification to user
+            Notification.show("Error saving message: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
         }
     }
 
@@ -261,22 +263,22 @@ public class MessageEditorView extends VerticalLayout
         if (messageId == null || messageId.isEmpty()) {
             usageInfoDiv.removeAll();
             usageInfoDiv.add(new Span("This is a new message. Usage information will be available after saving."));
-            usageInfoDiv.getStyle().set("font-style", "italic").set("color", "var(--lumo-secondary-text-color)");
+            usageInfoDiv.getStyle().set(FONT_STYLE_TEXT, "italic").set(FONT_COLOR_TEXT, FONT_SECONDARY_COLOR_TEXT);
             return;
         }
 
         List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData, messageId);
 
         usageInfoDiv.removeAll();
-        usageInfoDiv.getStyle().set("font-style", "normal").set("color", "var(--lumo-body-text-color)");
+        usageInfoDiv.getStyle().set(FONT_STYLE_TEXT, "normal").set(FONT_COLOR_TEXT, "var(--lumo-body-text-color)");
 
         if (usages.isEmpty()) {
             Span noUsageSpan = new Span("This message is not currently used anywhere in the adventure.");
-            noUsageSpan.getStyle().set("color", "var(--lumo-secondary-text-color)");
+            noUsageSpan.getStyle().set(FONT_COLOR_TEXT, FONT_SECONDARY_COLOR_TEXT);
             usageInfoDiv.add(noUsageSpan);
         } else {
             Span usageCountSpan = new Span("Used in " + usages.size() + " location(s):");
-            usageCountSpan.getStyle().set("font-weight", "bold").set("display", "block").set("margin-bottom", "0.5em");
+            usageCountSpan.getStyle().set(FONT_WEIGHT_TEXT, "bold").set("display", "block").set("margin-bottom", "0.5em");
             usageInfoDiv.add(usageCountSpan);
 
             VerticalLayout usageList = new VerticalLayout();

@@ -69,7 +69,7 @@ public class Vocabulary extends BasicData implements Ided {
 
     public void setWords(Collection<Word> words) {
         data.getWords().clear();
-        words.forEach(word -> data.addWord(word));
+        words.forEach(data::addWord);
     }
 
     public Optional<Word> findWord(String aWordText) {

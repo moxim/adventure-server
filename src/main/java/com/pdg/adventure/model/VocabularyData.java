@@ -20,6 +20,7 @@ public class VocabularyData extends BasicData {
     public static final String YES_TEXT = "yes";
     public static final String NO_TEXT = "no";
 
+    public static final String ID_TEXT = "Id";
     public static final String VERB_TEXT = "verb";
     public static final String ADJECTIVE_TEXT = "adjective";
     public static final String NOUN_TEXT = "noun";

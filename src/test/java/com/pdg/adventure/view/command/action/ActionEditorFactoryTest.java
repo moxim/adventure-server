@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.LocationData;
@@ -14,9 +17,6 @@ import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ActionEditorFactoryTest {
 
@@ -56,8 +56,7 @@ class ActionEditorFactoryTest {
         ActionEditorComponent editor = ActionEditorFactory.createEditor(actionData, adventureData);
 
         // Then
-        assertThat(editor).isNotNull();
-        assertThat(editor).isInstanceOf(MovePlayerActionEditor.class);
+        assertThat(editor).isNotNull().isInstanceOf(MovePlayerActionEditor.class);
         assertThat(editor.getActionData()).isSameAs(actionData);
     }
 
@@ -70,8 +69,7 @@ class ActionEditorFactoryTest {
         ActionEditorComponent editor = ActionEditorFactory.createEditor(actionData, adventureData);
 
         // Then
-        assertThat(editor).isNotNull();
-        assertThat(editor).isInstanceOf(MoveItemActionEditor.class);
+        assertThat(editor).isNotNull().isInstanceOf(MoveItemActionEditor.class);
         assertThat(editor.getActionData()).isSameAs(actionData);
     }
 
@@ -84,8 +82,7 @@ class ActionEditorFactoryTest {
         ActionEditorComponent editor = ActionEditorFactory.createEditor(actionData, adventureData);
 
         // Then
-        assertThat(editor).isNotNull();
-        assertThat(editor).isInstanceOf(MessageActionEditor.class);
+        assertThat(editor).isNotNull().isInstanceOf(MessageActionEditor.class);
         assertThat(editor.getActionData()).isSameAs(actionData);
     }
 

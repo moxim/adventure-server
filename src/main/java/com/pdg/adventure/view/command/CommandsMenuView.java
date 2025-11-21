@@ -135,10 +135,10 @@ public class CommandsMenuView extends VerticalLayout
 
     private Grid<CommandDescriptionAdapter> getSimpleGrid() {
         Grid<CommandDescriptionAdapter> grid = new Grid<>(CommandDescriptionAdapter.class, false);
-        grid.setWidth(300, Unit.PIXELS);
         grid.addColumn(CommandDescriptionAdapter::getVerb).setHeader("Verb").setAutoWidth(true).setFlexGrow(0).setSortable(true);
         grid.addColumn(CommandDescriptionAdapter::getAdjective).setHeader("Adjective").setAutoWidth(true);
         grid.addColumn(CommandDescriptionAdapter::getNoun).setHeader("Noun").setAutoWidth(true);
+        ViewSupporter.setSize(grid);
         return grid;
     }
 
@@ -206,8 +206,6 @@ public class CommandsMenuView extends VerticalLayout
         // Add context menu
         new CommandContextMenu(grid);
 
-//        grid.setWidth(50, Unit.PERCENTAGE);
-//        grid.setSizeFull();
         gridContainer.add(grid);
         saveButton.setEnabled(false);
         resetButton.setEnabled(false);

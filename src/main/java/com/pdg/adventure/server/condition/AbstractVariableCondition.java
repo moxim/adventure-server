@@ -1,11 +1,13 @@
 package com.pdg.adventure.server.condition;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import com.pdg.adventure.server.exception.ConfigurationException;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public abstract class AbstractVariableCondition extends AbstractCondition {
     @Getter
     protected final transient VariableProvider variableProvider;
