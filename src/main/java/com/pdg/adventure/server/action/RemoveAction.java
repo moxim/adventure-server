@@ -20,7 +20,8 @@ public class RemoveAction extends AbstractAction {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
             thing.setIsWorn(false);
         } else {
-            result.setResultMessage(String.format(messagesHolder.getMessage("-7"), thing.getEnrichedBasicDescription()));
+            result.setResultMessage(
+                    String.format(messagesHolder.getMessage("-7"), thing.getEnrichedBasicDescription()));
         }
         return result;
     }

@@ -148,9 +148,9 @@ public class MoveItemActionEditor extends ActionEditorComponent {
      */
     private ItemData findItemById(List<ItemData> items, String itemId) {
         return items.stream()
-                .filter(item -> item.getId().equals(itemId))
-                .findFirst()
-                .orElse(null);
+                    .filter(item -> item.getId().equals(itemId))
+                    .findFirst()
+                    .orElse(null);
     }
 
     /**
@@ -175,7 +175,7 @@ public class MoveItemActionEditor extends ActionEditorComponent {
     }
 
     /**
-     * Formats a label for an item container, showing either "Player's Pocket" or the location name.
+     * Formats a label for an item container, showing either "your pocket" or the location name.
      */
     private String formatContainerLabel(ItemContainerData container) {
         if (container == null) {
@@ -185,7 +185,7 @@ public class MoveItemActionEditor extends ActionEditorComponent {
         // Check if this is the player's pocket
         if (adventureData.getPlayerPocket() != null &&
             container.getId().equals(adventureData.getPlayerPocket().getId())) {
-            return "Player's Pocket";
+            return "your pocket";
         }
 
         // Find the location that contains this container
@@ -205,8 +205,8 @@ public class MoveItemActionEditor extends ActionEditorComponent {
      */
     private ItemContainerData findContainerById(List<ItemContainerData> containers, String containerId) {
         return containers.stream()
-                .filter(container -> container.getId().equals(containerId))
-                .findFirst()
-                .orElse(null);
+                         .filter(container -> container.getId().equals(containerId))
+                         .findFirst()
+                         .orElse(null);
     }
 }

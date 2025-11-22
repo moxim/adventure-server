@@ -1,8 +1,11 @@
 package com.pdg.adventure.server.condition;
 
+import lombok.EqualsAndHashCode;
+
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.api.PreCondition;
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class NotCondition extends AbstractCondition {
 
     private final PreCondition wrappedCondition;

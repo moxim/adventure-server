@@ -11,8 +11,9 @@ import com.pdg.adventure.server.testhelper.TestSupporter;
 class SameConditionTest {
 
     VariableProvider vp = new VariableProvider();
+
     {
-        Variable v1= new Variable("one", "one");
+        Variable v1 = new Variable("one", "one");
         Variable v2 = new Variable("two", "twp");
         Variable v3 = new Variable("oneToo", "one");
 

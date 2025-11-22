@@ -1,14 +1,16 @@
 package com.pdg.adventure.server.vocabulary;
 
-import com.pdg.adventure.model.Word;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
+import com.pdg.adventure.model.Word;
+
 class VocabularyTest {
     private final Vocabulary sut = new Vocabulary();
+
     {
         sut.createNewWord("take", Word.Type.VERB);
     }
@@ -34,7 +36,7 @@ class VocabularyTest {
 
         // when
         assertThatIllegalArgumentException().isThrownBy(() ->
-                sut.createSynonym("get", "pick")
+                                                                sut.createSynonym("get", "pick")
         ).withMessageContaining("not present");
 
         // then

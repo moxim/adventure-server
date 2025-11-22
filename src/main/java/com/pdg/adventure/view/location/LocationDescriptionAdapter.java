@@ -1,16 +1,15 @@
 package com.pdg.adventure.view.location;
 
+import lombok.Getter;
+
 import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 public class LocationDescriptionAdapter implements Describable {
     private final LocationData locationData;
-    private int usageCount;
-
-    public LocationDescriptionAdapter(LocationData aLocationData) {
-        this(aLocationData, 0);
-    }
+    @Getter
+    private final int usageCount;
 
     public LocationDescriptionAdapter(LocationData aLocationData, int aUsageCount) {
         locationData = aLocationData;
@@ -29,7 +28,8 @@ public class LocationDescriptionAdapter implements Describable {
 
     @Override
     public String getBasicDescription() {
-        return ViewSupporter.getWordText(locationData.getDescriptionData().getAdjective()) + " " + ViewSupporter.getWordText(locationData.getDescriptionData().getNoun());
+        return ViewSupporter.getWordText(locationData.getDescriptionData().getAdjective()) + " " +
+               ViewSupporter.getWordText(locationData.getDescriptionData().getNoun());
     }
 
     @Override
@@ -65,12 +65,4 @@ public class LocationDescriptionAdapter implements Describable {
     public int getLumen() {
         return locationData.getLumen();
     }
-
-    public int getUsageCount() {
-        return usageCount;
-    }
-
-//    public void setUsageCount(int aUsageCount) {
-//        usageCount = aUsageCount;
-//    }
 }

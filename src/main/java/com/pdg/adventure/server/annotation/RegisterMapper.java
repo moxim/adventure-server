@@ -13,17 +13,17 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RegisterMapper {
-    
+
     /**
      * The data object (DTO) class that this mapper handles
      */
     Class<?> dataObjectClass();
-    
+
     /**
      * The business object class that this mapper handles
      */
     Class<?> businessObjectClass();
-    
+
     /**
      * Optional priority for registration order (lower numbers = higher priority)
      * Useful when mappers have dependencies on each other

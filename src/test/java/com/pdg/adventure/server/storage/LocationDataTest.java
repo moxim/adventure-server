@@ -24,7 +24,7 @@ import com.pdg.adventure.server.storage.mongo.CascadeSaveMongoEventListener;
 import com.pdg.adventure.server.storage.mongo.UuidIdGenerationMongoEventListener;
 
 @DataMongoTest
-@Import(value={UuidIdGenerationMongoEventListener.class, CascadeSaveMongoEventListener.class})
+@Import(value = {UuidIdGenerationMongoEventListener.class, CascadeSaveMongoEventListener.class})
 @Order(1)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class LocationDataTest {
@@ -51,7 +51,7 @@ class LocationDataTest {
 
     @Test
     @Order(3)
-    @DirtiesContext(methodMode=DirtiesContext.MethodMode.BEFORE_METHOD)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     void findSpecificLocation(@Autowired MongoTemplate mongoTemplate) {
         // Create and explicitly save the Words first
         Word nounWord = new Word(nounText, Word.Type.NOUN);

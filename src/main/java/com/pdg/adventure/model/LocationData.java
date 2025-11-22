@@ -22,7 +22,7 @@ public class LocationData extends ThingData {
     private Set<DirectionData> directionsData = new HashSet<>();
 
     private int timesVisited;
-    private int lumen= 50;
+    private int lumen = 50;
 
     public LocationData() {
         timesVisited = 0;
@@ -32,8 +32,8 @@ public class LocationData extends ThingData {
     @Override
     public String toString() {
         return "LocationData{" +
-                "id=" + getId() +
-                "itemContainerDataId=" + (itemContainerData != null ? itemContainerData.getId() : "null") +
-                "}";
+               "id=" + getId() +
+               "itemContainerDataId=" + (itemContainerData != null ? itemContainerData.getId() : "null") +
+               "}";
     }
 }

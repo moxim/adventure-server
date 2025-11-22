@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -21,10 +22,11 @@ import java.util.Optional;
 import static com.pdg.adventure.model.Word.Type.ADJECTIVE;
 import static com.pdg.adventure.model.Word.Type.NOUN;
 
-import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.ItemData;
-import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.model.*;
+import com.pdg.adventure.model.action.DropActionData;
+import com.pdg.adventure.model.action.TakeActionData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
+import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.server.storage.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
@@ -67,10 +69,8 @@ public class ItemEditorView extends VerticalLayout
         itemData = new ItemData();
         itemId = itemData.getId();
 
-        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this item.", ADJECTIVE,
-                                                      new VocabularyData());
-
-        nounSelector = new VocabularyPickerField("Noun", "The main theme of this item.", NOUN, new VocabularyData());
+        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this item.");
+        nounSelector = new VocabularyPickerField("Noun", "The main theme of this item.");
         nounSelector.setPlaceholder("Select a noun (required)");
 
         TextField itemIdTF = getItemIdTF();
@@ -80,8 +80,7 @@ public class ItemEditorView extends VerticalLayout
         TextArea longDescription = getLongDescTextArea();
 
         // Checkboxes for item properties
-        Checkbox isContainableCheckbox = new Checkbox("Can be picked up / Is containable");
-        isContainableCheckbox.setTooltipText("If checked, this item can be picked up and placed in containers.");
+        final var isContainableCheckbox = createIsContainableCheckbox();
 
         Checkbox isWearableCheckbox = new Checkbox("Is wearable");
         isWearableCheckbox.setTooltipText("If checked, this item can be worn by the player.");
@@ -122,6 +121,33 @@ public class ItemEditorView extends VerticalLayout
 
         HorizontalLayout idRow = new HorizontalLayout(itemIdTF, locationIdTF, adventureIdTF);
         add(idRow, h1, shortDescription, longDescription, checkboxRow, resetBackSaveView);
+    }
+
+    private Checkbox createIsContainableCheckbox() {
+        Checkbox isContainableCheckbox = new Checkbox("Can be picked up / Is containable");
+        isContainableCheckbox.setTooltipText("If checked, this item can be picked up and placed in containers.");
+
+        // Add value change listener to handle both checking and unchecking
+        isContainableCheckbox.addValueChangeListener(event -> {
+            // Only process user interactions, not programmatic changes
+            if (!event.isFromClient()) {
+                return;
+            }
+
+            if (Boolean.TRUE.equals(event.getValue())) {
+                binder.writeBeanIfValid(ivm);
+                // Checkbox was checked - show verb selection dialog
+                if (!tryToAddPickUpCommands(itemData, adventureData.getVocabularyData())) {
+                    // Revert checkbox state if adding commands failed
+                    isContainableCheckbox.setValue(false);
+                }
+            } else {
+                // Checkbox was unchecked - remove take/drop commands
+                removePickupCommands(itemData);
+            }
+        });
+
+        return isContainableCheckbox;
     }
 
     private TextField getItemIdTF() {
@@ -180,23 +206,137 @@ public class ItemEditorView extends VerticalLayout
 
     private void navigateBack() {
         UI.getCurrent().navigate(ItemsMenuView.class, new RouteParameters(
-                                                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                               .ifPresent(editor -> editor.setData(adventureData, locationData));
+//                  new RouteParam(RouteIds.ITEM_ID.getValue(), itemId),
+                  new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+          .ifPresent(editor -> editor.setData(adventureData, locationData));
+    }
+
+    private boolean tryToAddPickUpCommands(final ItemData anItemData, final VocabularyData aVocabularyData) {
+        Word takeVerb = aVocabularyData.getTakeWord();
+        Word dropVerb = aVocabularyData.getDropWord();
+        if (dropVerb == null || takeVerb == null) {
+            Notification.show("Please select verbs to allow a player to handle this item in the vocabulary section.",
+                              3000, Notification.Position.MIDDLE);
+            return false;
+        } else {
+            LOG.info("Selected verbs: {} and {} for item: {}", takeVerb.getText(), dropVerb.getText(),
+                     anItemData.getId());
+            createPickupCommands(takeVerb, dropVerb, anItemData);
+            Notification.show("Take and drop commands added", 2000, Notification.Position.BOTTOM_START);
+        }
+        return true;
+    }
+
+    private void removePickupCommands(ItemData anItemData) {
+        if (anItemData == null || anItemData.getCommandProviderData() == null) {
+            return;
+        }
+
+        CommandProviderData commandProvider = anItemData.getCommandProviderData();
+
+        // Iterate through all command chains and remove take/drop actions
+        commandProvider.getAvailableCommands().entrySet().removeIf(entry -> {
+            CommandChainData commandChain = entry.getValue();
+            if (commandChain == null || commandChain.getCommands() == null) {
+                return false;
+            }
+
+            // Remove commands with TakeActionData or DropActionData
+            commandChain.getCommands().removeIf(command -> {
+                if (command.getAction() == null) {
+                    return false;
+                }
+                final CommandData rawTakeCommandData = getRawCommandData(
+                        adventureData.getVocabularyData().getTakeWord(),
+                        anItemData);
+                final CommandData rawDropCommandData = getRawCommandData(
+                        adventureData.getVocabularyData().getDropWord(),
+                        anItemData);
+                return command.getCommandDescription().getCommandSpecification()
+                              .equals(rawTakeCommandData.getCommandDescription().getCommandSpecification())
+                       ||
+                       command.getCommandDescription().getCommandSpecification()
+                              .equals(rawDropCommandData.getCommandDescription().getCommandSpecification());
+            });
+
+            // Remove the entire command chain if it's now empty
+            return commandChain.getCommands().isEmpty();
+        });
+
+        LOG.info("Removed take/drop commands from item: {}", anItemData.getId());
+        Notification.show("Take and drop commands removed", 2000, Notification.Position.BOTTOM_START);
+    }
+
+    private void createPickupCommands(final Word aTakeVerb, final Word aDropVerb, final ItemData anItemData) {
+        // First remove any existing take/drop commands to avoid duplicates
+        removePickupCommands(anItemData);
+
+        final var takeCommandData = createTakeCommandData(aTakeVerb, anItemData);
+        anItemData.getCommandProviderData().add(takeCommandData);
+
+        final var dropCommandData = createDropCommandData(aDropVerb, anItemData);
+        anItemData.getCommandProviderData().add(dropCommandData);
+
+        /*
+        GenericCommand takeFailCommand = new GenericCommand(getCommandDescription, new MessageAction(
+                String.format(allMessages.getMessage("-13"), anItem.getEnrichedBasicDescription()), allMessages));
+        takeFailCommand.addPreCondition(new CarriedCondition(anItem));
+        anItem.addCommand(takeFailCommand);
+
+        GenericCommand takeCommand = new GenericCommand(getCommandDescription, new TakeAction(anItem,
+                                                                                              new ContainerSupplier(
+                                                                                                      Environment.getPocket()),
+                                                                                              allMessages));
+        takeCommand.addPreCondition(new NotCondition(new CarriedCondition(anItem)));
+        takeCommand.addPreCondition(new PresentCondition(anItem));
+        anItem.addCommand(takeCommand);
+        GenericCommandDescription dropCommandDescription = new GenericCommandDescription("drop", anItem);
+        GenericCommand dropAndRemoveCommand = new GenericCommand(dropCommandDescription, new DropAction(anItem,
+                                                                                                        new ContainerSupplier(
+                                                                                                                Environment.getCurrentLocation()
+                                                                                                                           .getItemContainer()),
+                                                                                                        allMessages));
+*/
+    }
+
+    private CommandData createTakeCommandData(final Word aVerb, final ItemData anItem) {
+        final var takeCommandData = getRawCommandData(aVerb, anItem);
+        final var takeActionData = new TakeActionData();
+        takeActionData.setThingId(anItem.getId());
+        takeCommandData.setAction(takeActionData);
+        return takeCommandData;
+    }
+
+    private CommandData createDropCommandData(final Word aVerb, final ItemData anItem) {
+        final var dropCommandData = getRawCommandData(aVerb, anItem);
+        DropActionData dropActionData = new DropActionData();
+        dropActionData.setThingId(anItem.getId());
+        dropCommandData.setAction(dropActionData);
+        return dropCommandData;
+    }
+
+    private CommandData getRawCommandData(final Word aTakeVerb, final ItemData anItem) {
+        DescriptionData itemDescription = anItem.getDescriptionData();
+        CommandDescriptionData commandDescription = new CommandDescriptionData(aTakeVerb,
+                                                                               itemDescription.getAdjective(),
+                                                                               itemDescription.getNoun());
+        return new CommandData(commandDescription);
     }
 
     private void validateSave(ItemViewModel anItemViewModel) {
         try {
             if (binder.validate().isOk()) {
                 binder.writeBean(anItemViewModel);
-                final ItemData itemData = anItemViewModel.getData();
+                final ItemData modelItemData = anItemViewModel.getData();
 
                 // Set adventure and location IDs
-                itemData.setAdventureId(adventureData.getId());
-                itemData.setLocationId(locationData.getId());
+                modelItemData.setAdventureId(adventureData.getId());
+                modelItemData.setLocationId(locationData.getId());
+                modelItemData.setParentContainerId(locationData.getItemContainerData().getId());
 
                 // Save item to items collection first (required for @DBRef to work)
-                ItemData savedItem = itemService.saveItem(itemData);
+                ItemData savedItem = itemService.saveItem(modelItemData);
 
                 // Update or add item reference to the in-memory container
                 List<ItemData> items = locationData.getItemContainerData().getItems();

@@ -1,6 +1,7 @@
 package com.pdg.adventure.view.message;
 
 import lombok.Data;
+
 import com.pdg.adventure.model.MessageData;
 
 /**
@@ -28,7 +29,8 @@ public class MessageViewModel {
 
     /**
      * Constructor for editing an existing message.
-     * @param messageId The message ID
+     *
+     * @param messageId   The message ID
      * @param messageText The message text
      */
     public MessageViewModel(String messageId, String messageText) {
@@ -40,9 +42,10 @@ public class MessageViewModel {
 
     /**
      * Constructor for editing an existing message with usage count.
-     * @param messageId The message ID
+     *
+     * @param messageId   The message ID
      * @param messageText The message text
-     * @param usageCount Number of times this message is used
+     * @param usageCount  Number of times this message is used
      */
     public MessageViewModel(String messageId, String messageText, int usageCount) {
         this.id = messageId;
@@ -53,6 +56,7 @@ public class MessageViewModel {
 
     /**
      * Constructor from MessageData.
+     *
      * @param messageData The message data from database
      */
     public MessageViewModel(MessageData messageData) {
@@ -66,8 +70,9 @@ public class MessageViewModel {
 
     /**
      * Constructor from MessageData with usage count.
+     *
      * @param messageData The message data from database
-     * @param usageCount Number of times this message is used
+     * @param usageCount  Number of times this message is used
      */
     public MessageViewModel(MessageData messageData, int usageCount) {
         this(messageData);
@@ -76,6 +81,7 @@ public class MessageViewModel {
 
     /**
      * Get a preview of the message (truncated if too long).
+     *
      * @param maxLength Maximum length of preview
      * @return Truncated message text
      */
@@ -91,6 +97,7 @@ public class MessageViewModel {
 
     /**
      * Check if the message ID is valid (not empty, alphanumeric with underscores).
+     *
      * @return true if valid
      */
     public boolean isValidId() {

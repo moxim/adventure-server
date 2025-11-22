@@ -5,7 +5,7 @@ import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
-public class EqualsCondition extends AbstractVariableCondition  {
+public class EqualsCondition extends AbstractVariableCondition {
 
     private final String variableName;
     private final String value;

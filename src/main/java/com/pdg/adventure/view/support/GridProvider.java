@@ -1,6 +1,5 @@
 package com.pdg.adventure.view.support;
 
-import com.pdg.adventure.api.Describable;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -13,22 +12,26 @@ import com.vaadin.flow.function.ValueProvider;
 
 import java.util.List;
 
+import com.pdg.adventure.api.Describable;
+
 public class GridProvider<T extends Describable> {
     Grid<T> grid;
 
     public GridProvider(Class<T> clazz) {
         grid = new Grid<>(clazz, false);
-        grid.setSizeFull();
-        grid.addColumn(ViewSupporter::formatId).setHeader("Id");//.setAutoWidth(true).setFlexGrow(0);
+        grid.addColumn(ViewSupporter::formatId).setHeader("Id").setAutoWidth(true).setFlexGrow(0);
         grid.addColumn(ViewSupporter::formatDescription).setHeader("Short Description").setSortable(true);
 //                .setAutoWidth(true);
         grid.getColumns().forEach(column -> column.setAutoWidth(true));
-        grid.setWidth("500px");
-        grid.setHeight("500px");
+        grid.setSizeFull();
+//        grid.setWidth("500px");
+//        grid.setHeight("500px");
         grid.addThemeVariants(GridVariant.LUMO_WRAP_CELL_CONTENT);
     }
 
-    public Grid<T> getGrid() {return grid;}
+    public Grid<T> getGrid() {
+        return grid;
+    }
 
     public void addColumn(ValueProvider<T, ?> valueProvider, String aName) {
         grid.addColumn(valueProvider).setHeader(aName);
@@ -62,7 +65,7 @@ public class GridProvider<T extends Describable> {
         grid.addItemDoubleClickListener(aListener);
     }
 
-    public void setFilter(SerializablePredicate<T> aFilter , List<T> aListOfThings, TextField aSearchField) {
+    public void setFilter(SerializablePredicate<T> aFilter, List<T> aListOfThings, TextField aSearchField) {
         final GridListDataView<T> dataView = grid.setItems(aListOfThings);
         aSearchField.addValueChangeListener(e -> dataView.refreshAll());
         dataView.addFilter(aFilter);

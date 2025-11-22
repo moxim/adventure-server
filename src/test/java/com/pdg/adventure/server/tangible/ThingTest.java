@@ -1,27 +1,30 @@
 package com.pdg.adventure.server.tangible;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.pdg.adventure.api.Container;
+import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
-import com.pdg.adventure.server.vocabulary.Vocabulary;
-import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.testhelper.TestSupporter;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 class ThingTest {
     private final VariableProvider variableProvider = new VariableProvider();
     private final Vocabulary vocabulary = new Vocabulary();
+
     {
         vocabulary.createNewWord("take", Word.Type.VERB);
     }
-    private Container pocket = new GenericContainer(new DescriptionProvider("your pocket"), 5);
+
+    private final Container pocket = new GenericContainer(new DescriptionProvider("your pocket"), 5);
 
     @Test
     void removeCommand() {

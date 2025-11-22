@@ -1,21 +1,13 @@
 package com.pdg.adventure.view.command;
 
-import lombok.Getter;
-
 import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.view.support.ViewSupporter;
 
-public class CommandDescriptionAdapter implements Describable {
-    @Getter
-    private final CommandDescriptionData commandDescription;
-
-    public CommandDescriptionAdapter(CommandDescriptionData aCommandDescription) {
-        commandDescription = aCommandDescription;
-    }
+public record CommandDescriptionAdapter(CommandDescriptionData commandDescription) implements Describable {
 
     public CommandDescriptionAdapter(String aCommandSpecification) {
-        commandDescription = new CommandDescriptionData(aCommandSpecification);
+        this(new CommandDescriptionData(aCommandSpecification));
     }
 
     public String getVerb() {

@@ -1,8 +1,9 @@
 package com.pdg.adventure.model.action;
 
-import com.pdg.adventure.model.basic.BasicData;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import com.pdg.adventure.model.basic.BasicData;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)

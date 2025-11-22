@@ -12,9 +12,9 @@ import com.pdg.adventure.server.testhelper.TestSupporter;
 
 class GenericCommandProviderDataTest {
 
-    private CommandProviderData sut = new CommandProviderData();
-    private String commandId = "c_id_1";
-    private VocabularyData vocabularyData = new VocabularyData();
+    private final CommandProviderData sut = new CommandProviderData();
+    private final String commandId = "c_id_1";
+    private final VocabularyData vocabularyData = new VocabularyData();
     CommandDescriptionData cmdDesc = TestSupporter.createCommandDescriptionData(commandId, vocabularyData);
 
     @BeforeEach
@@ -34,7 +34,7 @@ class GenericCommandProviderDataTest {
 
     @Test
     void add() {
-        String localCommandId ="c_id_2";
+        String localCommandId = "c_id_2";
         sut.add(TestSupporter.createCommand(localCommandId, vocabularyData));
         final Map<String, CommandChainData> availableCommands = sut.getAvailableCommands();
         assertThat(availableCommands.size()).isEqualTo(2);
@@ -42,7 +42,8 @@ class GenericCommandProviderDataTest {
                 TestSupporter.createCommandDescriptionData(commandId, vocabularyData);
         final String commandSpec = commandDescriptionData.getCommandSpecification();
         assertThat(availableCommands.get(commandSpec)).isNotNull();
-        CommandDescriptionData localCommandChain = TestSupporter.createCommandDescriptionData(localCommandId, vocabularyData);
+        CommandDescriptionData localCommandChain = TestSupporter.createCommandDescriptionData(localCommandId,
+                                                                                              vocabularyData);
 
         assertThat(availableCommands.get(localCommandChain.getCommandSpecification())).isNotNull();
         assertThat(availableCommands.get(localCommandChain.getCommandSpecification()).getCommands()).hasSize(1);

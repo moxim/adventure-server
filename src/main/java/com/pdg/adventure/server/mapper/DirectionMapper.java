@@ -29,7 +29,8 @@ public class DirectionMapper implements Mapper<DirectionData, GenericDirection> 
         Command command = commandMapper.mapToBO(aDirectionData.getCommandData());
         boolean mustMentionDestination = aDirectionData.isDestinationMustBeMentioned();
         String locationId = aDirectionData.getDestinationId();
-        GenericDirection direction = new GenericDirection(mapperSupporter.getMappedLocations(), command, locationId, mustMentionDestination);
+        GenericDirection direction = new GenericDirection(mapperSupporter.getMappedLocations(), command, locationId,
+                                                          mustMentionDestination);
         direction.setId(aDirectionData.getId());
         return direction;
     }

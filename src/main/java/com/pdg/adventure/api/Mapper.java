@@ -5,6 +5,7 @@ import java.util.List;
 
 public interface Mapper<DO, BO> {
     BO mapToBO(DO from);
+
     DO mapToDO(BO from);
 
     default List<BO> mapToBOs(List<DO> aDataObjectList) {

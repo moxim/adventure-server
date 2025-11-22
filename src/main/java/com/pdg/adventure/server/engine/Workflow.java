@@ -1,13 +1,13 @@
 package com.pdg.adventure.server.engine;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 import com.pdg.adventure.api.Command;
 import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
-
-import java.util.Map;
-import java.util.TreeMap;
 
 public class Workflow {
     private final Map<CommandDescription, Command> preCommands;
@@ -15,7 +15,7 @@ public class Workflow {
 
     public Workflow() {
         preCommands = new TreeMap<>();
-        interceptorCommands = new TreeMap<>()    ;
+        interceptorCommands = new TreeMap<>();
     }
 
     public void addPreCommand(GenericCommandDescription aCommandDescription, Command aCommand) {

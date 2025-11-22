@@ -17,15 +17,15 @@ public class PreconditionActionEditor extends VerticalLayout {
 
     public PreconditionActionEditor() {
         preconditionGrid = GridFactory.createGrid(PreConditionData.class, List.of(
-            new GridFactory.ColumnConfig<>(p -> p.getId(), "ID", false)
+                new GridFactory.ColumnConfig<>(p -> p.getId(), "ID", false)
         ));
         actionGrid = GridFactory.createGrid(ActionData.class, List.of(
-            new GridFactory.ColumnConfig<>(a -> a.getId(), "ID", false)
+                new GridFactory.ColumnConfig<>(a -> a.getId(), "ID", false)
         ));
         Button addPrecondition = new Button("Add Precondition", e -> addPrecondition());
         Button addAction = new Button("Add Action", e -> addAction());
         Details details = new Details("Preconditions & Actions", new VerticalLayout(
-            addPrecondition, preconditionGrid, addAction, actionGrid));
+                addPrecondition, preconditionGrid, addAction, actionGrid));
         add(details);
     }
 

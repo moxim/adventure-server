@@ -52,7 +52,7 @@ public class CommandsMenuView extends VerticalLayout
     private final Button backButton;
     private final Button createButton;
     private Grid<CommandDescriptionAdapter> grid;
-//    private GridUnbufferedInlineEditor grid;
+    //    private GridUnbufferedInlineEditor grid;
     private String pageTitle;
     private LocationData locationData;
     private AdventureData adventureData;
@@ -71,8 +71,8 @@ public class CommandsMenuView extends VerticalLayout
 
         createButton = new Button("Create", e -> {
             UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
-                                    new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                      new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
               .ifPresent(editor -> editor.setData(adventureData, locationData, gridListDataView));
 
 //            showCreateDialog(availableCommands);
@@ -80,9 +80,9 @@ public class CommandsMenuView extends VerticalLayout
 
         saveButton = new Button("Save");
         saveButton.addClickListener(e -> {
-                                    adventureService.saveLocationData(locationData);
-                                    saveButton.setEnabled(false);
-                                });
+            adventureService.saveLocationData(locationData);
+            saveButton.setEnabled(false);
+        });
 
         backButton = new Button("Back", event -> UI.getCurrent().navigate(LocationEditorView.class,
                                                                           new RouteParameters(
@@ -100,6 +100,7 @@ public class CommandsMenuView extends VerticalLayout
 
         VerticalLayout vll = new VerticalLayout(createButton, backButton, resetButton, saveButton);
         VerticalLayout vlr = new VerticalLayout(gridContainer);
+        vlr.setSizeFull();
 
         HorizontalLayout hl = new HorizontalLayout(vll, vlr);
         add(hl);
@@ -135,10 +136,12 @@ public class CommandsMenuView extends VerticalLayout
 
     private Grid<CommandDescriptionAdapter> getSimpleGrid() {
         Grid<CommandDescriptionAdapter> grid = new Grid<>(CommandDescriptionAdapter.class, false);
-        grid.setWidth(300, Unit.PIXELS);
-        grid.addColumn(CommandDescriptionAdapter::getVerb).setHeader("Verb").setAutoWidth(true).setFlexGrow(0).setSortable(true);
+        grid.addColumn(CommandDescriptionAdapter::getVerb).setHeader("Verb").setAutoWidth(true).setFlexGrow(0)
+            .setSortable(true);
         grid.addColumn(CommandDescriptionAdapter::getAdjective).setHeader("Adjective").setAutoWidth(true);
         grid.addColumn(CommandDescriptionAdapter::getNoun).setHeader("Noun").setAutoWidth(true);
+
+        ViewSupporter.setSize(grid);
         return grid;
     }
 
@@ -206,8 +209,6 @@ public class CommandsMenuView extends VerticalLayout
         // Add context menu
         new CommandContextMenu(grid);
 
-//        grid.setWidth(50, Unit.PERCENTAGE);
-//        grid.setSizeFull();
         gridContainer.add(grid);
         saveButton.setEnabled(false);
         resetButton.setEnabled(false);
@@ -215,9 +216,9 @@ public class CommandsMenuView extends VerticalLayout
 
     private void navigateToCommandEditor(String aCommandId) {
         UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
-                new RouteParam(RouteIds.COMMAND_ID.getValue(), aCommandId),
-                new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                  new RouteParam(RouteIds.COMMAND_ID.getValue(), aCommandId),
+                  new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
           .ifPresent(editor -> editor.setData(adventureData, locationData, gridListDataView));
     }
 

@@ -20,7 +20,7 @@ public final class ItemViewModel {
     private boolean isContainable;
     private boolean isWearable;
     private boolean isWorn;
-    private String locationId;
+    private final String locationId;
 
     public ItemViewModel(ItemData anItemData) {
         data = anItemData;

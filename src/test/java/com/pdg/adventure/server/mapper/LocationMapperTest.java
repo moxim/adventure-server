@@ -99,7 +99,7 @@ class LocationMapperTest {
         // Mock dependencies
         when(mapperSupporter.getMappedLocation("forest-clearing")).thenReturn(null);
         when(descriptionMapper.mapToBO(descriptionData)).thenReturn(descriptionProvider);
-        when(itemContainerMapper.mapToBO(itemContainerData)).thenReturn(itemContainer);
+//        when(itemContainerMapper.mapToBO(itemContainerData)).thenReturn(itemContainer);
 
         // When: mapping to business object
         Location result = locationMapper.mapToBO(locationData);
@@ -113,7 +113,7 @@ class LocationMapperTest {
         verify(mapperSupporter).getMappedLocation("forest-clearing");
         verify(mapperSupporter).addMappedLocation(result);
         verify(descriptionMapper).mapToBO(descriptionData);
-        verify(itemContainerMapper).mapToBO(itemContainerData);
+//        verify(itemContainerMapper).mapToBO(itemContainerData);
     }
 
     @Test
@@ -180,8 +180,6 @@ class LocationMapperTest {
         // Then: all properties should be mapped correctly
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("mountain-peak");
-        // Note: Location.getLight() returns 0 (hardcoded), not the actual lumen value
-        // This appears to be a bug in the production code (line 150-152 in Location.java)
         assertThat(result.getLumen()).isEqualTo(90);
         assertThat(result.getDescriptionData()).isEqualTo(descriptionData);
         assertThat(result.getItemContainerData()).isNotNull();

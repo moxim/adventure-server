@@ -12,7 +12,8 @@ import com.pdg.adventure.server.support.VariableProvider;
 class DecrementVariableActionTest {
     private static final String VAR_NAME = "t";
     private final VariableProvider variableProvider = new VariableProvider();
-    private DecrementVariableAction sut = new DecrementVariableAction(VAR_NAME, "1", variableProvider, new MessagesHolder());
+    private final DecrementVariableAction sut = new DecrementVariableAction(VAR_NAME, "1", variableProvider,
+                                                                            new MessagesHolder());
 
     @Test
     void executeWithAlphaString() {
@@ -32,7 +33,7 @@ class DecrementVariableActionTest {
         variableProvider.set(new Variable(VAR_NAME, "2"));
 
         // when
-       sut.execute();
+        sut.execute();
 
         // then
         assertThat(variableProvider.get(VAR_NAME).aValue()).isEqualTo("1");

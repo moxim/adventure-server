@@ -1,9 +1,10 @@
 package com.pdg.adventure.view.vocabulary;
 
-import com.pdg.adventure.model.Word;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.function.SerializablePredicate;
+
+import com.pdg.adventure.model.Word;
 
 public class WordFilter {
     public static SerializablePredicate<DescribableWordAdapter> filterByTypeTextOrSynonym(TextField searchField) {
@@ -12,7 +13,7 @@ public class WordFilter {
             if (searchTerm.isEmpty()) {
                 return true;
             }
-            Word word = aWord.getWord();
+            Word word = aWord.word();
             Word synonym = word.getSynonym();
             boolean matchesText = matchesTerm(word.getText(), searchTerm);
             boolean matchesType = matchesTerm(word.getType().name(), searchTerm);

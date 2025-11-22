@@ -1,5 +1,7 @@
 package com.pdg.adventure.server;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,18 +19,29 @@ import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 @Component
 public class Adventure implements Ided {
+
+    @Getter
+    @Setter
     private String id;
+
+    @Getter
+    @Setter
     private String title;
 
+    @Getter
+    @Setter
     private String currentLocationId;
+
+    @Getter
+    @Setter
     private GenericContainer pocket;
 
     private final Map<String, Location> locationMap;
     private final Vocabulary allWords;
-    private final MessagesHolder allMessages;
+    private final transient MessagesHolder allMessages;
     private final Map<String, Item> allItems;
     private final Map<String, Container> allContainers;
-    private final VariableProvider variableProvider;
+    private final transient VariableProvider variableProvider;
 
     // Todo: must I autowire? where?
     @Autowired
@@ -61,7 +74,7 @@ public class Adventure implements Ided {
         for (Location location : aLocationList) {
             locationMap.put(location.getId(), location);
         }
-        if (currentLocationId == null || currentLocationId.isEmpty()) {
+        if (!aLocationList.isEmpty() && (currentLocationId == null || currentLocationId.isEmpty())) {
             currentLocationId = aLocationList.getFirst().getId();
         }
     }
@@ -70,51 +83,17 @@ public class Adventure implements Ided {
         return new ArrayList<>(locationMap.values());
     }
 
-    public String getCurrentLocationId() {
-        return currentLocationId;
-    }
-
-    public void setCurrentLocationId(String aLocationId) {
-        currentLocationId = aLocationId;
-    }
-
-    public void setTitle(String aTitle) {
-        title = aTitle;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setPocket(GenericContainer aContainer) {
-        pocket = aContainer;
-    }
-
-    public GenericContainer getPocket() {
-        return pocket;
-    }
-
     public Vocabulary getVocabulary() {
         return allWords;
     }
 
     @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String anId) {
-        id = anId;
-    }
-
-    @Override
     public String toString() {
         return "Adventure{" +
-                "id='" + id + '\'' +
-                ", currentLocationId=" + currentLocationId +
-                ", pocket=" + pocket +
-                ", locationMap=" + locationMap +
-                '}';
+               "id='" + id + '\'' +
+               ", currentLocationId=" + currentLocationId +
+               ", pocket=" + pocket +
+               ", locationMap=" + locationMap +
+               '}';
     }
 }

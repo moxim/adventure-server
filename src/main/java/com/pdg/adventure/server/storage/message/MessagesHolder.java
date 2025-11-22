@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MessagesHolder {
-    private Map<String, String> messages = new HashMap<>();
+    private final Map<String, String> messages = new HashMap<>();
 
     public void addMessage(String anId, String aMessage) {
         messages.put(anId, aMessage);

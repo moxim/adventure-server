@@ -28,9 +28,10 @@ public class MessageService {
 
     /**
      * Create a new message.
+     *
      * @param adventureId The adventure ID
-     * @param messageId The message ID (unique within adventure)
-     * @param text The message text
+     * @param messageId   The message ID (unique within adventure)
+     * @param text        The message text
      * @return The created message
      */
     public MessageData createMessage(@Nonnull String adventureId, @Nonnull String messageId, @Nonnull String text) {
@@ -50,18 +51,20 @@ public class MessageService {
     /**
      * Update an existing message.
      * If changing the messageId, this will create a new entry and delete the old one.
-     * @param adventureId The adventure ID
+     *
+     * @param adventureId  The adventure ID
      * @param oldMessageId The current message ID
      * @param newMessageId The new message ID (can be same as old)
-     * @param newText The new message text
+     * @param newText      The new message text
      * @return The updated message
      */
     @Transactional
     public MessageData updateMessage(@Nonnull String adventureId, @Nonnull String oldMessageId,
-                                    @Nonnull String newMessageId, @Nonnull String newText) {
+                                     @Nonnull String newMessageId, @Nonnull String newText) {
         LOG.info("Updating message: {} -> {} for adventure: {}", oldMessageId, newMessageId, adventureId);
 
-        Optional<MessageData> existingMessage = messageRepository.findByAdventureIdAndMessageId(adventureId, oldMessageId);
+        Optional<MessageData> existingMessage = messageRepository.findByAdventureIdAndMessageId(adventureId,
+                                                                                                oldMessageId);
 
         if (existingMessage.isEmpty()) {
             LOG.warn("Message {} not found for adventure {}", oldMessageId, adventureId);
@@ -86,8 +89,9 @@ public class MessageService {
 
     /**
      * Delete a message.
+     *
      * @param adventureId The adventure ID
-     * @param messageId The message ID
+     * @param messageId   The message ID
      */
     public void deleteMessage(@Nonnull String adventureId, @Nonnull String messageId) {
         LOG.info("Deleting message: {} for adventure: {}", messageId, adventureId);
@@ -96,6 +100,7 @@ public class MessageService {
 
     /**
      * Get all messages for an adventure.
+     *
      * @param adventureId The adventure ID
      * @return List of messages
      */
@@ -106,8 +111,9 @@ public class MessageService {
 
     /**
      * Get a specific message.
+     *
      * @param adventureId The adventure ID
-     * @param messageId The message ID
+     * @param messageId   The message ID
      * @return Optional containing the message if found
      */
     public Optional<MessageData> getMessageByIdForAdventure(@Nonnull String adventureId, @Nonnull String messageId) {
@@ -117,8 +123,9 @@ public class MessageService {
 
     /**
      * Get the text of a message.
+     *
      * @param adventureId The adventure ID
-     * @param messageId The message ID
+     * @param messageId   The message ID
      * @return The message text, or null if not found
      */
     public String getMessageText(@Nonnull String adventureId, @Nonnull String messageId) {
@@ -129,8 +136,9 @@ public class MessageService {
 
     /**
      * Check if a message exists.
+     *
      * @param adventureId The adventure ID
-     * @param messageId The message ID
+     * @param messageId   The message ID
      * @return true if the message exists
      */
     public boolean messageExists(@Nonnull String adventureId, @Nonnull String messageId) {
@@ -139,8 +147,9 @@ public class MessageService {
 
     /**
      * Get messages by category.
+     *
      * @param adventureId The adventure ID
-     * @param category The category name
+     * @param category    The category name
      * @return List of messages in the category
      */
     public List<MessageData> getMessagesByCategory(@Nonnull String adventureId, @Nonnull String category) {
@@ -151,6 +160,7 @@ public class MessageService {
     /**
      * Delete all messages for an adventure.
      * Useful when deleting an entire adventure.
+     *
      * @param adventureId The adventure ID
      */
     public void deleteAllMessagesForAdventure(@Nonnull String adventureId) {
@@ -160,6 +170,7 @@ public class MessageService {
 
     /**
      * Count messages for an adventure.
+     *
      * @param adventureId The adventure ID
      * @return Number of messages
      */
@@ -169,6 +180,7 @@ public class MessageService {
 
     /**
      * Save a message (create or update).
+     *
      * @param message The message to save
      * @return The saved message
      */

@@ -32,8 +32,8 @@ public class MovePlayerAction extends AbstractAction {
             }
         }, messagesHolder);
         ExecutionResult // result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
-        // result.setResultMessage(destination.getLongDescription());
-        result = describeAction.execute();
+                // result.setResultMessage(destination.getLongDescription());
+                result = describeAction.execute();
         destination.setTimesVisited(destination.getTimesVisited() + 1);
         return result;
     }

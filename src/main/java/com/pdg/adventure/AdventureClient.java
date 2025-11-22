@@ -31,8 +31,9 @@ public class AdventureClient implements CommandLineRunner {
     private final AdventureConfig adventureConfig;
     private final VocabularyMapper vocabularyMapper;
 
-    public AdventureClient(AdventureService adventureService, AdventureMapper adventureMapper, AdventureConfig adventureConfig,
-                          VocabularyMapper vocabularyMapper) {
+    public AdventureClient(AdventureService adventureService, AdventureMapper adventureMapper,
+                           AdventureConfig adventureConfig,
+                           VocabularyMapper vocabularyMapper) {
         this.adventureService = adventureService;
         this.adventureMapper = adventureMapper;
         this.adventureConfig = adventureConfig;
@@ -42,7 +43,13 @@ public class AdventureClient implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         final List<AdventureData> adventures = adventureService.getAdventures();
+        if (adventures.isEmpty()) {
+            LOG.error("No adventures found in the database. Please add an adventure and try again.");
+            return;
+        }
+
         final AdventureData adventureData = adventures.getFirst();
+        LOG.info("Loaded adventure: {}", adventureData.getTitle());
 
         // Load vocabulary from MongoDB and populate BEFORE mapping so synonyms are available
         Vocabulary vocabulary = vocabularyMapper.mapToBO(adventureData.getVocabularyData());
@@ -53,13 +60,20 @@ public class AdventureClient implements CommandLineRunner {
             adventureConfig.allMessages().addMessage(messageData.getMessageId(), messageData.getText());
         }
 
-        // Now map the adventure - MessageActionMapper will find messages, CommandMappers will find words/synonyms
         Adventure savedAdventure = adventureMapper.mapToBO(adventureData);
 
-        savedAdventure.getLocations()
-                      .forEach(location -> adventureConfig.allLocations().put(location.getId(), location));
+        final var adventureLocations = savedAdventure.getLocations();
+
+        if (adventureLocations.isEmpty()) {
+            LOG.error("The adventure '{}' has no locations defined. Please add locations and try again.",
+                      adventureData.getTitle());
+            return;
+        }
+
+        adventureLocations.forEach(location -> adventureConfig.allLocations().put(location.getId(), location));
 
         MiniAdventure miniAdventure = new MiniAdventure(adventureConfig);
+        miniAdventure.setUpMessages();
 
         String startLocationId = savedAdventure.getCurrentLocationId();
         Location startLocation = adventureConfig.allLocations().get(startLocationId);
@@ -68,7 +82,7 @@ public class AdventureClient implements CommandLineRunner {
             LOG.error("Warning: Could not find location with ID: '{}'", startLocationId);
             LOG.error("Available location IDs: {}", adventureConfig.allLocations().keySet());
             // Fallback to first available location
-            startLocation = savedAdventure.getLocations().getFirst();
+            startLocation = adventureLocations.getFirst();
             LOG.error("Using fallback location: {}", startLocation.getId());
         }
 
@@ -80,7 +94,7 @@ public class AdventureClient implements CommandLineRunner {
         miniAdventure.run();
     }
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         //        LaunchUtil.launchBrowserInDevelopmentMode(
         SpringApplication.run(AdventureClient.class, args)
         //        )

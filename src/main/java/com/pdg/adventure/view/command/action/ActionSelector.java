@@ -4,6 +4,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,7 @@ public class ActionSelector extends HorizontalLayout {
     private final AdventureData adventureData;
     private final ComboBox<ActionTypeDescriptor> actionTypeSelector;
     private final Button useButton;
+    @Setter
     private transient ActionEditorSelectedListener editorSelectedListener;
 
     public ActionSelector(AdventureData adventureData) {
@@ -31,7 +33,7 @@ public class ActionSelector extends HorizontalLayout {
         // Create the dropdown with all available action types
         actionTypeSelector = new ComboBox<>("Select Action Type");
         actionTypeSelector.setItems(getAvailableActionTypes());
-        actionTypeSelector.setItemLabelGenerator(ActionTypeDescriptor::getDisplayName);
+        actionTypeSelector.setItemLabelGenerator(ActionTypeDescriptor::displayName);
         actionTypeSelector.setPlaceholder("Choose an action...");
         actionTypeSelector.setWidthFull();
 
@@ -42,7 +44,7 @@ public class ActionSelector extends HorizontalLayout {
 
         // Enable the button only when an action is selected
         actionTypeSelector.addValueChangeListener(e ->
-            useButton.setEnabled(e.getValue() != null)
+                                                          useButton.setEnabled(e.getValue() != null)
         );
 
         // Handle the Use button click
@@ -50,7 +52,7 @@ public class ActionSelector extends HorizontalLayout {
             ActionTypeDescriptor selectedType = actionTypeSelector.getValue();
             if (selectedType != null) {
                 ActionEditorComponent editor = createEditor(selectedType);
-                if (editorSelectedListener != null && editor != null) {
+                if (editorSelectedListener != null) {
                     editorSelectedListener.onEditorSelected(editor);
                 }
             }
@@ -102,13 +104,6 @@ public class ActionSelector extends HorizontalLayout {
     }
 
     /**
-     * Sets the listener that will be notified when an editor is selected.
-     */
-    public void setEditorSelectedListener(ActionEditorSelectedListener listener) {
-        this.editorSelectedListener = listener;
-    }
-
-    /**
      * Listener interface for when an action editor is selected.
      */
     @FunctionalInterface
@@ -117,29 +112,12 @@ public class ActionSelector extends HorizontalLayout {
     }
 
     /**
-     * Descriptor for an action type, containing display information and a factory method.
-     */
-    private static class ActionTypeDescriptor {
-        private final String displayName;
-        private final String description;
-        private final Supplier<ActionData> actionFactory;
-
-        public ActionTypeDescriptor(String displayName, String description, Supplier<ActionData> actionFactory) {
-            this.displayName = displayName;
-            this.description = description;
-            this.actionFactory = actionFactory;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public String getDescription() {
-            return description;
-        }
+         * Descriptor for an action type, containing display information and a factory method.
+         */
+        private record ActionTypeDescriptor(String displayName, String description, Supplier<ActionData> actionFactory) {
 
         public ActionData createActionData() {
-            return actionFactory.get();
+                return actionFactory.get();
+            }
         }
-    }
 }

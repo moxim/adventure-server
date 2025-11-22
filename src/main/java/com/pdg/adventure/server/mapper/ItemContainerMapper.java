@@ -2,7 +2,6 @@ package com.pdg.adventure.server.mapper;
 
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +28,7 @@ public class ItemContainerMapper implements Mapper<ItemContainerData, GenericCon
                                DescriptionMapper aDescriptionMapper,
                                ItemMapper aItemMapper) {
         mapperSupporter = aMapperSupporter;
-        allItems = aMapperSupporter.getAllItems();
+        allItems = aMapperSupporter.getMappedItems();
         descriptionMapper = aDescriptionMapper;
         itemMapper = aItemMapper;
         mapperSupporter.registerMapper(ItemContainerData.class, GenericContainer.class, this);
@@ -42,12 +41,8 @@ public class ItemContainerMapper implements Mapper<ItemContainerData, GenericCon
         GenericContainer container = new GenericContainer(descriptionProvider, anItemContainerData.getMaxSize());
         container.setId(anItemContainerData.getId());
         container.setMaxSize(anItemContainerData.getMaxSize());
-        List<Item> itemList = new ArrayList<>(anItemContainerData.getItems().size());
-        for (ItemData itemData : anItemContainerData.getItems()) {
-            Item item = itemMapper.mapToBO(itemData);
-            item.setParentContainer(container);
-            itemList.add(item);
-        }
+        mapperSupporter.addMappedContainer(container);
+        List<Item> itemList = itemMapper.mapToBOs(anItemContainerData.getItems());
         container.setContents(itemList);
         return container;
     }
@@ -65,4 +60,6 @@ public class ItemContainerMapper implements Mapper<ItemContainerData, GenericCon
         itemContainerData.setMaxSize(aContainer.getMaxSize());
         return itemContainerData;
     }
+
+
 }

@@ -54,12 +54,10 @@ public class CommandEditorView extends VerticalLayout
     private String pageTitle;
     private Button saveButton;
     private Button resetButton;
-    private Button cancelButton;
     private LocationData locationData;
     private GridListDataView<CommandDescriptionAdapter> gridListDataView;
     private AdventureData adventureData;
     private CommandProviderData commandProviderData;
-    private CommandDescriptionData commandDescriptionData;
     private transient CommandViewModel cvm;
     private transient ActionEditorComponent actionEditor;
     private transient CommandData commandData;
@@ -73,11 +71,10 @@ public class CommandEditorView extends VerticalLayout
         adventureService = anAdventureService;
         binder = new Binder<>(CommandViewModel.class);
 
-        verbSelector = new VocabularyPickerField("Verb", "You may filter on verbs.", VERB, new VocabularyData());
+        verbSelector = new VocabularyPickerField("Verb", "You may filter on verbs.");
         verbSelector.setHelperText("Select at least a verb.");
-        adjectiveSelector = new VocabularyPickerField("Adjective", "You may filter on adjectives.", ADJECTIVE,
-                                                      new VocabularyData());
-        nounSelector = new VocabularyPickerField("Noun", "You may filter on nouns.", NOUN, new VocabularyData());
+        adjectiveSelector = new VocabularyPickerField("Adjective", "You may filter on adjectives.");
+        nounSelector = new VocabularyPickerField("Noun", "You may filter on nouns.");
 
         binder.forField(verbSelector).asRequired("Verb is required")
               .withValidator(word -> word != null && !word.getText().isEmpty(), "Please select a verb with text")
@@ -168,7 +165,7 @@ public class CommandEditorView extends VerticalLayout
         saveButton.setEnabled(false);
         resetButton = resetBackSaveView.getReset();
         resetButton.setEnabled(false);
-        cancelButton = resetBackSaveView.getCancel();
+        Button cancelButton = resetBackSaveView.getCancel();
         cancelButton.setEnabled(false);
 
         backButton.addClickListener(event -> navigateBack());
@@ -186,9 +183,9 @@ public class CommandEditorView extends VerticalLayout
 
     private void navigateBack() {
         UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
-                                                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                               .ifPresent(e -> e.setData(adventureData, locationData));
+                  new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+          .ifPresent(e -> e.setData(adventureData, locationData));
     }
 
     /**
@@ -367,6 +364,7 @@ public class CommandEditorView extends VerticalLayout
         commandProviderData = locationData.getCommandProviderData();
 
         // Find existing command or create new one
+        CommandDescriptionData commandDescriptionData;
         if (commandId != null && !commandId.isEmpty()) {
             // Look up existing command by specification (commandId contains the spec like "go|north|")
             CommandChainData commandChain = commandProviderData.getAvailableCommands().get(commandId);
@@ -449,25 +447,7 @@ public class CommandEditorView extends VerticalLayout
 
         // If there's an action, show its editor
         if (action != null) {
-            try {
-                actionEditor = ActionEditorFactory.createEditor(action, adventureData);
-
-                // Add a "Change Action" button above the editor
-                Button changeActionButton = new Button("Change Action");
-                changeActionButton.addClickListener(e -> showActionSelector());
-
-                actionEditorContainer.add(changeActionButton, actionEditor);
-
-                // Attach listeners to update save button state when action editor fields change
-                attachActionEditorListeners(actionEditor);
-            } catch (UnsupportedOperationException e) {
-                // Action type not supported yet, show a message and the selector
-                Div message = new Div();
-                message.setText("Action editor not available for: " + action.getActionName());
-                message.getStyle().set("color", "var(--lumo-error-text-color)");
-                actionEditorContainer.add(message);
-                showActionSelector();
-            }
+            createActionEditor(action);
         } else {
             // No action yet, show the action selector
             showActionSelector();
@@ -483,28 +463,32 @@ public class CommandEditorView extends VerticalLayout
 
         // If there was an original action, recreate its editor
         if (originalActionData != null) {
-            try {
-                actionEditor = ActionEditorFactory.createEditor(originalActionData, adventureData);
-
-                // Add a "Change Action" button above the editor
-                Button changeActionButton = new Button("Change Action");
-                changeActionButton.addClickListener(e -> showActionSelector());
-
-                actionEditorContainer.add(changeActionButton, actionEditor);
-
-                // Attach listeners to update save button state when action editor fields change
-                attachActionEditorListeners(actionEditor);
-            } catch (UnsupportedOperationException e) {
-                // Action type not supported yet, show a message and the selector
-                Div message = new Div();
-                message.setText("Action editor not available for: " + originalActionData.getActionName());
-                message.getStyle().set("color", "var(--lumo-error-text-color)");
-                actionEditorContainer.add(message);
-                showActionSelector();
-            }
+            createActionEditor(originalActionData);
         } else {
             // No original action, show the action selector
             actionEditor = null;
+            showActionSelector();
+        }
+    }
+
+    private void createActionEditor(final ActionData anOriginalActionData) {
+        try {
+            actionEditor = ActionEditorFactory.createEditor(anOriginalActionData, adventureData);
+
+            // Add a "Change Action" button above the editor
+            Button changeActionButton = new Button("Change Action");
+            changeActionButton.addClickListener(e -> showActionSelector());
+
+            actionEditorContainer.add(changeActionButton, actionEditor);
+
+            // Attach listeners to update save button state when action editor fields change
+            attachActionEditorListeners(actionEditor);
+        } catch (UnsupportedOperationException e) {
+            // Action type not supported yet, show a message and the selector
+            Div message = new Div();
+            message.setText("Action editor not available for: " + anOriginalActionData.getActionName());
+            message.getStyle().set("color", "var(--lumo-error-text-color)");
+            actionEditorContainer.add(message);
             showActionSelector();
         }
     }

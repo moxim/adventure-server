@@ -2,7 +2,7 @@ package com.pdg.adventure.server;
 
 class BaseDTO {
     private final String name;
-    private String id;
+    private final String id;
 
     public BaseDTO(String id, String name) {
         this.name = name;

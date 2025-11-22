@@ -19,55 +19,24 @@ import com.pdg.adventure.view.support.TrackedUsage;
 public class MessageUsageTracker {
 
     /**
-     * Data class representing a single usage of a message.
-     */
-    public static class MessageUsage implements TrackedUsage {
-        private final String locationId;
-        private final String locationDescription;
-        private final String commandSpecification;
-        private final String actionType;
-        private final String context;
-
-        public MessageUsage(String locationId, String locationDescription, String commandSpecification, String actionType, String context) {
-            this.locationId = locationId;
-            this.locationDescription = locationDescription;
-            this.commandSpecification = commandSpecification;
-            this.actionType = actionType;
-            this.context = context;
-        }
-
-        public String getLocationId() {
-            return locationId;
-        }
-
-        public String getLocationDescription() {
-            return locationDescription;
-        }
-
-        public String getCommandSpecification() {
-            return commandSpecification;
-        }
-
-        public String getActionType() {
-            return actionType;
-        }
-
-        public String getContext() {
-            return context;
-        }
+         * Data class representing a single usage of a message.
+         */
+        public record MessageUsage(String locationId, String locationDescription, String commandSpecification,
+                                   String actionType, String context) implements TrackedUsage {
 
         public String getDisplayText() {
-            return String.format("Location: %s | Command: %s | %s",
-                    locationDescription != null ? locationDescription : locationId,
-                    commandSpecification,
-                    context);
+                return String.format("Location: %s | Command: %s | %s",
+                                     locationDescription != null ? locationDescription : locationId,
+                                     commandSpecification,
+                                     context);
+            }
         }
-    }
 
     /**
      * Find all usages of a specific message in an adventure.
+     *
      * @param adventureData The adventure to search
-     * @param messageId The message ID to find
+     * @param messageId     The message ID to find
      * @return List of MessageUsage objects describing where the message is used
      */
     public static List<MessageUsage> findMessageUsages(AdventureData adventureData, String messageId) {
@@ -83,7 +52,7 @@ public class MessageUsageTracker {
             for (Map.Entry<String, LocationData> locationEntry : locations.entrySet()) {
                 LocationData location = locationEntry.getValue();
                 String locationDesc = location.getDescriptionData() != null ?
-                        location.getDescriptionData().getShortDescription() : null;
+                                      location.getDescriptionData().getShortDescription() : null;
 
                 // Check commands in this location
                 if (location.getCommandProviderData() != null &&
@@ -97,7 +66,8 @@ public class MessageUsageTracker {
         return usages;
     }
 
-    private static void addUsagesInLocaitonCommands(final String messageId, final Map.Entry<String, LocationData> locationEntry,
+    private static void addUsagesInLocaitonCommands(final String messageId,
+                                                    final Map.Entry<String, LocationData> locationEntry,
                                                     final LocationData location, final String locationDesc,
                                                     final List<MessageUsage> usages) {
         Map<String, CommandChainData> commands = location.getCommandProviderData().getAvailableCommands();
@@ -113,7 +83,8 @@ public class MessageUsageTracker {
     }
 
     private static void addUsagesInCommands(final String messageId, final Map.Entry<String, LocationData> locationEntry,
-                                            final CommandChainData chain, final String locationDesc, final String commandSpec,
+                                            final CommandChainData chain, final String locationDesc,
+                                            final String commandSpec,
                                             final List<MessageUsage> usages) {
         for (CommandData command : chain.getCommands()) {
             // Check primary action
@@ -142,21 +113,22 @@ public class MessageUsageTracker {
                                     String commandSpec, String context, String messageId,
                                     List<MessageUsage> usages) {
         if (action instanceof MessageActionData messageAction && messageId.equals(messageAction.getMessageId())) {
-                usages.add(new MessageUsage(
-                        locationId,
-                        locationDesc,
-                        commandSpec,
-                        "Message Action",
-                        context
-                ));
-            }
+            usages.add(new MessageUsage(
+                    locationId,
+                    locationDesc,
+                    commandSpec,
+                    "Message Action",
+                    context
+            ));
+        }
 
     }
 
     /**
      * Count how many times a message is used in an adventure.
+     *
      * @param adventureData The adventure to search
-     * @param messageId The message ID to count
+     * @param messageId     The message ID to count
      * @return Number of times the message is used
      */
     public static int countMessageUsages(AdventureData adventureData, String messageId) {
@@ -165,8 +137,9 @@ public class MessageUsageTracker {
 
     /**
      * Check if a message is used anywhere in the adventure.
+     *
      * @param adventureData The adventure to search
-     * @param messageId The message ID to check
+     * @param messageId     The message ID to check
      * @return true if the message is used at least once
      */
     public static boolean isMessageUsed(AdventureData adventureData, String messageId) {

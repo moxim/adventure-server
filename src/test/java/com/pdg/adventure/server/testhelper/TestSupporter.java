@@ -17,22 +17,22 @@ public class TestSupporter {
 
     public static boolean conditionToBoolean(PreCondition aCondition) {
         final ExecutionResult executionResult = aCondition.check();
-        return executionResult.getExecutionState()== ExecutionResult.State.SUCCESS;
+        return executionResult.getExecutionState() == ExecutionResult.State.SUCCESS;
     }
 
     public static boolean addItemToBoolean(Container aContainer, Containable anItem) {
         final ExecutionResult executionResult = aContainer.add(anItem);
-        return executionResult.getExecutionState()== ExecutionResult.State.SUCCESS;
+        return executionResult.getExecutionState() == ExecutionResult.State.SUCCESS;
     }
 
     public static boolean removeItemToBoolean(Container aContainer, Containable anItem) {
         final ExecutionResult executionResult = aContainer.remove(anItem);
-        return executionResult.getExecutionState()== ExecutionResult.State.SUCCESS;
+        return executionResult.getExecutionState() == ExecutionResult.State.SUCCESS;
     }
 
     public static boolean applyCommandToBoolean(Containable anItem, GenericCommandDescription aCommandDescription) {
         final ExecutionResult executionResult = anItem.applyCommand(aCommandDescription);
-        return executionResult.getExecutionState()== ExecutionResult.State.SUCCESS;
+        return executionResult.getExecutionState() == ExecutionResult.State.SUCCESS;
     }
 
 

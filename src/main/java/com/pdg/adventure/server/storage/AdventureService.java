@@ -2,6 +2,7 @@ package com.pdg.adventure.server.storage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
@@ -12,7 +13,6 @@ import java.util.UUID;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.storage.mongo.CascadeDeleteHelper;
@@ -26,10 +26,9 @@ public class AdventureService {
     private final LocationRepository locationRepository;
     private final WordRepository wordRepository;
     private final VocabularyReporitory vocabularyRepository;
-    private final MessageService messageService;
     private final CascadeDeleteHelper cascadeDeleteHelper;
 
-//    @Autowired
+    @Autowired
     public AdventureService(LocationRepository aLocationRepository,
                             AdventureRepository anAdventureRepository,
                             WordRepository aWordRepository,
@@ -41,7 +40,6 @@ public class AdventureService {
         adventureRepository = anAdventureRepository;
         wordRepository = aWordRepository;
         vocabularyRepository = aVocabularyRepository;
-        messageService = aMessageService;
         cascadeDeleteHelper = aCascadeDeleteHelper;
     }
 
@@ -51,8 +49,8 @@ public class AdventureService {
         if (byId.isPresent()) {
             result = byId.get();
         } else {
-           result = new LocationData();
-           result.setId(UUID.randomUUID().toString());
+            result = new LocationData();
+            result.setId(UUID.randomUUID().toString());
         }
         return result;
     }
@@ -90,6 +88,12 @@ public class AdventureService {
         wordRepository.saveAll(aNumberOfWords);
     }
 
+    public void deleteWord(Word aWord) {
+        LOG.debug("Deleting word data: {}", aWord);
+        LOG.info("Deleting word data: {}", aWord.getId());
+        wordRepository.delete(aWord);
+    }
+
     private void preProcess(AdventureData anAdventure) {
 //        final Set<Word> words = anAdventure.getWords();
 //        words.clear();
@@ -103,8 +107,8 @@ public class AdventureService {
         if (byId.isPresent()) {
             result = byId.get();
         } else {
-           result = new AdventureData();
-           result.setId(UUID.randomUUID().toString());
+            result = new AdventureData();
+            result.setId(UUID.randomUUID().toString());
         }
         postProcess(result);
         return result;
@@ -156,9 +160,4 @@ public class AdventureService {
         }
     }
 
-    public void deleteWord(String id) {wordRepository.deleteById(id);}
-
-    public void deleteVocabulary(String id) {
-        vocabularyRepository.deleteById(id);
-    }
 }

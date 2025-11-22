@@ -1,7 +1,5 @@
 package com.pdg.adventure.view.vocabulary;
 
-import com.pdg.adventure.model.VocabularyData;
-import com.pdg.adventure.model.Word;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.TextField;
@@ -15,10 +13,13 @@ import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.model.Word;
+
 /**
  * Unit tests for WordEditorDialogue focusing on business logic validation,
  * circular reference detection, and form state management.
- *
+ * <p>
  * These tests maximize code coverage by testing the critical paths:
  * 1. Circular reference detection across synonym chains
  * 2. Form validation rules

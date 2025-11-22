@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -97,18 +96,18 @@ class VocabularyMenuViewTest {
 
         // Verify words by type
         List<Word> nouns = vocabularyData.getWords().stream()
-                .filter(w -> w.getType() == Word.Type.NOUN)
-                .toList();
+                                         .filter(w -> w.getType() == Word.Type.NOUN)
+                                         .toList();
         assertThat(nouns).hasSize(2);
 
         List<Word> adjectives = vocabularyData.getWords().stream()
-                .filter(w -> w.getType() == Word.Type.ADJECTIVE)
-                .toList();
+                                              .filter(w -> w.getType() == Word.Type.ADJECTIVE)
+                                              .toList();
         assertThat(adjectives).hasSize(2);
 
         List<Word> verbs = vocabularyData.getWords().stream()
-                .filter(w -> w.getType() == Word.Type.VERB)
-                .toList();
+                                         .filter(w -> w.getType() == Word.Type.VERB)
+                                         .toList();
         assertThat(verbs).hasSize(1);
     }
 
@@ -127,7 +126,6 @@ class VocabularyMenuViewTest {
     }
 
     private Word createTestWord(String text, Word.Type type) {
-        Word word = new Word(text, type);
-        return word;
+        return new Word(text, type);
     }
 }

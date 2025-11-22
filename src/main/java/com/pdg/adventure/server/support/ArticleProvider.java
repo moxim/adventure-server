@@ -20,8 +20,10 @@ public class ArticleProvider {
 
         final char firstChar = aText.charAt(0);
         return switch (firstChar) {
-            case 'a', 'e', 'i', 'o', 'u' : yield "an " + aText;
-            default: yield "a " + aText;
+            case 'a', 'e', 'i', 'o', 'u':
+                yield "an " + aText;
+            default:
+                yield "a " + aText;
         };
     }
 

@@ -2,6 +2,7 @@ package com.pdg.adventure.view.support;
 
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -21,6 +22,9 @@ import com.pdg.adventure.view.location.LocationViewModel;
 
 public class ViewSupporter {
 
+    public static int MAX_TEXT_IN_GRID = 32;
+    public static int MAX_ID_LENGTH = 26;
+    
     public static String formatId(Ided anIdedData) {
         if (anIdedData == null) {
             return "";
@@ -33,7 +37,7 @@ public class ViewSupporter {
     }
 
     public static String formatId(String anIdedData) {
-        return anIdedData.substring(0, 8);
+        return anIdedData.substring(0, MAX_ID_LENGTH);
     }
 
     public static void populateStartLocation(AdventureData anAdventureData, TextField aStartLocation) {
@@ -80,11 +84,12 @@ public class ViewSupporter {
             return noun;
         }
 
-        String shortDescription = noun + " / " + adjective;
-        if (shortDescription.length() > 20) {
-            shortDescription = shortDescription.substring(0, 20) + "...";
-        }
-        return shortDescription;
+        String shortDescription = adjective + " " + noun;
+        return restrictToLength(shortDescription, MAX_TEXT_IN_GRID);
+    }
+
+    public static String formatDescription(LocationData aLocationData) {
+        return formatDescription(aLocationData.getDescriptionData());
     }
 
     public static String formatDescription(ItemData anItem) {
@@ -105,38 +110,42 @@ public class ViewSupporter {
             command.append(verb);
         }
         if (!adjective.isEmpty()) {
-            if (command.length() > 0) {
+            if (!command.isEmpty()) {
                 command.append(" ");
             }
             command.append(adjective);
         }
         if (!noun.isEmpty()) {
-            if (command.length() > 0) {
+            if (!command.isEmpty()) {
                 command.append(" ");
             }
             command.append(noun);
         }
-        return command.toString();
+        return restrictToLength(command.toString(), MAX_TEXT_IN_GRID);
     }
 
     public static String formatDescription(Describable aDescribable) {
         String shortDescription = aDescribable.getShortDescription();
         if (shortDescription.isEmpty()) {
-            shortDescription = aDescribable.getNoun() + " / " + aDescribable.getAdjective();
+            shortDescription = getShortDescription(aDescribable.getNoun(), aDescribable.getAdjective());
         }
-        return shortDescription;
+        return restrictToLength(shortDescription, MAX_TEXT_IN_GRID);
     }
 
     public static String formatDescription(DescriptionData aDescriptionData) {
         String shortDescription = aDescriptionData.getShortDescription();
         if (shortDescription.isEmpty()) {
-            shortDescription = getWordText(aDescriptionData.getNoun()) + " / " + getWordText(aDescriptionData.getAdjective());
+            shortDescription = getWordText(aDescriptionData.getNoun()) + " " +
+                               getWordText(aDescriptionData.getAdjective());
         }
-        return shortDescription;
+        return restrictToLength(shortDescription, MAX_TEXT_IN_GRID);
     }
 
-    public static String formatDescription(LocationData aLocationData) {
-        return formatDescription(aLocationData.getDescriptionData());
+    private static String restrictToLength(String aText, int maxLength) {
+        if (aText.length() <= maxLength) {
+            return aText;
+        }
+        return aText.substring(0, maxLength) + "...";
     }
 
     public static void bindField(Binder<DirectionData> binder, ComboBox<String> field, VocabularyData aVocabulary,
@@ -165,7 +174,7 @@ public class ViewSupporter {
         if (aWordText == null || aWordText.isEmpty()) {
             return;
         }
-        Optional<Word> word = resolveWord(aVocabulary, aWordText);
+        Optional<Word> word = aVocabulary.findWord(aWordText);
         if (word.isEmpty()) {
             return;
         }
@@ -179,11 +188,6 @@ public class ViewSupporter {
             case ADJECTIVE -> aCommandDescriptionData.setAdjective(foundWord);
             case VERB -> aCommandDescriptionData.setVerb(foundWord);
         }
-    }
-
-    private static Optional<Word> resolveWord(VocabularyData aVocabulary, String aWordText) {
-        Optional<Word> resolvedWord = aVocabulary.findWord(aWordText);
-        return resolvedWord;
     }
 
     public static Word getWord(CommandDescriptionData commandDescriptionData, Word.Type aWordType) {
@@ -204,16 +208,15 @@ public class ViewSupporter {
 
     public static void bindField(Binder<LocationViewModel> locationDataBinder, TextField aField,
                                  VocabularyData aVocabulary, Word.Type aType, DescriptionData aDescriptionData) {
-        locationDataBinder.bind(aField, locationData -> {
-            return getWordText(getWord(aDescriptionData, aType));
-        }, (locationData, word) -> {
-            setWord(aVocabulary, word, aType, aDescriptionData);
-        });
+        locationDataBinder.bind(aField, locationData -> getWordText(getWord(aDescriptionData, aType)),
+                                (locationData, word) -> {
+                                    setWord(aVocabulary, word, aType, aDescriptionData);
+                                });
     }
 
     private static void setWord(VocabularyData aVocabulary, String aWordText, Word.Type aType,
                                 DescriptionData aDescriptionData) {
-        Optional<Word> word = resolveWord(aVocabulary, aWordText);
+        Optional<Word> word = aVocabulary.findWord(aWordText);
         if (word.isEmpty()) {
             return;
         }
@@ -255,7 +258,8 @@ public class ViewSupporter {
         return dialog;
     }
 
-    public static void showUsages(final String aHeader, String aType, String anItemId, final List<? extends TrackedUsage> usages) {
+    public static void showUsages(final String aHeader, String aType, String anItemId,
+                                  final List<? extends TrackedUsage> usages) {
         ConfirmDialog dialog = new ConfirmDialog();
         dialog.setHeader(aHeader + ": " + anItemId);
         dialog.setWidth("700px");
@@ -264,7 +268,8 @@ public class ViewSupporter {
             dialog.setText("This " + aType + " is not currently used in any commands.");
         } else {
             StringBuilder usageText = new StringBuilder();
-            usageText.append("This " + aType + " is referenced ").append(usages.size()).append(" time(s):\n\n");
+            usageText.append("This ").append(aType).append(" is referenced ").append(usages.size())
+                     .append(" time(s):\n\n");
 
             for (TrackedUsage usage : usages) {
                 usageText.append("• ").append(usage.getDisplayText()).append("\n");
@@ -272,16 +277,24 @@ public class ViewSupporter {
 
             Span usageSpan = new Span(usageText.toString());
             usageSpan.getStyle()
-                    .set("white-space", "pre-wrap")
-                    .set("font-family", "monospace")
-                    .set("font-size", "0.9em");
+                     .set("white-space", "pre-wrap")
+                     .set("font-family", "monospace")
+                     .set("font-size", "0.9em");
 
             VerticalLayout content = new VerticalLayout(usageSpan);
             content.setPadding(false);
-            dialog.add(content);
+            dialog.setText(content);
         }
 
         dialog.setConfirmText("Close");
         dialog.open();
+    }
+
+    public static void setSize(Grid<?> aGrid) {
+        aGrid.setSizeFull();
+        aGrid.setMaxWidth("1024px");
+        aGrid.setMinWidth("480px");
+        aGrid.setMaxHeight("640px");
+        aGrid.setMinHeight("500px");
     }
 }

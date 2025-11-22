@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -72,7 +71,23 @@ public class CascadeDeleteHelper {
     }
 
     private void deleteReferencedEntities(Object value, Set<Object> processedObjects) {
-        if (value instanceof Iterable<?> iterable && !(value instanceof Map)) {
+        if (value instanceof Map<?, ?> map) {
+            // Handle Map: Delete each value
+            LOG.info("Processing map with {} entries", map.size());
+            int count = 0;
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                Object mapValue = entry.getValue();
+                if (mapValue != null) {
+                    count++;
+                    LOG.info("Processing map entry: key={}, valueType={}", entry.getKey(),
+                             mapValue.getClass().getSimpleName());
+                    deleteEntity(mapValue, processedObjects);
+                } else {
+                    LOG.warn("Map entry with key={} has null value", entry.getKey());
+                }
+            }
+            LOG.info("Processed {} entries from map", count);
+        } else if (value instanceof Iterable<?> iterable) {
             // Handle List/Set: Delete each element
             LOG.info("Processing collection/list with items");
             int count = 0;
@@ -83,21 +98,6 @@ public class CascadeDeleteHelper {
                 }
             }
             LOG.info("Processed {} items from collection", count);
-        } else if (value instanceof Map<?, ?> map) {
-            // Handle Map: Delete each value
-            LOG.info("Processing map with {} entries", map.size());
-            int count = 0;
-            for (Map.Entry<?, ?> entry : map.entrySet()) {
-                Object mapValue = entry.getValue();
-                if (mapValue != null) {
-                    count++;
-                    LOG.info("Processing map entry: key={}, valueType={}", entry.getKey(), mapValue.getClass().getSimpleName());
-                    deleteEntity(mapValue, processedObjects);
-                } else {
-                    LOG.warn("Map entry with key={} has null value", entry.getKey());
-                }
-            }
-            LOG.info("Processed {} entries from map", count);
         } else {
             // Handle single object
             deleteEntity(value, processedObjects);

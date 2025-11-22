@@ -40,6 +40,7 @@ public abstract class BaseEditorView<T> extends VerticalLayout implements HasDyn
     }
 
     protected abstract void navigateBack();
+
     protected abstract void save();
 
     @Override

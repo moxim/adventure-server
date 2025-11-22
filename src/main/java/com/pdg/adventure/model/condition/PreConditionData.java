@@ -1,10 +1,11 @@
 package com.pdg.adventure.model.condition;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.api.PreCondition;
 import com.pdg.adventure.model.basic.BasicData;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)

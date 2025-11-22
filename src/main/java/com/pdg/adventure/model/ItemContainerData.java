@@ -33,16 +33,16 @@ public class ItemContainerData extends ItemData {
     private boolean holdingDirections;
 
     public ItemContainerData(String locationId) {
-        this.maxSize = 10; // default max size
-        this.holdingDirections = false;
-        getDescriptionData().setShortDescription("Items of %s");
+        maxSize = 10; // default max size
+        holdingDirections = false;
+        getDescriptionData().setShortDescription(String.format("Items of %s", locationId));
     }
 
     @Override
     public String toString() {
         return "ItemContainerData{" +
-                "id=" + getId() +
-                ", itemCount=" + items.size() +
-                "}";
+               "id=" + getId() +
+               ", itemCount=" + items.size() +
+               "}";
     }
 }

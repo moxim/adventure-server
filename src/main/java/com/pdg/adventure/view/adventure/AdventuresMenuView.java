@@ -33,7 +33,7 @@ public class AdventuresMenuView extends VerticalLayout {
     private transient final AdventureService adventureService;
 
     private String targetAdventureId;
-    private Button runAdventure;
+    private final Button runAdventure;
 
     @Autowired
     public AdventuresMenuView(AdventureService anAdventureService) {
@@ -55,6 +55,7 @@ public class AdventuresMenuView extends VerticalLayout {
         List<AdventureData> adventures = adventureService.getAdventures();
         Div gridContainer = getGridContainer(adventures);
         VerticalLayout rightSide = new VerticalLayout(gridContainer);
+        rightSide.setSizeFull();
 
         HorizontalLayout jumpRow = new HorizontalLayout(leftSide, rightSide);
 //        setMargin(true);
@@ -85,14 +86,15 @@ public class AdventuresMenuView extends VerticalLayout {
         });
 
         grid.setItems(locations);
+
+        ViewSupporter.setSize(grid);
         grid.setEmptyStateText("Create some adventures.");
 
-        grid.setWidth("500px");
-        grid.setHeight("500px");
         AdventuresMenuView.AdventureDataContextMenu contextMenu = new AdventuresMenuView.AdventureDataContextMenu(grid);
 
         Div gridContainer = new Div(grid);
         gridContainer.setSizeFull();
+
         return gridContainer;
     }
 

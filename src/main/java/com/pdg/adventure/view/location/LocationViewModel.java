@@ -1,6 +1,7 @@
 package com.pdg.adventure.view.location;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.Word;
@@ -10,7 +11,9 @@ public final class LocationViewModel {
     // "read-only" attributes
     private final LocationData data;
     private final int numberOfExits;
-    private final String adventureId;
+    @Setter
+    private String adventureId;
+
     // these attributes can be edited
     private String id;
     private int lumen;
@@ -22,17 +25,12 @@ public final class LocationViewModel {
     public LocationViewModel(LocationData aLocationData) {
         data = aLocationData;
         numberOfExits = data.getDirectionsData().size();
-        adventureId = "Your Adventure";
         id = data.getId();
         lumen = data.getLumen();
         noun = data.getDescriptionData().getNoun();
         adjective = data.getDescriptionData().getAdjective();
         shortDescription = data.getDescriptionData().getShortDescription();
         longDescription = data.getDescriptionData().getLongDescription();
-    }
-
-    public Integer getNumberOfExits() {
-        return data.getDirectionsData().size();
     }
 
     public void setId(String anId) {

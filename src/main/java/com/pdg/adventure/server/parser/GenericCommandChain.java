@@ -41,7 +41,7 @@ public class GenericCommandChain implements CommandChain {
     public ExecutionResult execute() {
         ExecutionResult result = new CommandExecutionResult();
         for (Command command : commands) {
-            if(result.getExecutionState() != ExecutionResult.State.SUCCESS) {
+            if (result.getExecutionState() != ExecutionResult.State.SUCCESS) {
                 ExecutionResult fromAction = command.execute();
                 result.setResultMessage(fromAction.getResultMessage());
                 if (fromAction.getExecutionState() == ExecutionResult.State.SUCCESS) {

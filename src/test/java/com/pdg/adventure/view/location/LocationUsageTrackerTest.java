@@ -1,14 +1,15 @@
 package com.pdg.adventure.view.location;
 
-import com.pdg.adventure.model.*;
-import com.pdg.adventure.model.action.MovePlayerActionData;
-import com.pdg.adventure.model.basic.DescriptionData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import com.pdg.adventure.model.*;
+import com.pdg.adventure.model.action.MovePlayerActionData;
+import com.pdg.adventure.model.basic.DescriptionData;
 
 class LocationUsageTrackerTest {
 
@@ -50,7 +51,8 @@ class LocationUsageTrackerTest {
     @Test
     void findLocationUsages_shouldReturnEmpty_whenNoLocations() {
         // When
-        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData, "test_loc");
+        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData,
+                                                                                                  "test_loc");
 
         // Then
         assertThat(usages).isEmpty();
@@ -63,7 +65,8 @@ class LocationUsageTrackerTest {
         adventureData.setCurrentLocationId(startingLocationId);
 
         // When
-        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData, startingLocationId);
+        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData,
+                                                                                                  startingLocationId);
 
         // Then
         assertThat(usages).hasSize(1);
@@ -80,7 +83,8 @@ class LocationUsageTrackerTest {
         adventureData.getLocationData().put("hall", hallLocation);
 
         // When
-        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData, targetLocationId);
+        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData,
+                                                                                                  targetLocationId);
 
         // Then
         assertThat(usages).hasSize(1);
@@ -101,14 +105,15 @@ class LocationUsageTrackerTest {
         adventureData.getLocationData().put("kitchen", kitchenLocation);
 
         // When
-        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData, targetLocationId);
+        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData,
+                                                                                                  targetLocationId);
 
         // Then
         assertThat(usages).hasSize(2);
         assertThat(usages).extracting(LocationUsageTracker.LocationUsage::getUsageType)
-                .containsOnly("Direction");
+                          .containsOnly("Direction");
         assertThat(usages).extracting(LocationUsageTracker.LocationUsage::getSourceLocationId)
-                .containsExactlyInAnyOrder("hall", "kitchen");
+                          .containsExactlyInAnyOrder("hall", "kitchen");
     }
 
     @Test
@@ -119,7 +124,8 @@ class LocationUsageTrackerTest {
         adventureData.getLocationData().put("hall", hallLocation);
 
         // When
-        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData, targetLocationId);
+        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData,
+                                                                                                  targetLocationId);
 
         // Then
         assertThat(usages).hasSize(1);
@@ -135,11 +141,13 @@ class LocationUsageTrackerTest {
     void findLocationUsages_shouldFindMoveActionInFollowUp() {
         // Given
         String targetLocationId = "treasure_room";
-        LocationData hallLocation = createLocationWithMoveActionInFollowUp("hall", "Hall", "solve puzzle", targetLocationId);
+        LocationData hallLocation = createLocationWithMoveActionInFollowUp("hall", "Hall", "solve puzzle",
+                                                                           targetLocationId);
         adventureData.getLocationData().put("hall", hallLocation);
 
         // When
-        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData, targetLocationId);
+        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData,
+                                                                                                  targetLocationId);
 
         // Then
         assertThat(usages).hasSize(1);
@@ -157,16 +165,18 @@ class LocationUsageTrackerTest {
         LocationData hallLocation = createLocationWithDirection("hall", "Hall", targetLocationId, "west");
         adventureData.getLocationData().put("hall", hallLocation);
 
-        LocationData kitchenLocation = createLocationWithMoveAction("kitchen", "Kitchen", "open window", targetLocationId);
+        LocationData kitchenLocation = createLocationWithMoveAction("kitchen", "Kitchen", "open window",
+                                                                    targetLocationId);
         adventureData.getLocationData().put("kitchen", kitchenLocation);
 
         // When
-        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData, targetLocationId);
+        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData,
+                                                                                                  targetLocationId);
 
         // Then
         assertThat(usages).hasSize(3);
         assertThat(usages).extracting(LocationUsageTracker.LocationUsage::getUsageType)
-                .containsExactlyInAnyOrder("Starting Location", "Direction", "Move Action");
+                          .containsExactlyInAnyOrder("Starting Location", "Direction", "Move Action");
     }
 
     @Test
@@ -176,7 +186,8 @@ class LocationUsageTrackerTest {
         adventureData.getLocationData().put("hall", location);
 
         // When
-        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData, "dungeon");
+        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData,
+                                                                                                  "dungeon");
 
         // Then
         assertThat(usages).isEmpty();
@@ -190,7 +201,8 @@ class LocationUsageTrackerTest {
         adventureData.getLocationData().put("loc1", location);
 
         // When
-        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData, targetLocationId);
+        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData,
+                                                                                                  targetLocationId);
 
         // Then
         assertThat(usages).hasSize(1);

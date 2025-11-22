@@ -1,10 +1,10 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.api.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import com.pdg.adventure.api.*;
 
 public class GenericCommand implements Command {
     private final CommandDescription commandDescription;
@@ -31,7 +31,9 @@ public class GenericCommand implements Command {
         id = anId;
     }
 
-    public Action getAction() {return mainAction;}
+    public Action getAction() {
+        return mainAction;
+    }
 
     @Override
     public List<PreCondition> getPreconditions() {
@@ -40,7 +42,7 @@ public class GenericCommand implements Command {
 
     @Override
     public List<Action> getFollowUpActions() {
-    return followUpActions;
+        return followUpActions;
     }
 
     @Override
@@ -101,6 +103,7 @@ public class GenericCommand implements Command {
     /**
      * Add another action that should happen if the mainAction can happen.
      * (e.g. if the player opens a door he forgot to check for traps a trap sets off)
+     *
      * @param anAction
      */
     @Override

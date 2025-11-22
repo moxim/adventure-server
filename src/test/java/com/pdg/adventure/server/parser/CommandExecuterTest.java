@@ -102,7 +102,8 @@ class CommandExecutorTest {
     void matchingPocketCommandForItemMustExecuteSuccessfully() {
         // given
         Item item = new Item(new DescriptionProvider("tree"), true);
-        item.addCommand(new GenericCommand(partialCommand, successAction)); // TODO: also test for complete command execution
+        item.addCommand(
+                new GenericCommand(partialCommand, successAction)); // TODO: also test for complete command execution
         pocket.add(item);
 
         // when

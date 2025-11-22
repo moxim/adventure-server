@@ -1,11 +1,11 @@
 package com.pdg.adventure.server.parser;
 
-import com.pdg.adventure.server.vocabulary.Vocabulary;
-import com.pdg.adventure.model.Word;
-
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 class ParserTest {
 

@@ -24,7 +24,7 @@ public class GenericDirection
 
     private final CommandDescription description;
 
-    private Map<String, Location> locations;
+    private final Map<String, Location> locations;
     private Container partentContainer;
 
     public GenericDirection(Map<String, Location> aLocationMap, Command aCommand, String aDestinationId) {
@@ -33,7 +33,8 @@ public class GenericDirection
 
     public GenericDirection(Map<String, Location> aLocationMap, Command aCommand, String aDestinationId,
                             boolean aFlagWhetherDestinationMustBeMentioned) {
-        super(new DescriptionProvider(aLocationMap.get(aDestinationId).getAdjective(), aLocationMap.get(aDestinationId).getNoun()));
+        super(new DescriptionProvider(aLocationMap.get(aDestinationId).getAdjective(),
+                                      aLocationMap.get(aDestinationId).getNoun()));
         locations = aLocationMap;
         destinationMustBeMentioned = aFlagWhetherDestinationMustBeMentioned;
         destinationId = aDestinationId;

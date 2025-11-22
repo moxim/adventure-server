@@ -23,6 +23,7 @@ import static com.pdg.adventure.model.Word.Type.NOUN;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.command.CommandsMenuView;
@@ -68,11 +69,9 @@ public class LocationEditorView extends VerticalLayout
         locationData = new LocationData();
         locationId = locationData.getId();
 
-        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this location.", ADJECTIVE,
-                                                      new VocabularyData());
+        adjectiveSelector = new VocabularyPickerField("Adjective", "The qualifier for this location.");
 
-        nounSelector = new VocabularyPickerField("Noun", "The main theme of this location.", NOUN,
-                                                 new VocabularyData());
+        nounSelector = new VocabularyPickerField("Noun", "The main theme of this location.");
         nounSelector.setPlaceholder("Select a noun (required)");
 
         TextField locationIdTF = getLocationIdTF();
@@ -203,7 +202,7 @@ public class LocationEditorView extends VerticalLayout
 
     private void navigateBack() {
         UI.getCurrent().navigate(LocationsMenuView.class)
-                                               .ifPresent(editor -> editor.setAdventureData(adventureData));
+          .ifPresent(editor -> editor.setAdventureData(adventureData));
     }
 
     private void validateSave(LocationViewModel aLocationViewModel) {
@@ -211,6 +210,11 @@ public class LocationEditorView extends VerticalLayout
             if (binder.validate().isOk()) {
                 binder.writeBean(aLocationViewModel);
                 final LocationData locationData = aLocationViewModel.getData();
+                final DescriptionData locationDescriptionData = locationData.getDescriptionData();
+                final DescriptionData containerDescriptionData = locationData.getItemContainerData()
+                                                                             .getDescriptionData();
+                containerDescriptionData.setAdjective(locationDescriptionData.getAdjective());
+                containerDescriptionData.setNoun(locationDescriptionData.getNoun());
                 adventureData.getLocationData().put(aLocationViewModel.getId(), locationData);
                 adventureService.saveAdventureData(adventureData);
                 saveButton.setEnabled(false);
@@ -252,6 +256,7 @@ public class LocationEditorView extends VerticalLayout
 
         saveButton.setEnabled(false);
         lvm = new LocationViewModel(locationData);
+        lvm.setAdventureId(adventureData.getId());
 
         binder.readBean(lvm);
     }

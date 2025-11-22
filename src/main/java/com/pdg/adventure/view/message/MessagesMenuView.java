@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
@@ -48,15 +47,17 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         setSizeFull();
 
         Button backButton = new Button("Back", event ->
-            UI.getCurrent().navigate(AdventureEditorView.class,
-                new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                UI.getCurrent().navigate(AdventureEditorView.class,
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                            adventureData.getId())))
         );
         backButton.addClickShortcut(Key.ESCAPE);
 
         Button createButton = new Button("Create Message", e ->
-            UI.getCurrent().navigate(MessageEditorView.class,
-                new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                .ifPresent(editor -> editor.setData(adventureData))
+                UI.getCurrent().navigate(MessageEditorView.class,
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                            adventureData.getId())))
+                  .ifPresent(editor -> editor.setData(adventureData))
         );
         createButton.setIcon(new Icon(VaadinIcon.PLUS));
 
@@ -65,6 +66,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         messageCount.getStyle().set("align-self", "center");
 
         VerticalLayout leftSide = new VerticalLayout(createButton, backButton, messageCount);
+        leftSide.setMaxWidth("30%");
 
         TextField searchField = new TextField();
         searchField.setWidth("50%");
@@ -98,44 +100,46 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         Grid<MessageViewModel> messageGrid = new Grid<>(MessageViewModel.class, false);
 
         messageGrid.addColumn(MessageViewModel::getId)
-                .setHeader("Message ID")
-                .setAutoWidth(true)
-                .setFlexGrow(1)
-                .setSortable(true);
+                   .setHeader("Message ID")
+                   .setAutoWidth(true)
+                   .setFlexGrow(1)
+                   .setSortable(true);
 
         messageGrid.addColumn(mvm -> mvm.getPreview(30))
-                .setHeader("Message Text")
-                .setAutoWidth(true)
-                .setFlexGrow(3)
-                .setSortable(true);
+                   .setHeader("Message Text")
+                   .setAutoWidth(true)
+                   .setFlexGrow(3)
+                   .setSortable(true);
 
         messageGrid.addColumn(mvm -> mvm.getMessageText().length())
-                .setHeader("Length")
-                .setAutoWidth(true)
-                .setFlexGrow(0);
+                   .setHeader("Length")
+                   .setAutoWidth(true)
+                   .setFlexGrow(0);
 
         messageGrid.addColumn(MessageViewModel::getUsageCount)
-                .setHeader("Used")
-                .setAutoWidth(true)
-                .setFlexGrow(0)
-                .setSortable(true);
+                   .setHeader("Used")
+                   .setAutoWidth(true)
+                   .setFlexGrow(0)
+                   .setSortable(true);
 
         // Double-click to edit
         messageGrid.addItemDoubleClickListener(e ->
-            UI.getCurrent().navigate(MessageEditorView.class,
-                new RouteParameters(
-                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
-                    new RouteParam(RouteIds.MESSAGE_ID.getValue(), e.getItem().getId())
-                ))
-                .ifPresent(editor -> editor.setData(adventureData))
+                                                       UI.getCurrent().navigate(MessageEditorView.class,
+                                                                                new RouteParameters(
+                                                                                        new RouteParam(
+                                                                                                RouteIds.ADVENTURE_ID.getValue(),
+                                                                                                adventureData.getId()),
+                                                                                        new RouteParam(
+                                                                                                RouteIds.MESSAGE_ID.getValue(),
+                                                                                                e.getItem().getId())
+                                                                                ))
+                                                         .ifPresent(editor -> editor.setData(adventureData))
         );
 
         // Context menu
         createContextMenu(messageGrid);
 
-        messageGrid.setSizeFull();
-        messageGrid.setMaxWidth("900px");
-        messageGrid.setHeight("00px");
+        ViewSupporter.setSize(messageGrid);
         messageGrid.setEmptyStateText("No messages yet. Create one to get started.");
 
         return messageGrid;
@@ -147,13 +151,13 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         // Create a span to display the full message text
         Span messageTextSpan = new Span();
         messageTextSpan.getStyle()
-                .set("font-style", "italic")
-                .set("color", "var(--lumo-secondary-text-color)")
-                .set("padding", "var(--lumo-space-s)")
-                .set("display", "block")
-                .set("max-width", "400px")
-                .set("white-space", "normal")
-                .set("word-wrap", "break-word");
+                       .set("font-style", "italic")
+                       .set("color", "var(--lumo-secondary-text-color)")
+                       .set("padding", "var(--lumo-space-s)")
+                       .set("display", "block")
+                       .set("max-width", "400px")
+                       .set("white-space", "normal")
+                       .set("word-wrap", "break-word");
 
         // Update the message text when the context menu opens
         contextMenu.addGridContextMenuOpenedListener(event -> {
@@ -170,12 +174,16 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
 
         contextMenu.addItem("Edit", event -> {
             event.getItem().ifPresent(item ->
-                UI.getCurrent().navigate(MessageEditorView.class,
-                    new RouteParameters(
-                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
-                        new RouteParam(RouteIds.MESSAGE_ID.getValue(), item.getId())
-                    ))
-                    .ifPresent(editor -> editor.setData(adventureData))
+                                              UI.getCurrent().navigate(MessageEditorView.class,
+                                                                       new RouteParameters(
+                                                                               new RouteParam(
+                                                                                       RouteIds.ADVENTURE_ID.getValue(),
+                                                                                       adventureData.getId()),
+                                                                               new RouteParam(
+                                                                                       RouteIds.MESSAGE_ID.getValue(),
+                                                                                       item.getId())
+                                                                       ))
+                                                .ifPresent(editor -> editor.setData(adventureData))
             );
         });
 
@@ -227,15 +235,16 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
 
         // Navigate to edit the new message
         UI.getCurrent().navigate(MessageEditorView.class,
-            new RouteParameters(
-                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
-                new RouteParam(RouteIds.MESSAGE_ID.getValue(), newId)
-            ))
-            .ifPresent(editor -> editor.setData(adventureData));
+                                 new RouteParameters(
+                                         new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                                         new RouteParam(RouteIds.MESSAGE_ID.getValue(), newId)
+                                 ))
+          .ifPresent(editor -> editor.setData(adventureData));
     }
 
     private void showMessageUsage(MessageViewModel message) {
-        List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData, message.getId());
+        List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData,
+                                                                                              message.getId());
         ViewSupporter.showUsages("Message Usage", "message", message.getId(), usages);
     }
 
@@ -278,8 +287,8 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
             } else {
                 String lowerCaseSearchTerm = searchTerm.toLowerCase();
                 dataProvider.setFilter(mvm ->
-                    mvm.getId().toLowerCase().contains(lowerCaseSearchTerm) ||
-                    mvm.getMessageText().toLowerCase().contains(lowerCaseSearchTerm)
+                                               mvm.getId().toLowerCase().contains(lowerCaseSearchTerm) ||
+                                               mvm.getMessageText().toLowerCase().contains(lowerCaseSearchTerm)
                 );
             }
         }
@@ -292,11 +301,13 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
 
             // Convert to view models with usage counts
             List<MessageViewModel> messages = messageDataList.stream()
-                .map(msgData -> {
-                    int usageCount = MessageUsageTracker.countMessageUsages(adventureData, msgData.getMessageId());
-                    return new MessageViewModel(msgData, usageCount);
-                })
-                .collect(Collectors.toList());
+                                                             .map(msgData -> {
+                                                                 int usageCount
+                                                                         = MessageUsageTracker.countMessageUsages(
+                                                                         adventureData, msgData.getMessageId());
+                                                                 return new MessageViewModel(msgData, usageCount);
+                                                             })
+                                                             .toList();
 
             dataProvider = new ListDataProvider<>(messages);
             grid.setDataProvider(dataProvider);

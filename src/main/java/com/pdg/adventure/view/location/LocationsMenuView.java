@@ -77,9 +77,11 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         edit = new Button("Edit Location", e -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(LocationEditorView.class,
-                                            new RouteParameters(new RouteParam(RouteIds.LOCATION_ID.getValue(), targetLocationId),
-                                                             new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                .ifPresent(editor -> editor.setData(adventureData));
+                                         new RouteParameters(
+                                                 new RouteParam(RouteIds.LOCATION_ID.getValue(), targetLocationId),
+                                                 new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                adventureData.getId())))
+                  .ifPresent(editor -> editor.setData(adventureData));
             }
         });
         edit.setEnabled(false);
@@ -93,7 +95,8 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
 
         backButton = new Button("Back", event -> {
             UI.getCurrent().navigate(AdventureEditorView.class,
-                                     new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
+                                     new RouteParameters(
+                                             new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
         });
         backButton.addClickShortcut(Key.ESCAPE);
 
@@ -174,9 +177,8 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
 
         LocationDataContextMenu contextMenu = new LocationDataContextMenu(grid);
 
-        grid.setWidthFull();
-        grid.setMaxWidth("900px");
-        grid.setHeight("500px");
+
+        ViewSupporter.setSize(grid);
         grid.setEmptyStateText("No locations found. Create some to get the story going.");
 
         return grid;
@@ -271,7 +273,8 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
     }
 
     private void showLocationUsage(LocationDescriptionAdapter aLlocation) {
-        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData, aLlocation.getId());
+        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData,
+                                                                                                  aLlocation.getId());
         ViewSupporter.showUsages("Location Usage", "location", aLlocation.getId(), usages);
     }
 
