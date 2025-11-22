@@ -23,7 +23,7 @@ public class GridProvider<T extends Describable> {
         grid.addColumn(ViewSupporter::formatDescription).setHeader("Short Description").setSortable(true);
 //                .setAutoWidth(true);
         grid.getColumns().forEach(column -> column.setAutoWidth(true));
-//        grid.setSizeFull();
+        grid.setSizeFull();
 //        grid.setWidth("500px");
 //        grid.setHeight("500px");
         grid.addThemeVariants(GridVariant.LUMO_WRAP_CELL_CONTENT);

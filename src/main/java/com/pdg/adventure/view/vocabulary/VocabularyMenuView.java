@@ -69,6 +69,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         final VerticalLayout rightSide = createRightSide();
         final VerticalLayout farSide = createFarSide();
         HorizontalLayout horizontalLayout = new HorizontalLayout(leftSide, rightSide, farSide);
+        horizontalLayout.setSizeFull();
         add(horizontalLayout);
     }
 
@@ -115,8 +116,9 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         specialLabel.getStyle().set("font-weight", "bold")
                     .set("font-size", "var(--lumo-font-size-l)")
                     .set("margin-bottom", "var(--lumo-space-s)");
-        final VerticalLayout verticalLayout = new VerticalLayout(specialLabel, takeSelector, dropSelector);
-        return verticalLayout;
+        final VerticalLayout vl = new VerticalLayout(specialLabel, takeSelector, dropSelector);
+        vl.setMaxWidth("300px");
+        return vl;
     }
 
     private boolean checkIfValueAlreadyExists(final Word oldValue, final Word newValue, final String Take,
@@ -154,6 +156,8 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         gridContainer = new Div();
         gridContainer.setSizeFull();
         VerticalLayout rightSide = new VerticalLayout(searchField, gridContainer);
+        rightSide.setSizeFull();
+
         return rightSide;
     }
 
@@ -178,6 +182,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         });
 
         VerticalLayout vl = new VerticalLayout(create, edit, back, save);
+        vl.setMaxWidth("200px");
         return vl;
     }
 
@@ -236,6 +241,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         gridContainer.removeAll();
         SerializablePredicate<DescribableWordAdapter> filter = WordFilter.filterByTypeTextOrSynonym(searchField);
         gridContainer.add(getVocabularyGrid(vocabularyData, searchField, filter));
+
         takeSelector.populate(
                 vocabularyData.getWords(VERB).stream().filter(word -> word.getSynonym() == null).toList());
         if (vocabularyData.getTakeWord() != null) {

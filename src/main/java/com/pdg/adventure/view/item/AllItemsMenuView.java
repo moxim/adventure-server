@@ -85,7 +85,7 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
         backButton.addClickShortcut(Key.ESCAPE);
 
         VerticalLayout leftSide = new VerticalLayout(numberOfItems, locationSelector, createButton, backButton);
-        leftSide.setMaxWidth("30%");
+        leftSide.setMaxWidth("20%");
 
         gridContainer = new Div();
         gridContainer.setSizeFull();

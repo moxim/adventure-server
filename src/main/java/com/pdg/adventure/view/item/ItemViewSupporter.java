@@ -80,7 +80,7 @@ public class ItemViewSupporter {
         }
     }
 
-    void fillGUI(final LocationData aLocationData, final Div gridContainer) {
+    Grid<ItemData> fillGUI(final LocationData aLocationData, final Div gridContainer) {
         // Use items already loaded in memory from ItemContainerData
         List<ItemData> allItems = aLocationData.getItemContainerData() != null ?
                                   aLocationData.getItemContainerData().getItems() : new ArrayList<>();
@@ -89,7 +89,10 @@ public class ItemViewSupporter {
         List<ItemData> items = allItems.stream().filter(Objects::nonNull).toList();
 
         gridContainer.removeAll();
-        gridContainer.add(getItemsGrid(items));
+        Grid<ItemData> grid = getItemsGrid(items);
+        gridContainer.add(grid);
+
+        return grid;
     }
 
     private Grid<ItemData> getItemsGrid(List<ItemData> items) {

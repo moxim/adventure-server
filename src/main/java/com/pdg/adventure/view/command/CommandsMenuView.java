@@ -100,6 +100,7 @@ public class CommandsMenuView extends VerticalLayout
 
         VerticalLayout vll = new VerticalLayout(createButton, backButton, resetButton, saveButton);
         VerticalLayout vlr = new VerticalLayout(gridContainer);
+        vlr.setSizeFull();
 
         HorizontalLayout hl = new HorizontalLayout(vll, vlr);
         add(hl);
@@ -139,6 +140,7 @@ public class CommandsMenuView extends VerticalLayout
             .setSortable(true);
         grid.addColumn(CommandDescriptionAdapter::getAdjective).setHeader("Adjective").setAutoWidth(true);
         grid.addColumn(CommandDescriptionAdapter::getNoun).setHeader("Noun").setAutoWidth(true);
+
         ViewSupporter.setSize(grid);
         return grid;
     }

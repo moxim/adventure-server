@@ -256,6 +256,7 @@ public class LocationEditorView extends VerticalLayout
 
         saveButton.setEnabled(false);
         lvm = new LocationViewModel(locationData);
+        lvm.setAdventureId(adventureData.getId());
 
         binder.readBean(lvm);
     }

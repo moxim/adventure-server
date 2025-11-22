@@ -206,6 +206,7 @@ public class ItemEditorView extends VerticalLayout
 
     private void navigateBack() {
         UI.getCurrent().navigate(ItemsMenuView.class, new RouteParameters(
+//                  new RouteParam(RouteIds.ITEM_ID.getValue(), itemId),
                   new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
                   new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
           .ifPresent(editor -> editor.setData(adventureData, locationData));

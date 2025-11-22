@@ -22,6 +22,9 @@ import com.pdg.adventure.view.location.LocationViewModel;
 
 public class ViewSupporter {
 
+    public static int MAX_TEXT_IN_GRID = 32;
+    public static int MAX_ID_LENGTH = 26;
+    
     public static String formatId(Ided anIdedData) {
         if (anIdedData == null) {
             return "";
@@ -34,7 +37,7 @@ public class ViewSupporter {
     }
 
     public static String formatId(String anIdedData) {
-        return anIdedData.substring(0, 26);
+        return anIdedData.substring(0, MAX_ID_LENGTH);
     }
 
     public static void populateStartLocation(AdventureData anAdventureData, TextField aStartLocation) {
@@ -82,7 +85,7 @@ public class ViewSupporter {
         }
 
         String shortDescription = adjective + " " + noun;
-        return restrictToLength(shortDescription, 48);
+        return restrictToLength(shortDescription, MAX_TEXT_IN_GRID);
     }
 
     public static String formatDescription(LocationData aLocationData) {
@@ -118,7 +121,7 @@ public class ViewSupporter {
             }
             command.append(noun);
         }
-        return restrictToLength(command.toString(), 48);
+        return restrictToLength(command.toString(), MAX_TEXT_IN_GRID);
     }
 
     public static String formatDescription(Describable aDescribable) {
@@ -126,7 +129,7 @@ public class ViewSupporter {
         if (shortDescription.isEmpty()) {
             shortDescription = getShortDescription(aDescribable.getNoun(), aDescribable.getAdjective());
         }
-        return restrictToLength(shortDescription, 48);
+        return restrictToLength(shortDescription, MAX_TEXT_IN_GRID);
     }
 
     public static String formatDescription(DescriptionData aDescriptionData) {
@@ -135,7 +138,7 @@ public class ViewSupporter {
             shortDescription = getWordText(aDescriptionData.getNoun()) + " " +
                                getWordText(aDescriptionData.getAdjective());
         }
-        return restrictToLength(shortDescription, 48);
+        return restrictToLength(shortDescription, MAX_TEXT_IN_GRID);
     }
 
     private static String restrictToLength(String aText, int maxLength) {
@@ -289,9 +292,9 @@ public class ViewSupporter {
 
     public static void setSize(Grid<?> aGrid) {
         aGrid.setSizeFull();
-        aGrid.setMaxWidth("900px");
-        aGrid.setMaxHeight("500px");
-        aGrid.setMinWidth("550px");
-        aGrid.setMinHeight("250px");
+        aGrid.setMaxWidth("1024px");
+        aGrid.setMinWidth("480px");
+        aGrid.setMaxHeight("640px");
+        aGrid.setMinHeight("500px");
     }
 }
