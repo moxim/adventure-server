@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,7 +33,7 @@ public class ItemService {
      * @param itemData    The item data
      * @return The created item
      */
-    public ItemData createItem(@Nonnull String adventureId, @Nonnull String locationId, @Nonnull ItemData itemData) {
+    public ItemData createItem(String adventureId, String locationId, ItemData itemData) {
         LOG.info("Creating item for adventure: {} in location: {}", adventureId, locationId);
 
         itemData.setAdventureId(adventureId);
@@ -52,7 +51,7 @@ public class ItemService {
      * @return The updated item
      */
     @Transactional
-    public ItemData updateItem(@Nonnull ItemData itemData) {
+    public ItemData updateItem(ItemData itemData) {
         LOG.info("Updating item: {} for adventure: {}", itemData.getId(), itemData.getAdventureId());
 
         Optional<ItemData> existingItem = itemRepository.findByAdventureIdAndId(itemData.getAdventureId(),
@@ -73,7 +72,7 @@ public class ItemService {
      * @param itemData The item to save
      * @return The saved item
      */
-    public ItemData saveItem(@Nonnull ItemData itemData) {
+    public ItemData saveItem(ItemData itemData) {
         LOG.info("Saving item: {} for adventure: {}", itemData.getId(), itemData.getAdventureId());
         itemData.touch();
         return itemRepository.save(itemData);
@@ -85,7 +84,7 @@ public class ItemService {
      * @param adventureId The adventure ID
      * @param itemId      The item ID
      */
-    public void deleteItem(@Nonnull String adventureId, @Nonnull String itemId) {
+    public void deleteItem(String adventureId, String itemId) {
         LOG.info("Deleting item: {} for adventure: {}", itemId, adventureId);
         itemRepository.deleteByAdventureIdAndId(adventureId, itemId);
     }
@@ -96,7 +95,7 @@ public class ItemService {
      * @param adventureId The adventure ID
      * @return List of items
      */
-    public List<ItemData> getAllItemsForAdventure(@Nonnull String adventureId) {
+    public List<ItemData> getAllItemsForAdventure(String adventureId) {
         LOG.debug("Getting all items for adventure: {}", adventureId);
         return itemRepository.findByAdventureId(adventureId);
     }
@@ -108,7 +107,7 @@ public class ItemService {
      * @param locationId  The location ID
      * @return List of items
      */
-    public List<ItemData> getItemsForLocation(@Nonnull String adventureId, @Nonnull String locationId) {
+    public List<ItemData> getItemsForLocation(String adventureId, String locationId) {
         LOG.debug("Getting items for location: {} in adventure: {}", locationId, adventureId);
         return itemRepository.findByAdventureIdAndLocationId(adventureId, locationId);
     }
@@ -120,7 +119,7 @@ public class ItemService {
      * @param itemId      The item ID
      * @return Optional containing the item if found
      */
-    public Optional<ItemData> getItemById(@Nonnull String adventureId, @Nonnull String itemId) {
+    public Optional<ItemData> getItemById(String adventureId, String itemId) {
         LOG.debug("Getting item: {} for adventure: {}", itemId, adventureId);
         return itemRepository.findByAdventureIdAndId(adventureId, itemId);
     }
@@ -132,7 +131,7 @@ public class ItemService {
      * @param adventureId The adventure ID
      * @param locationId  The location ID
      */
-    public void deleteAllItemsForLocation(@Nonnull String adventureId, @Nonnull String locationId) {
+    public void deleteAllItemsForLocation(String adventureId, String locationId) {
         LOG.info("Deleting all items for location: {} in adventure: {}", locationId, adventureId);
         itemRepository.deleteByAdventureIdAndLocationId(adventureId, locationId);
     }
@@ -143,7 +142,7 @@ public class ItemService {
      *
      * @param adventureId The adventure ID
      */
-    public void deleteAllItemsForAdventure(@Nonnull String adventureId) {
+    public void deleteAllItemsForAdventure(String adventureId) {
         LOG.info("Deleting all items for adventure: {}", adventureId);
         itemRepository.deleteByAdventureId(adventureId);
     }
@@ -155,7 +154,7 @@ public class ItemService {
      * @param locationId  The location ID
      * @return Number of items
      */
-    public long countItemsInLocation(@Nonnull String adventureId, @Nonnull String locationId) {
+    public long countItemsInLocation(String adventureId, String locationId) {
         return itemRepository.countByAdventureIdAndLocationId(adventureId, locationId);
     }
 
@@ -165,7 +164,7 @@ public class ItemService {
      * @param adventureId The adventure ID
      * @return Number of items
      */
-    public long countItemsInAdventure(@Nonnull String adventureId) {
+    public long countItemsInAdventure(String adventureId) {
         return itemRepository.countByAdventureId(adventureId);
     }
 }

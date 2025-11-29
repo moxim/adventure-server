@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.pdg.adventure.model.basic.BasicData;
+import com.pdg.adventure.model.basic.DatedData;
 
 /**
  * Message data stored in MongoDB.
@@ -18,7 +18,7 @@ import com.pdg.adventure.model.basic.BasicData;
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @CompoundIndex(name = "adventure_message_idx", def = "{'adventureId': 1, 'messageId': 1}", unique = true)
-public class MessageData extends BasicData {
+public class MessageData extends DatedData {
 
     /**
      * The adventure this message belongs to.

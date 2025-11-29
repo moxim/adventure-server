@@ -6,13 +6,13 @@ import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.pdg.adventure.model.basic.BasicData;
+import com.pdg.adventure.model.basic.DatedData;
 
 @Document(collection = "words")
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @ToString(callSuper = true)
-public class Word extends BasicData {
+public class Word extends DatedData {
     private String text;
     private Type type;
     @DBRef

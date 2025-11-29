@@ -59,7 +59,8 @@ class MoveItemActionEditorTest {
         locDesc1.setShortDescription("Forest");
         location1.setDescriptionData(locDesc1);
 
-        ItemContainerData container1 = new ItemContainerData("container-1");
+        ItemContainerData container1 = new ItemContainerData("loc-1");
+        container1.setId("container-1");
         List<ItemData> items1 = new ArrayList<>();
         items1.add(item1);
         items1.add(item2);
@@ -73,7 +74,8 @@ class MoveItemActionEditorTest {
         locDesc2.setShortDescription("Castle");
         location2.setDescriptionData(locDesc2);
 
-        ItemContainerData container2 = new ItemContainerData("container-2");
+        ItemContainerData container2 = new ItemContainerData("loc-2");
+        container2.setId("container-2");
         container2.setItems(new ArrayList<>());
         location2.setItemContainerData(container2);
 
@@ -84,6 +86,7 @@ class MoveItemActionEditorTest {
 
         // Create player pocket with an item
         playerPocket = new ItemContainerData("player-pocket");
+        playerPocket.setId("pocket-1");
         List<ItemData> pocketItems = new ArrayList<>();
         pocketItems.add(item3);
         playerPocket.setItems(pocketItems);
@@ -95,24 +98,18 @@ class MoveItemActionEditorTest {
     @Test
     void collectAllItems_shouldIncludeItemsFromAllLocations() {
         // Given
-        moveActionData.setThingId(item1.getId());
-        moveActionData.setDestinationId(playerPocket.getId());
-        MoveItemActionEditor editor = new MoveItemActionEditor(moveActionData, adventureData);
-        editor.initialize();
-
-        // When - The editor should have collected all items during initialization
-        // We verify this by checking the validation passes when we set a valid item
-        boolean isValid = editor.validate();
-
-        // Then
-        assertThat(isValid).isTrue();
+        verifyEditorIsValid(item1, playerPocket);
     }
 
     @Test
     void collectAllItems_shouldIncludeItemsFromPlayerPocket() {
+        verifyEditorIsValid(item3, location1.getItemContainerData());
+    }
+
+    private void verifyEditorIsValid(final ItemData item3, final ItemContainerData location1) {
         // Given
         moveActionData.setThingId(item3.getId());
-        moveActionData.setDestinationId(location1.getItemContainerData().getId());
+        moveActionData.setDestinationId(location1.getId());
         MoveItemActionEditor editor = new MoveItemActionEditor(moveActionData, adventureData);
         editor.initialize();
 
@@ -122,6 +119,7 @@ class MoveItemActionEditorTest {
         // Then
         assertThat(isValid).isTrue();
     }
+
 
     @Test
     void validate_withNoItemSelected_shouldReturnFalse() {
@@ -149,21 +147,6 @@ class MoveItemActionEditorTest {
 
         // Then
         assertThat(isValid).isFalse();
-    }
-
-    @Test
-    void validate_withBothItemAndDestinationSelected_shouldReturnTrue() {
-        // Given
-        moveActionData.setThingId(item1.getId());
-        moveActionData.setDestinationId(playerPocket.getId());
-        MoveItemActionEditor editor = new MoveItemActionEditor(moveActionData, adventureData);
-        editor.initialize();
-
-        // When
-        boolean isValid = editor.validate();
-
-        // Then
-        assertThat(isValid).isTrue();
     }
 
     @Test

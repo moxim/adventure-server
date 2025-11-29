@@ -8,14 +8,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.pdg.adventure.model.basic.BasicData;
+import com.pdg.adventure.model.basic.DatedData;
 import com.pdg.adventure.server.storage.mongo.CascadeDelete;
 import com.pdg.adventure.server.storage.mongo.CascadeSave;
 
 @Document(collection = "adventures")
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class AdventureData extends BasicData {
+public class AdventureData extends DatedData {
     private String title;
 
     @DBRef(lazy = false)
