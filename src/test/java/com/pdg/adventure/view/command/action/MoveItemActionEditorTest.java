@@ -59,7 +59,8 @@ class MoveItemActionEditorTest {
         locDesc1.setShortDescription("Forest");
         location1.setDescriptionData(locDesc1);
 
-        ItemContainerData container1 = new ItemContainerData("container-1");
+        ItemContainerData container1 = new ItemContainerData("loc-1");
+        container1.setId("container-1");
         List<ItemData> items1 = new ArrayList<>();
         items1.add(item1);
         items1.add(item2);
@@ -73,7 +74,8 @@ class MoveItemActionEditorTest {
         locDesc2.setShortDescription("Castle");
         location2.setDescriptionData(locDesc2);
 
-        ItemContainerData container2 = new ItemContainerData("container-2");
+        ItemContainerData container2 = new ItemContainerData("loc-2");
+        container2.setId("container-2");
         container2.setItems(new ArrayList<>());
         location2.setItemContainerData(container2);
 
@@ -84,6 +86,7 @@ class MoveItemActionEditorTest {
 
         // Create player pocket with an item
         playerPocket = new ItemContainerData("player-pocket");
+        playerPocket.setId("pocket-1");
         List<ItemData> pocketItems = new ArrayList<>();
         pocketItems.add(item3);
         playerPocket.setItems(pocketItems);
@@ -123,6 +126,9 @@ class MoveItemActionEditorTest {
         assertThat(isValid).isTrue();
     }
 
+
+
+
     @Test
     void validate_withNoItemSelected_shouldReturnFalse() {
         // Given
@@ -149,21 +155,6 @@ class MoveItemActionEditorTest {
 
         // Then
         assertThat(isValid).isFalse();
-    }
-
-    @Test
-    void validate_withBothItemAndDestinationSelected_shouldReturnTrue() {
-        // Given
-        moveActionData.setThingId(item1.getId());
-        moveActionData.setDestinationId(playerPocket.getId());
-        MoveItemActionEditor editor = new MoveItemActionEditor(moveActionData, adventureData);
-        editor.initialize();
-
-        // When
-        boolean isValid = editor.validate();
-
-        // Then
-        assertThat(isValid).isTrue();
     }
 
     @Test

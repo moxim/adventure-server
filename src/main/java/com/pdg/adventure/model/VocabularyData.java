@@ -11,14 +11,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import com.pdg.adventure.model.basic.BasicData;
+import com.pdg.adventure.model.basic.DatedData;
 import com.pdg.adventure.server.storage.mongo.CascadeDelete;
 import com.pdg.adventure.server.storage.mongo.CascadeSave;
 
 @Document(collection = "vocabularies")
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class VocabularyData extends BasicData {
+public class VocabularyData extends DatedData {
 
     public static final String YES_TEXT = "yes";
     public static final String NO_TEXT = "no";
