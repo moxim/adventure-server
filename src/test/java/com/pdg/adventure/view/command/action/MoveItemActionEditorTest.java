@@ -98,24 +98,18 @@ class MoveItemActionEditorTest {
     @Test
     void collectAllItems_shouldIncludeItemsFromAllLocations() {
         // Given
-        moveActionData.setThingId(item1.getId());
-        moveActionData.setDestinationId(playerPocket.getId());
-        MoveItemActionEditor editor = new MoveItemActionEditor(moveActionData, adventureData);
-        editor.initialize();
-
-        // When - The editor should have collected all items during initialization
-        // We verify this by checking the validation passes when we set a valid item
-        boolean isValid = editor.validate();
-
-        // Then
-        assertThat(isValid).isTrue();
+        verifyEditorIsValid(item1, playerPocket);
     }
 
     @Test
     void collectAllItems_shouldIncludeItemsFromPlayerPocket() {
+        verifyEditorIsValid(item3, location1.getItemContainerData());
+    }
+
+    private void verifyEditorIsValid(final ItemData item3, final ItemContainerData location1) {
         // Given
         moveActionData.setThingId(item3.getId());
-        moveActionData.setDestinationId(location1.getItemContainerData().getId());
+        moveActionData.setDestinationId(location1.getId());
         MoveItemActionEditor editor = new MoveItemActionEditor(moveActionData, adventureData);
         editor.initialize();
 
@@ -125,8 +119,6 @@ class MoveItemActionEditorTest {
         // Then
         assertThat(isValid).isTrue();
     }
-
-
 
 
     @Test
