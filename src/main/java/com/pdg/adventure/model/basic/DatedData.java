@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.time.Instant;
 
 @Data
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper=true, onlyExplicitlyIncluded = true)
 public class DatedData extends BasicData {
 
     /**
