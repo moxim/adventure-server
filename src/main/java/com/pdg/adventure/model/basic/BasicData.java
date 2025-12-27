@@ -12,5 +12,5 @@ import com.pdg.adventure.api.Ided;
 public class BasicData implements Ided {
     @Id
     @EqualsAndHashCode.Include
-    private String id = Ulid.fast().toString();
+    private String id = Ulid.fast().toString().toLowerCase();
 }
