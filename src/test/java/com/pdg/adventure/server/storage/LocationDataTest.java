@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.boot.data.mongodb.test.autoconfigure.DataMongoTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -24,7 +24,8 @@ import com.pdg.adventure.server.storage.mongo.CascadeSaveMongoEventListener;
 import com.pdg.adventure.server.storage.mongo.UuidIdGenerationMongoEventListener;
 
 @DataMongoTest
-@Import(value = {UuidIdGenerationMongoEventListener.class, CascadeSaveMongoEventListener.class})
+@Import(value = {UuidIdGenerationMongoEventListener.class, CascadeSaveMongoEventListener.class,
+                 de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration.class})
 @Order(1)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class LocationDataTest {

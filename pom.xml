@@ -16,8 +16,10 @@
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
         <java.version>25</java.version>
-        <spring-boot.version>3.5.7</spring-boot.version>
-        <vaadin.version>24.9.3</vaadin.version>
+<!--        <spring-boot.version>3.5.7</spring-boot.version>-->
+        <spring-boot.version>4.0.1</spring-boot.version>
+        <vaadin.version>25.0.2</vaadin.version>
+<!--        <vaadin.version>24.9.3</vaadin.version>-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <org.mockito.mockito-core>2.23.4</org.mockito.mockito-core>
     </properties>
@@ -25,7 +27,9 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.7</version>
+<!--        <version>3.5.7</version>-->
+        <version>4.0.1</version>
+        <relativePath/>
     </parent>
 
     <licenses>
@@ -75,6 +79,16 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+
+        <!-- Spring Milestone Repository for Spring AI 2.0.0-M1 -->
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -118,14 +132,51 @@
     </dependencyManagement>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-classic</artifactId>
+            <scope>test</scope> <!-- or runtime if needed for main app -->
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test-classic</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
+        </dependency>
+        <!-- Provides RestClientAutoConfiguration -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-restclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webclient</artifactId>
+        </dependency>
+        <!-- Required for WebSocket messaging support in Spring Boot 4.0 -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-messaging</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-core</artifactId>
+            <artifactId>vaadin</artifactId>
             <version>${vaadin.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-logging</artifactId>
+            <version>${spring-boot.version}</version>
         </dependency>
         <dependency>
            <groupId>org.github.legioth</groupId>
@@ -150,29 +201,34 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-dev-bundle</artifactId>
+            <artifactId>vaadin-dev</artifactId>
             <version>${vaadin.version}</version>
+            <optional>true</optional>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+            <version>${spring-boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
+            <version>${spring-boot.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
         	<groupId>org.springframework.boot</groupId>
         	<artifactId>spring-boot-properties-migrator</artifactId>
+            <version>${spring-boot.version}</version>
         	<scope>runtime</scope>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
+            <version>${spring-boot.version}</version>
         </dependency>
 
         <dependency>
@@ -185,17 +241,40 @@
         <dependency>
         	<groupId>org.springframework.boot</groupId>
         	<artifactId>spring-boot-starter-actuator</artifactId>
+            <version>${spring-boot.version}</version>
+            <scope>compile</scope>
         </dependency>
+<!---->
+<!--        <dependency>-->
+<!--            <groupId>io.netty</groupId>-->
+<!--            <artifactId>netty-codec-http</artifactId>-->
+<!--            <version>4.2.9.Final</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
-            <artifactId>de.flapdoodle.embed.mongo.spring3x</artifactId>
-            <version>4.20.0</version>
+            <artifactId>de.flapdoodle.embed.mongo.spring4x</artifactId>
+            <version>4.22.0</version>
             <scope>test</scope>
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    &lt;!&ndash; exclude the transitive netty version to avoid CVEs &ndash;&gt;-->
+<!--                    <groupId>io.netty</groupId>-->
+<!--                    <artifactId>netty-codec-http</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <version>${spring-boot.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb-test</artifactId>
+            <version>${spring-boot.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -210,24 +289,25 @@
             <version>2.14.0</version>
         </dependency>
 
-<!--        AI inclusion -->
-        <dependency>
-           <groupId>org.springframework.ai</groupId>
-           <artifactId>spring-ai-spring-boot-testcontainers</artifactId>
-            <version>1.0.3</version>
-        </dependency>
+<!--        AI inclusion - DISABLED: Incompatible with Spring Boot 4.0.1, waiting for Spring AI 2.0.0 -->
+<!--        <dependency>-->
+<!--           <groupId>org.springframework.ai</groupId>-->
+<!--           <artifactId>spring-ai-spring-boot-testcontainers</artifactId>-->
+<!--            <version>1.0.3</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-bom</artifactId>
-            <version>1.0.3</version>
+            <version>2.0.0-M1</version>
+<!--            <version>1.0.3</version>-->
             <type>pom</type>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-           <groupId>org.springframework.ai</groupId>
-           <artifactId>spring-ai-ollama-spring-boot-starter</artifactId>
-            <version>1.0.0-M6</version>
-        </dependency>
+<!--        <dependency>-->
+<!--           <groupId>org.springframework.ai</groupId>-->
+<!--           <artifactId>spring-ai-ollama-spring-boot-starter</artifactId>-->
+<!--            <version>1.0.0-M6</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>
@@ -354,6 +434,9 @@
                         <goals>
                             <goal>prepare-frontend</goal>
                         </goals>
+                        <phase>
+                            process-resources
+                        </phase>
                     </execution>
                 </executions>
             </plugin>
