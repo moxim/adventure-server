@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,7 +33,7 @@ public class MessageService {
      * @param text        The message text
      * @return The created message
      */
-    public MessageData createMessage(@Nonnull String adventureId, @Nonnull String messageId, @Nonnull String text) {
+    public MessageData createMessage( String adventureId,  String messageId,  String text) {
         LOG.info("Creating message: {} for adventure: {}", messageId, adventureId);
 
         // Check if message already exists
@@ -59,8 +58,8 @@ public class MessageService {
      * @return The updated message
      */
     @Transactional
-    public MessageData updateMessage(@Nonnull String adventureId, @Nonnull String oldMessageId,
-                                     @Nonnull String newMessageId, @Nonnull String newText) {
+    public MessageData updateMessage( String adventureId,  String oldMessageId,
+                                      String newMessageId,  String newText) {
         LOG.info("Updating message: {} -> {} for adventure: {}", oldMessageId, newMessageId, adventureId);
 
         Optional<MessageData> existingMessage = messageRepository.findByAdventureIdAndMessageId(adventureId,
@@ -93,7 +92,7 @@ public class MessageService {
      * @param adventureId The adventure ID
      * @param messageId   The message ID
      */
-    public void deleteMessage(@Nonnull String adventureId, @Nonnull String messageId) {
+    public void deleteMessage( String adventureId,  String messageId) {
         LOG.info("Deleting message: {} for adventure: {}", messageId, adventureId);
         messageRepository.deleteByAdventureIdAndMessageId(adventureId, messageId);
     }
@@ -104,7 +103,7 @@ public class MessageService {
      * @param adventureId The adventure ID
      * @return List of messages
      */
-    public List<MessageData> getAllMessagesForAdventure(@Nonnull String adventureId) {
+    public List<MessageData> getAllMessagesForAdventure( String adventureId) {
         LOG.debug("Getting all messages for adventure: {}", adventureId);
         return messageRepository.findByAdventureId(adventureId);
     }
@@ -116,7 +115,7 @@ public class MessageService {
      * @param messageId   The message ID
      * @return Optional containing the message if found
      */
-    public Optional<MessageData> getMessageByIdForAdventure(@Nonnull String adventureId, @Nonnull String messageId) {
+    public Optional<MessageData> getMessageByIdForAdventure( String adventureId,  String messageId) {
         LOG.debug("Getting message: {} for adventure: {}", messageId, adventureId);
         return messageRepository.findByAdventureIdAndMessageId(adventureId, messageId);
     }
@@ -128,7 +127,7 @@ public class MessageService {
      * @param messageId   The message ID
      * @return The message text, or null if not found
      */
-    public String getMessageText(@Nonnull String adventureId, @Nonnull String messageId) {
+    public String getMessageText( String adventureId,  String messageId) {
         return getMessageByIdForAdventure(adventureId, messageId)
                 .map(MessageData::getText)
                 .orElse(null);
@@ -141,7 +140,7 @@ public class MessageService {
      * @param messageId   The message ID
      * @return true if the message exists
      */
-    public boolean messageExists(@Nonnull String adventureId, @Nonnull String messageId) {
+    public boolean messageExists( String adventureId,  String messageId) {
         return messageRepository.existsByAdventureIdAndMessageId(adventureId, messageId);
     }
 
@@ -152,7 +151,7 @@ public class MessageService {
      * @param category    The category name
      * @return List of messages in the category
      */
-    public List<MessageData> getMessagesByCategory(@Nonnull String adventureId, @Nonnull String category) {
+    public List<MessageData> getMessagesByCategory( String adventureId,  String category) {
         LOG.debug("Getting messages by category: {} for adventure: {}", category, adventureId);
         return messageRepository.findByAdventureIdAndCategory(adventureId, category);
     }
@@ -163,7 +162,7 @@ public class MessageService {
      *
      * @param adventureId The adventure ID
      */
-    public void deleteAllMessagesForAdventure(@Nonnull String adventureId) {
+    public void deleteAllMessagesForAdventure( String adventureId) {
         LOG.info("Deleting all messages for adventure: {}", adventureId);
         messageRepository.deleteByAdventureId(adventureId);
     }
@@ -174,7 +173,7 @@ public class MessageService {
      * @param adventureId The adventure ID
      * @return Number of messages
      */
-    public long countMessages(@Nonnull String adventureId) {
+    public long countMessages( String adventureId) {
         return messageRepository.countByAdventureId(adventureId);
     }
 
@@ -184,7 +183,7 @@ public class MessageService {
      * @param message The message to save
      * @return The saved message
      */
-    public MessageData saveMessage(@Nonnull MessageData message) {
+    public MessageData saveMessage( MessageData message) {
         LOG.info("Saving message: {} for adventure: {}", message.getMessageId(), message.getAdventureId());
         message.touch();
         return messageRepository.save(message);

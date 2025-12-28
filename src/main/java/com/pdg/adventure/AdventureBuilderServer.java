@@ -1,9 +1,7 @@
 package com.pdg.adventure;
 
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.theme.Theme;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -14,8 +12,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 @SpringBootApplication
 //@EnableMongoRepositories(basePackages = "com.pdg.adventure.server.storage")
-@Theme(value = "adventureBuilder")
-@NpmPackage(value = "@vaadin-component-factory/vcf-nav", version = "1.1.3")
+//@Theme(value = "adventureBuilder")
+//@NpmPackage(value = "@vaadin-component-factory/vcf-nav", version = "1.1.3")
 @PWA(name = "Adventure Builder", shortName = "Adventure",
         offlineResources = {"./images/adventure.png"},
         offlinePath = "offline.html")

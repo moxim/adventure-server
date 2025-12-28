@@ -9,7 +9,6 @@ import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
-import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -25,20 +24,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.pdg.adventure.model.Word.Type.VERB;
-
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
-import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 @Route(value = "adventures/:adventureId/vocabulary", layout = VocabularyMainLayout.class)
-@RouteAlias(value = "adventures/vocabulary", layout = VocabularyMainLayout.class)
+//@RouteAlias(value = "adventures/vocabulary", layout = VocabularyMainLayout.class)
 @PageTitle("Vocabulary")
 public class VocabularyMenuView extends VerticalLayout implements SaveListener, GuiListener {
 
@@ -47,13 +43,12 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     private VocabularyData vocabularyData;
 
     private Button edit;
+    private Button editSpecialWords;
     private Button create;
     private Button back;
     private Button save;
     private TextField searchField;
     private Div gridContainer;
-    private VocabularyPickerField takeSelector;
-    private VocabularyPickerField dropSelector;
     private DescribableWordAdapter currentWordAdapter;
     private transient WordUsageTracker wordUsageTracker;
 
@@ -67,82 +62,9 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     private void createGUI() {
         final VerticalLayout leftSide = createLeftSide();
         final VerticalLayout rightSide = createRightSide();
-        final VerticalLayout farSide = createFarSide();
-        HorizontalLayout horizontalLayout = new HorizontalLayout(leftSide, rightSide, farSide);
+        HorizontalLayout horizontalLayout = new HorizontalLayout(leftSide, rightSide);
         horizontalLayout.setSizeFull();
         add(horizontalLayout);
-    }
-
-    private VerticalLayout createFarSide() {
-        takeSelector = new VocabularyPickerField("Taker");
-        takeSelector.setHelperText(
-                "A verb used for taking items. Can be changed unless used as a command in any item.");
-        takeSelector.addValueChangeListener(event -> {
-            Word newValue = event.getValue();
-            if (newValue != null && !event.isFromClient()) {
-                // Programmatic change, allow it
-                return;
-            }
-
-            Word oldValue = event.getOldValue();
-
-            // Check if trying to clear or change an existing value
-            if (checkIfValueAlreadyExists(oldValue, newValue, "Take", takeSelector)) return;
-
-            // Allow setting or changing the value
-            vocabularyData.setTakeWord(newValue);
-        });
-
-        dropSelector = new VocabularyPickerField("Dropper");
-        dropSelector.setHelperText(
-                "A verb used for dropping items. Can be changed unless used as a command in any item.");
-        dropSelector.addValueChangeListener(event -> {
-            Word newValue = event.getValue();
-            if (newValue != null && !event.isFromClient()) {
-                // Programmatic change, allow it
-                return;
-            }
-
-            Word oldValue = event.getOldValue();
-
-            // Check if trying to clear or change an existing value
-            if (checkIfValueAlreadyExists(oldValue, newValue, "Drop", dropSelector)) return;
-
-            // Allow setting or changing the value
-            vocabularyData.setDropWord(newValue);
-        });
-
-        NativeLabel specialLabel = new NativeLabel("Special Verbs");
-        specialLabel.getStyle().set("font-weight", "bold")
-                    .set("font-size", "var(--lumo-font-size-l)")
-                    .set("margin-bottom", "var(--lumo-space-s)");
-        final VerticalLayout vl = new VerticalLayout(specialLabel, takeSelector, dropSelector);
-        vl.setMaxWidth("300px");
-        return vl;
-    }
-
-    private boolean checkIfValueAlreadyExists(final Word oldValue, final Word newValue, final String Take,
-                                              final VocabularyPickerField takeSelector) {
-        if (oldValue != null && (newValue == null || !oldValue.getId().equals(newValue.getId()))) {
-            // Check if the old value is used in any item commands
-            List<WordUsage> usages = wordUsageTracker.checkWordIsNotUsedInLocations(oldValue);
-            if (!usages.isEmpty()) {
-                showWordIsBusyNotification(Take, newValue, oldValue, usages);
-                takeSelector.setValue(oldValue);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void showWordIsBusyNotification(final String aWordType, final Word newValue, final Word oldValue,
-                                            final List<WordUsage> aUsageList) {
-        String action = newValue == null ? "cleared" : "changed";
-        String notificationText = aWordType + " verb '" + oldValue.getText() + "' cannot be " + action +
-                                  " because it is used as a command in one or more items" +
-                                  wordUsageTracker.createUsagesText(aUsageList, 5);
-
-        Notification.show(notificationText, 4000, Notification.Position.MIDDLE);
     }
 
     private VerticalLayout createRightSide() {
@@ -166,6 +88,12 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
             createWordInfoDialog(WordEditorDialogue.EditType.EDIT, currentWordAdapter);
         });
         edit.setEnabled(false);
+        editSpecialWords = new Button("Edit Special Words", event -> {
+            UI.getCurrent().navigate(SpecialWordsView.class,
+                                     new RouteParameters(
+                                             new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))
+            ).ifPresent(editor -> editor.setAdventureData(adventureData));
+        });
         create = new Button("Create Word", e -> {
             createWordInfoDialog(WordEditorDialogue.EditType.NEW, null);
         });
@@ -181,7 +109,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
             Notification.show("Vocabulary saved", 2000, Notification.Position.BOTTOM_START);
         });
 
-        VerticalLayout vl = new VerticalLayout(create, edit, back, save);
+        VerticalLayout vl = new VerticalLayout(create, edit, editSpecialWords, back, save);
         vl.setMaxWidth("200px");
         return vl;
     }
@@ -241,17 +169,6 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         gridContainer.removeAll();
         SerializablePredicate<DescribableWordAdapter> filter = WordFilter.filterByTypeTextOrSynonym(searchField);
         gridContainer.add(getVocabularyGrid(vocabularyData, searchField, filter));
-
-        takeSelector.populate(
-                vocabularyData.getWords(VERB).stream().filter(word -> word.getSynonym() == null).toList());
-        if (vocabularyData.getTakeWord() != null) {
-            takeSelector.setValue(vocabularyData.getTakeWord());
-        }
-        dropSelector.populate(
-                vocabularyData.getWords(VERB).stream().filter(word -> word.getSynonym() == null).toList());
-        if (vocabularyData.getDropWord() != null) {
-            dropSelector.setValue(vocabularyData.getDropWord());
-        }
     }
 
     @Override

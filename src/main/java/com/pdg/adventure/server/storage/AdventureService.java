@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +42,7 @@ public class AdventureService {
         cascadeDeleteHelper = aCascadeDeleteHelper;
     }
 
-    public LocationData findLocationById(@Nonnull String id) {
+    public LocationData findLocationById(String id) {
         final Optional<LocationData> byId = locationRepository.findById(id);
         LocationData result;
         if (byId.isPresent()) {
