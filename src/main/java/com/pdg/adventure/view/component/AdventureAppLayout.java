@@ -8,13 +8,16 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.sidenav.SideNav;
+import com.vaadin.flow.component.sidenav.SideNavItem;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.HasDynamicTitle;
-import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
@@ -23,7 +26,7 @@ import com.pdg.adventure.view.adventure.AdventuresMenuView;
 
 @StyleSheet(Lumo.STYLESHEET)  // loads the new lumo.css
 // @Getter
-public class AdventureAppLayout extends AppLayout {
+public class AdventureAppLayout extends AppLayout implements AfterNavigationObserver {
 
     private H2 viewTitle;
     private VerticalLayout drawer;
@@ -36,22 +39,6 @@ public class AdventureAppLayout extends AppLayout {
     public void createHeader(String aTitle) {
         final HorizontalLayout header = createMyHeader(aTitle);
         addToNavbar(header);
-    }
-
-    public void createDrawer(String anAppName) {
-        drawer = createMyDrawer(anAppName, null);
-        addToDrawer(drawer);
-    }
-
-    public void createDrawer(String anAppName, Image anImage) {
-        drawer = createMyDrawer(anAppName, anImage);
-        addToDrawer(drawer);
-    }
-
-    public void extendDrawer(Component... components) {
-        for (Component component : components) {
-            drawer.add(component);
-        }
     }
 
     private HorizontalLayout createMyHeader(String aTitle) {
@@ -75,21 +62,47 @@ public class AdventureAppLayout extends AppLayout {
         return header;
     }
 
+    public void createDrawer(String anAppName) {
+        drawer = createMyDrawer(anAppName, null);
+        addToDrawer(drawer);
+        getElement().executeJs(
+            "this.__updateActiveDrawerItem = function() {" +
+            "  const links = this.querySelectorAll('vaadin-side-nav a');" +
+            "  const path = window.location.pathname;" +
+            "  links.forEach(link => {" +
+            "    link.parentElement.classList.toggle('vaadin-side-nav-item--selected'," +
+            "      link.getAttribute('href') === path || " +
+            "      (link.getAttribute('href') + '/').startsWith(path + '/') ||" +
+            "      path.startsWith(link.getAttribute('href') + '/'));" +
+            "  });" +
+            "};" +
+            "this.__updateActiveDrawerItem();" +
+            "window.addEventListener('vaadin-router-location-changed', () => this.__updateActiveDrawerItem());"
+        );
+    }
+
     private VerticalLayout createMyDrawer(String anAppName, Image anAppImage) {
 
         H1 appName = new H1(anAppName);
         appName.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
-        HorizontalLayout headerRow = new HorizontalLayout(appName);
-        Header header = anAppImage == null ? new Header(appName) : new Header(anAppImage, appName);
-        headerRow.add(header);
 
-        RouterLink aboutLink = new RouterLink("About", AboutView.class);
-        aboutLink.setHighlightCondition(HighlightConditions.sameLocation());
-        RouterLink adventureLink = new RouterLink("Adventures", AdventuresMenuView.class);
-        adventureLink.setHighlightCondition(HighlightConditions.sameLocation());
+        Header header = anAppImage == null
+                        ? new Header(appName)
+                        : new Header(anAppImage, appName);
 
-        final VerticalLayout drawer = new VerticalLayout(headerRow, aboutLink, adventureLink);
+        SideNav nav = new SideNav();
 
+        nav.addItem(
+                new SideNavItem("About", AboutView.class, VaadinIcon.INFO_CIRCLE.create()),
+                new SideNavItem("Adventures", AdventuresMenuView.class, VaadinIcon.GRID.create())
+        );
+
+        // SideNavItem settings = new SideNavItem("Settings", VaadinIcon.COGS.create());
+        // settings.addItem(new SideNavItem("Profile", ProfileView.class));
+        // settings.addItem(new SideNavItem("Security", SecurityView.class));
+        // nav.addItem(settings);
+
+        VerticalLayout drawer = new VerticalLayout(header, nav);
         drawer.setSizeFull();
         drawer.setPadding(true);
         drawer.setSpacing(false);
@@ -99,13 +112,21 @@ public class AdventureAppLayout extends AppLayout {
         return drawer;
     }
 
-    protected void afterNavigation() { // TODO: remove if not needed
-        if (isOverlay()) {
-            setDrawerOpened(false);
-        }
-        viewTitle.setText(getCurrentPageTitle());
+    public void createDrawer(String anAppName, Image anImage) {
+        drawer = createMyDrawer(anAppName, anImage);
+        addToDrawer(drawer);
     }
 
+    public void extendDrawer(Component... components) {
+        for (Component component : components) {
+            drawer.add(component);
+        }
+    }
+
+    @Override
+    public void afterNavigation(final AfterNavigationEvent aAfterNavigationEvent) {
+        viewTitle.setText(getCurrentPageTitle());
+    }
 
     private String getCurrentPageTitle() {
         if (getContent() instanceof HasDynamicTitle dyna) {
