@@ -2,6 +2,7 @@ package com.pdg.adventure.view.vocabulary;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -102,7 +103,7 @@ public class WordEditorDialogue {
         }
 
         Dialog dialog = new Dialog();
-        dialog.setModal(true);
+        dialog.setModality(ModalityMode.VISUAL);
         dialog.setDraggable(true);
         dialog.getHeader().add(createDialogHeader(anEditType));
         dialog.getFooter().add(createDialogFooter(dialog)); // footer first, or saveButton is null

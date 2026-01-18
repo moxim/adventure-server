@@ -43,9 +43,7 @@ public class ActionSelector extends HorizontalLayout {
         useButton.setEnabled(false);
 
         // Enable the button only when an action is selected
-        actionTypeSelector.addValueChangeListener(e ->
-                                                          useButton.setEnabled(e.getValue() != null)
-        );
+        actionTypeSelector.addValueChangeListener(e -> useButton.setEnabled(e.getValue() != null));
 
         // Handle the Use button click
         useButton.addClickListener(e -> {
@@ -66,41 +64,31 @@ public class ActionSelector extends HorizontalLayout {
     }
 
     /**
-     * Creates an editor for the selected action type.
-     */
-    private ActionEditorComponent createEditor(ActionTypeDescriptor descriptor) {
-        ActionData actionData = descriptor.createActionData();
-        return ActionEditorFactory.createEditor(actionData, adventureData);
-    }
-
-    /**
      * Returns a list of all available action types that have editors.
      */
     private List<ActionTypeDescriptor> getAvailableActionTypes() {
         List<ActionTypeDescriptor> types = new ArrayList<>();
 
-        types.add(new ActionTypeDescriptor(
-                "Move Player",
-                "Move the player to a different location",
-                MovePlayerActionData::new
-        ));
+        types.add(new ActionTypeDescriptor("Move Player", "Move the player to a different location",
+                                           MovePlayerActionData::new));
 
-        types.add(new ActionTypeDescriptor(
-                "Move Item",
-                "Move an item to a different container",
-                MoveItemActionData::new
-        ));
+        types.add(new ActionTypeDescriptor("Move Item", "Move an item to a different container",
+                                           MoveItemActionData::new));
 
-        types.add(new ActionTypeDescriptor(
-                "Message",
-                "Display a message to the player",
-                MessageActionData::new
-        ));
+        types.add(new ActionTypeDescriptor("Message", "Display a message to the player", MessageActionData::new));
 
         // TODO: Add more action types as editors are implemented
         // types.add(new ActionTypeDescriptor("Set Variable", "Set a variable value", SetVariableActionData::new));
 
         return types;
+    }
+
+    /**
+     * Creates an editor for the selected action type.
+     */
+    private ActionEditorComponent createEditor(ActionTypeDescriptor descriptor) {
+        ActionData actionData = descriptor.createActionData();
+        return ActionEditorFactory.createEditor(actionData, adventureData);
     }
 
     /**
@@ -112,12 +100,12 @@ public class ActionSelector extends HorizontalLayout {
     }
 
     /**
-         * Descriptor for an action type, containing display information and a factory method.
-         */
-        private record ActionTypeDescriptor(String displayName, String description, Supplier<ActionData> actionFactory) {
+     * Descriptor for an action type, containing display information and a factory method.
+     */
+    private record ActionTypeDescriptor(String displayName, String description, Supplier<ActionData> actionFactory) {
 
         public ActionData createActionData() {
-                return actionFactory.get();
-            }
+            return actionFactory.get();
         }
+    }
 }

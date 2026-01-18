@@ -1,5 +1,7 @@
 package com.pdg.adventure.server.storage;
 
+import java.util.Optional;
+
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 
@@ -10,13 +12,16 @@ public class DataManager {
         this.service = service;
     }
 
-    public AdventureData loadAdventure(String adventureId) {
+    public Optional<AdventureData> loadAdventure(String adventureId) {
         return service.findAdventureById(adventureId);
     }
 
     public LocationData loadLocation(String adventureId, String locationId) {
-        AdventureData adventure = loadAdventure(adventureId);
-        return adventure.getLocationData().getOrDefault(locationId, new LocationData());
+        Optional<AdventureData> adventure = loadAdventure(adventureId);
+        if (adventure.isEmpty()) {
+            return new LocationData();
+        }
+        return adventure.get().getLocationData().getOrDefault(locationId, new LocationData());
     }
 
     public void saveLocation(AdventureData adventure, LocationData location) {

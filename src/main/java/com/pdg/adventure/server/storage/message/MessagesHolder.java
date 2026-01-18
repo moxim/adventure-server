@@ -17,4 +17,8 @@ public class MessagesHolder {
     public void removeMessage(String anId) {
         messages.remove(anId);
     }
+
+    public void clear() {
+        messages.clear();
+    }
 }

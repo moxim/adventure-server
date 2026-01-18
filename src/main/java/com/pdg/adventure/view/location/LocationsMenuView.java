@@ -214,8 +214,11 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
     }
 
     public void loadAdventure(String anAdventureId) {
-        adventureData = adventureService.findAdventureById(anAdventureId);
-        binder.setBean(adventureData);
+        Optional<AdventureData> loadedAdventure = adventureService.findAdventureById(anAdventureId);
+        if (loadedAdventure.isPresent()) {
+            adventureData = loadedAdventure.get();
+            binder.setBean(adventureData);
+        }
     }
 
     @Override
