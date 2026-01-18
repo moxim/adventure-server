@@ -100,17 +100,10 @@ public class AdventureService {
 //        words.addAll(vocabulary.getWords());
     }
 
-    public AdventureData findAdventureById(String anId) {
+    public Optional<AdventureData> findAdventureById(String anId) {
         final Optional<AdventureData> byId = adventureRepository.findById(anId);
-        AdventureData result;
-        if (byId.isPresent()) {
-            result = byId.get();
-        } else {
-            result = new AdventureData();
-            result.setId(UUID.randomUUID().toString());
-        }
-        postProcess(result);
-        return result;
+        byId.ifPresent(this::postProcess);
+        return byId;
     }
 
     private void postProcess(AdventureData anAdventureData) {

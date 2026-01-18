@@ -10,6 +10,7 @@ import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.exception.QuitException;
+import com.pdg.adventure.server.exception.ReloadAdventureException;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.CommandExecutor;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
@@ -25,8 +26,8 @@ public class GameLoop {
     }
 
     public void run(BufferedReader aReader) {
-        boolean endLoop = true;
-        while (endLoop) {
+        boolean keepLooping = true;
+        while (keepLooping) {
             Location currentLocation = Environment.getCurrentLocation();
             try {
                 // Run workflow actions.
@@ -57,10 +58,12 @@ public class GameLoop {
                 }
             } catch (QuitException anException) {
                 Environment.tell(anException.getMessage());
-                endLoop = false;
+                keepLooping = false;
+            } catch (ReloadAdventureException e) {
+                throw e;
             } catch (IOException | RuntimeException anException) {
                 LOG.error("An error occurred during the game loop.", anException);
-                endLoop = false;
+                keepLooping = false;
             }
         }
     }

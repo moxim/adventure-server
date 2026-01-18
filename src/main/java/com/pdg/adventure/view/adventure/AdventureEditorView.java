@@ -3,6 +3,7 @@ package com.pdg.adventure.view.adventure;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -204,7 +205,12 @@ public class AdventureEditorView extends VerticalLayout
     }
 
     public void loadAdventure(String aAdventureId) {
-        adventureData = adventureService.findAdventureById(aAdventureId);
+        Optional<AdventureData> loadedAdventure = adventureService.findAdventureById(aAdventureId);
+        if (loadedAdventure.isEmpty()) {
+            Notification.show(String.format("Could not find adventure with ID: {}", aAdventureId), 5000, Notification.Position.MIDDLE);
+            return;
+        }
+        adventureData = loadedAdventure.get();
         startLocation.setValue(ViewSupporter.getLocationsShortedDescription(
                 adventureData.getLocationData().get(adventureData.getCurrentLocationId())));
         binder.setBean(adventureData);

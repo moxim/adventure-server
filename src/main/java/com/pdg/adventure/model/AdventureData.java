@@ -18,12 +18,12 @@ import com.pdg.adventure.server.storage.mongo.CascadeSave;
 public class AdventureData extends DatedData {
     private String title;
 
-    @DBRef(lazy = false)
+    @DBRef(lazy = true)
     @CascadeSave
     @CascadeDelete
     private ItemContainerData playerPocket;
 
-    @DBRef(lazy = false)
+    @DBRef(lazy = true)
     @CascadeSave
     @CascadeDelete
     private Map<String, LocationData> locationData;
@@ -34,7 +34,7 @@ public class AdventureData extends DatedData {
     @CascadeDelete
     private transient VocabularyData vocabularyData;
 
-    @DBRef(lazy = false)
+    @DBRef(lazy = true)
     @CascadeSave
     @CascadeDelete
     private Map<String, MessageData> messages;

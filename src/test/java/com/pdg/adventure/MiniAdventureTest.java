@@ -29,7 +29,7 @@ class MiniAdventureTest {
         final AdventureData adventureData = adventures.getFirst();
         Adventure adventure = adventureMapper.mapToBO(adventureData);
 
-        MiniAdventure miniAdventure = new MiniAdventure(new AdventureConfig());
+        MiniAdventure miniAdventure = new MiniAdventure(new AdventureConfig(), adventureMapper, adventureService);
         miniAdventure.setLocations(adventure.getLocations());
         miniAdventure.run();
     }
