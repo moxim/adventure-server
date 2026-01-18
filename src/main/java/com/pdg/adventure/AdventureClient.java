@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.List;
 
@@ -16,7 +17,7 @@ import com.pdg.adventure.server.storage.AdventureService;
 /**
  * The entry point of a Spring Boot application.
  */
-//@SpringBootApplication
+@SpringBootApplication
 public class AdventureClient implements CommandLineRunner {
 
     private static final Logger LOG = LoggerFactory.getLogger(AdventureClient.class);
