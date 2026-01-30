@@ -16,10 +16,7 @@ import com.pdg.adventure.server.condition.CarriedCondition;
 import com.pdg.adventure.server.condition.NotCondition;
 import com.pdg.adventure.server.condition.PresentCondition;
 import com.pdg.adventure.server.condition.WornCondition;
-import com.pdg.adventure.server.engine.ContainerSupplier;
-import com.pdg.adventure.server.engine.Environment;
-import com.pdg.adventure.server.engine.GameLoop;
-import com.pdg.adventure.server.engine.MessageConsumer;
+import com.pdg.adventure.server.engine.*;
 import com.pdg.adventure.server.exception.ReloadAdventureException;
 import com.pdg.adventure.server.location.GenericDirection;
 import com.pdg.adventure.server.location.Location;
@@ -105,8 +102,8 @@ public class MiniAdventure {
         setUpItemsInHut(house);
         Environment.tell("You have items in places!");
 
-        Environment.setUpWorkflows();
-        setUpWorkflowCommands();
+        Workflow wf = Environment.setUpWorkflows();
+        setUpWorkflowCommands(wf);
 
         // start on location "1"
         ExecutionResult result = new MovePlayerAction(location, allMessages).execute();
@@ -121,9 +118,9 @@ public class MiniAdventure {
                 setUpMessages();
                 System.out.println(new MessageAction(allMessages.getMessage("4"), allMessages).execute());
 
-                Environment.setUpWorkflows();
-                createSpecialWords();
-                setUpWorkflowCommands();
+                Workflow wf = Environment.setUpWorkflows();
+                createSpecialWords(allWords);
+                setUpWorkflowCommands(wf);
 
                 final GameLoop gameLoop = initializeGameLoop();
 
@@ -422,13 +419,13 @@ public class MiniAdventure {
         aLocation.addItem(gloves);
     }
 
-    private void setUpWorkflowCommands() {
+    private void setUpWorkflowCommands(final Workflow aWorkflow) {
         GenericCommandDescription helpCommandDescription = new GenericCommandDescription("help");
         GenericCommand helpCommand = new GenericCommand(helpCommandDescription, new MessageAction("""
                                                                                                           Look around, examine items, take or drop items, maybe wear items, enter or leave locations.
                                                                                                           Or quit.""",
                                                                                                   allMessages));
-        Environment.getWorkflow().addInterceptorCommand(helpCommandDescription, helpCommand);
+        aWorkflow.addInterceptorCommand(helpCommandDescription, helpCommand);
 
         GenericCommandDescription inventoryCommandDescription = new GenericCommandDescription("inventory");
         GenericCommand inventoryCommand = new GenericCommand(inventoryCommandDescription,
@@ -436,11 +433,11 @@ public class MiniAdventure {
                                                                                  new ContainerSupplier(
                                                                                          Environment.getPocket()),
                                                                                  allMessages));
-        Environment.getWorkflow().addInterceptorCommand(inventoryCommandDescription, inventoryCommand);
+        aWorkflow.addInterceptorCommand(inventoryCommandDescription, inventoryCommand);
 
         GenericCommandDescription quitCommandDescription = new GenericCommandDescription("quit");
         GenericCommand quitCommand = new GenericCommand(quitCommandDescription, new QuitAction(allMessages));
-        Environment.getWorkflow().addInterceptorCommand(quitCommandDescription, quitCommand);
+        aWorkflow.addInterceptorCommand(quitCommandDescription, quitCommand);
 
         Action lookLocationAction = new DescribeAction(() -> {
             long timesVisited = 0;
@@ -451,32 +448,32 @@ public class MiniAdventure {
         }, allMessages);
         GenericCommandDescription lookCommandDescription = new GenericCommandDescription("describe");
         GenericCommand lookCommand = new GenericCommand(lookCommandDescription, lookLocationAction);
-        Environment.getWorkflow().addInterceptorCommand(lookCommandDescription, lookCommand);
+        aWorkflow.addInterceptorCommand(lookCommandDescription, lookCommand);
 
         GenericCommandDescription lookCommandDescription2 = new GenericCommandDescription("describe", "here");
         GenericCommand lookCommand2 = new GenericCommand(lookCommandDescription2, lookLocationAction);
-        Environment.getWorkflow().addInterceptorCommand(lookCommandDescription2, lookCommand2);
+        aWorkflow.addInterceptorCommand(lookCommandDescription2, lookCommand2);
 
         GenericCommandDescription anyCommandDescription = new GenericCommandDescription("}", "}", "}");
         GenericCommand anyCommand = new GenericCommand(anyCommandDescription,
                                                        new MessageAction("What now? > ", allMessages));
-        Environment.getWorkflow().addPreCommand(anyCommandDescription, anyCommand);
+        aWorkflow.addPreCommand(anyCommandDescription, anyCommand);
     }
 
-    private void createSpecialWords() {
-        allWords.createNewWord("quit", Word.Type.VERB);
-        allWords.createSynonym("exit", "quit");
-        allWords.createSynonym("bye", "quit");
-        allWords.createNewWord("describe", Word.Type.VERB);
-        allWords.createSynonym("look", "describe");
-        allWords.createSynonym("l", "describe");
-        allWords.createSynonym("desc", "describe");
-        allWords.createSynonym("examine", "describe");
-        allWords.createSynonym("x", "describe");
-        allWords.createNewWord("help", Word.Type.VERB);
-        allWords.createNewWord("inventory", Word.Type.VERB);
-        allWords.createSynonym("i", "inventory");
-        allWords.createNewWord("default", Word.Type.NOUN);
+    private void createSpecialWords(final Vocabulary aVocabulary) {
+        aVocabulary.createNewWord("quit", Word.Type.VERB);
+        aVocabulary.createSynonym("exit", "quit");
+        aVocabulary.createSynonym("bye", "quit");
+        aVocabulary.createNewWord("describe", Word.Type.VERB);
+        aVocabulary.createSynonym("look", "describe");
+        aVocabulary.createSynonym("l", "describe");
+        aVocabulary.createSynonym("desc", "describe");
+        aVocabulary.createSynonym("examine", "describe");
+        aVocabulary.createSynonym("x", "describe");
+        aVocabulary.createNewWord("help", Word.Type.VERB);
+        aVocabulary.createNewWord("inventory", Word.Type.VERB);
+        aVocabulary.createSynonym("i", "inventory");
+        aVocabulary.createNewWord("default", Word.Type.NOUN);
 
         addAdventureIdsToNouns();
     }
