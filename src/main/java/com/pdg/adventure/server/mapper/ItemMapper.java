@@ -55,13 +55,13 @@ public class ItemMapper implements Mapper<ItemData, Item> {
         for (ItemData itemData : anItemDataList) {
             itemList.add(mapToBO(itemData));
         }
-        anItemDataList.forEach(anItemData -> {
-            final Item item = mapperSupporter.getMappedItem(anItemData.getId());
-            final CommandProviderData commandProviderData = anItemData.getCommandProviderData();
+        for (ItemData itemData : anItemDataList) {
+            final Item item = mapperSupporter.getMappedItem(itemData.getId());
+            final CommandProviderData commandProviderData = itemData.getCommandProviderData();
             final GenericCommandProvider commandProvider = commandProviderMapper.mapToBO(commandProviderData);
             item.setCommandProvider(commandProvider);
-            item.setParentContainer(mapperSupporter.getMappedContainer(anItemData.getParentContainerId()));
-        });
+            item.setParentContainer(mapperSupporter.getMappedContainer(itemData.getParentContainerId()));
+        };
         return itemList;
     }
 

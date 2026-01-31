@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class PresentConditionData extends PreConditionData {
+public class HereConditionData extends PreConditionData {
+
     private String thingId;
 }

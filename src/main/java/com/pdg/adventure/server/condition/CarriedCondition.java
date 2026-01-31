@@ -1,6 +1,7 @@
 package com.pdg.adventure.server.condition;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.Environment;
@@ -10,6 +11,7 @@ import com.pdg.adventure.server.tangible.Item;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class CarriedCondition extends AbstractCondition {
 
+    @Getter
     private final Item item;
 
     public CarriedCondition(Item anItem) {

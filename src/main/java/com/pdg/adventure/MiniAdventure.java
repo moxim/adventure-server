@@ -14,7 +14,7 @@ import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.*;
 import com.pdg.adventure.server.condition.CarriedCondition;
 import com.pdg.adventure.server.condition.NotCondition;
-import com.pdg.adventure.server.condition.PresentCondition;
+import com.pdg.adventure.server.condition.HereCondition;
 import com.pdg.adventure.server.condition.WornCondition;
 import com.pdg.adventure.server.engine.*;
 import com.pdg.adventure.server.exception.ReloadAdventureException;
@@ -508,7 +508,7 @@ public class MiniAdventure {
                                                                                                       Environment.getPocket()),
                                                                                               allMessages));
         takeCommand.addPreCondition(new NotCondition(new CarriedCondition(anItem)));
-        takeCommand.addPreCondition(new PresentCondition(anItem));
+        takeCommand.addPreCondition(new HereCondition(anItem));
         anItem.addCommand(takeCommand);
 
         GenericCommandDescription dropCommandDescription = new GenericCommandDescription("drop", anItem);

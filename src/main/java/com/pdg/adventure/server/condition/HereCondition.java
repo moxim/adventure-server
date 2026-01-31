@@ -1,6 +1,7 @@
 package com.pdg.adventure.server.condition;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.Environment;
@@ -8,10 +9,12 @@ import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.tangible.Item;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class PresentCondition extends AbstractCondition {
+public class HereCondition extends AbstractCondition {
+
+    @Getter
     private final Item thing;
 
-    public PresentCondition(Item aThing) {
+    public HereCondition(Item aThing) {
         thing = aThing;
     }
 

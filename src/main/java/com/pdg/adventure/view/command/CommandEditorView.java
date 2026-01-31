@@ -104,7 +104,7 @@ public class CommandEditorView extends VerticalLayout
         commandChainGrid.addColumn(cmd -> {
             if (cmd.getPreConditions() != null && !cmd.getPreConditions().isEmpty()) {
                 try {
-                    return cmd.getPreConditions().get(0).getName();
+                    return cmd.getPreConditions().get(0).getPreconditionName();
                 } catch (UnsupportedOperationException e) {
                     return "none";
                 }

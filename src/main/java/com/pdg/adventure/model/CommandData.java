@@ -15,7 +15,7 @@ import com.pdg.adventure.model.condition.PreConditionData;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class CommandData extends BasicData {
     private CommandDescriptionData commandDescription;
-    private List<? extends PreConditionData> preConditions;
+    private List<PreConditionData> preConditions;
     private List<? extends ActionData> followUpActions;
     private ActionData action;
 

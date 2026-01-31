@@ -24,15 +24,20 @@ import static com.pdg.adventure.model.Word.Type.NOUN;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.action.DropActionData;
+import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.TakeActionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.model.condition.CarriedConditionData;
+import com.pdg.adventure.model.condition.HereConditionData;
+import com.pdg.adventure.model.condition.NotConditionData;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.server.storage.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.support.RouteIds;
+import com.pdg.adventure.view.support.ViewSupporter;
 
 @Route(value = "adventures/:adventureId/locations/:locationId/items/:itemId/edit", layout = ItemsMainLayout.class)
 @RouteAlias(value = "adventures/:adventureId/locations/:locationId/items/new", layout = ItemsMainLayout.class)
@@ -272,32 +277,37 @@ public class ItemEditorView extends VerticalLayout
         // First remove any existing take/drop commands to avoid duplicates
         removePickupCommands(anItemData);
 
-        final var takeCommandData = createTakeCommandData(aTakeVerb, anItemData);
+        String itemDescription = ViewSupporter.formatDescription(anItemData);
+
+        CarriedConditionData carriedCondition = new CarriedConditionData();
+        carriedCondition.setItemId(anItemData.getId());
+        HereConditionData hereCondition = new HereConditionData();
+        hereCondition.setThingId(anItemData.getId());
+        NotConditionData notCarriedCondition = new NotConditionData();
+        notCarriedCondition.setPreCondition(carriedCondition);
+        NotConditionData notHereCondition = new NotConditionData();
+        notHereCondition.setPreCondition(carriedCondition);
+
+        final CommandData takeCommandFailed_allreadyCarried = createTakeCommandData(aTakeVerb, anItemData);
+        takeCommandFailed_allreadyCarried.getPreConditions().add(carriedCondition);
+        MessageActionData messageData_alreadyCarried = new MessageActionData();
+        messageData_alreadyCarried.setMessageId(String.format("You already carry %s.", itemDescription));
+        takeCommandFailed_allreadyCarried.setAction(messageData_alreadyCarried);
+        anItemData.getCommandProviderData().add(takeCommandFailed_allreadyCarried);
+
+        final CommandData takeCommandData = createTakeCommandData(aTakeVerb, anItemData);
+        takeCommandData.getPreConditions().add(hereCondition);
         anItemData.getCommandProviderData().add(takeCommandData);
 
-        final var dropCommandData = createDropCommandData(aDropVerb, anItemData);
+        final CommandData dropCommandFailed_notCarried = createDropCommandData(aDropVerb, anItemData);
+        dropCommandFailed_notCarried.getPreConditions().add(notCarriedCondition);
+        MessageActionData messageData_notCarried = new MessageActionData();
+        messageData_notCarried.setMessageId(String.format("You are not carrying %s.", itemDescription));
+        dropCommandFailed_notCarried.setAction(messageData_notCarried);
+        anItemData.getCommandProviderData().add(dropCommandFailed_notCarried);
+
+        final CommandData dropCommandData = createDropCommandData(aDropVerb, anItemData);
         anItemData.getCommandProviderData().add(dropCommandData);
-
-        /*
-        GenericCommand takeFailCommand = new GenericCommand(getCommandDescription, new MessageAction(
-                String.format(allMessages.getMessage("-13"), anItem.getEnrichedBasicDescription()), allMessages));
-        takeFailCommand.addPreCondition(new CarriedCondition(anItem));
-        anItem.addCommand(takeFailCommand);
-
-        GenericCommand takeCommand = new GenericCommand(getCommandDescription, new TakeAction(anItem,
-                                                                                              new ContainerSupplier(
-                                                                                                      Environment.getPocket()),
-                                                                                              allMessages));
-        takeCommand.addPreCondition(new NotCondition(new CarriedCondition(anItem)));
-        takeCommand.addPreCondition(new PresentCondition(anItem));
-        anItem.addCommand(takeCommand);
-        GenericCommandDescription dropCommandDescription = new GenericCommandDescription("drop", anItem);
-        GenericCommand dropAndRemoveCommand = new GenericCommand(dropCommandDescription, new DropAction(anItem,
-                                                                                                        new ContainerSupplier(
-                                                                                                                Environment.getCurrentLocation()
-                                                                                                                           .getItemContainer()),
-                                                                                                        allMessages));
-*/
     }
 
     private CommandData createTakeCommandData(final Word aVerb, final ItemData anItem) {

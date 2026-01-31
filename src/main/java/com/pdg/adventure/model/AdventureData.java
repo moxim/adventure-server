@@ -23,7 +23,7 @@ public class AdventureData extends DatedData {
     @CascadeDelete
     private ItemContainerData playerPocket;
 
-    @DBRef(lazy = true)
+    @DBRef(lazy = false)
     @CascadeSave
     @CascadeDelete
     private Map<String, LocationData> locationData;
