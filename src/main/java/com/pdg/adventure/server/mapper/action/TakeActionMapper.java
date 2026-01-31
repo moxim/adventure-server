@@ -36,6 +36,8 @@ public class TakeActionMapper extends ActionMapper<TakeActionData, TakeAction> {
 
     @Override
     public TakeActionData mapToDO(final TakeAction from) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        TakeActionData result = new TakeActionData();
+        result.setThingId(from.getItem().getId());
+        return result;
     }
 }

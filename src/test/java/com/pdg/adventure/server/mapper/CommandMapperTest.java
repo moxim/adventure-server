@@ -18,7 +18,9 @@ import com.pdg.adventure.api.*;
 import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
+import com.pdg.adventure.model.condition.HereConditionData;
 import com.pdg.adventure.model.condition.PreConditionData;
+import com.pdg.adventure.server.condition.HereCondition;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.support.MapperSupporter;
 
@@ -49,7 +51,10 @@ class CommandMapperTest {
     private CommandDescriptionMapper commandDescriptionMapper;
 
     @Mock
-    private Mapper<?, ?> actionMapper;
+    private Mapper<? extends ActionData, ?> actionMapper;
+
+    @Mock
+    private Mapper<? extends PreConditionData, ?> conditionMapper;
 
     @Mock
     private CommandDescription commandDescription;
@@ -64,16 +69,16 @@ class CommandMapperTest {
     private Action mainAction;
 
     @Mock
-    private PreCondition preCondition1;
+    private HereCondition preCondition1;
 
     @Mock
-    private PreCondition preCondition2;
+    private HereCondition preCondition2;
 
     @Mock
-    private PreConditionData preConditionData1;
+    private HereConditionData preConditionData1;
 
     @Mock
-    private PreConditionData preConditionData2;
+    private HereConditionData preConditionData2;
 
     private CommandMapper commandMapper;
 
@@ -167,36 +172,8 @@ class CommandMapperTest {
         assertThat(result.getFollowUpActions()).containsExactly(followUpAction1, followUpAction2);
     }
 
-    @Test
-    @DisplayName("Test 4: mapToBO - handles null follow-up actions in list")
-    @SuppressWarnings("unchecked")
-    void mapToBO_shouldHandleNullFollowUpActionsInList() {
-        // Given: CommandData with null entry in follow-up actions list
-        ActionData followUpAction1Data = mock(ActionData.class);
-        Action followUpAction1 = mock(Action.class);
-
-        List<ActionData> followUpActions = new ArrayList<>();
-        followUpActions.add(followUpAction1Data);
-        followUpActions.add(null);  // Null entry
-
-        CommandData commandData = new CommandData(commandDescriptionData);
-        commandData.setId("complex-cmd");
-        commandData.setAction(mainActionData);
-        commandData.setFollowUpActions(followUpActions);
-
-        when(commandDescriptionMapper.mapToBO(commandDescriptionData)).thenReturn(commandDescription);
-        when(mapperSupporter.getMapper(any())).thenReturn((Mapper) actionMapper);
-        when(((Mapper<ActionData, Action>) actionMapper).mapToBO(any(ActionData.class)))
-                .thenReturn(mainAction, followUpAction1);
-
-        // When: mapping to business object
-        Command result = commandMapper.mapToBO(commandData);
-
-        // Then: null follow-up action should be skipped
-        assertThat(result).isNotNull();
-        assertThat(result.getFollowUpActions()).hasSize(1);
-        assertThat(result.getFollowUpActions()).containsExactly(followUpAction1);
-    }
+//    There must not be a null value in the follow-up actions list as per CommandData#setFollowUpActions contract
+//    @DisplayName("Test 4: mapToBO - handles null follow-up actions in list")
 
     @Test
     @DisplayName("Test 5: mapToBO - maps command with preconditions")
@@ -215,8 +192,11 @@ class CommandMapperTest {
         commandData.setPreConditions(preconditionsData);
 
         when(commandDescriptionMapper.mapToBO(commandDescriptionData)).thenReturn(commandDescription);
-        when(mapperSupporter.getMapper(any())).thenReturn((Mapper) actionMapper);
+        when(mapperSupporter.getMapper(argThat(clazz -> clazz != null && ActionData.class.isAssignableFrom(clazz)))).thenReturn((Mapper) actionMapper);
+        when(mapperSupporter.getMapper(argThat(clazz -> clazz != null && PreConditionData.class.isAssignableFrom(clazz)))).thenReturn((Mapper) conditionMapper);
         when(((Mapper<ActionData, Action>) actionMapper).mapToBO(any(ActionData.class))).thenReturn(mainAction);
+        when(((Mapper<HereConditionData, HereCondition>) conditionMapper).mapToBO(any(HereConditionData.class)))
+                .thenReturn(preCondition1, preCondition2);
 
         // When: mapping to business object
         Command result = commandMapper.mapToBO(commandData);
@@ -224,9 +204,8 @@ class CommandMapperTest {
         // Then: all preconditions should be added
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("take-hidden-item-cmd");
-        // Note: The code at lines 46-48 directly adds PreConditionData items which implement PreCondition interface
         assertThat(result.getPreconditions()).hasSize(2);
-        assertThat(result.getPreconditions()).contains(preConditionData1, preConditionData2);
+        assertThat(result.getPreconditions()).contains(preCondition1, preCondition2);
     }
 
     @Test

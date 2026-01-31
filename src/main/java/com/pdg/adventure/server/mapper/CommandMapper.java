@@ -8,6 +8,7 @@ import com.pdg.adventure.api.*;
 import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
+import com.pdg.adventure.model.condition.PreConditionData;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.support.MapperSupporter;
@@ -38,13 +39,12 @@ public class CommandMapper implements Mapper<CommandData, Command> {
         Command result = new GenericCommand(description, actionBO);
         result.setId(aCommandData.getId());
         for (ActionData subActionData : aCommandData.getFollowUpActions()) {
-            if (subActionData != null) {
-                actionMapper = mapperSupporter.getMapper(subActionData.getClass());
-                result.addFollowUpAction(actionMapper.mapToBO(subActionData));
-            }
+            actionMapper = mapperSupporter.getMapper(subActionData.getClass());
+            result.addFollowUpAction(actionMapper.mapToBO(subActionData));
         }
-        for (PreCondition condition : aCommandData.getPreConditions()) {
-            result.addPreCondition(condition);
+        for (PreConditionData condition : aCommandData.getPreConditions()) {
+            Mapper<PreConditionData, PreCondition> conditionMapper = mapperSupporter.getMapper(condition.getClass());
+            result.addPreCondition(conditionMapper.mapToBO(condition));
         }
         return result;
     }

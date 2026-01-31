@@ -135,8 +135,8 @@ public class ViewSupporter {
     public static String formatDescription(DescriptionData aDescriptionData) {
         String shortDescription = aDescriptionData.getShortDescription();
         if (shortDescription.isEmpty()) {
-            shortDescription = getWordText(aDescriptionData.getNoun()) + " " +
-                               getWordText(aDescriptionData.getAdjective());
+            shortDescription = getWordText(aDescriptionData.getAdjective()) + " " +
+                               getWordText(aDescriptionData.getNoun());
         }
         return restrictToLength(shortDescription, MAX_TEXT_IN_GRID);
     }

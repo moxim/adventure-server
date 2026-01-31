@@ -40,8 +40,9 @@ public class Environment {
         return pocket;
     }
 
-    public static void setUpWorkflows() {
+    public static Workflow setUpWorkflows() {
         workflow = new Workflow();
+        return workflow;
     }
 
     public static Workflow getWorkflow() {

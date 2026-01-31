@@ -50,6 +50,7 @@ public class AdventureClient implements CommandLineRunner {
         try {
             loadAdventureAction.loadAdventure(adventureId);
         } catch (Exception e) {
+            LOG.warn("Ignoring failed adventure load with ID {}: {}", adventureId, e.getMessage());
             // ignore it this time
         }
 
