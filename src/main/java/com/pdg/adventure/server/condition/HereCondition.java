@@ -4,7 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import com.pdg.adventure.api.ExecutionResult;
-import com.pdg.adventure.server.engine.Environment;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.tangible.Item;
 
@@ -13,14 +13,16 @@ public class HereCondition extends AbstractCondition {
 
     @Getter
     private final Item thing;
+    private final GameContext gameContext;
 
-    public HereCondition(Item aThing) {
+    public HereCondition(Item aThing, GameContext aGameContext) {
         thing = aThing;
+        gameContext = aGameContext;
     }
 
     public ExecutionResult check() {
         ExecutionResult result = new CommandExecutionResult();
-        if (Environment.getCurrentLocation().contains(thing)) {
+        if (gameContext.getCurrentLocation().contains(thing)) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         } else {
             result.setResultMessage(String.format("There is no %s here.", thing.getNoun()));

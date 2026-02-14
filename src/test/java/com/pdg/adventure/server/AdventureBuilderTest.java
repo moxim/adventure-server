@@ -24,7 +24,7 @@ import com.pdg.adventure.server.testhelper.TestSupporter;
 @SpringBootTest//(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = com.pdg.adventure.server.AdventureConfig.class)
-@ComponentScan(basePackages = "com.pdg.adventure.server.mapper")
+@ComponentScan(basePackages = {"com.pdg.adventure.server.mapper", "com.pdg.adventure.server.engine"})
 @Import({com.pdg.adventure.server.AdventureConfig.class, com.pdg.adventure.server.mapper.AdventureMapper.class})
 class AdventureBuilderTest {
     @Autowired

@@ -7,6 +7,7 @@ import com.pdg.adventure.model.condition.HereConditionData;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.condition.HereCondition;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.Item;
 
@@ -15,17 +16,20 @@ import com.pdg.adventure.server.tangible.Item;
 public class HereConditionMapper extends PreConditionMapper<HereConditionData, HereCondition> {
 
     private final AdventureConfig adventureConfig;
+    private final GameContext gameContext;
 
-    public HereConditionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig) {
+    public HereConditionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig,
+                               GameContext aGameContext) {
         super(aMapperSupporter);
         adventureConfig = anAdventureConfig;
+        gameContext = aGameContext;
         aMapperSupporter.registerMapper(HereConditionData.class, HereCondition.class, this);
     }
 
     @Override
     public HereCondition mapToBO(HereConditionData aHereConditionData) {
         final Item item = adventureConfig.allItems().get(aHereConditionData.getThingId());
-        HereCondition result = new HereCondition(item);
+        HereCondition result = new HereCondition(item, gameContext);
         result.setId(aHereConditionData.getId());
         return result;
     }

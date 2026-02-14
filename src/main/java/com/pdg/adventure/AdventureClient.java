@@ -4,12 +4,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.List;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.LoadAdventureAction;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.storage.AdventureService;
 
@@ -25,11 +27,11 @@ public class AdventureClient implements CommandLineRunner {
     private final AdventureMapper adventureMapper;
     private final AdventureConfig adventureConfig;
 
-    public AdventureClient(AdventureService adventureService, AdventureMapper adventureMapper,
-                           AdventureConfig adventureConfig) {
-        this.adventureService = adventureService;
-        this.adventureMapper = adventureMapper;
-        this.adventureConfig = adventureConfig;
+    public AdventureClient(AdventureService anAdventureService, AdventureMapper anAdventureMapper,
+                           @Lazy AdventureConfig anAdventureConfig) {
+        adventureService = anAdventureService;
+        adventureMapper = anAdventureMapper;
+        adventureConfig = anAdventureConfig;
     }
 
     @Override
@@ -40,12 +42,14 @@ public class AdventureClient implements CommandLineRunner {
             return;
         }
 
+        GameContext gameContext = adventureConfig.gameContext();
         final AdventureData adventureData = adventures.getFirst();
         String adventureId = adventureData.getId();
 
         final LoadAdventureAction loadAdventureAction = new LoadAdventureAction(adventureService, adventureMapper,
                                                                                 adventureConfig,
-                                                                                adventureConfig.allMessages());
+                                                                                adventureConfig.allMessages(),
+                                                                                gameContext);
         loadAdventureAction.setAdventureId(adventureId);
         try {
             loadAdventureAction.loadAdventure(adventureId);
@@ -54,7 +58,8 @@ public class AdventureClient implements CommandLineRunner {
             // ignore it this time
         }
 
-        MiniAdventure miniAdventure = new MiniAdventure(adventureConfig, adventureMapper, adventureService);
+        MiniAdventure miniAdventure = new MiniAdventure(adventureConfig, adventureMapper, adventureService,
+                                                         gameContext);
         Thread.sleep(3000); // Wait for 3 seconds to let the user read the messages
 
         miniAdventure.run();

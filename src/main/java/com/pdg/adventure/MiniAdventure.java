@@ -16,7 +16,10 @@ import com.pdg.adventure.server.condition.CarriedCondition;
 import com.pdg.adventure.server.condition.NotCondition;
 import com.pdg.adventure.server.condition.HereCondition;
 import com.pdg.adventure.server.condition.WornCondition;
-import com.pdg.adventure.server.engine.*;
+import com.pdg.adventure.server.engine.ContainerSupplier;
+import com.pdg.adventure.server.engine.GameContext;
+import com.pdg.adventure.server.engine.GameLoop;
+import com.pdg.adventure.server.engine.Workflow;
 import com.pdg.adventure.server.exception.ReloadAdventureException;
 import com.pdg.adventure.server.location.GenericDirection;
 import com.pdg.adventure.server.location.Location;
@@ -41,6 +44,7 @@ public class MiniAdventure {
     private static final String SMALL_TEXT = "small";
     private final AdventureService adventureService;
     private final AdventureMapper adventureMapper;
+    private final GameContext gameContext;
     private Location portal;
     private Location location;
     private Location house;
@@ -55,9 +59,10 @@ public class MiniAdventure {
     private Map<String, Location> allLocations;
 
     public MiniAdventure(AdventureConfig anAdventureConfig, final AdventureMapper anAdventureMapper,
-                         AdventureService anAdventureService) {
+                         AdventureService anAdventureService, GameContext aGameContext) {
         adventureService = anAdventureService;
         adventureMapper = anAdventureMapper;
+        gameContext = aGameContext;
         useAdventureConfiguration(anAdventureConfig);
     }
 
@@ -72,7 +77,8 @@ public class MiniAdventure {
     }
 
     static void main(String[] args) {
-        final MiniAdventure game = new MiniAdventure(new AdventureConfig(), null, null);
+        final GameContext gameContext = new GameContext();
+        final MiniAdventure game = new MiniAdventure(new AdventureConfig(gameContext), null, null, gameContext);
         game.setup();
         game.run();
     }
@@ -80,34 +86,34 @@ public class MiniAdventure {
     private void setup() {
         setUpMessages();
         setUpVocabulary();
-        Environment.tell("You have words!");
+        gameContext.tell("You have words!");
 
         setUpVariables();
-        Environment.tell("You have variables!");
+        gameContext.tell("You have variables!");
 
         setUpPocket();
-        Environment.setPocket(pocket);
+        gameContext.setPocket(pocket);
 
         setUpLocations();
-        Environment.setCurrentLocation(location);
-        Environment.tell("You have places!");
+        gameContext.setCurrentLocation(location);
+        gameContext.tell("You have places!");
 
         setUpItems();
-        Environment.tell("You have items!");
+        gameContext.tell("You have items!");
 
         setUpDirections();
 
         setUpItemsInFirstLocation(location);
         setUpItemsInPortal(portal);
         setUpItemsInHut(house);
-        Environment.tell("You have items in places!");
+        gameContext.tell("You have items in places!");
 
-        Workflow wf = Environment.setUpWorkflows();
+        Workflow wf = gameContext.setUpWorkflows();
         setUpWorkflowCommands(wf);
 
         // start on location "1"
-        ExecutionResult result = new MovePlayerAction(location, allMessages).execute();
-        Environment.tell(result.getResultMessage());
+        ExecutionResult result = new MovePlayerAction(location, allMessages, gameContext).execute();
+        gameContext.tell(result.getResultMessage());
     }
 
     void run() {
@@ -118,7 +124,7 @@ public class MiniAdventure {
                 setUpMessages();
                 System.out.println(new MessageAction(allMessages.getMessage("4"), allMessages).execute());
 
-                Workflow wf = Environment.setUpWorkflows();
+                Workflow wf = gameContext.setUpWorkflows();
                 createSpecialWords(allWords);
                 setUpWorkflowCommands(wf);
 
@@ -130,7 +136,7 @@ public class MiniAdventure {
 
             } catch (ReloadAdventureException e) {
                 // we've just reloaded the adventure, so restart the game loop
-                Environment.tell(e.getMessage());
+                gameContext.tell(e.getMessage());
             }
         }
     }
@@ -138,14 +144,14 @@ public class MiniAdventure {
     private @NonNull GameLoop initializeGameLoop() {
         final var look = new DescribeAction(() -> {
             long timesVisited = 0;
-            Environment.getCurrentLocation().setTimesVisited(timesVisited);
-            String result = Environment.getCurrentLocation().getLongDescription();
-            Environment.getCurrentLocation().setTimesVisited(++timesVisited);
+            gameContext.getCurrentLocation().setTimesVisited(timesVisited);
+            String result = gameContext.getCurrentLocation().getLongDescription();
+            gameContext.getCurrentLocation().setTimesVisited(++timesVisited);
             return result;
         }, allMessages).execute();
-        Environment.tell(look.getResultMessage());
+        gameContext.tell(look.getResultMessage());
 
-        GameLoop gameLoop = new GameLoop(new Parser(allWords));
+        GameLoop gameLoop = new GameLoop(new Parser(allWords), gameContext);
         return gameLoop;
     }
 
@@ -337,7 +343,7 @@ public class MiniAdventure {
         GenericCommand cutNotSuccessfully = new GenericCommand(new GenericCommandDescription("cut", rabbit),
                                                                new MessageAction(allMessages.getMessage("3"),
                                                                                  allMessages));
-        CarriedCondition knifeCarried = new CarriedCondition(knife);
+        CarriedCondition knifeCarried = new CarriedCondition(knife, gameContext);
         NotCondition knifeNotCarried = new NotCondition(knifeCarried);
         cutNotSuccessfully.addPreCondition(knifeNotCarried);
         rabbit.addCommand(cutNotSuccessfully);
@@ -368,7 +374,7 @@ public class MiniAdventure {
 
         GenericCommandDescription enterPortalCommandDescription = new GenericCommandDescription("enter", portal);
         GenericCommand enterPortalCommand = new GenericCommand(enterPortalCommandDescription,
-                                                               new MovePlayerAction(portal, allMessages));
+                                                               new MovePlayerAction(portal, allMessages, gameContext));
         enterPortalCommand.addPreCondition(new WornCondition(ring));
 
         Command enterCommand2 = new GenericCommand(enterPortalCommandDescription,
@@ -383,7 +389,7 @@ public class MiniAdventure {
 
         GenericCommandDescription enterHouseCommandDescription = new GenericCommandDescription("enter", house);
         GenericCommand enterHouseCommand = new GenericCommand(enterHouseCommandDescription,
-                                                              new MovePlayerAction(house, allMessages));
+                                                              new MovePlayerAction(house, allMessages, gameContext));
         GenericDirection toHouse = new GenericDirection(allLocations, enterHouseCommand, house.getId(), true);
 
         setUpLookCommands(toHouse);
@@ -391,12 +397,12 @@ public class MiniAdventure {
 
         GenericCommandDescription leavePortalCommandDescription = new GenericCommandDescription("leave", location);
         GenericCommand leaveCommand = new GenericCommand(leavePortalCommandDescription,
-                                                         new MovePlayerAction(location, allMessages));
+                                                         new MovePlayerAction(location, allMessages, gameContext));
         GenericDirection toLocation = new GenericDirection(allLocations, leaveCommand, location.getId());
         portal.addDirection(toLocation);
 
         GenericCommandDescription leaveHouseCommandDescription = new GenericCommandDescription("north", location);
-        leaveCommand = new GenericCommand(leaveHouseCommandDescription, new MovePlayerAction(location, allMessages));
+        leaveCommand = new GenericCommand(leaveHouseCommandDescription, new MovePlayerAction(location, allMessages, gameContext));
         toLocation = new GenericDirection(allLocations, leaveCommand, location.getId());
         house.addDirection(toLocation);
     }
@@ -429,9 +435,9 @@ public class MiniAdventure {
 
         GenericCommandDescription inventoryCommandDescription = new GenericCommandDescription("inventory");
         GenericCommand inventoryCommand = new GenericCommand(inventoryCommandDescription,
-                                                             new InventoryAction(new MessageConsumer(),
+                                                             new InventoryAction(gameContext::tell,
                                                                                  new ContainerSupplier(
-                                                                                         Environment.getPocket()),
+                                                                                         gameContext::getPocket),
                                                                                  allMessages));
         aWorkflow.addInterceptorCommand(inventoryCommandDescription, inventoryCommand);
 
@@ -441,9 +447,9 @@ public class MiniAdventure {
 
         Action lookLocationAction = new DescribeAction(() -> {
             long timesVisited = 0;
-            Environment.getCurrentLocation().setTimesVisited(timesVisited);
-            String result = Environment.getCurrentLocation().getLongDescription();
-            Environment.getCurrentLocation().setTimesVisited(timesVisited++);
+            gameContext.getCurrentLocation().setTimesVisited(timesVisited);
+            String result = gameContext.getCurrentLocation().getLongDescription();
+            gameContext.getCurrentLocation().setTimesVisited(timesVisited++);
             return result;
         }, allMessages);
         GenericCommandDescription lookCommandDescription = new GenericCommandDescription("describe");
@@ -487,7 +493,7 @@ public class MiniAdventure {
         anItem.setIsWearable(true);
         GenericCommand wear = new GenericCommand(new GenericCommandDescription("wear", anItem),
                                                  new WearAction(anItem, allMessages));
-        PreCondition carriedCondition = new CarriedCondition(anItem);
+        PreCondition carriedCondition = new CarriedCondition(anItem, gameContext);
         wear.addPreCondition(carriedCondition);
         anItem.addCommand(wear);
         GenericCommand remove = new GenericCommand(new GenericCommandDescription("remove", anItem),
@@ -500,22 +506,22 @@ public class MiniAdventure {
         GenericCommandDescription getCommandDescription = new GenericCommandDescription("get", anItem);
         GenericCommand takeFailCommand = new GenericCommand(getCommandDescription, new MessageAction(
                 String.format(allMessages.getMessage("-13"), anItem.getEnrichedBasicDescription()), allMessages));
-        takeFailCommand.addPreCondition(new CarriedCondition(anItem));
+        takeFailCommand.addPreCondition(new CarriedCondition(anItem, gameContext));
         anItem.addCommand(takeFailCommand);
 
         GenericCommand takeCommand = new GenericCommand(getCommandDescription, new TakeAction(anItem,
                                                                                               new ContainerSupplier(
-                                                                                                      Environment.getPocket()),
+                                                                                                      gameContext::getPocket),
                                                                                               allMessages));
-        takeCommand.addPreCondition(new NotCondition(new CarriedCondition(anItem)));
-        takeCommand.addPreCondition(new HereCondition(anItem));
+        takeCommand.addPreCondition(new NotCondition(new CarriedCondition(anItem, gameContext)));
+        takeCommand.addPreCondition(new HereCondition(anItem, gameContext));
         anItem.addCommand(takeCommand);
 
         GenericCommandDescription dropCommandDescription = new GenericCommandDescription("drop", anItem);
         GenericCommand dropAndRemoveCommand = new GenericCommand(dropCommandDescription, new DropAction(anItem,
                                                                                                         new ContainerSupplier(
-                                                                                                                Environment.getCurrentLocation()
-                                                                                                                           .getItemContainer()),
+                                                                                                                () -> gameContext.getCurrentLocation()
+                                                                                                                                .getItemContainer()),
                                                                                                         allMessages));
         PreCondition wornCondition = new WornCondition(anItem);
         dropAndRemoveCommand.addPreCondition(wornCondition);
@@ -524,11 +530,11 @@ public class MiniAdventure {
 
         GenericCommand dropCommand = new GenericCommand(dropCommandDescription, new DropAction(anItem,
                                                                                                new ContainerSupplier(
-                                                                                                       Environment.getCurrentLocation()
-                                                                                                                  .getItemContainer()),
+                                                                                                       () -> gameContext.getCurrentLocation()
+                                                                                                                        .getItemContainer()),
                                                                                                allMessages));
         dropCommand.addPreCondition(new NotCondition(wornCondition));
-        dropCommand.addPreCondition(new CarriedCondition(anItem));
+        dropCommand.addPreCondition(new CarriedCondition(anItem, gameContext));
         anItem.addCommand(dropCommand);
     }
 
@@ -551,10 +557,10 @@ public class MiniAdventure {
     private void addLoadAdventureToWorkflowCommands(final String aAdventureId) {
         var loadAdventureCommandDescription = new GenericCommandDescription("load", aAdventureId);
         final var loadAdventureAction = new LoadAdventureAction(adventureService, adventureMapper, adventureConfig,
-                                                                allMessages);
+                                                                allMessages, gameContext);
         loadAdventureAction.setAdventureId(aAdventureId);
         var loadAdventureCommand = new GenericCommand(loadAdventureCommandDescription, loadAdventureAction);
-        Environment.getWorkflow().addInterceptorCommand(loadAdventureCommandDescription, loadAdventureCommand);
+        gameContext.getWorkflow().addInterceptorCommand(loadAdventureCommandDescription, loadAdventureCommand);
     }
 
     public void setLocations(List<Location> locations) {

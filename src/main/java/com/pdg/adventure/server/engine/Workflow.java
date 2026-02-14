@@ -12,10 +12,12 @@ import com.pdg.adventure.server.parser.GenericCommandDescription;
 public class Workflow {
     private final Map<CommandDescription, Command> preCommands;
     private final Map<CommandDescription, Command> interceptorCommands;
+    private final GameContext gameContext;
 
-    public Workflow() {
+    public Workflow(GameContext aGameContext) {
         preCommands = new TreeMap<>();
         interceptorCommands = new TreeMap<>();
+        gameContext = aGameContext;
     }
 
     public void addPreCommand(GenericCommandDescription aCommandDescription, Command aCommand) {
@@ -50,7 +52,7 @@ public class Workflow {
     private void process(Map<CommandDescription, Command> commands) {
         for (Map.Entry<CommandDescription, Command> commandEntry : commands.entrySet()) {
             ExecutionResult result = commandEntry.getValue().execute();
-            Environment.tell(result.getResultMessage());
+            gameContext.tell(result.getResultMessage());
         }
     }
 }

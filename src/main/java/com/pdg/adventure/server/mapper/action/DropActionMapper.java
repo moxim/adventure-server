@@ -9,7 +9,7 @@ import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.DropAction;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.engine.ContainerSupplier;
-import com.pdg.adventure.server.engine.Environment;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.support.MapperSupporter;
 
 @Service
@@ -17,11 +17,14 @@ import com.pdg.adventure.server.support.MapperSupporter;
 public class DropActionMapper extends ActionMapper<DropActionData, DropAction> {
 
     private final AdventureConfig adventureConfig;
+    private final GameContext gameContext;
 
     @Autowired
-    public DropActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig) {
+    public DropActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig,
+                            GameContext aGameContext) {
         super(aMapperSupporter);
         this.adventureConfig = anAdventureConfig;
+        this.gameContext = aGameContext;
         aMapperSupporter.registerMapper(DropActionData.class, DropAction.class, this);
     }
 
@@ -31,7 +34,7 @@ public class DropActionMapper extends ActionMapper<DropActionData, DropAction> {
         // Use lazy evaluation - defer getting current location until action execution
         DropAction action = new DropAction(
                 adventureConfig.allItems().get(aDropActionData.getThingId()),
-                new ContainerSupplier(() -> Environment.getCurrentLocation().getItemContainer()),
+                new ContainerSupplier(() -> gameContext.getCurrentLocation().getItemContainer()),
                 adventureConfig.allMessages());
         return action;
     }
