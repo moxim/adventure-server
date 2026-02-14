@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
-import com.pdg.adventure.AdventureClient;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
@@ -22,7 +21,7 @@ import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 public class LoadAdventureAction extends AbstractAction {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AdventureClient.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LoadAdventureAction.class);
 
     private final AdventureService adventureService;
     private final AdventureMapper adventureMapper;
@@ -90,7 +89,6 @@ public class LoadAdventureAction extends AbstractAction {
 
         Environment.setCurrentLocation(startLocation);
 
-//        Environment.setUpWorkflows();
         Environment.setPocket(savedAdventure.getPocket());
 
         throw new ReloadAdventureException("Adventure reloaded, restarting game...");
