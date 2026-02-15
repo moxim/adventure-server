@@ -23,6 +23,7 @@ import com.pdg.adventure.model.condition.NotConditionData;
 import com.pdg.adventure.model.condition.PreConditionData;
 import com.pdg.adventure.server.condition.HereCondition;
 import com.pdg.adventure.server.condition.NotCondition;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.Item;
 
@@ -49,6 +50,9 @@ class NotConditionMapperTest {
 
     @Mock
     private PreCondition wrappedCondition;
+
+    @Mock
+    private GameContext gameContext;
 
     @Mock
     private Item mockItem;
@@ -113,7 +117,7 @@ class NotConditionMapperTest {
     @SuppressWarnings("unchecked")
     void mapToDO_shouldConvertNotConditionToNotConditionData() {
         // Given: NotCondition business object wrapping a real HereCondition
-        HereCondition hereCondition = new HereCondition(mockItem);
+        HereCondition hereCondition = new HereCondition(mockItem, gameContext);
         NotCondition condition = new NotCondition(hereCondition);
         condition.setId("not-condition-002");
 
@@ -136,7 +140,7 @@ class NotConditionMapperTest {
     @SuppressWarnings("unchecked")
     void mapToDO_shouldPreserveIdDuringConversion() {
         // Given: Multiple NotCondition objects with different IDs
-        HereCondition hereCondition = new HereCondition(mockItem);
+        HereCondition hereCondition = new HereCondition(mockItem, gameContext);
         NotCondition condition1 = new NotCondition(hereCondition);
         condition1.setId("not-001");
 
@@ -165,7 +169,7 @@ class NotConditionMapperTest {
         originalData.setId("round-trip-not");
         originalData.setPreCondition(wrappedConditionData);
 
-        HereCondition hereCondition = new HereCondition(mockItem);
+        HereCondition hereCondition = new HereCondition(mockItem, gameContext);
 
         // Mock mapToBO path
         when(mapperSupporter.getMapper(argThat(clazz -> clazz != null && PreConditionData.class.isAssignableFrom(clazz))))

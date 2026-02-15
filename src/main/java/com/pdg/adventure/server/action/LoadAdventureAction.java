@@ -6,13 +6,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
-import com.pdg.adventure.AdventureClient;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.server.Adventure;
 import com.pdg.adventure.server.AdventureConfig;
-import com.pdg.adventure.server.engine.Environment;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.exception.ReloadAdventureException;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.AdventureMapper;
@@ -22,21 +21,24 @@ import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 public class LoadAdventureAction extends AbstractAction {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AdventureClient.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LoadAdventureAction.class);
 
     private final AdventureService adventureService;
     private final AdventureMapper adventureMapper;
     private final AdventureConfig adventureConfig;
+    private final GameContext gameContext;
 
     @Setter
     private String adventureId;
 
     public LoadAdventureAction(AdventureService anAdventureService, AdventureMapper anAdventureMapper,
-                               AdventureConfig anAdventureConfig, MessagesHolder aMessagesHolder) {
+                               AdventureConfig anAdventureConfig, MessagesHolder aMessagesHolder,
+                               GameContext aGameContext) {
         super(aMessagesHolder);
         adventureService = anAdventureService;
         adventureMapper = anAdventureMapper;
         adventureConfig = anAdventureConfig;
+        gameContext = aGameContext;
     }
 
     @Override
@@ -88,10 +90,9 @@ public class LoadAdventureAction extends AbstractAction {
             LOG.error("Using fallback location: {}", startLocation.getId());
         }
 
-        Environment.setCurrentLocation(startLocation);
+        gameContext.setCurrentLocation(startLocation);
 
-//        Environment.setUpWorkflows();
-        Environment.setPocket(savedAdventure.getPocket());
+        gameContext.setPocket(savedAdventure.getPocket());
 
         throw new ReloadAdventureException("Adventure reloaded, restarting game...");
     }

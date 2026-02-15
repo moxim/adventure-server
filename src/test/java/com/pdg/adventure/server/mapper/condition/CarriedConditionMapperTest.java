@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 import com.pdg.adventure.model.condition.CarriedConditionData;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.condition.CarriedCondition;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.Item;
 
@@ -41,6 +42,9 @@ class CarriedConditionMapperTest {
     private AdventureConfig adventureConfig;
 
     @Mock
+    private GameContext gameContext;
+
+    @Mock
     private Item mockItem;
 
     private CarriedConditionMapper mapper;
@@ -49,7 +53,7 @@ class CarriedConditionMapperTest {
     @BeforeEach
     void setUp() {
         doNothing().when(mapperSupporter).registerMapper(any(), any(), any());
-        mapper = new CarriedConditionMapper(mapperSupporter, adventureConfig);
+        mapper = new CarriedConditionMapper(mapperSupporter, adventureConfig, gameContext);
 
         // Setup items map for adventureConfig
         allItemsMap = new HashMap<>();
@@ -100,7 +104,7 @@ class CarriedConditionMapperTest {
     void mapToDO_shouldConvertCarriedConditionToCarriedConditionData() {
         // Given: CarriedCondition business object
         when(mockItem.getId()).thenReturn("torch-item");
-        CarriedCondition condition = new CarriedCondition(mockItem);
+        CarriedCondition condition = new CarriedCondition(mockItem, gameContext);
         condition.setId("carried-condition-002");
 
         // When: mapping to data object
@@ -118,10 +122,10 @@ class CarriedConditionMapperTest {
         // Given: Multiple CarriedCondition objects with different IDs
         when(mockItem.getId()).thenReturn("item-123");
 
-        CarriedCondition condition1 = new CarriedCondition(mockItem);
+        CarriedCondition condition1 = new CarriedCondition(mockItem, gameContext);
         condition1.setId("condition-001");
 
-        CarriedCondition condition2 = new CarriedCondition(mockItem);
+        CarriedCondition condition2 = new CarriedCondition(mockItem, gameContext);
         condition2.setId("condition-002");
 
         // When: mapping both conditions

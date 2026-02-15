@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
@@ -14,10 +15,12 @@ import com.pdg.adventure.server.support.MapperSupporter;
 @AutoRegisterMapper(priority = 30, description = "Move player action mapper")
 public class MovePlayerActionMapper extends ActionMapper<MovePlayerActionData, MovePlayerAction> {
 
+    private final GameContext gameContext;
     private MessagesHolder messagesHolder;
 
-    public MovePlayerActionMapper(MapperSupporter aMapperSupporter) {
+    public MovePlayerActionMapper(MapperSupporter aMapperSupporter, GameContext aGameContext) {
         super(aMapperSupporter);
+        gameContext = aGameContext;
         aMapperSupporter.registerMapper(MovePlayerActionData.class, MovePlayerAction.class, this);
     }
 
@@ -29,7 +32,7 @@ public class MovePlayerActionMapper extends ActionMapper<MovePlayerActionData, M
     @Override
     public MovePlayerAction mapToBO(MovePlayerActionData from) {
         final Location location = getMapperSupporter().getMappedLocation(from.getLocationId());
-        MovePlayerAction movePlayerAction = new MovePlayerAction(location, messagesHolder);
+        MovePlayerAction movePlayerAction = new MovePlayerAction(location, messagesHolder, gameContext);
         return movePlayerAction;
     }
 

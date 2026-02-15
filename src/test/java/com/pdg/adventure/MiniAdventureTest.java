@@ -10,6 +10,7 @@ import java.util.List;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.server.Adventure;
 import com.pdg.adventure.server.AdventureConfig;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.storage.AdventureService;
 
@@ -22,6 +23,12 @@ class MiniAdventureTest {
     @Autowired
     AdventureMapper adventureMapper;
 
+    @Autowired
+    GameContext gameContext;
+
+    @Autowired
+    AdventureConfig adventureConfig;
+
     @Test
     @Disabled("Disabled until the engine can be feed with commands automatically.")
     void testGameRun() {
@@ -29,7 +36,8 @@ class MiniAdventureTest {
         final AdventureData adventureData = adventures.getFirst();
         Adventure adventure = adventureMapper.mapToBO(adventureData);
 
-        MiniAdventure miniAdventure = new MiniAdventure(new AdventureConfig(), adventureMapper, adventureService);
+        MiniAdventure miniAdventure = new MiniAdventure(adventureConfig, adventureMapper, adventureService,
+                                                         gameContext);
         miniAdventure.setLocations(adventure.getLocations());
         miniAdventure.run();
     }

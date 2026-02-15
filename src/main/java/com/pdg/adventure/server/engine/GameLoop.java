@@ -20,26 +20,28 @@ public class GameLoop {
     private static final Logger LOG = LoggerFactory.getLogger(GameLoop.class);
 
     private final Parser parser;
+    private final GameContext gameContext;
 
-    public GameLoop(Parser aParser) {
+    public GameLoop(Parser aParser, GameContext aGameContext) {
         parser = aParser;
+        gameContext = aGameContext;
     }
 
     public void run(BufferedReader aReader) {
         boolean keepLooping = true;
         while (keepLooping) {
-            Location currentLocation = Environment.getCurrentLocation();
+            Location currentLocation = gameContext.getCurrentLocation();
             try {
                 // Run workflow actions.
-                Environment.preProcessCommands();
+                gameContext.preProcessCommands();
 
                 // Obtain user input.
                 GenericCommandDescription command = parser.getInput(aReader);
 
                 // Check commands that are independent of locations, like inventory, save, quit aso.
-                ExecutionResult result = Environment.interceptCommands(command);
+                ExecutionResult result = gameContext.interceptCommands(command);
                 if (result.getExecutionState() != ExecutionResult.State.FAILURE) {
-                    Environment.tell(result.getResultMessage());
+                    gameContext.tell(result.getResultMessage());
                     continue;
                 }
 
@@ -50,14 +52,14 @@ public class GameLoop {
                 }
 
                 // Check commands that are possible because of the players inventory or the current location.
-                CommandExecutor commandExecuter = new CommandExecutor(Environment.getPocket(), currentLocation);
+                CommandExecutor commandExecuter = new CommandExecutor(gameContext.getPocket(), currentLocation);
                 result = commandExecuter.execute(command);
 
                 if (!VocabularyData.EMPTY_STRING.equals(result.getResultMessage())) {
-                    Environment.tell(result.getResultMessage());
+                    gameContext.tell(result.getResultMessage());
                 }
             } catch (QuitException anException) {
-                Environment.tell(anException.getMessage());
+                gameContext.tell(anException.getMessage());
                 keepLooping = false;
             } catch (ReloadAdventureException e) {
                 throw e;

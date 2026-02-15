@@ -5,35 +5,33 @@ import lombok.Getter;
 import java.util.function.Supplier;
 
 import com.pdg.adventure.api.ExecutionResult;
-import com.pdg.adventure.server.engine.Environment;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 public class MovePlayerAction extends AbstractAction {
     @Getter
     private final Location destination;
-//    private final Consumer<Location> currentLocationHolder;
+    private final GameContext gameContext;
 
     public MovePlayerAction(Location aDestination,
-                            MessagesHolder aMessagesHolder) {
+                            MessagesHolder aMessagesHolder,
+                            GameContext aGameContext) {
         super(aMessagesHolder);
         destination = aDestination;
-//        currentLocationHolder = aCurrentLocationHolder;
+        gameContext = aGameContext;
     }
 
     @Override
     public ExecutionResult execute() {
-        Environment.setCurrentLocation(destination);
-//        currentLocationHolder.accept(destination);
+        gameContext.setCurrentLocation(destination);
         final DescribeAction describeAction = new DescribeAction(new Supplier<String>() {
             @Override
             public String get() {
                 return destination.getLongDescription();
             }
         }, messagesHolder);
-        ExecutionResult // result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
-                // result.setResultMessage(destination.getLongDescription());
-                result = describeAction.execute();
+        ExecutionResult result = describeAction.execute();
         destination.setTimesVisited(destination.getTimesVisited() + 1);
         return result;
     }

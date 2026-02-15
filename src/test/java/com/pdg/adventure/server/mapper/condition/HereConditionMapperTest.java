@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 import com.pdg.adventure.model.condition.HereConditionData;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.condition.HereCondition;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.Item;
 
@@ -41,6 +42,9 @@ class HereConditionMapperTest {
     private AdventureConfig adventureConfig;
 
     @Mock
+    private GameContext gameContext;
+
+    @Mock
     private Item mockItem;
 
     private HereConditionMapper mapper;
@@ -49,7 +53,7 @@ class HereConditionMapperTest {
     @BeforeEach
     void setUp() {
         doNothing().when(mapperSupporter).registerMapper(any(), any(), any());
-        mapper = new HereConditionMapper(mapperSupporter, adventureConfig);
+        mapper = new HereConditionMapper(mapperSupporter, adventureConfig, gameContext);
 
         // Setup items map for adventureConfig
         allItemsMap = new HashMap<>();
@@ -100,7 +104,7 @@ class HereConditionMapperTest {
     void mapToDO_shouldConvertHereConditionToHereConditionData() {
         // Given: HereCondition business object
         when(mockItem.getId()).thenReturn("golden-crown");
-        HereCondition condition = new HereCondition(mockItem);
+        HereCondition condition = new HereCondition(mockItem, gameContext);
         condition.setId("here-condition-002");
 
         // When: mapping to data object
@@ -118,10 +122,10 @@ class HereConditionMapperTest {
         // Given: Multiple HereCondition objects with different IDs
         when(mockItem.getId()).thenReturn("thing-456");
 
-        HereCondition condition1 = new HereCondition(mockItem);
+        HereCondition condition1 = new HereCondition(mockItem, gameContext);
         condition1.setId("here-001");
 
-        HereCondition condition2 = new HereCondition(mockItem);
+        HereCondition condition2 = new HereCondition(mockItem, gameContext);
         condition2.setId("here-002");
 
         // When: mapping both conditions
