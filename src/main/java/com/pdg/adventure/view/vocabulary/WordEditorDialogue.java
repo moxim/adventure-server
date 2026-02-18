@@ -139,7 +139,7 @@ public class WordEditorDialogue {
         synonyms = new ComboBox<>("Synonyms");
         synonyms.setItems(wordItemFilter, vocabularyData.getWords());
         synonyms.setItemLabelGenerator(Word::getText);
-        synonyms.addValueChangeListener(e -> {
+        synonyms.addValueChangeListener(_ -> {
             handleSynonymChange();
             validateAndUpdateSaveButton();
         });
@@ -172,7 +172,7 @@ public class WordEditorDialogue {
     private void createWordField() {
         wordText = new TextField("Word");
         wordText.setRequired(true);
-        wordText.addValueChangeListener(e -> validateAndUpdateSaveButton());
+        wordText.addValueChangeListener(_ -> validateAndUpdateSaveButton());
         wordText.setValueChangeMode(ValueChangeMode.EAGER);
         wordText.focus();
         wordText.setHelperText("Combine with a synonym or a type.");
@@ -186,7 +186,7 @@ public class WordEditorDialogue {
         typeSelector.setLabel("Type");
         List<Word.Type> typeList = new ArrayList<>();
         Collections.addAll(typeList, Word.Type.values());
-        typeSelector.addValueChangeListener(e -> validateAndUpdateSaveButton());
+        typeSelector.addValueChangeListener(_ -> validateAndUpdateSaveButton());
         typeSelector.setItems(typeList);
         typeSelector.setRenderer(new ComponentRenderer<Component, Word.Type>(wordType -> new Text(wordType.name())));
     }
@@ -241,13 +241,13 @@ public class WordEditorDialogue {
     }
 
     private Component createDialogFooter(Dialog dialog) {
-        Button cancelButton = new Button("Cancel", e -> {
+        Button cancelButton = new Button("Cancel", _ -> {
             dialog.close();
             notifyListeners(false);
         });
         cancelButton.addClickShortcut(Key.ESCAPE);
 
-        saveButton.addClickListener(e -> {
+        saveButton.addClickListener(_ -> {
             try {
                 if (editType == EditType.EDIT) {
                     saveEditedWord(dialog);
@@ -274,7 +274,7 @@ public class WordEditorDialogue {
 
         // Check for duplicate
         if (vocabularyData.findWord(newWordText).isPresent()) {
-            wordText.setErrorMessage(String.format(VocabularyData.DUPLICATE_WORD_TEXT, newWordText));
+            wordText.setErrorMessage(VocabularyData.DUPLICATE_WORD_TEXT.formatted(newWordText));
             wordText.setInvalid(true);
             return;
         }
@@ -303,7 +303,7 @@ public class WordEditorDialogue {
         if (!currentWord.getText().equals(newWordText)) {
             Optional<Word> existingWord = vocabularyData.findWord(newWordText);
             if (existingWord.isPresent()) {
-                wordText.setErrorMessage(String.format(VocabularyData.DUPLICATE_WORD_TEXT, newWordText));
+                wordText.setErrorMessage(VocabularyData.DUPLICATE_WORD_TEXT.formatted(newWordText));
                 wordText.setInvalid(true);
                 return;
             }

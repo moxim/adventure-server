@@ -94,7 +94,7 @@ public class GridUnbufferedInlineEditor extends VerticalLayout {
             final Binder<CommandDescriptionData> localBinder = editor.getBinder();
             localBinder.setBean(item);
 
-            editor.addCloseListener(event -> {
+            editor.addCloseListener(_ -> {
                 extracted(aSaveButton, editor);
             });
             Component editorComponent = e.getColumn().getEditorComponent();
@@ -106,7 +106,7 @@ public class GridUnbufferedInlineEditor extends VerticalLayout {
         ValidationMessage adjectiveValidationMessage = new ValidationMessage();
         ValidationMessage nounValidationMessage = new ValidationMessage();
 
-        editor.addCancelListener(e -> {
+        editor.addCancelListener(_ -> {
             verbValidationMessage.setText("");
             adjectiveValidationMessage.setText("");
             nounValidationMessage.setText("");
@@ -137,7 +137,7 @@ public class GridUnbufferedInlineEditor extends VerticalLayout {
     }
 
     private static void addCloseHandler(Component textField, Editor<CommandDescriptionData> editor) {
-        textField.getElement().addEventListener("keydown", e -> editor.cancel()).setFilter("event.code === 'Escape'");
+        textField.getElement().addEventListener("keydown", _ -> editor.cancel()).setFilter("event.code === 'Escape'");
     }
 
     public void setEmptyStateText(String anEmptyStateText) {

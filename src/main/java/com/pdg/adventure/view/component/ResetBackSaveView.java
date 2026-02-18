@@ -14,7 +14,7 @@ public class ResetBackSaveView extends Composite<HorizontalLayout> {
     @Getter
     Button save = new Button("Save");
     @Getter
-    Button cancel = new Button("Cancel", e -> {
+    Button cancel = new Button("Cancel", _ -> {
         reset.clickInClient();
         back.clickInClient();
     });

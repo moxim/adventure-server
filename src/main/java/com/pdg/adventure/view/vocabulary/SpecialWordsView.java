@@ -59,14 +59,14 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
 
         createSpecialWordFields();
 
-        back = new Button("Back", event -> {
+        back = new Button("Back", _ -> {
             UI.getCurrent().navigate(VocabularyMenuView.class, new RouteParameters(
                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
               .ifPresent(editor -> editor.setAdventureData(adventureData));
         });
         back.addClickShortcut(Key.ESCAPE);
 
-        save = new Button("Save", event -> {
+        save = new Button("Save", _ -> {
             persistData();
             Notification.show("Special words saved", 2000, Notification.Position.BOTTOM_START);
         });

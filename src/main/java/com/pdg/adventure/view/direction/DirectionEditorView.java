@@ -134,7 +134,7 @@ public class DirectionEditorView extends VerticalLayout
         HorizontalLayout h1 = new HorizontalLayout(verbSelector, adjectiveSelector, nounSelector);
 
         Button manageCommands = new Button("Manage Commands");
-        manageCommands.addClickListener(event -> {
+        manageCommands.addClickListener(_ -> {
             if (locationData != null && adventureData != null) {
                 UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
                           new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
@@ -197,9 +197,9 @@ public class DirectionEditorView extends VerticalLayout
         resetButton = resetBackSaveView.getReset();
         resetButton.setEnabled(false);
 
-        backButton.addClickListener(event -> navigateBack());
-        saveButton.addClickListener(event -> validateSave(dvm));
-        resetButton.addClickListener(event -> binder.readBean(dvm));
+        backButton.addClickListener(_ -> navigateBack());
+        saveButton.addClickListener(_ -> validateSave(dvm));
+        resetButton.addClickListener(_ -> binder.readBean(dvm));
         resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
 
         return resetBackSaveView;
@@ -228,11 +228,11 @@ public class DirectionEditorView extends VerticalLayout
                     "The selected destination is the same as the current location. This will trap the player if they follow this direction. Do you want to proceed?");
             dialog.setCancelable(true);
             dialog.setConfirmText("Proceed");
-            dialog.addConfirmListener(event -> {
+            dialog.addConfirmListener(_ -> {
                 // User confirmed, do nothing and allow save to proceed
                 saveData(aDirectionViewModel);
             });
-            dialog.addCancelListener(event -> {
+            dialog.addCancelListener(_ -> {
                 // User cancelled, throw an exception to prevent save
                 destinationGrid.select(null);
             });

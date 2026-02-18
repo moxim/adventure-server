@@ -55,7 +55,7 @@ public class DescribeAction extends AbstractAction {
                 )
         );
 
-        System.out.println("Request: " + aRequest);
+        IO.println("Request: " + aRequest);
 
         return response.getResult().getOutput().getText();
     }

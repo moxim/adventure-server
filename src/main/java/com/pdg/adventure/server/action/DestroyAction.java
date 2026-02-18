@@ -19,7 +19,7 @@ public class DestroyAction extends AbstractAction {
         if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
             // TODO
             //  really do this?
-            result.setResultMessage(String.format(messagesHolder.getMessage("-11"), thing.getShortDescription()));
+            result.setResultMessage(messagesHolder.getMessage("-11").formatted(thing.getShortDescription()));
         }
         return result;
     }

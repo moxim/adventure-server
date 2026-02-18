@@ -69,7 +69,7 @@ public class CommandsMenuView extends VerticalLayout
         gridContainer = new Div("Commands");
         gridContainer.setSizeFull();
 
-        createButton = new Button("Create", e -> {
+        createButton = new Button("Create", _ -> {
             UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
@@ -79,12 +79,12 @@ public class CommandsMenuView extends VerticalLayout
         });
 
         saveButton = new Button("Save");
-        saveButton.addClickListener(e -> {
+        saveButton.addClickListener(_ -> {
             adventureService.saveLocationData(locationData);
             saveButton.setEnabled(false);
         });
 
-        backButton = new Button("Back", event -> UI.getCurrent().navigate(LocationEditorView.class,
+        backButton = new Button("Back", _ -> UI.getCurrent().navigate(LocationEditorView.class,
                                                                           new RouteParameters(
                                                                                   new RouteParam(LOCATION_ID.getValue(),
                                                                                                  locationData.getId()),
@@ -94,7 +94,7 @@ public class CommandsMenuView extends VerticalLayout
         ).ifPresent(e -> e.setData(adventureData)));
         backButton.addClickShortcut(Key.ESCAPE);
 
-        resetButton = new Button("Reset", e -> {
+        resetButton = new Button("Reset", _ -> {
             binder.readBean(commandProviderData);
         });
 

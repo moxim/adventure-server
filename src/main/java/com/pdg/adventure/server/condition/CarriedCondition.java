@@ -26,7 +26,7 @@ public class CarriedCondition extends AbstractCondition {
         if (gameContext.getPocket().contains(item)) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         } else {
-            result.setResultMessage(String.format("You don't have a %s.", item.getShortDescription()));
+            result.setResultMessage("You don't have a %s.".formatted(item.getShortDescription()));
         }
         return result;
     }

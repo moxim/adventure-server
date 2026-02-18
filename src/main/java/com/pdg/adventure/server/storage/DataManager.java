@@ -32,7 +32,7 @@ public class DataManager {
 
     public void saveCommand(LocationData location, CommandDescriptionData command) {
         CommandProviderData provider = location.getCommandProviderData();
-        provider.getAvailableCommands().computeIfAbsent(command.getCommandSpecification(), k -> new CommandChainData())
+        provider.getAvailableCommands().computeIfAbsent(command.getCommandSpecification(), _ -> new CommandChainData())
                 .getCommands().add(new CommandData(command));
         service.saveLocationData(location);
     }

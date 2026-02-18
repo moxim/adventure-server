@@ -46,7 +46,7 @@ public class CommandFactory {
     public void setUpTakeCommands(Item anItem) {
         GenericCommandDescription getCommandDescription = new GenericCommandDescription("get", anItem);
         GenericCommand takeFailCommand = new GenericCommand(getCommandDescription, new MessageAction(
-                String.format(allMessages.getMessage("-13"), anItem.getEnrichedBasicDescription()), allMessages));
+                allMessages.getMessage("-13").formatted(anItem.getEnrichedBasicDescription()), allMessages));
         takeFailCommand.addPreCondition(new CarriedCondition(anItem, gameContext));
         anItem.addCommand(takeFailCommand);
 

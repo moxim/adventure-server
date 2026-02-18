@@ -123,7 +123,7 @@ public class MessageEditorView extends VerticalLayout
               .bind(MessageViewModel::getMessageText, MessageViewModel::setMessageText);
 
         // Update preview when message text changes
-        messageTextField.addValueChangeListener(e -> updatePreview());
+        messageTextField.addValueChangeListener(_ -> updatePreview());
 
         binder.addStatusChangeListener(event -> {
             boolean isValid = event.getBinder().isValid();
@@ -148,9 +148,9 @@ public class MessageEditorView extends VerticalLayout
         resetButton = resetBackSaveView.getReset();
         resetButton.setEnabled(false);
 
-        backButton.addClickListener(event -> navigateBack());
-        saveButton.addClickListener(event -> validateAndSave());
-        resetButton.addClickListener(event -> {
+        backButton.addClickListener(_ -> navigateBack());
+        saveButton.addClickListener(_ -> validateAndSave());
+        resetButton.addClickListener(_ -> {
             binder.readBean(mvm);
             updatePreview();
         });

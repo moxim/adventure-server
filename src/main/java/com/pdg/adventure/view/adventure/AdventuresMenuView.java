@@ -42,7 +42,7 @@ public class AdventuresMenuView extends VerticalLayout {
 
         adventureService = anAdventureService;
 
-        Button create = new Button("Create Adventure", e -> UI.getCurrent().navigate(AdventureEditorView.class));
+        Button create = new Button("Create Adventure", _ -> UI.getCurrent().navigate(AdventureEditorView.class));
         //<theme-editor-local-classname>
         create.addClassName("adventures-menu-view-button-1");
 

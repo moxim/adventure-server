@@ -46,14 +46,14 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         adventureService = anAdventureService;
         setSizeFull();
 
-        Button backButton = new Button("Back", event ->
+        Button backButton = new Button("Back", _ ->
                 UI.getCurrent().navigate(AdventureEditorView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                                             adventureData.getId())))
         );
         backButton.addClickShortcut(Key.ESCAPE);
 
-        Button createButton = new Button("Create Message", e ->
+        Button createButton = new Button("Create Message", _ ->
                 UI.getCurrent().navigate(MessageEditorView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                                             adventureData.getId())))
@@ -90,7 +90,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         add(mainLayout);
 
         // Update message count when data is set
-        grid.getDataProvider().addDataProviderListener(event -> {
+        grid.getDataProvider().addDataProviderListener(_ -> {
             int count = grid.getDataProvider().size(new com.vaadin.flow.data.provider.Query<>());
             messageCount.setText("Total messages: " + count);
         });
@@ -259,7 +259,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
                               5000, Notification.Position.MIDDLE);
         } else {
             final var dialog = getConfirmDialog(message);
-            dialog.addConfirmListener(event -> {
+            dialog.addConfirmListener(_ -> {
                 // Remove message from adventure's messages Map
                 adventureData.getMessages().remove(messageId);
 

@@ -67,7 +67,7 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
         locationSelector.setWidth("50%");
 
         // Create item button
-        createButton = new Button("Create Item", event -> {
+        createButton = new Button("Create Item", _ -> {
             LocationData selectedLocation = locationSelector.getValue();
             if (selectedLocation != null) {
                 navigateToCreateItem(selectedLocation.getId());
@@ -79,7 +79,7 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
                 event -> createButton.setEnabled(event.getValue() != null));
 
         Button backButton = new Button("Back",
-                                       event -> UI.getCurrent().navigate(AdventureEditorView.class, new RouteParameters(
+                                       _ -> UI.getCurrent().navigate(AdventureEditorView.class, new RouteParameters(
                                                new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                               adventureData.getId()))));
         backButton.addClickShortcut(Key.ESCAPE);

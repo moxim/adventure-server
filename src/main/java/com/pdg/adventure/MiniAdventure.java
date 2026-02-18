@@ -85,7 +85,7 @@ public class MiniAdventure {
         while (keepRunning) {
             try {
                 content.setUpMessages();
-                System.out.println(new MessageAction(allMessages.getMessage("4"), allMessages).execute());
+                IO.println(new MessageAction(allMessages.getMessage("4"), allMessages).execute());
 
                 Workflow wf = gameContext.setUpWorkflows();
                 createSpecialWords(allWords);

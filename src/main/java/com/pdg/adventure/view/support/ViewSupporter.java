@@ -150,9 +150,9 @@ public class ViewSupporter {
 
     public static void bindField(Binder<DirectionData> binder, ComboBox<String> field, VocabularyData aVocabulary,
                                  Word.Type type, CommandDescriptionData commandDescriptionData) {
-        binder.forField(field).bind(directionData -> {
+        binder.forField(field).bind(_ -> {
             return getWordText(getWord(commandDescriptionData, type));
-        }, (directionData, word) -> {
+        }, (_, word) -> {
             setWord(aVocabulary, word, commandDescriptionData);
         });
     }
@@ -208,8 +208,8 @@ public class ViewSupporter {
 
     public static void bindField(Binder<LocationViewModel> locationDataBinder, TextField aField,
                                  VocabularyData aVocabulary, Word.Type aType, DescriptionData aDescriptionData) {
-        locationDataBinder.bind(aField, locationData -> getWordText(getWord(aDescriptionData, aType)),
-                                (locationData, word) -> {
+        locationDataBinder.bind(aField, _ -> getWordText(getWord(aDescriptionData, aType)),
+                                (_, word) -> {
                                     setWord(aVocabulary, word, aType, aDescriptionData);
                                 });
     }

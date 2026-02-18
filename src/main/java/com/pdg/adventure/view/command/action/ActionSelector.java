@@ -46,7 +46,7 @@ public class ActionSelector extends HorizontalLayout {
         actionTypeSelector.addValueChangeListener(e -> useButton.setEnabled(e.getValue() != null));
 
         // Handle the Use button click
-        useButton.addClickListener(e -> {
+        useButton.addClickListener(_ -> {
             ActionTypeDescriptor selectedType = actionTypeSelector.getValue();
             if (selectedType != null) {
                 ActionEditorComponent editor = createEditor(selectedType);

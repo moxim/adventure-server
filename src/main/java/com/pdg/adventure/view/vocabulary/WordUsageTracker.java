@@ -144,7 +144,7 @@ public class WordUsageTracker {
         for (var i = 0; i < Math.min(usages.size(), Math.max(usages.size(), maxUsagesToShow)); i++) {
             WordUsage usage = usages.get(i);
             String key = usage.itemType;
-            groupedUsages.computeIfAbsent(key, k -> new ArrayList<>()).add(usage);
+            groupedUsages.computeIfAbsent(key, _ -> new ArrayList<>()).add(usage);
         }
 
         // Display grouped usages

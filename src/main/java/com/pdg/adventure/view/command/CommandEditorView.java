@@ -104,8 +104,8 @@ public class CommandEditorView extends VerticalLayout
         commandChainGrid.addColumn(cmd -> {
             if (cmd.getPreConditions() != null && !cmd.getPreConditions().isEmpty()) {
                 try {
-                    return cmd.getPreConditions().get(0).getPreconditionName();
-                } catch (UnsupportedOperationException e) {
+                    return cmd.getPreConditions().getFirst().getPreconditionName();
+                } catch (UnsupportedOperationException _) {
                     return "none";
                 }
             }
@@ -114,7 +114,7 @@ public class CommandEditorView extends VerticalLayout
 
         commandChainGrid.addColumn(cmd -> {
             if (cmd.getFollowUpActions() != null && !cmd.getFollowUpActions().isEmpty()) {
-                return cmd.getFollowUpActions().get(0).getActionName();
+                return cmd.getFollowUpActions().getFirst().getActionName();
             }
             return "none";
         }).setHeader("First Followup Action").setAutoWidth(true);
@@ -168,9 +168,9 @@ public class CommandEditorView extends VerticalLayout
         Button cancelButton = resetBackSaveView.getCancel();
         cancelButton.setEnabled(false);
 
-        backButton.addClickListener(event -> navigateBack());
-        saveButton.addClickListener(event -> validateSave(commandProviderData));
-        resetButton.addClickListener(event -> {
+        backButton.addClickListener(_ -> navigateBack());
+        saveButton.addClickListener(_ -> validateSave(commandProviderData));
+        resetButton.addClickListener(_ -> {
             binder.readBean(cvm);
             resetActionEditor();
             actionEditorHasChanges = false;
@@ -213,8 +213,8 @@ public class CommandEditorView extends VerticalLayout
 
         // Add a value change listener to all input components in the editor
         editor.getChildren().forEach(component -> {
-            if (component instanceof com.vaadin.flow.component.HasValue) {
-                ((com.vaadin.flow.component.HasValue<?, ?>) component).addValueChangeListener(e -> {
+            if (component instanceof com.vaadin.flow.component.HasValue<?, ?> value) {
+                value.addValueChangeListener(e -> {
                     // Mark that the action editor has changes
                     if (!e.isFromClient()) {
                         // This is a programmatic change (initial value setting), don't mark as changed
@@ -370,7 +370,7 @@ public class CommandEditorView extends VerticalLayout
             CommandChainData commandChain = commandProviderData.getAvailableCommands().get(commandId);
             if (commandChain != null && !commandChain.getCommands().isEmpty()) {
                 // Get the command description from the first command in the chain
-                commandDescriptionData = commandChain.getCommands().get(0).getCommandDescription();
+                commandDescriptionData = commandChain.getCommands().getFirst().getCommandDescription();
             } else {
                 // Command not found, create new one with the specification
                 commandDescriptionData = new CommandDescriptionData(commandId);
@@ -477,13 +477,13 @@ public class CommandEditorView extends VerticalLayout
 
             // Add a "Change Action" button above the editor
             Button changeActionButton = new Button("Change Action");
-            changeActionButton.addClickListener(e -> showActionSelector());
+            changeActionButton.addClickListener(_ -> showActionSelector());
 
             actionEditorContainer.add(changeActionButton, actionEditor);
 
             // Attach listeners to update save button state when action editor fields change
             attachActionEditorListeners(actionEditor);
-        } catch (UnsupportedOperationException e) {
+        } catch (UnsupportedOperationException _) {
             // Action type not supported yet, show a message and the selector
             Div message = new Div();
             message.setText("Action editor not available for: " + anOriginalActionData.getActionName());
@@ -504,7 +504,7 @@ public class CommandEditorView extends VerticalLayout
 
             // Add a "Change Action" button above the new editor
             Button changeActionButton = new Button("Change Action");
-            changeActionButton.addClickListener(e -> showActionSelector());
+            changeActionButton.addClickListener(_ -> showActionSelector());
 
             actionEditorContainer.add(changeActionButton, actionEditor);
 

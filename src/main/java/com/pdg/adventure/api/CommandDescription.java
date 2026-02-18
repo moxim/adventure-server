@@ -7,7 +7,7 @@ public interface CommandDescription extends Comparable<CommandDescription>, Desc
     String getVerb();
 
     default String getDescription() {
-        return String.format(COMMAND_TRIPLET, getVerb(), getAdjective(), getNoun());
+        return COMMAND_TRIPLET.formatted(getVerb(), getAdjective(), getNoun());
     }
 
     default String getBasicDescription() {

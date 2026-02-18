@@ -47,7 +47,7 @@ public class GameLoop {
 
                 // Continue if the user provided nothing that we understand.
                 if (command.toString().equals("||")) {
-                    System.out.println(new MessageAction("I don't understand, please rephrase.", null).execute());
+                    IO.println(new MessageAction("I don't understand, please rephrase.", null).execute());
                     continue;
                 }
 

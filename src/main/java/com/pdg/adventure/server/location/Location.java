@@ -69,9 +69,9 @@ public class Location extends Thing implements Visitable, HasLight {
         if (availableCommandChains.isEmpty()) {
             result.setResultMessage("You can't do that.");
         } else if (availableCommandChains.size() > 1) {
-            result.setResultMessage(String.format("What do you want to %s?", aCommandDescription.getVerb()));
+            result.setResultMessage("What do you want to %s?".formatted(aCommandDescription.getVerb()));
         } else {
-            result = availableCommandChains.get(0).execute();
+            result = availableCommandChains.getFirst().execute();
         }
 
         return clarifyExecutionOutcome(result);

@@ -29,9 +29,9 @@ public abstract class BaseEditorView<T> extends VerticalLayout implements HasDyn
     }
 
     protected void configureNavigationButtons() {
-        navigationButtons.getBack().addClickListener(e -> navigateBack());
-        navigationButtons.getSave().addClickListener(e -> save());
-        navigationButtons.getReset().addClickListener(e -> binder.readBean(binder.getBean()));
+        navigationButtons.getBack().addClickListener(_ -> navigateBack());
+        navigationButtons.getSave().addClickListener(_ -> save());
+        navigationButtons.getReset().addClickListener(_ -> binder.readBean(binder.getBean()));
         navigationButtons.getCancel().addClickShortcut(Key.ESCAPE);
         binder.addStatusChangeListener(e -> {
             navigationButtons.getSave().setEnabled(e.getBinder().hasChanges() && e.getBinder().isValid());

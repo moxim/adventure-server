@@ -25,8 +25,8 @@ public class CreateAction extends AbstractAction {
         if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
             // TODO
             //  really do this?
-            result.setResultMessage(String.format(messagesHolder.getMessage("-12"), thing.getShortDescription(),
-                                                  container.getShortDescription()));
+            result.setResultMessage(messagesHolder.getMessage("-12").formatted(thing.getShortDescription(),
+                    container.getShortDescription()));
         }
         return result;
     }

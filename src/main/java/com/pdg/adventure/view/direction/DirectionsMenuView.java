@@ -39,7 +39,7 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
         adventureService = anAdventureService;
         setSizeFull();
 
-        Button backButton = new Button("Back", event -> UI.getCurrent().navigate(LocationEditorView.class,
+        Button backButton = new Button("Back", _ -> UI.getCurrent().navigate(LocationEditorView.class,
                                                                                  new RouteParameters(
                                                                                          new RouteParam(
                                                                                                  RouteIds.ADVENTURE_ID.getValue(),
@@ -50,7 +50,7 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
                                                           .ifPresent(e -> e.setData(adventureData)));
         backButton.addClickShortcut(Key.ESCAPE);
 
-        Button create = new Button("Create Exit", e -> UI.getCurrent().navigate(DirectionEditorView.class,
+        Button create = new Button("Create Exit", _ -> UI.getCurrent().navigate(DirectionEditorView.class,
                                                                                 new RouteParameters(
                                                                                         new RouteParam(
                                                                                                 RouteIds.ADVENTURE_ID.getValue(),

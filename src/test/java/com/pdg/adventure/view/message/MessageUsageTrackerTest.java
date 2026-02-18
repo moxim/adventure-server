@@ -59,7 +59,7 @@ class MessageUsageTrackerTest {
 
         // Then
         assertThat(usages).hasSize(1);
-        MessageUsageTracker.MessageUsage usage = usages.get(0);
+        MessageUsageTracker.MessageUsage usage = usages.getFirst();
         assertThat(usage.locationId()).isEqualTo("loc1");
         assertThat(usage.locationDescription()).isEqualTo("Hall");
         assertThat(usage.commandSpecification()).isEqualTo("get key");
@@ -125,9 +125,9 @@ class MessageUsageTrackerTest {
 
         // Then
         assertThat(usages).hasSize(1);
-        assertThat(usages.get(0).locationDescription()).isNullOrEmpty();
-        assertThat(usages.get(0).locationId()).isEqualTo("loc1");
-        assertThat(usages.get(0).commandSpecification()).isEqualTo("look around");
+        assertThat(usages.getFirst().locationDescription()).isNullOrEmpty();
+        assertThat(usages.getFirst().locationId()).isEqualTo("loc1");
+        assertThat(usages.getFirst().commandSpecification()).isEqualTo("look around");
     }
 
     @Test

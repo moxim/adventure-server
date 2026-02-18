@@ -27,7 +27,7 @@ public class AdventuresMainLayout extends AdventureAppLayout {
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setText("You have uncommitted changes! Are you sure you want to leave?");
             confirmDialog.setCancelable(true);
-            confirmDialog.addConfirmListener(__ -> action.proceed());
+            confirmDialog.addConfirmListener(_ -> action.proceed());
             confirmDialog.open();
         }
     }

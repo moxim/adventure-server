@@ -80,7 +80,7 @@ public class GenericContainer extends Item implements Container {
             for (int i = 0; i < contents.size() - 1; i++) {
                 sb.append(getDescription(contents.get(i))).append(", ").append(System.getProperty("line.separator"));
             }
-            sb.append(getDescription(contents.get(contents.size() - 1))).append(".");
+            sb.append(getDescription(contents.getLast())).append(".");
         } else {
             sb.append("nothing.");
         }
@@ -107,11 +107,11 @@ public class GenericContainer extends Item implements Container {
         String containerDescription = getEnrichedBasicDescription();
 
         if (contents.contains(anItem)) {
-            result.setResultMessage(String.format(ALREADY_PRESENT_TEXT, itemDescription, containerDescription));
+            result.setResultMessage(ALREADY_PRESENT_TEXT.formatted(itemDescription, containerDescription));
         } else if (!anItem.isContainable()) {
-            result.setResultMessage(String.format(CANNOT_PUT_TEXT, itemDescription, containerDescription));
+            result.setResultMessage(CANNOT_PUT_TEXT.formatted(itemDescription, containerDescription));
         } else if (contents.size() == maxSize) {
-            result.setResultMessage(String.format(ALREADY_FULL_TEXT, containerDescription));
+            result.setResultMessage(ALREADY_FULL_TEXT.formatted(containerDescription));
         } else {
             anItem.setParentContainer(this);
             contents.add(anItem);
@@ -124,8 +124,8 @@ public class GenericContainer extends Item implements Container {
     public ExecutionResult remove(Containable anItem) {
         ExecutionResult result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
         if (!contents.remove(anItem)) {
-            result.setResultMessage(String.format("There is no %s in %s.", anItem.getShortDescription(),
-                                                  getEnrichedBasicDescription()));
+            result.setResultMessage("There is no %s in %s.".formatted(anItem.getShortDescription(),
+                    getEnrichedBasicDescription()));
             result.setExecutionState(ExecutionResult.State.FAILURE);
         }
         return result;

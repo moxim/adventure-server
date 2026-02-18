@@ -31,12 +31,12 @@ public class MoveItemAction extends AbstractAction {
             if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
                 result = destination.add(target);
                 result.setResultMessage(
-                        String.format(messagesHolder.getMessage("-9"), target.getEnrichedShortDescription(),
-                                      destination.getEnrichedBasicDescription()));
+                        messagesHolder.getMessage("-9").formatted(target.getEnrichedShortDescription(),
+                                destination.getEnrichedBasicDescription()));
             }
         } else {
             result.setExecutionState(ExecutionResult.State.FAILURE);
-            result.setResultMessage(String.format(messagesHolder.getMessage("-8"), destination.getShortDescription()));
+            result.setResultMessage(messagesHolder.getMessage("-8").formatted(destination.getShortDescription()));
         }
         return result;
     }

@@ -109,19 +109,19 @@ public class LocationEditorView extends VerticalLayout
         VerticalLayout hl = new VerticalLayout(h1, h2);
 
         Button manageCommands = new Button("Manage Commands");
-        manageCommands.addClickListener(event -> UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
+        manageCommands.addClickListener(_ -> UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
                                                            new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
                                                            new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
                                                    .ifPresent(e -> e.setData(adventureData, locationData)));
 
         Button manageItems = new Button("Manage Items");
-        manageItems.addClickListener(event -> UI.getCurrent().navigate(ItemsMenuView.class, new RouteParameters(
+        manageItems.addClickListener(_ -> UI.getCurrent().navigate(ItemsMenuView.class, new RouteParameters(
                                                         new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
                                                         new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
                                                 .ifPresent(e -> e.setData(adventureData, locationData)));
 
         Button manageExits = new Button("Manage Exits");
-        manageExits.addClickListener(event -> UI.getCurrent().navigate(DirectionsMenuView.class, new RouteParameters(
+        manageExits.addClickListener(_ -> UI.getCurrent().navigate(DirectionsMenuView.class, new RouteParameters(
                                                         new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
                                                         new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
                                                 .ifPresent(e -> e.setData(adventureData, locationData)));
@@ -192,9 +192,9 @@ public class LocationEditorView extends VerticalLayout
         resetButton = resetBackSaveView.getReset();
         resetButton.setEnabled(false);
 
-        backButton.addClickListener(event -> navigateBack());
-        saveButton.addClickListener(event -> validateSave(lvm));
-        resetButton.addClickListener(event -> binder.readBean(lvm));
+        backButton.addClickListener(_ -> navigateBack());
+        saveButton.addClickListener(_ -> validateSave(lvm));
+        resetButton.addClickListener(_ -> binder.readBean(lvm));
         resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
 
         return resetBackSaveView;

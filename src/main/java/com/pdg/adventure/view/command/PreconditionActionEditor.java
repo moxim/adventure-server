@@ -22,8 +22,8 @@ public class PreconditionActionEditor extends VerticalLayout {
         actionGrid = GridFactory.createGrid(ActionData.class, List.of(
                 new GridFactory.ColumnConfig<>(a -> a.getId(), "ID", false)
         ));
-        Button addPrecondition = new Button("Add Precondition", e -> addPrecondition());
-        Button addAction = new Button("Add Action", e -> addAction());
+        Button addPrecondition = new Button("Add Precondition", _ -> addPrecondition());
+        Button addAction = new Button("Add Action", _ -> addAction());
         Details details = new Details("Preconditions & Actions", new VerticalLayout(
                 addPrecondition, preconditionGrid, addAction, actionGrid));
         add(details);

@@ -42,7 +42,7 @@ class CommandDescriptionDataTest {
         List<CommandDescriptionData> commands = mongoTemplate.findAll(CommandDescriptionData.class);
         assertThat(commands).hasSize(1);
 
-        final CommandDescriptionData savedCommandDescription = commands.get(0);
+        final CommandDescriptionData savedCommandDescription = commands.getFirst();
         assertThat(savedCommandDescription.getId()).isEqualTo(save.getId());
         assertThat(savedCommandDescription.getVerb().getText()).isEqualTo("go");
         assertThat(savedCommandDescription.getNoun().getText()).isEqualTo("room");
