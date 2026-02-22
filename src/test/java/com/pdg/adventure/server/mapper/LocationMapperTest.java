@@ -236,7 +236,7 @@ class LocationMapperTest {
 
         // Then: all locations should be mapped
         assertThat(results).hasSize(3);
-        assertThat(results.get(0).getId()).isEqualTo("tavern");
+        assertThat(results.getFirst().getId()).isEqualTo("tavern");
         assertThat(results.get(1).getId()).isEqualTo("market");
         assertThat(results.get(2).getId()).isEqualTo("castle");
 
@@ -346,8 +346,8 @@ class LocationMapperTest {
 
         // Then: all locations should be mapped
         assertThat(results).hasSize(3);
-        assertThat(results.get(0).getId()).isEqualTo("harbor");
-        assertThat(results.get(0).getLumen()).isEqualTo(85);
+        assertThat(results.getFirst().getId()).isEqualTo("harbor");
+        assertThat(results.getFirst().getLumen()).isEqualTo(85);
         assertThat(results.get(1).getId()).isEqualTo("warehouse");
         assertThat(results.get(1).getLumen()).isEqualTo(40);
         assertThat(results.get(2).getId()).isEqualTo("shipyard");

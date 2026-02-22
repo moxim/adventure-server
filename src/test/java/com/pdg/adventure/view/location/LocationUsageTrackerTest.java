@@ -70,7 +70,7 @@ class LocationUsageTrackerTest {
 
         // Then
         assertThat(usages).hasSize(1);
-        LocationUsageTracker.LocationUsage usage = usages.get(0);
+        LocationUsageTracker.LocationUsage usage = usages.getFirst();
         assertThat(usage.getUsageType()).isEqualTo("Starting Location");
         assertThat(usage.getContext()).contains("starting location");
     }
@@ -88,7 +88,7 @@ class LocationUsageTrackerTest {
 
         // Then
         assertThat(usages).hasSize(1);
-        LocationUsageTracker.LocationUsage usage = usages.get(0);
+        LocationUsageTracker.LocationUsage usage = usages.getFirst();
         assertThat(usage.getUsageType()).isEqualTo("Direction");
         assertThat(usage.getSourceLocationId()).isEqualTo("hall");
         assertThat(usage.getSourceLocationDescription()).isEqualTo("Great Hall");
@@ -129,7 +129,7 @@ class LocationUsageTrackerTest {
 
         // Then
         assertThat(usages).hasSize(1);
-        LocationUsageTracker.LocationUsage usage = usages.get(0);
+        LocationUsageTracker.LocationUsage usage = usages.getFirst();
         assertThat(usage.getUsageType()).isEqualTo("Move Action");
         assertThat(usage.getSourceLocationId()).isEqualTo("hall");
         assertThat(usage.getSourceLocationDescription()).isEqualTo("Hall");
@@ -151,7 +151,7 @@ class LocationUsageTrackerTest {
 
         // Then
         assertThat(usages).hasSize(1);
-        LocationUsageTracker.LocationUsage usage = usages.get(0);
+        LocationUsageTracker.LocationUsage usage = usages.getFirst();
         assertThat(usage.getUsageType()).isEqualTo("Move Action");
         assertThat(usage.getContext()).isEqualTo("Follow-up Action #1");
     }
@@ -206,8 +206,8 @@ class LocationUsageTrackerTest {
 
         // Then
         assertThat(usages).hasSize(1);
-        assertThat(usages.get(0).getSourceLocationDescription()).isNullOrEmpty();
-        assertThat(usages.get(0).getSourceLocationId()).isEqualTo("loc1");
+        assertThat(usages.getFirst().getSourceLocationDescription()).isNullOrEmpty();
+        assertThat(usages.getFirst().getSourceLocationId()).isEqualTo("loc1");
     }
 
     @Test

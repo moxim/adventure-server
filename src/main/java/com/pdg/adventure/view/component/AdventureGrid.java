@@ -24,7 +24,7 @@ public class AdventureGrid<T> extends Grid<T> {
 
     public AdventureGrid<T> withDoubleClickNavigation(Class<? extends Component> targetView, String anAdventureId,
                                                       String aLocationId) {
-        addItemDoubleClickListener(e ->
+        addItemDoubleClickListener(_ ->
                                            NavigationHelper.navigateTo(targetView, new RouteParameters(
                                                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), anAdventureId),
                                                    new RouteParam("locationId", aLocationId))));

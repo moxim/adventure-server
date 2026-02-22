@@ -20,7 +20,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +56,6 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
     private final Button backButton;
     private final IntegerField numberOfLocations;
 
-    @Autowired
     public LocationsMenuView(AdventureService anAdventureService) {
 
         setSizeFull();
@@ -74,7 +72,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         numberOfLocations = new IntegerField("Locations:");
         numberOfLocations.setTooltipText("This is the number of locations you have defined.");
 
-        edit = new Button("Edit Location", e -> {
+        edit = new Button("Edit Location", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(LocationEditorView.class,
                                          new RouteParameters(
@@ -86,14 +84,14 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         });
         edit.setEnabled(false);
 
-        create = new Button("Create Location", e -> {
+        create = new Button("Create Location", _ -> {
             UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(
 //                            new RouteParam(LOCATION_ID, "new"),
                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
               .ifPresent(editor -> editor.setData(adventureData));
         });
 
-        backButton = new Button("Back", event -> {
+        backButton = new Button("Back", _ -> {
             UI.getCurrent().navigate(AdventureEditorView.class,
                                      new RouteParameters(
                                              new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
@@ -255,7 +253,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
 
             GridMenuItem<LocationDescriptionAdapter> locationDetailItem = addItem("LocationId", e -> e.getItem()
                                                                                                       .ifPresent(
-                                                                                                              location -> {
+                                                                                                              _ -> {
                                                                                                                   // System.out.printf("Email: %s%n", location.getXYZ());
                                                                                                               }));
 
@@ -292,7 +290,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
                               5000, Notification.Position.MIDDLE);
         } else {
             final var dialog = getConfirmDialog(aLlocation);
-            dialog.addConfirmListener(event -> {
+            dialog.addConfirmListener(_ -> {
                 adventureData.getLocationData().remove(locationId);
                 if (locationId.equals(adventureData.getCurrentLocationId())) {
                     adventureData.setCurrentLocationId("");

@@ -67,7 +67,7 @@ public class GridProvider<T extends Describable> {
 
     public void setFilter(SerializablePredicate<T> aFilter, List<T> aListOfThings, TextField aSearchField) {
         final GridListDataView<T> dataView = grid.setItems(aListOfThings);
-        aSearchField.addValueChangeListener(e -> dataView.refreshAll());
+        aSearchField.addValueChangeListener(_ -> dataView.refreshAll());
         dataView.addFilter(aFilter);
     }
 }

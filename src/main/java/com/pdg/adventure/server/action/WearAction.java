@@ -25,8 +25,8 @@ public class WearAction extends AbstractAction {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
             thing.setIsWorn(true);
         } else {
-            result.setResultMessage(String.format(messagesHolder.getMessage("-6"),
-                                                  thing.getEnrichedBasicDescription()));
+            result.setResultMessage(messagesHolder.getMessage("-6").formatted(
+                    thing.getEnrichedBasicDescription()));
         }
         return result;
     }

@@ -61,7 +61,7 @@ public class ItemMapper implements Mapper<ItemData, Item> {
             final GenericCommandProvider commandProvider = commandProviderMapper.mapToBO(commandProviderData);
             item.setCommandProvider(commandProvider);
             item.setParentContainer(mapperSupporter.getMappedContainer(itemData.getParentContainerId()));
-        };
+        }
         return itemList;
     }
 

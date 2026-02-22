@@ -19,7 +19,6 @@ public class DropActionMapper extends ActionMapper<DropActionData, DropAction> {
     private final AdventureConfig adventureConfig;
     private final GameContext gameContext;
 
-    @Autowired
     public DropActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig,
                             GameContext aGameContext) {
         super(aMapperSupporter);

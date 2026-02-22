@@ -47,7 +47,7 @@ public class Vocabulary extends BasicData implements Ided {
 
     public Word findSynonym(String aWord) {
         Word word = data.findWord(aWord)
-                        .orElseThrow(() -> new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, aWord)));
+                        .orElseThrow(() -> new IllegalArgumentException(UNKNOWN_WORD_TEXT.formatted(aWord)));
         return word.getSynonym();
     }
 
@@ -61,7 +61,7 @@ public class Vocabulary extends BasicData implements Ided {
 
     public Word.Type getType(String aWord) {
         Word word = data.findWord(aWord)
-                        .orElseThrow(() -> new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, aWord)));
+                        .orElseThrow(() -> new IllegalArgumentException(UNKNOWN_WORD_TEXT.formatted(aWord)));
         return word.getType();
     }
 

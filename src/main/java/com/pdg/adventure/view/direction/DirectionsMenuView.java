@@ -13,7 +13,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 import java.util.Set;
@@ -34,12 +33,11 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
     private transient LocationData locationData;
     private String pageTitle;
 
-    @Autowired
     public DirectionsMenuView(AdventureService anAdventureService) {
         adventureService = anAdventureService;
         setSizeFull();
 
-        Button backButton = new Button("Back", event -> UI.getCurrent().navigate(LocationEditorView.class,
+        Button backButton = new Button("Back", _ -> UI.getCurrent().navigate(LocationEditorView.class,
                                                                                  new RouteParameters(
                                                                                          new RouteParam(
                                                                                                  RouteIds.ADVENTURE_ID.getValue(),
@@ -50,7 +48,7 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
                                                           .ifPresent(e -> e.setData(adventureData)));
         backButton.addClickShortcut(Key.ESCAPE);
 
-        Button create = new Button("Create Exit", e -> UI.getCurrent().navigate(DirectionEditorView.class,
+        Button create = new Button("Create Exit", _ -> UI.getCurrent().navigate(DirectionEditorView.class,
                                                                                 new RouteParameters(
                                                                                         new RouteParam(
                                                                                                 RouteIds.ADVENTURE_ID.getValue(),

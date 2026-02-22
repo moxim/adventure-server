@@ -14,7 +14,6 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 
@@ -42,14 +41,13 @@ public class AdventureEditorView extends VerticalLayout
     AdventureData adventureData;
     private String pageTitle;
 
-    @Autowired
     public AdventureEditorView(AdventureService anAdventureService) {
 
         adventureService = anAdventureService;
         binder = new Binder<>(AdventureData.class);
 
         Button editLocationsButton = new Button("Manage Locations");
-        editLocationsButton.addClickListener(event -> {
+        editLocationsButton.addClickListener(_ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(LocationsMenuView.class
 //                          , new RouteParameters(
@@ -59,7 +57,7 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button editVocabularyButton = new Button("Manage Vocabulary", e -> {
+        Button editVocabularyButton = new Button("Manage Vocabulary", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(VocabularyMenuView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
@@ -68,7 +66,7 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button editMessagesButton = new Button("Manage Messages", e -> {
+        Button editMessagesButton = new Button("Manage Messages", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(com.pdg.adventure.view.message.MessagesMenuView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
@@ -77,7 +75,7 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button editItemsButton = new Button("Manage Items", e -> {
+        Button editItemsButton = new Button("Manage Items", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(AllItemsMenuView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
@@ -90,7 +88,7 @@ public class AdventureEditorView extends VerticalLayout
         workflowButton.setEnabled(false);
 
         saveButton.setEnabled(false);
-        saveButton.addClickListener(e -> {
+        saveButton.addClickListener(_ -> {
             validateSave(adventureData);
         });
 
@@ -108,7 +106,7 @@ public class AdventureEditorView extends VerticalLayout
         final HorizontalLayout editRow = new HorizontalLayout(editVocabularyButton, editMessagesButton, editItemsButton,
                                                               editLocationsButton, workflowButton);
 
-        Button backButton = new Button("Back", event -> UI.getCurrent().navigate(AdventuresMenuView.class));
+        Button backButton = new Button("Back", _ -> UI.getCurrent().navigate(AdventuresMenuView.class));
         backButton.addClickShortcut(Key.ESCAPE);
         final HorizontalLayout testSaveRow = new HorizontalLayout(backButton, testButton, saveButton);
 
@@ -141,7 +139,7 @@ public class AdventureEditorView extends VerticalLayout
     private TextField getAdventureIdTF() {
         TextField field = new TextField("Adventure ID");
         field.setReadOnly(true);
-        field.addValueChangeListener(event -> checkIfSaveAvailable());
+        field.addValueChangeListener(_ -> checkIfSaveAvailable());
         binder.bind(field, AdventureData::getId, AdventureData::setId);
         return field;
     }
@@ -152,7 +150,7 @@ public class AdventureEditorView extends VerticalLayout
         field.setErrorMessage("The title is required");
         binder.forField(field).asRequired("You must provide a title.");
         binder.forField(field).bind(AdventureData::getTitle, AdventureData::setTitle);
-        field.addValueChangeListener(event -> checkIfSaveAvailable());
+        field.addValueChangeListener(_ -> checkIfSaveAvailable());
         return field;
     }
 
@@ -168,7 +166,7 @@ public class AdventureEditorView extends VerticalLayout
         field.setMinHeight("200px");
         field.setMaxHeight("350px");
         field.setTooltipText("Use this to jot down notes about your adventure while developing it.");
-        field.addValueChangeListener(event -> checkIfSaveAvailable());
+        field.addValueChangeListener(_ -> checkIfSaveAvailable());
         binder.bind(field, AdventureData::getNotes, AdventureData::setNotes);
         return field;
     }
@@ -207,7 +205,7 @@ public class AdventureEditorView extends VerticalLayout
     public void loadAdventure(String aAdventureId) {
         Optional<AdventureData> loadedAdventure = adventureService.findAdventureById(aAdventureId);
         if (loadedAdventure.isEmpty()) {
-            Notification.show(String.format("Could not find adventure with ID: {}", aAdventureId), 5000, Notification.Position.MIDDLE);
+            Notification.show("Could not find adventure with ID: {}".formatted(aAdventureId), 5000, Notification.Position.MIDDLE);
             return;
         }
         adventureData = loadedAdventure.get();

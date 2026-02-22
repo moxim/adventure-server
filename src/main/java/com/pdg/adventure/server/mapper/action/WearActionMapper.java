@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.mapper.action;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +14,6 @@ import com.pdg.adventure.server.support.MapperSupporter;
 public class WearActionMapper extends ActionMapper<WearActionData, WearAction> {
     private final AdventureConfig adventureConfig;
 
-    @Autowired
     public WearActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig) {
         super(aMapperSupporter);
         this.adventureConfig = anAdventureConfig;

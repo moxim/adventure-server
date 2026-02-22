@@ -25,10 +25,10 @@ public class MessageUsageTracker {
                                    String actionType, String context) implements TrackedUsage {
 
         public String getDisplayText() {
-                return String.format("Location: %s | Command: %s | %s",
-                                     locationDescription != null ? locationDescription : locationId,
-                                     commandSpecification,
-                                     context);
+                return "Location: %s | Command: %s | %s".formatted(
+                        locationDescription != null ? locationDescription : locationId,
+                        commandSpecification,
+                        context);
             }
         }
 

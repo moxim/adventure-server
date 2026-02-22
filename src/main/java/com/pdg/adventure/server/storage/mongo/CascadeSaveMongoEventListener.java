@@ -66,9 +66,9 @@ public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Ob
 
                 if (fieldValue == null) return;
 
-                if (fieldValue instanceof Ided) {
+                if (fieldValue instanceof Ided ided) {
                     uuidIdGenerationMongoEventListener.onBeforeConvert(
-                            new BeforeConvertEvent<>((Ided) fieldValue, null)
+                            new BeforeConvertEvent<>(ided, null)
                     );
                 }
 
@@ -134,9 +134,9 @@ public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Ob
         processedObjects.get().add(value);
 
         // Manually trigger UUID assignment
-        if (value instanceof Ided) {
+        if (value instanceof Ided ided) {
             uuidIdGenerationMongoEventListener.onBeforeConvert(
-                    new BeforeConvertEvent<>((Ided) value, null)
+                    new BeforeConvertEvent<>(ided, null)
             );
         }
 
@@ -144,9 +144,9 @@ public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Ob
             // Handle List/Set: Save each element
             for (Object item : iterable) {
                 if (item != null) {
-                    if (item instanceof Ided) {
+                    if (item instanceof Ided ided) {
                         uuidIdGenerationMongoEventListener.onBeforeConvert(
-                                new BeforeConvertEvent<>((Ided) item, null)
+                                new BeforeConvertEvent<>(ided, null)
                         );
                     }
                     mongoTemplate.save(item);
@@ -157,9 +157,9 @@ public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Ob
             // Handle Map: Save each value
             for (Object mapValue : map.values()) {
                 if (mapValue != null) {
-                    if (mapValue instanceof Ided) {
+                    if (mapValue instanceof Ided ided) {
                         uuidIdGenerationMongoEventListener.onBeforeConvert(
-                                new BeforeConvertEvent<>((Ided) mapValue, null)
+                                new BeforeConvertEvent<>(ided, null)
                         );
                     }
                     mongoTemplate.save(mapValue);
@@ -172,8 +172,8 @@ public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Ob
             recurseAndCascade(value);  // Recurse after save
         }
 
-        if (value instanceof Ided) {
-            LOG.debug("Value: ", value.getClass().getSimpleName() + " with id: " + ((Ided) value).getId());
+        if (value instanceof Ided ided) {
+            LOG.debug("Value: ", value.getClass().getSimpleName() + " with id: " + ided.getId());
         }
     }
 

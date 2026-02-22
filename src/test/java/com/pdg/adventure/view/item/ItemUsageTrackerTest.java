@@ -66,7 +66,7 @@ class ItemUsageTrackerTest {
 
         // Then
         assertThat(usages).hasSize(1);
-        ItemUsageTracker.ItemUsage usage = usages.get(0);
+        ItemUsageTracker.ItemUsage usage = usages.getFirst();
         assertThat(usage.getSourceLocationId()).isEqualTo("loc1");
         assertThat(usage.getSourceLocationDescription()).isEqualTo("Hall");
         assertThat(usage.getUsageType()).isEqualTo("Location Item");
@@ -116,8 +116,8 @@ class ItemUsageTrackerTest {
 
         // Then
         assertThat(usages).hasSize(1);
-        assertThat(usages.get(0).getSourceLocationDescription()).isNullOrEmpty();
-        assertThat(usages.get(0).getSourceLocationId()).isEqualTo("loc1");
+        assertThat(usages.getFirst().getSourceLocationDescription()).isNullOrEmpty();
+        assertThat(usages.getFirst().getSourceLocationId()).isEqualTo("loc1");
     }
 
     @Test
@@ -132,7 +132,7 @@ class ItemUsageTrackerTest {
 
         // Then
         assertThat(usages).hasSize(1);
-        assertThat(usages.get(0).getSourceLocationId()).isEqualTo("loc1");
+        assertThat(usages.getFirst().getSourceLocationId()).isEqualTo("loc1");
     }
 
     @Test

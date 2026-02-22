@@ -155,7 +155,7 @@ class CommandExecutorTest {
         // then
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
         assertThat(result.getResultMessage()).isEqualTo(
-                String.format("What do you want to %s?", smallTreeCommand.getVerb()));
+                "What do you want to %s?".formatted(smallTreeCommand.getVerb()));
     }
 
     @Test

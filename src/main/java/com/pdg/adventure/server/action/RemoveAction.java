@@ -21,7 +21,7 @@ public class RemoveAction extends AbstractAction {
             thing.setIsWorn(false);
         } else {
             result.setResultMessage(
-                    String.format(messagesHolder.getMessage("-7"), thing.getEnrichedBasicDescription()));
+                    messagesHolder.getMessage("-7").formatted(thing.getEnrichedBasicDescription()));
         }
         return result;
     }

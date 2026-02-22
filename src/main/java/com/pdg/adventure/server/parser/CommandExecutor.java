@@ -69,7 +69,7 @@ public class CommandExecutor {
             result.setResultMessage("I don't know how to do that.");
             return false;
         } else if (availableCommandChains.size() > 1) {
-            result.setResultMessage(String.format("What do you want to %s?", aVerb));
+            result.setResultMessage("What do you want to %s?".formatted(aVerb));
             return false;
         }
         return true;

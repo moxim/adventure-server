@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.mapper.action;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +16,6 @@ import com.pdg.adventure.server.tangible.Item;
 public class MoveItemActionMapper extends ActionMapper<MoveItemActionData, MoveItemAction> {
     private final AdventureConfig adventureConfig;
 
-    @Autowired
     public MoveItemActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig) {
         super(aMapperSupporter);
         this.adventureConfig = anAdventureConfig;

@@ -39,14 +39,14 @@ public class AutoMapperRegistrationProcessor implements BeanPostProcessor {
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         AutoRegisterMapper annotation = AnnotationUtils.findAnnotation(bean.getClass(), AutoRegisterMapper.class);
 
-        if (annotation != null && bean instanceof Mapper) {
+        if (annotation != null && bean instanceof Mapper<?, ?> mapper) {
             Class<?>[] genericTypes = resolveMapperGenericTypes(bean.getClass());
 
             if (genericTypes != null && genericTypes.length == 2) {
                 pendingRegistrations.add(new PendingAutoRegistration(
                         genericTypes[0], // DO (Data Object)
                         genericTypes[1], // BO (Business Object)
-                        (Mapper<?, ?>) bean,
+                        mapper,
                         annotation.priority(),
                         beanName,
                         annotation.description()

@@ -14,7 +14,6 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Optional;
@@ -62,7 +61,6 @@ public class ItemEditorView extends VerticalLayout
     private transient AdventureData adventureData;
     private transient LocationData locationData;
 
-    @Autowired
     public ItemEditorView(AdventureService anAdventureService, ItemService anItemService) {
 
         setSizeFull();
@@ -201,9 +199,9 @@ public class ItemEditorView extends VerticalLayout
         resetButton = resetBackSaveView.getReset();
         resetButton.setEnabled(false);
 
-        backButton.addClickListener(event -> navigateBack());
-        saveButton.addClickListener(event -> validateSave(ivm));
-        resetButton.addClickListener(event -> binder.readBean(ivm));
+        backButton.addClickListener(_ -> navigateBack());
+        saveButton.addClickListener(_ -> validateSave(ivm));
+        resetButton.addClickListener(_ -> binder.readBean(ivm));
         resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
 
         return resetBackSaveView;
@@ -291,7 +289,7 @@ public class ItemEditorView extends VerticalLayout
         final CommandData takeCommandFailed_allreadyCarried = createTakeCommandData(aTakeVerb, anItemData);
         takeCommandFailed_allreadyCarried.getPreConditions().add(carriedCondition);
         MessageActionData messageData_alreadyCarried = new MessageActionData();
-        messageData_alreadyCarried.setMessageId(String.format("You already carry the %s.", itemDescription));
+        messageData_alreadyCarried.setMessageId("You already carry the %s.".formatted(itemDescription));
         takeCommandFailed_allreadyCarried.setAction(messageData_alreadyCarried);
         anItemData.getCommandProviderData().add(takeCommandFailed_allreadyCarried);
 
@@ -302,7 +300,7 @@ public class ItemEditorView extends VerticalLayout
         final CommandData dropCommandFailed_notCarried = createDropCommandData(aDropVerb, anItemData);
         dropCommandFailed_notCarried.getPreConditions().add(notCarriedCondition);
         MessageActionData messageData_notCarried = new MessageActionData();
-        messageData_notCarried.setMessageId(String.format("You are not carrying the %s.", itemDescription));
+        messageData_notCarried.setMessageId("You are not carrying the %s.".formatted(itemDescription));
         dropCommandFailed_notCarried.setAction(messageData_notCarried);
         anItemData.getCommandProviderData().add(dropCommandFailed_notCarried);
 

@@ -94,7 +94,7 @@ public class VocabularyData extends DatedData {
                 newWord.setType(aType);
             } else if (newWord.getType() != aType) {
                 // if the word is already present, it must have the same type, or it won't match its synonym
-                throw new IllegalArgumentException(String.format(PRESENT_WORD_HAS_DIFFERENT_TYPE_TEXT, aWordText));
+                throw new IllegalArgumentException(PRESENT_WORD_HAS_DIFFERENT_TYPE_TEXT.formatted(aWordText));
             }
         }
         return newWord;
@@ -102,7 +102,7 @@ public class VocabularyData extends DatedData {
 
     public Optional<Word> removeWord(String aWordText) {
         Optional<Word> result = findWord(aWordText);
-        result.ifPresent(word -> words.remove(aWordText));
+        result.ifPresent(_ -> words.remove(aWordText));
         return result;
     }
 
@@ -113,7 +113,7 @@ public class VocabularyData extends DatedData {
     public Word createSynonym(String aNewSynonym, String anExistingWord) {
         String lowerExistingWord = anExistingWord.toLowerCase();
         Word word = findWord(lowerExistingWord).orElseThrow(
-                () -> new IllegalArgumentException(String.format(UNKNOWN_WORD_TEXT, anExistingWord)));
+                () -> new IllegalArgumentException(UNKNOWN_WORD_TEXT.formatted(anExistingWord)));
         return createSynonym(aNewSynonym, word);
     }
 

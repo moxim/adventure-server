@@ -20,7 +20,7 @@ public class GameContext {
     }
 
     public void tell(String aMessage) {
-        System.out.println(aMessage);
+        IO.println(aMessage);
     }
 
     public void setCurrentLocation(Location aDestination) {

@@ -20,7 +20,7 @@ public class WornCondition extends AbstractCondition {
         if (thing.isWorn()) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         } else {
-            result.setResultMessage(String.format("You are not wearing %s.", thing.getEnrichedBasicDescription()));
+            result.setResultMessage("You are not wearing %s.".formatted(thing.getEnrichedBasicDescription()));
         }
         return result;
     }

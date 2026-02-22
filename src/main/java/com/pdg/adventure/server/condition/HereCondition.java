@@ -25,7 +25,7 @@ public class HereCondition extends AbstractCondition {
         if (gameContext.getCurrentLocation().contains(thing)) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         } else {
-            result.setResultMessage(String.format("There is no %s here.", thing.getNoun()));
+            result.setResultMessage("There is no %s here.".formatted(thing.getNoun()));
         }
         return result;
     }

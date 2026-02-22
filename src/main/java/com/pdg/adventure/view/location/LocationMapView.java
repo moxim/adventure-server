@@ -28,7 +28,7 @@ public class LocationMapView extends FormLayout {
             for (int y = 0; y < 2628; y += 100) {
                 int finalX = x;
                 int finalY = y;
-                imageMap.addArea(x, y, 100, 100).addClickListener(event ->
+                imageMap.addArea(x, y, 100, 100).addClickListener(_ ->
                                                                           Notification.show(
                                                                                   "Location " + (finalX / 100) + " : " +
                                                                                   (finalY / 100)));

@@ -119,7 +119,7 @@ public class LocationMapper implements Mapper<LocationData, Location> {
 
         for (Location location : aBusinessObjectList) {
             LocationData locationData;
-            for (DirectionData directionData : directionMapper.mapToDOs(location.getDirections())) {
+            for (DirectionData _ : directionMapper.mapToDOs(location.getDirections())) {
                 // TODO: find locationData, maybe by using a local Map<>
                 // locationData.add(directionData);
             }

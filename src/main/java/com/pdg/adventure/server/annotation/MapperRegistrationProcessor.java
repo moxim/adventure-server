@@ -36,11 +36,11 @@ public class MapperRegistrationProcessor implements BeanPostProcessor {
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         RegisterMapper annotation = AnnotationUtils.findAnnotation(bean.getClass(), RegisterMapper.class);
 
-        if (annotation != null && bean instanceof Mapper) {
+        if (annotation != null && bean instanceof Mapper<?, ?> mapper) {
             pendingRegistrations.add(new PendingRegistration(
                     annotation.dataObjectClass(),
                     annotation.businessObjectClass(),
-                    (Mapper<?, ?>) bean,
+                    mapper,
                     annotation.priority(),
                     beanName
             ));

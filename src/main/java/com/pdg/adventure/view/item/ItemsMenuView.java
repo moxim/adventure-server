@@ -8,7 +8,6 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 
@@ -34,14 +33,13 @@ public class ItemsMenuView extends VerticalLayout implements BeforeEnterObserver
     private transient ItemViewSupporter itemViewSupporter;
     private transient String selectedItemId;
 
-    @Autowired
     public ItemsMenuView(AdventureService anAdventureService, ItemService anItemService) {
 
         setSizeFull();
 
         adventureService = anAdventureService;
 
-        edit = new Button("Edit Item", e -> {
+        edit = new Button("Edit Item", _ -> {
             UI.getCurrent().navigate(ItemEditorView.class,
                                      new RouteParameters(new RouteParam(RouteIds.ITEM_ID.getValue(),
                                                                         itemViewSupporter.getTargetItemId()),
@@ -53,14 +51,14 @@ public class ItemsMenuView extends VerticalLayout implements BeforeEnterObserver
         });
         edit.setEnabled(false);
 
-        create = new Button("Create Item", e -> {
+        create = new Button("Create Item", _ -> {
             UI.getCurrent().navigate(ItemEditorView.class, new RouteParameters(
                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
               .ifPresent(editor -> editor.setData(adventureData, locationData));
         });
 
-        backButton = new Button("Back to Location", event -> {
+        backButton = new Button("Back to Location", _ -> {
             UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(
 //                                  new RouteParam(RouteIds.ITEM_ID.getValue(), selectedItemId),
                                   new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),

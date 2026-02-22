@@ -59,9 +59,9 @@ public class Adventure implements Ided {
     }
 
     public void run() {
-        System.out.println("Current location: " + currentLocationId);
-        System.out.println("Pocket: " + pocket);
-        System.out.println("All locations: " + locationMap);
+        IO.println("Current location: " + currentLocationId);
+        IO.println("Pocket: " + pocket);
+        IO.println("All locations: " + locationMap);
 
 /*
         GameLoop gameLoop = new GameLoop(new Parser(allWords));

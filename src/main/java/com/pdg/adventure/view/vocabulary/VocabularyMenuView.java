@@ -19,7 +19,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +51,6 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     private DescribableWordAdapter currentWordAdapter;
     private transient WordUsageTracker wordUsageTracker;
 
-    @Autowired
     public VocabularyMenuView(AdventureService anAdventureService) {
         adventureService = anAdventureService;
         setSizeFull();
@@ -84,27 +82,27 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     }
 
     private VerticalLayout createLeftSide() {
-        edit = new Button("Edit Word", e -> {
+        edit = new Button("Edit Word", _ -> {
             createWordInfoDialog(WordEditorDialogue.EditType.EDIT, currentWordAdapter);
         });
         edit.setEnabled(false);
-        editSpecialWords = new Button("Edit Special Words", event -> {
+        editSpecialWords = new Button("Edit Special Words", _ -> {
             UI.getCurrent().navigate(SpecialWordsView.class,
                                      new RouteParameters(
                                              new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))
             ).ifPresent(editor -> editor.setAdventureData(adventureData));
         });
-        create = new Button("Create Word", e -> {
+        create = new Button("Create Word", _ -> {
             createWordInfoDialog(WordEditorDialogue.EditType.NEW, null);
         });
-        back = new Button("Back", event -> {
+        back = new Button("Back", _ -> {
             UI.getCurrent().navigate(AdventureEditorView.class,
                                      new RouteParameters(
                                              new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))
             );
         });
         back.addClickShortcut(Key.ESCAPE);
-        save = new Button("Save", event -> {
+        save = new Button("Save", _ -> {
             persistData();
             Notification.show("Vocabulary saved", 2000, Notification.Position.BOTTOM_START);
         });
@@ -135,7 +133,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
             wordList.add(new DescribableWordAdapter(word));
         }
         final GridListDataView<DescribableWordAdapter> dataView = grid.setItems(wordList);
-        aSearchField.addValueChangeListener(e -> dataView.refreshAll());
+        aSearchField.addValueChangeListener(_ -> dataView.refreshAll());
         dataView.addFilter(aFilter);
 
         gridProvider.addItemDoubleClickListener(e -> {
@@ -305,7 +303,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         dialog.setConfirmText("Delete");
         dialog.setConfirmButtonTheme("error primary");
 
-        dialog.addConfirmListener(event -> {
+        dialog.addConfirmListener(_ -> {
             // Remove word from vocabulary
             vocabularyData.getWords().remove(word);
             adventureService.deleteWord(word);

@@ -17,7 +17,6 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +56,6 @@ public class MessageEditorView extends VerticalLayout
     private transient AdventureData adventureData;
     private transient MessageViewModel mvm;
 
-    @Autowired
     public MessageEditorView(AdventureService anAdventureService, MessageService aMessageService) {
         setSizeFull();
 
@@ -123,7 +121,7 @@ public class MessageEditorView extends VerticalLayout
               .bind(MessageViewModel::getMessageText, MessageViewModel::setMessageText);
 
         // Update preview when message text changes
-        messageTextField.addValueChangeListener(e -> updatePreview());
+        messageTextField.addValueChangeListener(_ -> updatePreview());
 
         binder.addStatusChangeListener(event -> {
             boolean isValid = event.getBinder().isValid();
@@ -148,9 +146,9 @@ public class MessageEditorView extends VerticalLayout
         resetButton = resetBackSaveView.getReset();
         resetButton.setEnabled(false);
 
-        backButton.addClickListener(event -> navigateBack());
-        saveButton.addClickListener(event -> validateAndSave());
-        resetButton.addClickListener(event -> {
+        backButton.addClickListener(_ -> navigateBack());
+        saveButton.addClickListener(_ -> validateAndSave());
+        resetButton.addClickListener(_ -> {
             binder.readBean(mvm);
             updatePreview();
         });

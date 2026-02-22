@@ -2,7 +2,6 @@ package com.pdg.adventure.server.storage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -27,7 +26,6 @@ public class AdventureService {
     private final VocabularyReporitory vocabularyRepository;
     private final CascadeDeleteHelper cascadeDeleteHelper;
 
-    @Autowired
     public AdventureService(LocationRepository aLocationRepository,
                             AdventureRepository anAdventureRepository,
                             WordRepository aWordRepository,

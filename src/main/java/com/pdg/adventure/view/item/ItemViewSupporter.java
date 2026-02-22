@@ -62,7 +62,7 @@ public class ItemViewSupporter {
         } else {
             final var dialog = getConfirmDialog(anItem);
 
-            dialog.addConfirmListener(event -> {
+            dialog.addConfirmListener(_ -> {
                 // Remove item from location's ItemContainer
                 if (aLocationData.getItemContainerData() != null) {
                     aLocationData.getItemContainerData().getItems()
