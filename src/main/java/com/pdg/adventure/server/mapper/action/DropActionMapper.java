@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.mapper.action;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
