@@ -8,7 +8,6 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 
@@ -34,7 +33,6 @@ public class ItemsMenuView extends VerticalLayout implements BeforeEnterObserver
     private transient ItemViewSupporter itemViewSupporter;
     private transient String selectedItemId;
 
-    @Autowired
     public ItemsMenuView(AdventureService anAdventureService, ItemService anItemService) {
 
         setSizeFull();

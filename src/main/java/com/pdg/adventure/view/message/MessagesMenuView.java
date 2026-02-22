@@ -17,7 +17,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +39,6 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
     private String pageTitle;
     private transient ListDataProvider<MessageViewModel> dataProvider;
 
-    @Autowired
     public MessagesMenuView(MessageService aMessageService, AdventureService anAdventureService) {
         messageService = aMessageService;
         adventureService = anAdventureService;

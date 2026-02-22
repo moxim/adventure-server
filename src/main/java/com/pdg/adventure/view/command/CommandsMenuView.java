@@ -19,7 +19,6 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -61,7 +60,6 @@ public class CommandsMenuView extends VerticalLayout
     private Set<CommandDescriptionData> availableCommands;
     private GridListDataView<CommandDescriptionAdapter> gridListDataView;
 
-    @Autowired
     public CommandsMenuView(AdventureService anAdventureService) {
         adventureService = anAdventureService;
         binder = new BeanValidationBinder<>(CommandProviderData.class);

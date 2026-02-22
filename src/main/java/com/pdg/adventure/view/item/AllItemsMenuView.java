@@ -17,7 +17,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +48,6 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
     private transient AdventureData adventureData;
     private ListDataProvider<ItemLocationPair> dataProvider;
 
-    @Autowired
     public AllItemsMenuView(AdventureService anAdventureService, ItemService anItemService) {
         setSizeFull();
 

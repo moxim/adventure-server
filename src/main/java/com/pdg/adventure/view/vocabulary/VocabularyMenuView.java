@@ -19,7 +19,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +51,6 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     private DescribableWordAdapter currentWordAdapter;
     private transient WordUsageTracker wordUsageTracker;
 
-    @Autowired
     public VocabularyMenuView(AdventureService anAdventureService) {
         adventureService = anAdventureService;
         setSizeFull();

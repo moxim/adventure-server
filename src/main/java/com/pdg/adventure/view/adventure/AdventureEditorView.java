@@ -14,7 +14,6 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 
@@ -42,7 +41,6 @@ public class AdventureEditorView extends VerticalLayout
     AdventureData adventureData;
     private String pageTitle;
 
-    @Autowired
     public AdventureEditorView(AdventureService anAdventureService) {
 
         adventureService = anAdventureService;

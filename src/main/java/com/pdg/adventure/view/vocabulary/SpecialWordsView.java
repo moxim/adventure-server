@@ -11,7 +11,6 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -40,7 +39,6 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
     private VocabularyPickerField dropSelector;
     private VocabularyPickerField loadSelector;
 
-    @Autowired
     public SpecialWordsView(AdventureService anAdventureService) {
         adventureService = anAdventureService;
         setSizeFull();

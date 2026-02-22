@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.mapper.action;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +18,6 @@ public class DropActionMapper extends ActionMapper<DropActionData, DropAction> {
     private final AdventureConfig adventureConfig;
     private final GameContext gameContext;
 
-    @Autowired
     public DropActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig,
                             GameContext aGameContext) {
         super(aMapperSupporter);

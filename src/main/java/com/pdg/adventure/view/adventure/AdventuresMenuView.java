@@ -14,7 +14,6 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteParameters;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +34,6 @@ public class AdventuresMenuView extends VerticalLayout {
     private String targetAdventureId;
     private final Button runAdventure;
 
-    @Autowired
     public AdventuresMenuView(AdventureService anAdventureService) {
 
         setSizeFull();

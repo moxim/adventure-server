@@ -20,7 +20,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +56,6 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
     private final Button backButton;
     private final IntegerField numberOfLocations;
 
-    @Autowired
     public LocationsMenuView(AdventureService anAdventureService) {
 
         setSizeFull();

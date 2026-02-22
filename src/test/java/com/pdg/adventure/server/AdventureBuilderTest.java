@@ -2,13 +2,11 @@ package com.pdg.adventure.server;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.*;
 
@@ -21,8 +19,7 @@ import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.testhelper.TestSupporter;
 
-@SpringBootTest//(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ExtendWith(SpringExtension.class)
+@SpringBootTest
 @ContextConfiguration(classes = com.pdg.adventure.server.AdventureConfig.class)
 @ComponentScan(basePackages = {"com.pdg.adventure.server.mapper", "com.pdg.adventure.server.engine"})
 @Import({com.pdg.adventure.server.AdventureConfig.class, com.pdg.adventure.server.mapper.AdventureMapper.class})

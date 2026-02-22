@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.mapper.action;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +14,6 @@ import com.pdg.adventure.server.support.MapperSupporter;
 public class MessageActionMapper extends ActionMapper<MessageActionData, MessageAction> {
     private final AdventureConfig adventureConfig;
 
-    @Autowired
     public MessageActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig) {
         super(aMapperSupporter);
         this.adventureConfig = anAdventureConfig;

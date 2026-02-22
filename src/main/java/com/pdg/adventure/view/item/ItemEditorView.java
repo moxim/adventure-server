@@ -14,7 +14,6 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Optional;
@@ -62,7 +61,6 @@ public class ItemEditorView extends VerticalLayout
     private transient AdventureData adventureData;
     private transient LocationData locationData;
 
-    @Autowired
     public ItemEditorView(AdventureService anAdventureService, ItemService anItemService) {
 
         setSizeFull();
