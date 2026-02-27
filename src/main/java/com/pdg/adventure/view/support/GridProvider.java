@@ -34,7 +34,7 @@ public class GridProvider<T extends Describable> {
     }
 
     public void addColumn(ValueProvider<T, ?> valueProvider, String aName) {
-        grid.addColumn(valueProvider).setHeader(aName);
+        grid.addColumn(valueProvider).setHeader(aName).setAutoWidth(true);
     }
 
     public void addSelectionListener(SelectionListener<Grid<T>, T> aListener) {
@@ -65,9 +65,11 @@ public class GridProvider<T extends Describable> {
         grid.addItemDoubleClickListener(aListener);
     }
 
-    public void setFilter(SerializablePredicate<T> aFilter, List<T> aListOfThings, TextField aSearchField) {
+    public GridListDataView<T> setFilter(SerializablePredicate<T> aFilter, List<T> aListOfThings,
+                                         TextField aSearchField) {
         final GridListDataView<T> dataView = grid.setItems(aListOfThings);
         aSearchField.addValueChangeListener(_ -> dataView.refreshAll());
         dataView.addFilter(aFilter);
+        return dataView;
     }
 }

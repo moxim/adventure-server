@@ -5,6 +5,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -14,6 +15,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -22,13 +24,15 @@ import com.pdg.adventure.model.DirectionData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.server.storage.AdventureService;
 import com.pdg.adventure.view.location.LocationEditorView;
+import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 @Route(value = "adventures/:adventureId/locations/:locationId/directions", layout = DirectionsMainLayout.class)
 public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitle, BeforeEnterObserver {
     private final transient AdventureService adventureService;
-    private final Grid<DirectionData> grid;
+    private final Grid<DirectionDescriptionAdapter> grid;
+    private GridListDataView<DirectionDescriptionAdapter> directionsDataView;
     private transient AdventureData adventureData;
     private transient LocationData locationData;
     private String pageTitle;
@@ -86,19 +90,14 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
         add(jumpRow);
     }
 
-    private Grid<DirectionData> getGrid() {
-        Grid<DirectionData> directionGrid = new Grid<>(DirectionData.class, false);
+    private Grid<DirectionDescriptionAdapter> getGrid() {
+        GridProvider<DirectionDescriptionAdapter> gridProvider = new GridProvider<>(
+                DirectionDescriptionAdapter.class);
+        gridProvider.getGrid().getColumns().get(1).setHeader("Command");
+        gridProvider.addColumn(DirectionDescriptionAdapter::getDestinationDescription, "Destination");
+        gridProvider.addColumn(DirectionDescriptionAdapter::getDestinationId, "DestinationId");
 
-        directionGrid.addColumn(ViewSupporter::formatId).setHeader("Id").setAutoWidth(true).setFlexGrow(0);
-        directionGrid.addColumn(directionData -> ViewSupporter.formatDescription(
-                directionData.getCommandData().getCommandDescription())).setHeader("Command");
-        directionGrid.addColumn(directionData -> ViewSupporter.formatDescription(
-                adventureData.getLocationData().get(directionData.getDestinationId()))).setHeader("Destination");
-        directionGrid.addColumn(directionData -> ViewSupporter.formatId(directionData.getDestinationId()))
-                     .setHeader("DestinationId");
-        directionGrid.getColumns().forEach(column -> column.setAutoWidth(true));
-
-        directionGrid.addItemDoubleClickListener(
+        gridProvider.addItemDoubleClickListener(
                 e -> UI.getCurrent().navigate(DirectionEditorView.class,
                                               new RouteParameters(
                                                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
@@ -106,15 +105,12 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
                                                       new RouteParam(RouteIds.LOCATION_ID.getValue(),
                                                                      locationData.getId()),
                                                       new RouteParam(RouteIds.DIRECTION_ID.getValue(),
-                                                                     e.getItem()
-                                                                      .getId())))
-                       .ifPresent(
-                               editor -> editor.setData(locationData, adventureData)));
+                                                                     e.getItem().getId())))
+                       .ifPresent(editor -> editor.setData(locationData, adventureData)));
 
-        ViewSupporter.setSize(directionGrid);
-        directionGrid.setEmptyStateText("Create some exits.");
-
-        return directionGrid;
+        ViewSupporter.setSize(gridProvider.getGrid());
+        gridProvider.getGrid().setEmptyStateText("Create some exits.");
+        return gridProvider.getGrid();
     }
 
     @Override
@@ -134,7 +130,10 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
     }
 
     private void fillGrid(Set<DirectionData> directionData) {
-        grid.setItems(directionData);
+        List<DirectionDescriptionAdapter> adapters = directionData.stream()
+                .map(d -> new DirectionDescriptionAdapter(d, adventureData))
+                .toList();
+        directionsDataView = grid.setItems(adapters);
     }
 
     public void setData(AdventureData anAdventureData, LocationData aLocationData) {
@@ -158,24 +157,20 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
           .ifPresent(editor -> editor.setData(locationData, adventureData));
     }
 
-    private class DirectionContextMenu extends GridContextMenu<DirectionData> {
-        public DirectionContextMenu(Grid<DirectionData> target) {
+    private class DirectionContextMenu extends GridContextMenu<DirectionDescriptionAdapter> {
+        public DirectionContextMenu(Grid<DirectionDescriptionAdapter> target) {
             super(target);
 
-            addItem("Edit", e -> e.getItem().ifPresent(direction -> {
-                String directionId = direction.getId();
-                navigateToDirectionEditor(directionId);
+            addItem("Edit", e -> e.getItem().ifPresent(adapter -> {
+                navigateToDirectionEditor(adapter.getId());
             }));
 
             addComponent(new Hr());
 
-            addItem("Delete", e -> e.getItem().ifPresent(direction -> {
-                // Remove from location's directions set
-                locationData.getDirectionsData().remove(direction);
-                // Save changes
+            addItem("Delete", e -> e.getItem().ifPresent(adapter -> {
+                locationData.getDirectionsData().remove(adapter.getDirectionData());
                 adventureService.saveLocationData(locationData);
-                // Refresh grid
-                grid.getDataProvider().refreshAll();
+                directionsDataView.removeItem(adapter);
             }));
         }
     }

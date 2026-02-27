@@ -37,7 +37,7 @@ public class ViewSupporter {
     }
 
     public static String formatId(String anIdedData) {
-        return anIdedData.substring(0, MAX_ID_LENGTH);
+        return anIdedData.substring(0, Math.min(MAX_ID_LENGTH, anIdedData.length()));
     }
 
     public static void populateStartLocation(AdventureData anAdventureData, TextField aStartLocation) {
