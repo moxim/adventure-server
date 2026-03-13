@@ -21,7 +21,7 @@ import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.Parser;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 

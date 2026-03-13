@@ -16,7 +16,7 @@ import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 
 /**
  * Data integrity and persistence tests for DirectionEditorView.

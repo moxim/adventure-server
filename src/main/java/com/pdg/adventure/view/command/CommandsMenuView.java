@@ -13,6 +13,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,15 +27,15 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.CommandChainData;
 import com.pdg.adventure.model.CommandProviderData;
 import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.model.basic.CommandDescriptionData;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.location.LocationEditorView;
 import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
-@Route(value = "adventures/:adventureId/locations/:locationId/commands", layout = AdventuresMainLayout.class)
+@Route(value = "author/adventures/:adventureId/locations/:locationId/commands", layout = AdventuresMainLayout.class)
+@RolesAllowed("ROLE_AUTHOR")
 public class CommandsMenuView extends VerticalLayout
         implements HasDynamicTitle, BeforeEnterObserver {
     private transient final AdventureService adventureService;

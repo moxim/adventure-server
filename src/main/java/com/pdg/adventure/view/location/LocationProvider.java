@@ -1,7 +1,7 @@
 package com.pdg.adventure.view.location;
 
 import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 
 public class LocationProvider {
 

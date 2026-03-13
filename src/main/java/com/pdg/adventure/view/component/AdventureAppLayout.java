@@ -20,12 +20,14 @@ import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import jakarta.annotation.security.PermitAll;
 
 import com.pdg.adventure.view.about.AboutView;
 import com.pdg.adventure.view.adventure.AdventuresMenuView;
+import com.pdg.adventure.view.login.LogoutView;
 
-@StyleSheet(Lumo.STYLESHEET)  // loads the new lumo.css
-// @Getter
+@StyleSheet(Lumo.STYLESHEET)
+@PermitAll
 public class AdventureAppLayout extends AppLayout implements AfterNavigationObserver {
 
     private H2 viewTitle;
@@ -94,7 +96,8 @@ public class AdventureAppLayout extends AppLayout implements AfterNavigationObse
 
         nav.addItem(
                 new SideNavItem("About", AboutView.class, VaadinIcon.INFO_CIRCLE.create()),
-                new SideNavItem("Adventures", AdventuresMenuView.class, VaadinIcon.GRID.create())
+                new SideNavItem("Adventures", AdventuresMenuView.class, VaadinIcon.GRID.create()),
+                new SideNavItem("Logout", LogoutView.class, VaadinIcon.SIGN_OUT.create())
         );
 
         // SideNavItem settings = new SideNavItem("Settings", VaadinIcon.COGS.create());

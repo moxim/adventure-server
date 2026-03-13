@@ -12,21 +12,20 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteParameters;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.util.List;
 import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 @PageTitle("Your World Of Adventures")
-@RouteAlias(value = "adventures", layout = AdventuresMainLayout.class)
-@Route(value = "", layout = AdventuresMainLayout.class)
-//@PermitAll
+@Route(value = "author/adventures", layout = AdventuresMainLayout.class)
+@RolesAllowed("ROLE_AUTHOR")
 public class AdventuresMenuView extends VerticalLayout {
 
     private transient final AdventureService adventureService;

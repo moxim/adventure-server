@@ -16,6 +16,7 @@ import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.action.MoveItemActionData;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.view.command.action.MoveItemActionEditor;
 
 class MoveItemActionEditorTest {
 

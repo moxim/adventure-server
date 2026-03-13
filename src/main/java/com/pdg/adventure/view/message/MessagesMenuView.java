@@ -16,8 +16,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
-
-import com.pdg.adventure.view.support.GridProvider;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,13 +24,15 @@ import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
-import com.pdg.adventure.server.storage.AdventureService;
-import com.pdg.adventure.server.storage.MessageService;
+import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
+import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
-@Route(value = "adventures/:adventureId/messages", layout = MessagesMainLayout.class)
+@Route(value = "author/adventures/:adventureId/messages", layout = MessagesMainLayout.class)
+@RolesAllowed("ROLE_AUTHOR")
 public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle, BeforeEnterObserver {
     private final transient MessageService messageService;
     private final transient AdventureService adventureService;

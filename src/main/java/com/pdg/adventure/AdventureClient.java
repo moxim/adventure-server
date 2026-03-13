@@ -13,7 +13,7 @@ import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.LoadAdventureAction;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.mapper.AdventureMapper;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 
 /**
  * The entry point of a Spring Boot application.

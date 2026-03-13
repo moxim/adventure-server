@@ -15,6 +15,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.ItemData;
+import com.pdg.adventure.server.storage.repository.ItemRepository;
+import com.pdg.adventure.server.storage.service.ItemService;
 
 @ExtendWith(MockitoExtension.class)
 class ItemServiceTest {

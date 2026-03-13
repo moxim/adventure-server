@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
+import com.pdg.adventure.view.command.CommandDescriptionAdapter;
 
 class CommandDescriptionAdapterTest {
 

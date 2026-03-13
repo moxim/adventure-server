@@ -15,6 +15,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,14 +24,15 @@ import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
-import com.pdg.adventure.server.storage.AdventureService;
-import com.pdg.adventure.server.storage.MessageService;
+import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.support.RouteIds;
 
-@Route(value = "adventures/:adventureId/messages/:messageId/edit", layout = MessagesMainLayout.class)
-@RouteAlias(value = "adventures/:adventureId/messages/new", layout = MessagesMainLayout.class)
+@Route(value = "author/adventures/:adventureId/messages/:messageId/edit", layout = MessagesMainLayout.class)
+@RouteAlias(value = "author/adventures/:adventureId/messages/new", layout = MessagesMainLayout.class)
+@RolesAllowed("ROLE_AUTHOR")
 public class MessageEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
 

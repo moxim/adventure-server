@@ -15,6 +15,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +27,7 @@ import static com.pdg.adventure.model.Word.Type.*;
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.command.action.ActionEditorComponent;
 import com.pdg.adventure.view.command.action.ActionEditorFactory;
@@ -37,8 +38,9 @@ import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.location.LocationsMainLayout;
 import com.pdg.adventure.view.support.RouteIds;
 
-@Route(value = "adventures/:adventureId/locations/:locationId/commands/:commandId/edit", layout = LocationsMainLayout.class)
-@RouteAlias(value = "adventures/:adventureId/locations/:locationId/commands/new", layout = LocationsMainLayout.class)
+@Route(value = "author/adventures/:adventureId/locations/:locationId/commands/:commandId/edit", layout = LocationsMainLayout.class)
+@RouteAlias(value = "author/adventures/:adventureId/locations/:locationId/commands/new", layout = LocationsMainLayout.class)
+@RolesAllowed("ROLE_AUTHOR")
 public class CommandEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
 

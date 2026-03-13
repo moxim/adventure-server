@@ -12,6 +12,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,15 +20,17 @@ import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.item.AllItemsMenuView;
 import com.pdg.adventure.view.location.LocationsMenuView;
+import com.pdg.adventure.view.message.MessagesMenuView;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 import com.pdg.adventure.view.vocabulary.VocabularyMenuView;
 
-@Route(value = "adventures/:adventureId/edit", layout = AdventuresMainLayout.class)
-@RouteAlias(value = "adventures/new", layout = AdventuresMainLayout.class)
+@Route(value = "author/adventures/:adventureId/edit", layout = AdventuresMainLayout.class)
+@RouteAlias(value = "author/adventures/new", layout = AdventuresMainLayout.class)
+@RolesAllowed("ROLE_AUTHOR")
 public class AdventureEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
 
@@ -68,7 +71,7 @@ public class AdventureEditorView extends VerticalLayout
 
         Button editMessagesButton = new Button("Manage Messages", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
-                UI.getCurrent().navigate(com.pdg.adventure.view.message.MessagesMenuView.class,
+                UI.getCurrent().navigate(MessagesMenuView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                                             adventureData.getId())))
                   .ifPresent(editor -> editor.setData(adventureData));

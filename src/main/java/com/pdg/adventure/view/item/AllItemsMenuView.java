@@ -17,8 +17,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
-
-import com.pdg.adventure.view.support.GridProvider;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +26,10 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
-import com.pdg.adventure.server.storage.AdventureService;
-import com.pdg.adventure.server.storage.ItemService;
+import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
+import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -37,8 +37,9 @@ import com.pdg.adventure.view.support.ViewSupporter;
  * View that shows all items across all locations in an adventure.
  * This provides an adventure-level view of items, similar to how LocationsMenuView shows all locations.
  */
-@Route(value = "adventures/:adventureId/items", layout = ItemsMainLayout.class)
+@Route(value = "author/adventures/:adventureId/items", layout = ItemsMainLayout.class)
 @PageTitle("All Items")
+@RolesAllowed("ROLE_AUTHOR")
 public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObserver {
 
     private final transient AdventureService adventureService;

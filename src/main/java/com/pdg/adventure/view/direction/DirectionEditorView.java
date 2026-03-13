@@ -13,6 +13,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.model.basic.DescriptionData;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.command.CommandsMenuView;
 import com.pdg.adventure.view.component.ResetBackSaveView;
@@ -37,8 +38,9 @@ import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
-@Route(value = "adventures/:adventureId/locations/:locationId/direction/:directionId/edit", layout = DirectionsMainLayout.class)
-@RouteAlias(value = "adventures/:adventureId/locations/:locationId/direction/new", layout = DirectionsMainLayout.class)
+@Route(value = "author/adventures/:adventureId/locations/:locationId/direction/:directionId/edit", layout = DirectionsMainLayout.class)
+@RouteAlias(value = "author/adventures/:adventureId/locations/:locationId/direction/new", layout = DirectionsMainLayout.class)
+@RolesAllowed("ROLE_AUTHOR")
 public class DirectionEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
     private static final Logger LOG = LoggerFactory.getLogger(DirectionEditorView.class);
@@ -227,11 +229,11 @@ public class DirectionEditorView extends VerticalLayout
             dialog.setCancelable(true);
             dialog.setConfirmText("Proceed");
             dialog.addConfirmListener(_ -> {
-                // User confirmed, do nothing and allow save to proceed
+                // UserData confirmed, do nothing and allow save to proceed
                 saveData(aDirectionViewModel);
             });
             dialog.addCancelListener(_ -> {
-                // User cancelled, throw an exception to prevent save
+                // UserData cancelled, throw an exception to prevent save
                 destinationGrid.select(null);
             });
             dialog.open();

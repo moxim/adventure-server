@@ -1,4 +1,4 @@
-package com.pdg.adventure.server.storage;
+package com.pdg.adventure.server.storage.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.pdg.adventure.model.MessageData;
+import com.pdg.adventure.server.storage.repository.MessageRepository;
 
 /**
  * Service for managing message persistence and business logic.

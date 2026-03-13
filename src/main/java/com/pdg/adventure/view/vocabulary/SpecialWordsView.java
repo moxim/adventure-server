@@ -11,6 +11,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -20,12 +21,13 @@ import static com.pdg.adventure.model.Word.Type.VERB;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.support.RouteIds;
 
-@Route(value = "adventures/:adventureId/vocabulary/special", layout = VocabularyMainLayout.class)
+@Route(value = "author/adventures/:adventureId/vocabulary/special", layout = VocabularyMainLayout.class)
 @PageTitle("Special Words")
+@RolesAllowed("ROLE_AUTHOR")
 public class SpecialWordsView extends VerticalLayout implements SaveListener, GuiListener {
 
     private final transient AdventureService adventureService;

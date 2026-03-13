@@ -7,11 +7,13 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 
 @PageTitle("About")
 @Route(value = "about", layout = AdventuresMainLayout.class)
+@AnonymousAllowed
 public class AboutView extends VerticalLayout {
 
     public AboutView() {

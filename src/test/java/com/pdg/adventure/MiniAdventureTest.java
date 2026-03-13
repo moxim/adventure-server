@@ -12,9 +12,10 @@ import com.pdg.adventure.server.Adventure;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.mapper.AdventureMapper;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 
 @SpringBootTest
+@Disabled("Disabled until the engine can be fed with commands automatically.")
 class MiniAdventureTest {
 
     @Autowired
@@ -30,7 +31,6 @@ class MiniAdventureTest {
     AdventureConfig adventureConfig;
 
     @Test
-    @Disabled("Disabled until the engine can be feed with commands automatically.")
     void testGameRun() {
         final List<AdventureData> adventures = adventureService.getAdventures();
         final AdventureData adventureData = adventures.getFirst();

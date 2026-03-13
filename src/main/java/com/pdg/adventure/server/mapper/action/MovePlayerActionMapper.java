@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.mapper.action;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
 import com.pdg.adventure.model.action.MovePlayerActionData;
@@ -16,17 +15,14 @@ import com.pdg.adventure.server.support.MapperSupporter;
 public class MovePlayerActionMapper extends ActionMapper<MovePlayerActionData, MovePlayerAction> {
 
     private final GameContext gameContext;
-    private MessagesHolder messagesHolder;
+    private final MessagesHolder messagesHolder;
 
-    public MovePlayerActionMapper(MapperSupporter aMapperSupporter, GameContext aGameContext) {
+    public MovePlayerActionMapper(MessagesHolder aMessagesHolder, GameContext aGameContext,
+                                  MapperSupporter aMapperSupporter) {
         super(aMapperSupporter);
         gameContext = aGameContext;
+        messagesHolder = aMessagesHolder;
         aMapperSupporter.registerMapper(MovePlayerActionData.class, MovePlayerAction.class, this);
-    }
-
-    @PostConstruct
-    public void initializeDependencies() {
-        messagesHolder = getMapperSupporter().getMessagesHolder();
     }
 
     @Override

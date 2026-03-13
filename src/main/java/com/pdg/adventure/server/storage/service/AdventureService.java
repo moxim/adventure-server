@@ -1,4 +1,4 @@
-package com.pdg.adventure.server.storage;
+package com.pdg.adventure.server.storage.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +14,10 @@ import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.storage.mongo.CascadeDeleteHelper;
+import com.pdg.adventure.server.storage.repository.AdventureRepository;
+import com.pdg.adventure.server.storage.repository.LocationRepository;
+import com.pdg.adventure.server.storage.repository.VocabularyReporitory;
+import com.pdg.adventure.server.storage.repository.WordRepository;
 import com.pdg.adventure.server.support.MapperSupporter;
 
 @Service
