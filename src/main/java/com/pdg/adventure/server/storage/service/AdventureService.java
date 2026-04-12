@@ -127,6 +127,10 @@ public class AdventureService {
         return adventureRepository.findAll();
     }
 
+    public List<AdventureData> getAdventuresByIds(Collection<String> ids) {
+        return adventureRepository.findAllById(ids);
+    }
+
     public void deleteLocation(String anId) {
         locationRepository.deleteById(anId);
     }

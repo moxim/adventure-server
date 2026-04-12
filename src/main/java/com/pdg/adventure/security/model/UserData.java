@@ -9,13 +9,22 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.github.f4b6a3.ulid.UlidCreator;
+
 @Entity
 @Table(name = "users")
 public class UserData implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id", length = 26, nullable = false, updatable = false)
+    private String id;
+
+    @PrePersist
+    void generateId() {
+        if (id == null) {
+            id = UlidCreator.getUlid().toString();
+        }
+    }
 
     @Column(unique = true, nullable = false)
     private String username;
@@ -62,7 +71,7 @@ public class UserData implements UserDetails {
         this.roles = roles;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 

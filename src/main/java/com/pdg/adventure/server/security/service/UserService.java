@@ -45,7 +45,11 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public void delete(Long id) {
+    public List<UserData> findByRole(Role role) {
+        return userRepository.findByRolesContaining(role);
+    }
+
+    public void delete(String id) {
         userRepository.deleteById(id);
     }
 }

@@ -12,8 +12,9 @@ public class AdminDahboardView extends VerticalLayout {
     public AdminDahboardView() {
         Button userManagementBtn = new Button("UserData Management", e -> getUI().ifPresent(ui -> ui.navigate("admin/users")));
         Button gameManagementBtn = new Button("Game Management", e -> getUI().ifPresent(ui -> ui.navigate("author/adventures")));
+        Button assignmentsBtn = new Button("Adventure Assignments", e -> getUI().ifPresent(ui -> ui.navigate("admin/adventures/assignments")));
         Button statsBtn = new Button("View Statistics", e -> getUI().ifPresent(ui -> ui.navigate("admin/stats")));
 
-        add(userManagementBtn, gameManagementBtn, statsBtn);
+        add(userManagementBtn, gameManagementBtn, assignmentsBtn, statsBtn);
     }
 }
