@@ -11,7 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.pdg.adventure.security.model.Role;
 import com.pdg.adventure.security.model.UserData;
-import com.pdg.adventure.view.admin.AdminDahboardView;
+import com.pdg.adventure.view.admin.AdminDashboardView;
 import com.pdg.adventure.view.author.AuthorDashboardView;
 import com.pdg.adventure.view.login.LoginView;
 import com.pdg.adventure.view.player.PlayerLibraryView;
@@ -37,7 +37,7 @@ public class RootView extends VerticalLayout implements BeforeEnterObserver {
             return;
         }
         if (user.getRoles().contains(Role.ADMIN)) {
-            event.rerouteTo(AdminDahboardView.class);
+            event.rerouteTo(AdminDashboardView.class);
         } else if (user.getRoles().contains(Role.AUTHOR)) {
             event.rerouteTo(AuthorDashboardView.class);
         } else {

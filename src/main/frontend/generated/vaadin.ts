@@ -42,6 +42,7 @@ import '@vaadin/combo-box/vaadin-combo-box.js';
 import '@vaadin/item/vaadin-item.js';
 import '@vaadin/tabsheet/vaadin-tabsheet.js';
 import '@vaadin/dialog/vaadin-dialog.js';
+import '@vaadin/confirm-dialog/vaadin-confirm-dialog.js';
 import '@vaadin/multi-select-combo-box/vaadin-multi-select-combo-box.js';
 import '@vaadin/radio-group/vaadin-radio-group.js';
 import '@vaadin/tooltip/vaadin-tooltip.js';

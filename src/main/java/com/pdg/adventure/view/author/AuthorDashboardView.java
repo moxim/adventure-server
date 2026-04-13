@@ -6,7 +6,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
-@Route("author/dashboard")
+import com.pdg.adventure.view.adventure.AdventuresMainLayout;
+
+@Route(value = "author/dashboard", layout = AdventuresMainLayout.class)
 @RolesAllowed("ROLE_AUTHOR") // Only Authors (and Admins via hierarchy) can access
 public class AuthorDashboardView extends VerticalLayout {
     public AuthorDashboardView() {

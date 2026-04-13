@@ -1,5 +1,6 @@
 package com.pdg.adventure.security.model;
 
+import com.github.f4b6a3.ulid.UlidCreator;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -8,8 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.github.f4b6a3.ulid.UlidCreator;
 
 @Entity
 @Table(name = "users")
@@ -46,6 +45,14 @@ public class UserData implements UserDetails {
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                 .collect(Collectors.toList());
+    }
+
+    public boolean isAdmin() {
+        return roles.contains(Role.ADMIN);
+    }
+
+    public boolean isAuthor() {
+        return roles.contains(Role.AUTHOR);
     }
 
     @Override
