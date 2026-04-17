@@ -32,7 +32,6 @@ import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
-import com.pdg.adventure.view.command.CommandsMenuView;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.support.RouteIds;
@@ -57,6 +56,7 @@ public class DirectionEditorView extends VerticalLayout
     private String pageTitle;
 
     private transient String directionId;
+    private transient String selectedDestinationId;
     private transient DirectionData directionData;
     private transient DirectionViewModel dvm;
     private transient AdventureData adventureData;
@@ -89,7 +89,7 @@ public class DirectionEditorView extends VerticalLayout
         destinationGrid.addColumn(ViewSupporter::formatDescription).setHeader("Short Description").setSortable(true)
                        .setAutoWidth(true);
         destinationGrid.addSelectionListener(selectionEvent -> {
-            directionId = selectionEvent.getFirstSelectedItem().map(LocationData::getId).orElse(null);
+            selectedDestinationId = selectionEvent.getFirstSelectedItem().map(LocationData::getId).orElse(null);
         });
         destinationGrid.setSizeFull();
 
@@ -133,22 +133,11 @@ public class DirectionEditorView extends VerticalLayout
 
         HorizontalLayout h1 = new HorizontalLayout(verbSelector, adjectiveSelector, nounSelector);
 
-        Button manageCommands = new Button("Manage Commands");
-        manageCommands.addClickListener(_ -> {
-            if (locationData != null && adventureData != null) {
-                UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
-                          new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                          new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                  .ifPresent(e -> e.setData(adventureData, locationData));
-            }
-        });
-
         setMargin(true);
         setPadding(true);
 
-        HorizontalLayout commandRow = new HorizontalLayout(manageCommands);
         HorizontalLayout idRow = new HorizontalLayout(directionIdTF, locationIdTF, adventureIdTF);
-        add(idRow, h1, gridContainer, shortDescription, longDescription, commandRow, resetBackSaveView);
+        add(idRow, h1, gridContainer, shortDescription, longDescription, resetBackSaveView);
     }
 
     private TextField getDirectionIdTF() {
@@ -221,7 +210,7 @@ public class DirectionEditorView extends VerticalLayout
     }
 
     private void askUserIfLocationLoopsAreOK(DirectionViewModel aDirectionViewModel) {
-        if (directionId.equals(locationData.getId())) {
+        if (selectedDestinationId.equals(locationData.getId())) {
             ConfirmDialog dialog = new ConfirmDialog();
             dialog.setHeader("Dangerous Destination");
             dialog.setText(
@@ -315,7 +304,7 @@ public class DirectionEditorView extends VerticalLayout
             LocationData destination = adventureData.getLocationData().get(directionData.getDestinationId());
             if (destination != null) {
                 destinationGrid.select(destination);
-                directionId = destination.getId();
+                selectedDestinationId = destination.getId();
             }
         }
 

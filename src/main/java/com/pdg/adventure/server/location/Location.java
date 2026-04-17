@@ -25,9 +25,8 @@ public class Location extends Thing implements Visitable, HasLight {
     }
 
     public Location(DescriptionProvider aDescriptionProvider, Container aPocket) {
-        super(aDescriptionProvider);
+        this(aDescriptionProvider);
         itemContainer = aPocket;
-        directions = new GenericContainer(aDescriptionProvider, true, 9999);
     }
 
     public ExecutionResult addItem(Containable anItem) {

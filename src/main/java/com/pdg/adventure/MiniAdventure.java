@@ -1,6 +1,7 @@
 package com.pdg.adventure;
 
 import org.jspecify.annotations.NonNull;
+import org.springframework.context.annotation.Lazy;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -41,7 +42,7 @@ public class MiniAdventure {
     private CommandFactory commandFactory;
     private MiniAdventureContent content;
 
-    public MiniAdventure(AdventureConfig anAdventureConfig, final AdventureMapper anAdventureMapper,
+    public MiniAdventure(@Lazy AdventureConfig anAdventureConfig, final AdventureMapper anAdventureMapper,
                          AdventureService anAdventureService, GameContext aGameContext) {
         adventureService = anAdventureService;
         adventureMapper = anAdventureMapper;

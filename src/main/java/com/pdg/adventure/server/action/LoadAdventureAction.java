@@ -3,6 +3,7 @@ package com.pdg.adventure.server.action;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.Optional;
 
@@ -32,7 +33,7 @@ public class LoadAdventureAction extends AbstractAction {
     private String adventureId;
 
     public LoadAdventureAction(AdventureService anAdventureService, AdventureMapper anAdventureMapper,
-                               AdventureConfig anAdventureConfig, MessagesHolder aMessagesHolder,
+                               @Lazy AdventureConfig anAdventureConfig, MessagesHolder aMessagesHolder,
                                GameContext aGameContext) {
         super(aMessagesHolder);
         adventureService = anAdventureService;

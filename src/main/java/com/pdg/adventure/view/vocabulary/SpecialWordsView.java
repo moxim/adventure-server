@@ -130,7 +130,7 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
                                               final VocabularyPickerField selector) {
         if (oldValue != null && (newValue == null || !oldValue.getId().equals(newValue.getId()))) {
             // Check if the old value is used in any item commands
-            List<WordUsage> usages = wordUsageTracker.checkWordIsNotUsedInLocations(oldValue);
+            List<WordUsage> usages = wordUsageTracker.findWordUsagesInLocations(oldValue);
             if (!usages.isEmpty()) {
                 showWordIsBusyNotification(wordType, newValue, oldValue, usages);
                 selector.setValue(oldValue);

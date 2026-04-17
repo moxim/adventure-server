@@ -10,6 +10,7 @@ import java.util.List;
 import com.pdg.adventure.api.*;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
+import com.pdg.adventure.server.parser.CommandMatcher;
 import com.pdg.adventure.server.support.DescriptionProvider;
 
 public class GenericContainer extends Item implements Container {
@@ -136,10 +137,9 @@ public class GenericContainer extends Item implements Container {
         final List<Containable> items = ItemIdentifier.findItems(this, aCommandDescription);
         List<CommandChain> result = new ArrayList<>();
         if (holdsDirections) {
-            result.addAll(
-                    getCommandMatcher().getMatchingCommandsFromCommandProvider(getContents(), aCommandDescription));
+            result.addAll(CommandMatcher.getMatchingCommands(getContents(), aCommandDescription));
         } else {
-            result.addAll(getCommandMatcher().getMatchingCommands(items, aCommandDescription));
+            result.addAll(CommandMatcher.getMatchingCommands(items, aCommandDescription));
         }
         result.addAll(super.getMatchingCommandChain(aCommandDescription));
         return result;

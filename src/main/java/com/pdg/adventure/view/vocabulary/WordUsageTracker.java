@@ -1,7 +1,9 @@
 package com.pdg.adventure.view.vocabulary;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.pdg.adventure.model.*;
 
@@ -41,12 +43,12 @@ public class WordUsageTracker {
             }
         }
 
-        usages.addAll(checkWordIsNotUsedInLocations(targetWord));
+        usages.addAll(findWordUsagesInLocations(targetWord));
 
         return usages;
     }
 
-    List<WordUsage> checkWordIsNotUsedInLocations(final Word targetWord) {
+    List<WordUsage> findWordUsagesInLocations(final Word targetWord) {
         List<WordUsage> usages = new ArrayList<>();
         // Check locations
         if (adventureData.getLocationData() != null) {
@@ -57,20 +59,20 @@ public class WordUsageTracker {
 
                 // Check directions in this location
                 if (location.getDirectionsData() != null) {
-                    checkWordIsNotUsedInDirectionsOfLocation(targetWord, location, usages);
+                    findWordUsagesInDirections(targetWord, location, usages);
                 }
 
                 // Check items in this location
                 if (location.getItemContainerData() != null && location.getItemContainerData().getItems() != null) {
-                    checkWordIsNotUsedInItemsOfLocation(targetWord, location, usages);
+                    findWordUsagesInItems(targetWord, location, usages);
                 }
             }
         }
         return usages;
     }
 
-    private void checkWordIsNotUsedInItemsOfLocation(final Word targetWord, final LocationData location,
-                                                     final List<WordUsage> usages) {
+    private void findWordUsagesInItems(final Word targetWord, final LocationData location,
+                                       final List<WordUsage> usages) {
         for (ItemData item : location.getItemContainerData().getItems()) {
             if (item != null) {
                 checkDescriptionUsage(item.getDescriptionData(), targetWord, "Item", item.getId(), usages);
@@ -80,13 +82,11 @@ public class WordUsageTracker {
         }
     }
 
-    private void checkWordIsNotUsedInDirectionsOfLocation(final Word targetWord, final LocationData location,
-                                                          final List<WordUsage> usages) {
+    private void findWordUsagesInDirections(final Word targetWord, final LocationData location,
+                                            final List<WordUsage> usages) {
         for (DirectionData direction : location.getDirectionsData()) {
             checkDescriptionUsage(direction.getDescriptionData(), targetWord, DIRECTION_TEXT, direction.getId(),
                                   usages);
-            checkCommandProviderUsage(direction.getCommandProviderData(), targetWord, DIRECTION_TEXT, direction.getId(),
-                                      usages);
             checkCommandDataUsage(direction.getCommandData(), targetWord, DIRECTION_TEXT, direction.getId(),
                                   usages);
         }
@@ -139,7 +139,7 @@ public class WordUsageTracker {
         message.append("Found ").append(usages.size()).append(" usage(s):\n\n");
 
         // Group usages by type
-        java.util.Map<String, List<WordUsage>> groupedUsages = new java.util.HashMap<>();
+        Map<String, List<WordUsage>> groupedUsages = new HashMap<>();
 
         for (var i = 0; i < Math.min(usages.size(), Math.max(usages.size(), maxUsagesToShow)); i++) {
             WordUsage usage = usages.get(i);
