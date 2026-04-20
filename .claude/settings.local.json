@@ -8,7 +8,8 @@
       "Bash(mkdir -p /tmp/grpc-test-classes)",
       "Read(//tmp/**)",
       "Bash(jar xf:*)",
-      "Bash(javap 'org/springframework/boot/grpc/test/autoconfigure/GrpcPortInfoApplicationContextInitializer$Listener.class')"
+      "Bash(javap 'org/springframework/boot/grpc/test/autoconfigure/GrpcPortInfoApplicationContextInitializer$Listener.class')",
+      "Bash(xargs -I{} jar tf {})"
     ]
   }
 }

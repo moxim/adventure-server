@@ -3,14 +3,13 @@ package com.pdg.adventure;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.PWA;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * The entry point of the Spring Boot pdg.
  * Use the @PWA annotation make the pdg installable on phones, tablets
  * and some desktop browsers.
  */
-@SpringBootApplication
+//@SpringBootApplication
 //@EnableMongoRepositories(basePackages = "com.pdg.adventure.server.storage")
 //@Theme(value = "adventureBuilder")
 //@NpmPackage(value = "@vaadin-component-factory/vcf-nav", version = "1.1.3")

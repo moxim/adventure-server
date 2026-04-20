@@ -18,7 +18,6 @@ import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 public class LoadAdventureAction extends AbstractAction {
 
@@ -33,9 +32,9 @@ public class LoadAdventureAction extends AbstractAction {
     private String adventureId;
 
     public LoadAdventureAction(AdventureService anAdventureService, AdventureMapper anAdventureMapper,
-                               @Lazy AdventureConfig anAdventureConfig, MessagesHolder aMessagesHolder,
+                               @Lazy AdventureConfig anAdventureConfig,
                                GameContext aGameContext) {
-        super(aMessagesHolder);
+        super(anAdventureConfig.allMessages());
         adventureService = anAdventureService;
         adventureMapper = anAdventureMapper;
         adventureConfig = anAdventureConfig;

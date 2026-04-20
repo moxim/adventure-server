@@ -40,6 +40,7 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
     private VocabularyPickerField takeSelector;
     private VocabularyPickerField dropSelector;
     private VocabularyPickerField loadSelector;
+    private VocabularyPickerField examineSelector;
 
     public SpecialWordsView(AdventureService anAdventureService) {
         adventureService = anAdventureService;
@@ -75,7 +76,7 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
         buttonLayout.setSpacing(true);
 
         VerticalLayout mainLayout = new VerticalLayout(titleLabel, descriptionLabel, takeSelector, dropSelector,
-                                                       loadSelector, buttonLayout);
+                                                       loadSelector, examineSelector, buttonLayout);
         mainLayout.setMaxWidth("600px");
         mainLayout.setPadding(true);
         mainLayout.setSpacing(true);
@@ -92,6 +93,9 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
 
         loadSelector = createSelector("Loader", "Load", word -> vocabularyData.setLoadWord(word),
                                       "A verb for loading adventures. Can be changed unless used as a command.");
+
+        examineSelector = createSelector("Examiner", "Examine", word -> vocabularyData.setExamineWord(word),
+                                         "A verb used for examining things in detail. Can be changed unless used as a command.");
     }
 
     @Override
@@ -163,6 +167,7 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
         populateSpecialWordSelector(takeSelector, vocabularyData.getTakeWord());
         populateSpecialWordSelector(dropSelector, vocabularyData.getDropWord());
         populateSpecialWordSelector(loadSelector, vocabularyData.getLoadWord());
+        populateSpecialWordSelector(examineSelector, vocabularyData.getExamineWord());
     }
 
     private void populateSpecialWordSelector(VocabularyPickerField selector, Word currentWord) {

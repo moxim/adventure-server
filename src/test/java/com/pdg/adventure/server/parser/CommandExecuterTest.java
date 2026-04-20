@@ -84,6 +84,13 @@ class CommandExecutorTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
+
+        // when
+        result = sut.execute(smallTreeCommand);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
     }
 
     @Test

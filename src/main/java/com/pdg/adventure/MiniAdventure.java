@@ -150,7 +150,7 @@ public class MiniAdventure {
     private void addLoadAdventureToWorkflowCommands(final String aAdventureId) {
         var loadAdventureCommandDescription = new GenericCommandDescription("load", aAdventureId);
         final var loadAdventureAction = new LoadAdventureAction(adventureService, adventureMapper, adventureConfig,
-                                                                allMessages, gameContext);
+                                                                gameContext);
         loadAdventureAction.setAdventureId(aAdventureId);
         var loadAdventureCommand = new GenericCommand(loadAdventureCommandDescription, loadAdventureAction);
         gameContext.getWorkflow().addInterceptorCommand(loadAdventureCommandDescription, loadAdventureCommand);

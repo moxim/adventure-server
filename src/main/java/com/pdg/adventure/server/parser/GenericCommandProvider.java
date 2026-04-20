@@ -29,10 +29,7 @@ public class GenericCommandProvider implements CommandProvider {
 
     @Override
     public void addCommand(Command aCommand) {
-        CommandChain chain = availableCommands.get(aCommand.getDescription());
-        if (chain == null) {
-            chain = new GenericCommandChain();
-        }
+        CommandChain chain = availableCommands.getOrDefault(aCommand.getDescription(), new GenericCommandChain());
         chain.addCommand(aCommand);
         availableCommands.put(aCommand.getDescription(), chain);
     }

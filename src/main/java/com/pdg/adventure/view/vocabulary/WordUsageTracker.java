@@ -34,6 +34,10 @@ public class WordUsageTracker {
                 vocabularyData.getDropWord().getId().equals(targetWord.getId())) {
                 usages.add(new WordUsage("Drop Verb", "Special verb for dropping items", "Special"));
             }
+            if (vocabularyData.getExamineWord() != null &&
+                vocabularyData.getExamineWord().getId().equals(targetWord.getId())) {
+                usages.add(new WordUsage("Examine Verb", "Special verb for examining things", "Special"));
+            }
 
             // Check synonyms
             for (Word word : vocabularyData.getWords()) {
