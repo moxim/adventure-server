@@ -148,7 +148,7 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
                                             final List<WordUsage> aUsageList) {
         String action = newValue == null ? "cleared" : "changed";
         String notificationText = aWordType + " verb '" + oldValue.getText() + "' cannot be " + action +
-                                  " because it is used as a command in one or more items" +
+                                  " because it is used in a command for one or more items" +
                                   wordUsageTracker.createUsagesText(aUsageList, 5);
 
         Notification.show(notificationText, 4000, Notification.Position.MIDDLE);
