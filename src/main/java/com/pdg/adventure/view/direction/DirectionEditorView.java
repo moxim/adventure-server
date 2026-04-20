@@ -195,11 +195,12 @@ public class DirectionEditorView extends VerticalLayout
     }
 
     private void navigateBack() {
-        if (adventureData != null && locationData != null) {
-            UI.getCurrent().navigate(DirectionsMenuView.class, new RouteParameters(
+        final UI ui = UI.getCurrent();
+        if (ui != null && adventureData != null && locationData != null) {
+            ui.navigate(DirectionsMenuView.class, new RouteParameters(
                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId())))
-              .ifPresent(editor -> editor.setData(adventureData, locationData));
+                   .ifPresent(editor -> editor.setData(adventureData, locationData));
         }
     }
 
