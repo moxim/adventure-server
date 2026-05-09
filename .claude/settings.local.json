@@ -11,7 +11,8 @@
       "Bash(javap 'org/springframework/boot/grpc/test/autoconfigure/GrpcPortInfoApplicationContextInitializer$Listener.class')",
       "Bash(xargs -I{} jar tf {})",
       "mcp__vaadin__search_vaadin_docs",
-      "mcp__vaadin__get_full_document"
+      "mcp__vaadin__get_full_document",
+      "Bash(xargs cat *)"
     ]
   }
 }
