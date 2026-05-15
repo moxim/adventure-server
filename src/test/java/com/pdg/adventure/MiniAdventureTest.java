@@ -37,7 +37,7 @@ class MiniAdventureTest {
         Adventure adventure = adventureMapper.mapToBO(adventureData);
 
         MiniAdventure miniAdventure = new MiniAdventure(adventureConfig, adventureMapper, adventureService,
-                                                         gameContext);
+                                                        gameContext, adventureData.getVocabularyData());
         miniAdventure.setLocations(adventure.getLocations());
         miniAdventure.run();
     }

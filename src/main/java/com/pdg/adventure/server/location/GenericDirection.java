@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import com.pdg.adventure.api.*;
 import com.pdg.adventure.model.VocabularyData;
@@ -107,6 +108,10 @@ public class GenericDirection implements Direction {
     @Override
     public String getEnrichedShortDescription() {
         return getShortDescription();
+    }
+
+    public void setExamineFallback(String aVerb, Supplier<String> aDescription) {
+        commandHandler.setExamineFallback(aVerb, aDescription);
     }
 
     // -------------------------------------------------------------------------

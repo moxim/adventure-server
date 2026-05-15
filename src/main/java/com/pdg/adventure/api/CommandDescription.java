@@ -5,6 +5,8 @@ public interface CommandDescription extends Comparable<CommandDescription>, Desc
     String COMMAND_TRIPLET = "%s" + COMMAND_SEPARATOR + "%s" + COMMAND_SEPARATOR + "%s";
 
     String getVerb();
+    String getAdjective();
+    String getNoun();
 
     default String getDescription() {
         return COMMAND_TRIPLET.formatted(getVerb(), getAdjective(), getNoun());

@@ -5,14 +5,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 
+import java.util.List;
 import java.util.Optional;
 
+import com.pdg.adventure.CommandFactory;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.server.Adventure;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.engine.GameContext;
+import com.pdg.adventure.server.tangible.Thing;
 import com.pdg.adventure.server.exception.ReloadAdventureException;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.AdventureMapper;
@@ -78,6 +81,17 @@ public class LoadAdventureAction extends AbstractAction {
 
         adventureConfig.allLocations().clear();
         adventureLocations.forEach(location -> adventureConfig.allLocations().put(location.getId(), location));
+
+        CommandFactory commandFactory = new CommandFactory(
+                adventureConfig.allMessages(), gameContext, adventureData.getVocabularyData());
+        commandFactory.applyExamineFallback(adventureConfig.allLocations().values());
+        List<Thing> loadedItems = adventureLocations.stream()
+                .filter(loc -> loc.getItemContainer() != null)
+                .flatMap(loc -> loc.getItemContainer().getContents().stream())
+                .filter(c -> c instanceof Thing)
+                .map(c -> (Thing) c)
+                .toList();
+        commandFactory.applyExamineFallback(loadedItems);
 
         String startLocationId = savedAdventure.getCurrentLocationId();
         Location startLocation = adventureConfig.allLocations().get(startLocationId);

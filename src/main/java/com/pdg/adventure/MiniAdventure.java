@@ -10,7 +10,9 @@ import java.util.Map;
 
 import com.pdg.adventure.api.*;
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.tangible.Thing;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.*;
 import com.pdg.adventure.server.engine.GameContext;
@@ -34,6 +36,7 @@ public class MiniAdventure {
     private final AdventureService adventureService;
     private final AdventureMapper adventureMapper;
     private final GameContext gameContext;
+    private final VocabularyData vocabularyData;
     private AdventureConfig adventureConfig;
     // these hold everything
     private Vocabulary allWords;
@@ -43,10 +46,12 @@ public class MiniAdventure {
     private MiniAdventureContent content;
 
     public MiniAdventure(@Lazy AdventureConfig anAdventureConfig, final AdventureMapper anAdventureMapper,
-                         AdventureService anAdventureService, GameContext aGameContext) {
+                         AdventureService anAdventureService, GameContext aGameContext,
+                         final VocabularyData aVocabularyData) {
         adventureService = anAdventureService;
         adventureMapper = anAdventureMapper;
         gameContext = aGameContext;
+        vocabularyData = aVocabularyData;
         useAdventureConfiguration(anAdventureConfig);
     }
 
@@ -55,19 +60,27 @@ public class MiniAdventure {
         allWords = adventureConfig.allWords();
         allMessages = adventureConfig.allMessages();
         allLocations = adventureConfig.allLocations();
-        commandFactory = new CommandFactory(allMessages, gameContext);
+        commandFactory = new CommandFactory(allMessages, gameContext, vocabularyData);
         content = new MiniAdventureContent(adventureConfig, gameContext, commandFactory);
     }
 
     static void main(String[] args) {
         final GameContext gameContext = new GameContext();
-        final MiniAdventure game = new MiniAdventure(new AdventureConfig(gameContext), null, null, gameContext);
+        final MiniAdventure game = new MiniAdventure(new AdventureConfig(gameContext), null, null, gameContext,
+                                                     new VocabularyData());
         game.setup();
         game.run();
     }
 
     private void setup() {
         content.setUp();
+
+        commandFactory.applyExamineFallback(allLocations.values());
+        List<Thing> items = content.getAllItems().getContents().stream()
+                .filter(c -> c instanceof Thing)
+                .map(c -> (Thing) c)
+                .toList();
+        commandFactory.applyExamineFallback(items);
 
         gameContext.setPocket(content.getPocket());
         gameContext.setCurrentLocation(content.getLocation());
