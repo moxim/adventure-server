@@ -11,6 +11,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +24,7 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.basic.DescriptionData;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.command.CommandsMenuView;
 import com.pdg.adventure.view.component.ResetBackSaveView;
@@ -32,8 +33,9 @@ import com.pdg.adventure.view.direction.DirectionsMenuView;
 import com.pdg.adventure.view.item.ItemsMenuView;
 import com.pdg.adventure.view.support.RouteIds;
 
-@Route(value = "adventures/:adventureId/locations/:locationId/edit", layout = LocationsMainLayout.class)
-@RouteAlias(value = "adventures/:adventureId/locations/new", layout = LocationsMainLayout.class)
+@Route(value = "author/adventures/:adventureId/locations/:locationId/edit", layout = LocationsMainLayout.class)
+@RouteAlias(value = "author/adventures/:adventureId/locations/new", layout = LocationsMainLayout.class)
+@RolesAllowed("ROLE_AUTHOR")
 public class LocationEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
 

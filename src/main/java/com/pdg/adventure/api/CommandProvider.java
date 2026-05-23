@@ -9,5 +9,5 @@ public interface CommandProvider extends Ided {
 
     List<Command> getCommands();
 
-    List<CommandChain> getMatchingCommands(CommandDescription aCommandDescription);
+    List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription);
 }

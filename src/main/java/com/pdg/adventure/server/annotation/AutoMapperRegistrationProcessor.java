@@ -23,7 +23,7 @@ import com.pdg.adventure.server.support.MapperSupporter;
  * This version automatically detects the generic types from the Mapper interface implementation.
  */
 @Component
-@Order(1001) // Process after the basic MapperRegistrationProcessor
+@Order(1001)
 public class AutoMapperRegistrationProcessor implements BeanPostProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(AutoMapperRegistrationProcessor.class);

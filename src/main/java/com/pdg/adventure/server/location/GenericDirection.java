@@ -2,30 +2,28 @@ package com.pdg.adventure.server.location;
 
 import lombok.Getter;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.function.Supplier;
 
-import com.pdg.adventure.api.Command;
-import com.pdg.adventure.api.CommandDescription;
-import com.pdg.adventure.api.Container;
-import com.pdg.adventure.api.Direction;
+import com.pdg.adventure.api.*;
 import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.server.parser.CommandHandler;
 import com.pdg.adventure.server.support.ArticleProvider;
-import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.tangible.Thing;
 
-public class GenericDirection
-        extends Thing
-        implements Direction {
+public class GenericDirection implements Direction {
 
+    private String id;
+    private final CommandHandler commandHandler;
     @Getter
     private final String destinationId;
     @Getter
     private final boolean destinationMustBeMentioned;
-
     private final CommandDescription description;
-
     private final Map<String, Location> locations;
-    private Container partentContainer;
+    private Container parentContainer;
 
     public GenericDirection(Map<String, Location> aLocationMap, Command aCommand, String aDestinationId) {
         this(aLocationMap, aCommand, aDestinationId, false);
@@ -33,27 +31,51 @@ public class GenericDirection
 
     public GenericDirection(Map<String, Location> aLocationMap, Command aCommand, String aDestinationId,
                             boolean aFlagWhetherDestinationMustBeMentioned) {
-        super(new DescriptionProvider(aLocationMap.get(aDestinationId).getAdjective(),
-                                      aLocationMap.get(aDestinationId).getNoun()));
-        locations = aLocationMap;
-        destinationMustBeMentioned = aFlagWhetherDestinationMustBeMentioned;
-        destinationId = aDestinationId;
+        commandHandler = new CommandHandler();
+        commandHandler.addCommand(aCommand);
         description = aCommand.getDescription();
-        addCommand(aCommand);
+        destinationId = aDestinationId;
+        destinationMustBeMentioned = aFlagWhetherDestinationMustBeMentioned;
+        locations = aLocationMap;
+        id = UUID.randomUUID().toString();
     }
 
-    private String constructDescriptionFromAdjectiveAndNoun() {
-        String result = "";
-        String adjective = getDestination().getAdjective();
-        if (!VocabularyData.EMPTY_STRING.equals(adjective)) {
-            result += getDestination().getAdjective() + " ";
-        }
+    // -------------------------------------------------------------------------
+    // Ided
+    // -------------------------------------------------------------------------
 
-        String noun = getDestination().getNoun();
-        if (!VocabularyData.EMPTY_STRING.equals(noun)) {
-            result += noun;
-        }
-        return result;
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(String anId) {
+        id = anId;
+    }
+
+    // -------------------------------------------------------------------------
+    // Describable — derived from the destination location or command description
+    // -------------------------------------------------------------------------
+
+    @Override
+    public String getAdjective() {
+        return getDestination().getAdjective();
+    }
+
+    @Override
+    public String getNoun() {
+        return getDestination().getNoun();
+    }
+
+    @Override
+    public String getBasicDescription() {
+        return description.getBasicDescription();
+    }
+
+    @Override
+    public String getEnrichedBasicDescription() {
+        return description.getEnrichedBasicDescription();
     }
 
     @Override
@@ -66,50 +88,74 @@ public class GenericDirection
                 return description.getVerb() + " " + ArticleProvider.prependDefiniteArticle(description.getNoun());
             }
         }
-        // Build full command description: verb [adjective] [noun]
         return buildCommandDescription();
-    }
-
-    private String buildCommandDescription() {
-        StringBuilder result = new StringBuilder(description.getVerb());
-
-        String adjective = description.getAdjective();
-        String noun = description.getNoun();
-
-        if (!VocabularyData.EMPTY_STRING.equals(noun)) {
-            result.append(" the");
-
-            if (!VocabularyData.EMPTY_STRING.equals(adjective)) {
-                result.append(" ").append(adjective);
-            }
-
-            result.append(" ").append(noun);
-        }
-
-        return result.toString();
     }
 
     @Override
     public String getLongDescription() {
         if (destinationMustBeMentioned) {
             String result = "You may " + description.getVerb();
-
             String noun = getDestination().getNoun();
             if (!VocabularyData.EMPTY_STRING.equals(noun)) {
                 result += " the ";
             }
-
             result += constructDescriptionFromAdjectiveAndNoun();
-
             return result + ".";
         }
         return "You may " + buildCommandDescription() + ".";
     }
 
-//    public Command getCommand() {
-//        // TODO: really??
-//        return getCommands().get(0);
-//    }
+    @Override
+    public String getEnrichedShortDescription() {
+        return getShortDescription();
+    }
+
+    public void setExamineFallback(String aVerb, Supplier<String> aDescription) {
+        commandHandler.setExamineFallback(aVerb, aDescription);
+    }
+
+    // -------------------------------------------------------------------------
+    // HasCommands — delegated to CommandHandler
+    // -------------------------------------------------------------------------
+
+    @Override
+    public List<Command> getCommands() {
+        return commandHandler.getCommands();
+    }
+
+    @Override
+    public void addCommand(Command aCommand) {
+        commandHandler.addCommand(aCommand);
+    }
+
+    @Override
+    public void removeCommand(Command aCommand) {
+        commandHandler.removeCommand(aCommand);
+    }
+
+    @Override
+    public ExecutionResult applyCommand(CommandDescription aCommandDescription) {
+        return commandHandler.applyCommand(aCommandDescription);
+    }
+
+    @Override
+    public boolean hasVerb(String aVerb) {
+        return commandHandler.hasVerb(aVerb);
+    }
+
+    @Override
+    public List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription) {
+        return commandHandler.getMatchingCommandChain(aCommandDescription);
+    }
+
+    @Override
+    public CommandProvider getCommandProvider() {
+        return commandHandler.getCommandProvider();
+    }
+
+    // -------------------------------------------------------------------------
+    // Containable
+    // -------------------------------------------------------------------------
 
     @Override
     public boolean isContainable() {
@@ -118,12 +164,64 @@ public class GenericDirection
 
     @Override
     public Container getParentContainer() {
-        return partentContainer;
+        return parentContainer;
     }
 
     @Override
     public void setParentContainer(Container aContainer) {
-        partentContainer = aContainer;
+        parentContainer = aContainer;
+    }
+
+    // -------------------------------------------------------------------------
+    // equals / hashCode / toString
+    // -------------------------------------------------------------------------
+
+    @Override
+    public boolean equals(Object aO) {
+        if (this == aO) return true;
+        if (!(aO instanceof GenericDirection that)) return false;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "GenericDirection{id='" + id + "', destinationId='" + destinationId + "'}";
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    private String constructDescriptionFromAdjectiveAndNoun() {
+        String result = "";
+        String adjective = getDestination().getAdjective();
+        if (!VocabularyData.EMPTY_STRING.equals(adjective)) {
+            result += adjective + " ";
+        }
+        String noun = getDestination().getNoun();
+        if (!VocabularyData.EMPTY_STRING.equals(noun)) {
+            result += noun;
+        }
+        return result;
+    }
+
+    private String buildCommandDescription() {
+        StringBuilder result = new StringBuilder(description.getVerb());
+        String adjective = description.getAdjective();
+        String noun = description.getNoun();
+        if (!VocabularyData.EMPTY_STRING.equals(noun)) {
+            result.append(" the");
+            if (!VocabularyData.EMPTY_STRING.equals(adjective)) {
+                result.append(" ").append(adjective);
+            }
+            result.append(" ").append(noun);
+        }
+        return result.toString();
     }
 
     private Location getDestination() {

@@ -1,22 +1,32 @@
 package com.pdg.adventure.server.mapper;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.server.AdventureConfig;
+import com.pdg.adventure.server.annotation.AutoMapperRegistrationProcessor;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
-@SpringBootTest
-@TestPropertySource(locations = "classpath:application.properties")
+@ExtendWith(SpringExtension.class)
+@Import({AdventureConfig.class, MapperSupporter.class, VocabularyMapper.class, DescriptionMapper.class, AutoMapperRegistrationProcessor.class})
 class AutoMapperRegistrationTest {
+
+    // AdventureConfig has a @Lazy GameContext constructor parameter; a mock satisfies the dependency
+    // without pulling in the full application context or JPA infrastructure.
+    @MockitoBean
+    GameContext gameContext;
 
     @Autowired
     private MapperSupporter mapperSupporter;

@@ -38,7 +38,7 @@ public class CommandExecutor {
         reduceCommandChains(availableCommandChains, aCommand);
 
         ExecutionResult result = new CommandExecutionResult();
-        if (commandCanBeExecuted(availableCommandChains, result, aCommand.getVerb())) {
+        if (commandCanBeExecuted(availableCommandChains, result, aCommand.getNoun(), aCommand.getVerb())) {
             result = availableCommandChains.getFirst().execute();
             return result;
         }
@@ -64,12 +64,13 @@ public class CommandExecutor {
     }
 
     private boolean commandCanBeExecuted(List<CommandChain> availableCommandChains, ExecutionResult result,
-                                         String aVerb) {
+                                         String aNoun, String aVerb) {
         if (availableCommandChains.isEmpty()) {
             result.setResultMessage("I don't know how to do that.");
             return false;
         } else if (availableCommandChains.size() > 1) {
             result.setResultMessage("What do you want to %s?".formatted(aVerb));
+            result.setResultMessage("Which %s do you want to %s?".formatted(aNoun, aVerb));
             return false;
         }
         return true;

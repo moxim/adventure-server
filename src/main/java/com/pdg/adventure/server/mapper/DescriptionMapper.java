@@ -1,6 +1,5 @@
 package com.pdg.adventure.server.mapper;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
 import com.pdg.adventure.api.Mapper;
@@ -18,14 +17,10 @@ public class DescriptionMapper implements Mapper<DescriptionData, DescriptionPro
     private final MapperSupporter mapperSupporter;
     private Vocabulary vocabulary;
 
-    public DescriptionMapper(MapperSupporter aMapperSupporter) {
+    public DescriptionMapper(Vocabulary aVocabulary, MapperSupporter aMapperSupporter) {
+        vocabulary = aVocabulary;
         mapperSupporter = aMapperSupporter;
         mapperSupporter.registerMapper(DescriptionData.class, DescriptionProvider.class, this);
-    }
-
-    @PostConstruct
-    public void initializeDependencies() {
-        vocabulary = mapperSupporter.getVocabulary();
     }
 
     @Override

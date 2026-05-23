@@ -1,33 +1,34 @@
 package com.pdg.adventure.server.tangible;
 
-import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import com.pdg.adventure.api.*;
-import com.pdg.adventure.server.parser.CommandMatcher;
+import com.pdg.adventure.server.parser.CommandHandler;
 import com.pdg.adventure.server.parser.GenericCommandProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
 
-public class Thing implements Describable, Actionable {
+public class Thing implements Actionable {
+
     private String id;
     @Setter
     private DescriptionProvider descriptionProvider;
-    @Getter
-    private final transient CommandMatcher commandMatcher;
-    private GenericCommandProvider commandProvider;
+    private final CommandHandler commandHandler;
 
     public Thing(DescriptionProvider aDescriptionProvider) {
-        commandProvider = new GenericCommandProvider();
-        commandMatcher = new CommandMatcher();
+        commandHandler = new CommandHandler();
         descriptionProvider = aDescriptionProvider;
         id = UUID.randomUUID().toString();
     }
 
+    public void setExamineFallback(String aVerb, Supplier<String> aDescription) {
+        commandHandler.setExamineFallback(aVerb, aDescription);
+    }
 
     @Override
     public String getId() {
@@ -82,45 +83,47 @@ public class Thing implements Describable, Actionable {
         descriptionProvider.setLongDescription(aLongDescription);
     }
 
+    @Override
     public ExecutionResult applyCommand(CommandDescription aCommand) {
-        return commandProvider.applyCommand(aCommand);
+        return commandHandler.applyCommand(aCommand);
     }
 
     @Override
     public boolean hasVerb(String aVerb) {
-        return commandProvider.hasVerb(aVerb);
+        return commandHandler.hasVerb(aVerb);
     }
 
     @Override
     public List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription) {
-        return commandMatcher.getMatchingCommands(commandProvider, aCommandDescription);
+        return commandHandler.getMatchingCommandChain(aCommandDescription);
     }
 
     @Override
     public List<Command> getCommands() {
-        return new ArrayList<>(commandProvider.getCommands());
+        return new ArrayList<>(commandHandler.getCommands());
     }
 
     @Override
     public void addCommand(Command aCommand) {
-        commandProvider.addCommand(aCommand);
+        commandHandler.addCommand(aCommand);
     }
 
     @Override
     public void removeCommand(Command aCommand) {
-        commandProvider.removeCommand(aCommand);
+        commandHandler.removeCommand(aCommand);
+    }
+
+    @Override
+    public GenericCommandProvider getCommandProvider() {
+        return commandHandler.getCommandProvider();
+    }
+
+    public void setCommandProvider(GenericCommandProvider aCommandProvider) {
+        commandHandler.setCommandProvider(aCommandProvider);
     }
 
     public DescriptionProvider getDescriptionProvider() {
         return descriptionProvider;
-    }
-
-    public void setCommandProvider(GenericCommandProvider aCommandProvider) {
-        commandProvider = aCommandProvider;
-    }
-
-    public GenericCommandProvider getCommandProvider() {
-        return commandProvider;
     }
 
     @Override
@@ -139,7 +142,7 @@ public class Thing implements Describable, Actionable {
     public String toString() {
         return "Thing{" +
                "descriptionProvider=" + descriptionProvider +
-               ", commandProvider=" + commandProvider +
+               ", commandProvider=" + commandHandler.getCommandProvider() +
                ", id='" + id + '\'' +
                '}';
     }

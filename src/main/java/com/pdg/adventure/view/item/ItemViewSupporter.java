@@ -21,7 +21,7 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 

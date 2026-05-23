@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:9.6.0
+    container_name: adventure-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secret_password
+      MYSQL_DATABASE: adventure_db       # The database name
+      MYSQL_USER: adventure_user         # The app username
+      MYSQL_PASSWORD: adventure_password # The app password
+    ports:
+      - "3306:3306"                      # Maps host port to container port
+    volumes:
+      - mysql_data:/var/lib/mysql        # Persists data even if container stops
+
+  adminer:
+    image: adminer
+    ports:
+      - "8881:8080"
+
+volumes:
+  mysql_data:
+

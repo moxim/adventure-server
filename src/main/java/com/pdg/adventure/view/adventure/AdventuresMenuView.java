@@ -12,58 +12,52 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteParameters;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.util.List;
 import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 @PageTitle("Your World Of Adventures")
-@RouteAlias(value = "adventures", layout = AdventuresMainLayout.class)
-@Route(value = "", layout = AdventuresMainLayout.class)
-//@PermitAll
+@Route(value = "author/adventures", layout = AdventuresMainLayout.class)
+@RolesAllowed("ROLE_AUTHOR")
 public class AdventuresMenuView extends VerticalLayout {
 
-    private transient final AdventureService adventureService;
+    private transient final AdventureAccessService accessService;
 
     private String targetAdventureId;
     private final Button runAdventure;
 
-    public AdventuresMenuView(AdventureService anAdventureService) {
+    public AdventuresMenuView(AdventureAccessService anAccessService) {
 
         setSizeFull();
 
-        adventureService = anAdventureService;
+        accessService = anAccessService;
 
         Button create = new Button("Create Adventure", _ -> UI.getCurrent().navigate(AdventureEditorView.class));
-        //<theme-editor-local-classname>
         create.addClassName("adventures-menu-view-button-1");
 
         runAdventure = new Button("Run Adventure");
         runAdventure.setEnabled(false);
-//        runAdventure.addClickListener(event -> UI.getCurrent().navigate(RunAdventureView.class));
 
         VerticalLayout leftSide = new VerticalLayout(create, runAdventure);
 
-        List<AdventureData> adventures = adventureService.getAdventures();
+        List<AdventureData> adventures = accessService.getAdventuresForUser(ViewSupporter.getCurrentUser());
         Div gridContainer = getGridContainer(adventures);
         VerticalLayout rightSide = new VerticalLayout(gridContainer);
         rightSide.setSizeFull();
 
         HorizontalLayout jumpRow = new HorizontalLayout(leftSide, rightSide);
-//        setMargin(true);
-//        setPadding(true);
 
         add(jumpRow);
     }
 
-
-    private Div getGridContainer(List<AdventureData> locations) {
+    private Div getGridContainer(List<AdventureData> adventures) {
         Grid<AdventureData> grid = new Grid<>(AdventureData.class, false);
         grid.addColumn(ViewSupporter::formatId).setHeader("Id").setAutoWidth(true).setFlexGrow(0);
         grid.addColumn(AdventureData::getTitle).setHeader("Title").setSortable(true).setAutoWidth(true);
@@ -71,11 +65,6 @@ public class AdventuresMenuView extends VerticalLayout {
             Optional<AdventureData> optionalAdventure = selection.getFirstSelectedItem();
             if (optionalAdventure.isPresent()) {
                 targetAdventureId = optionalAdventure.get().getId();
-                // TODO:
-                //  enable this again
-//                runAdventure.setEnabled(true);
-            } else {
-//                runAdventure.setEnabled(false);
             }
         });
         grid.addItemDoubleClickListener(e -> {
@@ -83,12 +72,12 @@ public class AdventuresMenuView extends VerticalLayout {
             navigateToAdventureEditor(targetAdventureId);
         });
 
-        grid.setItems(locations);
+        grid.setItems(adventures);
 
         ViewSupporter.setSize(grid);
         grid.setEmptyStateText("Create some adventures.");
 
-        AdventuresMenuView.AdventureDataContextMenu contextMenu = new AdventuresMenuView.AdventureDataContextMenu(grid);
+        new AdventureDataContextMenu(grid);
 
         Div gridContainer = new Div(grid);
         gridContainer.setSizeFull();
@@ -98,11 +87,8 @@ public class AdventuresMenuView extends VerticalLayout {
 
     private void navigateToAdventureEditor(String aTargetAdventureId) {
         UI.getCurrent().navigate(AdventureEditorView.class,
-                                 new RouteParameters(RouteIds.ADVENTURE_ID.getValue(), aTargetAdventureId)
-        );
-
+                                 new RouteParameters(RouteIds.ADVENTURE_ID.getValue(), aTargetAdventureId));
     }
-
 
     private class AdventureDataContextMenu extends GridContextMenu<AdventureData> {
         public AdventureDataContextMenu(Grid<AdventureData> target) {
@@ -116,15 +102,10 @@ public class AdventuresMenuView extends VerticalLayout {
             addComponent(new Hr());
 
             GridMenuItem<AdventureData> adventureDetailItem =
-                    addItem("AdventureId", e -> e.getItem().ifPresent(adventure -> {
-                        adventure.getId();
-                    }));
+                    addItem("AdventureId", e -> e.getItem().ifPresent(adventure -> adventure.getId()));
 
             setDynamicContentHandler(adventure -> {
-                // Do not show context menu when header is clicked
-                if (adventure == null) {
-                    return false;
-                }
+                if (adventure == null) return false;
                 adventureDetailItem.scrollIntoView();
                 adventureDetailItem.setText(adventure.getNotes());
                 return true;
@@ -137,14 +118,7 @@ public class AdventuresMenuView extends VerticalLayout {
                         (ListDataProvider<AdventureData>) target.getDataProvider();
                 dataProvider.getItems().remove(adventure);
                 dataProvider.refreshAll();
-
-                // Delete adventure - cascade delete will automatically handle:
-                // - All messages (@CascadeDelete on messages field)
-                // - All items (@CascadeDelete on itemContainerData in locations)
-                // - All locations (@CascadeDelete on locationData field)
-                // - All words (@CascadeDelete on words in vocabularyData)
-                // - Vocabulary (@CascadeDelete on vocabularyData field)
-                adventureService.deleteAdventure(adventure.getId());
+                accessService.deleteAdventure(adventure.getId(), ViewSupporter.getCurrentUser());
             }));
         }
     }

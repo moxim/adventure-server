@@ -11,6 +11,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -20,12 +21,13 @@ import static com.pdg.adventure.model.Word.Type.VERB;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.support.RouteIds;
 
-@Route(value = "adventures/:adventureId/vocabulary/special", layout = VocabularyMainLayout.class)
+@Route(value = "author/adventures/:adventureId/vocabulary/special", layout = VocabularyMainLayout.class)
 @PageTitle("Special Words")
+@RolesAllowed("ROLE_AUTHOR")
 public class SpecialWordsView extends VerticalLayout implements SaveListener, GuiListener {
 
     private final transient AdventureService adventureService;
@@ -38,6 +40,7 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
     private VocabularyPickerField takeSelector;
     private VocabularyPickerField dropSelector;
     private VocabularyPickerField loadSelector;
+    private VocabularyPickerField examineSelector;
 
     public SpecialWordsView(AdventureService anAdventureService) {
         adventureService = anAdventureService;
@@ -73,7 +76,7 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
         buttonLayout.setSpacing(true);
 
         VerticalLayout mainLayout = new VerticalLayout(titleLabel, descriptionLabel, takeSelector, dropSelector,
-                                                       loadSelector, buttonLayout);
+                                                       loadSelector, examineSelector, buttonLayout);
         mainLayout.setMaxWidth("600px");
         mainLayout.setPadding(true);
         mainLayout.setSpacing(true);
@@ -90,6 +93,9 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
 
         loadSelector = createSelector("Loader", "Load", word -> vocabularyData.setLoadWord(word),
                                       "A verb for loading adventures. Can be changed unless used as a command.");
+
+        examineSelector = createSelector("Examiner", "Examine", word -> vocabularyData.setExamineWord(word),
+                                         "A verb used for examining things in detail. Can be changed unless used as a command.");
     }
 
     @Override
@@ -128,7 +134,7 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
                                               final VocabularyPickerField selector) {
         if (oldValue != null && (newValue == null || !oldValue.getId().equals(newValue.getId()))) {
             // Check if the old value is used in any item commands
-            List<WordUsage> usages = wordUsageTracker.checkWordIsNotUsedInLocations(oldValue);
+            List<WordUsage> usages = wordUsageTracker.findWordUsagesInLocations(oldValue);
             if (!usages.isEmpty()) {
                 showWordIsBusyNotification(wordType, newValue, oldValue, usages);
                 selector.setValue(oldValue);
@@ -142,7 +148,7 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
                                             final List<WordUsage> aUsageList) {
         String action = newValue == null ? "cleared" : "changed";
         String notificationText = aWordType + " verb '" + oldValue.getText() + "' cannot be " + action +
-                                  " because it is used as a command in one or more items" +
+                                  " because it is used in a command for one or more items" +
                                   wordUsageTracker.createUsagesText(aUsageList, 5);
 
         Notification.show(notificationText, 4000, Notification.Position.MIDDLE);
@@ -161,6 +167,7 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
         populateSpecialWordSelector(takeSelector, vocabularyData.getTakeWord());
         populateSpecialWordSelector(dropSelector, vocabularyData.getDropWord());
         populateSpecialWordSelector(loadSelector, vocabularyData.getLoadWord());
+        populateSpecialWordSelector(examineSelector, vocabularyData.getExamineWord());
     }
 
     private void populateSpecialWordSelector(VocabularyPickerField selector, Word currentWord) {

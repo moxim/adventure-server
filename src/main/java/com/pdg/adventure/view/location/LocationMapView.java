@@ -6,10 +6,12 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
+import jakarta.annotation.security.RolesAllowed;
 import org.github.legioth.imagemap.ImageMap;
 
 @PageTitle("Your World")
-@Route(value = "map", layout = LocationsMainLayout.class)
+@Route(value = "author/map", layout = LocationsMainLayout.class)
+@RolesAllowed("ROLE_AUTHOR")
 public class LocationMapView extends FormLayout {
 
     public LocationMapView() {

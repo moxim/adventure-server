@@ -29,10 +29,7 @@ public class GenericCommandProvider implements CommandProvider {
 
     @Override
     public void addCommand(Command aCommand) {
-        CommandChain chain = availableCommands.get(aCommand.getDescription());
-        if (chain == null) {
-            chain = new GenericCommandChain();
-        }
+        CommandChain chain = availableCommands.getOrDefault(aCommand.getDescription(), new GenericCommandChain());
         chain.addCommand(aCommand);
         availableCommands.put(aCommand.getDescription(), chain);
     }
@@ -55,11 +52,6 @@ public class GenericCommandProvider implements CommandProvider {
         return commands;
     }
 
-    @Override
-    public List<CommandChain> getMatchingCommands(final CommandDescription aCommandDescription) {
-        return getMatchingCommandChain(aCommandDescription);
-    }
-
     public ExecutionResult applyCommand(CommandDescription aCommandDescription) {
         ExecutionResult result = new CommandExecutionResult();
         List<CommandChain> commandChain = getMatchingCommandChain(aCommandDescription);
@@ -70,25 +62,42 @@ public class GenericCommandProvider implements CommandProvider {
         return result;
     }
 
+    @Override
     public List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription) {
         String verb = aCommandDescription.getVerb();
         String adjective = aCommandDescription.getAdjective();
         String noun = aCommandDescription.getNoun();
 
+        // noun must match exactly; verb/adjective match when either side equals the other
+        // or either side is VocabularyData.EMPTY_STRING (wildcard). Returns all matching chains.
         List<CommandChain> result = new ArrayList<>();
         for (Map.Entry<CommandDescription, CommandChain> entry : availableCommands.entrySet()) {
             CommandDescription itemCommand = entry.getKey();
             String itemVerb = itemCommand.getVerb();
             String itemAdjective = itemCommand.getAdjective();
             String itemNoun = itemCommand.getNoun();
-            if (itemVerb.equals(verb) && itemNoun.equals(noun)) {
-                if (itemAdjective.equals(adjective)) {
-                    result.add(entry.getValue());
-                } else if (VocabularyData.EMPTY_STRING.equals(itemAdjective)) {
-                    result.add(entry.getValue());
-                } else if (VocabularyData.EMPTY_STRING.equals(adjective)) {
-                    result.add(entry.getValue());
-                }
+
+            // noun must match exactly
+            if (!Objects.equals(itemNoun, noun)) {
+                continue;
+            }
+
+            // treat null as EMPTY_STRING just in case
+            String inVerb = verb == null ? VocabularyData.EMPTY_STRING : verb;
+            String inAdj = adjective == null ? VocabularyData.EMPTY_STRING : adjective;
+            String itVerb = itemVerb == null ? VocabularyData.EMPTY_STRING : itemVerb;
+            String itAdj = itemAdjective == null ? VocabularyData.EMPTY_STRING : itemAdjective;
+
+            boolean verbMatches = itVerb.equals(inVerb)
+                    || VocabularyData.EMPTY_STRING.equals(itVerb)
+                    || VocabularyData.EMPTY_STRING.equals(inVerb);
+
+            boolean adjMatches = itAdj.equals(inAdj)
+                    || VocabularyData.EMPTY_STRING.equals(itAdj)
+                    || VocabularyData.EMPTY_STRING.equals(inAdj);
+
+            if (verbMatches && adjMatches) {
+                result.add(entry.getValue());
             }
         }
         return result;

@@ -7,6 +7,8 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +16,7 @@ import java.util.Optional;
 import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.api.Ided;
 import com.pdg.adventure.model.*;
+import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.view.component.VocabularyPicker;
@@ -24,6 +27,14 @@ public class ViewSupporter {
 
     public static int MAX_TEXT_IN_GRID = 32;
     public static int MAX_ID_LENGTH = 26;
+
+    public static UserData getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof UserData userData) {
+            return userData;
+        }
+        throw new IllegalStateException("No authenticated user in security context");
+    }
     
     public static String formatId(Ided anIdedData) {
         if (anIdedData == null) {
@@ -37,7 +48,7 @@ public class ViewSupporter {
     }
 
     public static String formatId(String anIdedData) {
-        return anIdedData.substring(0, MAX_ID_LENGTH);
+        return anIdedData.substring(0, Math.min(MAX_ID_LENGTH, anIdedData.length()));
     }
 
     public static void populateStartLocation(AdventureData anAdventureData, TextField aStartLocation) {

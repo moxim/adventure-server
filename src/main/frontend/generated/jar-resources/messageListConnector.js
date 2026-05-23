@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,16 +15,43 @@
  */
 
 /**
- * Maps the given items to a new array of items with formatted time.
+ * Creates a DateTimeFormat with the given locale, or throws if invalid.
  */
-function formatItems(items, locale) {
-  const formatter = new Intl.DateTimeFormat(locale, {
+function createDateTimeFormatter(locale) {
+  return new Intl.DateTimeFormat(locale, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
     hour: 'numeric',
     minute: 'numeric'
   });
+}
+
+function getFormatter(locale) {
+  // Try creating formatter with progressive fallbacks
+  const localeParts = locale?.split('-');
+  const fallbackLocales = [
+    locale, // Full locale (e.g., "de-DE-hw")
+    localeParts?.slice(0, 2).join('-'), // Base locale without variant (e.g., "de-DE")
+    localeParts?.[0] // Language only (e.g., "de")
+  ];
+
+  for (const fallbackLocale of fallbackLocales) {
+    try {
+      return createDateTimeFormatter(fallbackLocale);
+    } catch (e) {
+      // Continue to next fallback
+    }
+  }
+
+  return createDateTimeFormatter(undefined); // Default locale
+}
+
+/**
+ * Maps the given items to a new array of items with formatted time.
+ */
+function formatItems(items, locale) {
+  const formatter = getFormatter(locale);
 
   return items.map((item) =>
     item.time
@@ -37,9 +64,42 @@ function formatItems(items, locale) {
 
 window.Vaadin.Flow.messageListConnector = {
   /**
+   * Initializes the connector for the given message list element.
+   * Sets up event listeners for attachment clicks.
+   */
+  initLazy(list) {
+    if (list._flowConnectorInitialized) {
+      return;
+    }
+    list._flowConnectorInitialized = true;
+
+    // Listen for attachment-click events and re-dispatch with indexes for Flow
+    list.addEventListener('attachment-click', (e) => {
+      const { item, attachment } = e.detail;
+
+      // Compute indexes from the item and attachment references
+      const itemIndex = list.items.indexOf(item);
+      const attachmentIndex = item?.attachments?.indexOf(attachment) ?? -1;
+
+      // Only dispatch if indexes are valid
+      if (itemIndex < 0 || attachmentIndex < 0) {
+        return;
+      }
+
+      // Dispatch a new event with indexes for Flow's @DomEvent handling
+      list.dispatchEvent(
+        new CustomEvent('attachment-click-flow', {
+          detail: { itemIndex, attachmentIndex }
+        })
+      );
+    });
+  },
+
+  /**
    * Fully replaces the items in the list with the given items.
    */
   setItems(list, items, locale) {
+    this.initLazy(list);
     list.items = formatItems(items, locale);
   },
 
@@ -63,6 +123,7 @@ window.Vaadin.Flow.messageListConnector = {
    * Adds the given items to the end of the list.
    */
   addItems(list, newItems, locale) {
+    this.initLazy(list);
     list.items = [...(list.items || []), ...formatItems(newItems, locale)];
   }
 };

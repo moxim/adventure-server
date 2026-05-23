@@ -17,7 +17,7 @@ import static org.mockito.Mockito.when;
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 
 /**
  * Navigation and routing tests for DirectionEditorView.

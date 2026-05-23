@@ -3,7 +3,6 @@ package com.pdg.adventure.view.message;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.html.Hr;
@@ -17,6 +16,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,20 +24,22 @@ import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
-import com.pdg.adventure.server.storage.AdventureService;
-import com.pdg.adventure.server.storage.MessageService;
+import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
+import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
-@Route(value = "adventures/:adventureId/messages", layout = MessagesMainLayout.class)
+@Route(value = "author/adventures/:adventureId/messages", layout = MessagesMainLayout.class)
+@RolesAllowed("ROLE_AUTHOR")
 public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle, BeforeEnterObserver {
     private final transient MessageService messageService;
     private final transient AdventureService adventureService;
-    private final Grid<MessageViewModel> grid;
+    private final Grid<MessageDescriptionAdapter> grid;
     private transient AdventureData adventureData;
     private String pageTitle;
-    private transient ListDataProvider<MessageViewModel> dataProvider;
+    private transient ListDataProvider<MessageDescriptionAdapter> dataProvider;
 
     public MessagesMenuView(MessageService aMessageService, AdventureService anAdventureService) {
         messageService = aMessageService;
@@ -94,57 +96,32 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         });
     }
 
-    private Grid<MessageViewModel> createGrid() {
-        Grid<MessageViewModel> messageGrid = new Grid<>(MessageViewModel.class, false);
+    private Grid<MessageDescriptionAdapter> createGrid() {
+        GridProvider<MessageDescriptionAdapter> gridProvider = new GridProvider<>(MessageDescriptionAdapter.class);
+        gridProvider.getGrid().getColumns().get(0).setHeader("Message ID").setFlexGrow(1);
+        gridProvider.getGrid().getColumns().get(1).setHeader("Message Text").setFlexGrow(3).setSortable(true);
+        gridProvider.addColumn(MessageDescriptionAdapter::getLength, "Length");
+        gridProvider.addColumn(MessageDescriptionAdapter::getUsageCount, "Used");
 
-        messageGrid.addColumn(MessageViewModel::getId)
-                   .setHeader("Message ID")
-                   .setAutoWidth(true)
-                   .setFlexGrow(1)
-                   .setSortable(true);
-
-        messageGrid.addColumn(mvm -> mvm.getPreview(30))
-                   .setHeader("Message Text")
-                   .setAutoWidth(true)
-                   .setFlexGrow(3)
-                   .setSortable(true);
-
-        messageGrid.addColumn(mvm -> mvm.getMessageText().length())
-                   .setHeader("Length")
-                   .setAutoWidth(true)
-                   .setFlexGrow(0);
-
-        messageGrid.addColumn(MessageViewModel::getUsageCount)
-                   .setHeader("Used")
-                   .setAutoWidth(true)
-                   .setFlexGrow(0)
-                   .setSortable(true);
-
-        // Double-click to edit
-        messageGrid.addItemDoubleClickListener(e ->
-                                                       UI.getCurrent().navigate(MessageEditorView.class,
-                                                                                new RouteParameters(
-                                                                                        new RouteParam(
-                                                                                                RouteIds.ADVENTURE_ID.getValue(),
-                                                                                                adventureData.getId()),
-                                                                                        new RouteParam(
-                                                                                                RouteIds.MESSAGE_ID.getValue(),
-                                                                                                e.getItem().getId())
-                                                                                ))
-                                                         .ifPresent(editor -> editor.setData(adventureData))
+        gridProvider.addItemDoubleClickListener(e ->
+                UI.getCurrent().navigate(MessageEditorView.class,
+                                         new RouteParameters(
+                                                 new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                adventureData.getId()),
+                                                 new RouteParam(RouteIds.MESSAGE_ID.getValue(),
+                                                                e.getItem().getId())))
+                  .ifPresent(editor -> editor.setData(adventureData))
         );
 
-        // Context menu
+        Grid<MessageDescriptionAdapter> messageGrid = gridProvider.getGrid();
         createContextMenu(messageGrid);
-
         ViewSupporter.setSize(messageGrid);
         messageGrid.setEmptyStateText("No messages yet. Create one to get started.");
-
         return messageGrid;
     }
 
-    private void createContextMenu(Grid<MessageViewModel> messageGrid) {
-        GridContextMenu<MessageViewModel> contextMenu = messageGrid.addContextMenu();
+    private void createContextMenu(Grid<MessageDescriptionAdapter> messageGrid) {
+        GridContextMenu<MessageDescriptionAdapter> contextMenu = messageGrid.addContextMenu();
 
         // Create a span to display the full message text
         Span messageTextSpan = new Span();
@@ -157,64 +134,43 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
                        .set("white-space", "normal")
                        .set("word-wrap", "break-word");
 
-        // Update the message text when the context menu opens
         contextMenu.addGridContextMenuOpenedListener(event -> {
-            event.getItem().ifPresent(message -> {
-                messageTextSpan.setText("\"" + message.getMessageText() + "\"");
+            event.getItem().ifPresent(adapter -> {
+                messageTextSpan.setText("\"" + adapter.getMessageViewModel().getMessageText() + "\"");
             });
         });
 
-        // Add the message text at the top
         contextMenu.addComponentAsFirst(messageTextSpan);
-
-        // Add separator
         contextMenu.addComponentAsFirst(new Hr());
 
         contextMenu.addItem("Edit", event -> {
-            event.getItem().ifPresent(item ->
-                                              UI.getCurrent().navigate(MessageEditorView.class,
-                                                                       new RouteParameters(
-                                                                               new RouteParam(
-                                                                                       RouteIds.ADVENTURE_ID.getValue(),
-                                                                                       adventureData.getId()),
-                                                                               new RouteParam(
-                                                                                       RouteIds.MESSAGE_ID.getValue(),
-                                                                                       item.getId())
-                                                                       ))
-                                                .ifPresent(editor -> editor.setData(adventureData))
+            event.getItem().ifPresent(adapter ->
+                    UI.getCurrent().navigate(MessageEditorView.class,
+                                             new RouteParameters(
+                                                     new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                    adventureData.getId()),
+                                                     new RouteParam(RouteIds.MESSAGE_ID.getValue(),
+                                                                    adapter.getId())))
+                      .ifPresent(editor -> editor.setData(adventureData))
             );
         });
 
-        contextMenu.addItem("Find Usage", event -> {
-            event.getItem().ifPresent(this::showMessageUsage);
-        });
-
-        contextMenu.addItem("Duplicate", event -> {
-            event.getItem().ifPresent(this::duplicateMessage);
-        });
-
-        contextMenu.addItem("Delete", event -> {
-            event.getItem().ifPresent(this::confirmDeleteMessage);
-        });
+        contextMenu.addItem("Find Usage", event -> event.getItem().ifPresent(this::showMessageUsage));
+        contextMenu.addItem("Duplicate", event -> event.getItem().ifPresent(this::duplicateMessage));
+        contextMenu.addItem("Delete", event -> event.getItem().ifPresent(this::confirmDeleteMessage));
     }
 
-    private void duplicateMessage(MessageViewModel original) {
+    private void duplicateMessage(MessageDescriptionAdapter adapter) {
+        MessageViewModel original = adapter.getMessageViewModel();
         String newId = original.getId() + "_copy";
         int counter = 1;
 
-        // Find a unique ID
         while (adventureData.getMessages().containsKey(newId)) {
             newId = original.getId() + "_copy" + counter++;
         }
 
-        // Create the duplicate
-        MessageData newMessage = new MessageData(
-                adventureData.getId(),
-                newId,
-                original.getMessageText()
-        );
+        MessageData newMessage = new MessageData(adventureData.getId(), newId, original.getMessageText());
 
-        // Copy additional fields if present
         if (original.getCategory() != null) {
             newMessage.setCategory(original.getCategory());
         }
@@ -222,32 +178,26 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
             newMessage.setNotes(original.getNotes());
         }
 
-        // Add message to adventure's messages Map
         adventureData.getMessages().put(newId, newMessage);
-
-        // Save adventure (triggers cascade save for message via @CascadeSave)
         adventureService.saveAdventureData(adventureData);
-
-        // Refresh the grid
         refreshGrid();
 
-        // Navigate to edit the new message
         UI.getCurrent().navigate(MessageEditorView.class,
                                  new RouteParameters(
                                          new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
-                                         new RouteParam(RouteIds.MESSAGE_ID.getValue(), newId)
-                                 ))
+                                         new RouteParam(RouteIds.MESSAGE_ID.getValue(), newId)))
           .ifPresent(editor -> editor.setData(adventureData));
     }
 
-    private void showMessageUsage(MessageViewModel message) {
+    private void showMessageUsage(MessageDescriptionAdapter adapter) {
+        String messageId = adapter.getId();
         List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData,
-                                                                                              message.getId());
-        ViewSupporter.showUsages("Message Usage", "message", message.getId(), usages);
+                                                                                              messageId);
+        ViewSupporter.showUsages("Message Usage", "message", messageId, usages);
     }
 
-    private void confirmDeleteMessage(MessageViewModel message) {
-        String messageId = message.getId();
+    private void confirmDeleteMessage(MessageDescriptionAdapter adapter) {
+        String messageId = adapter.getId();
         int usageCount = MessageUsageTracker.countMessageUsages(adventureData, messageId);
 
         if (usageCount > 0) {
@@ -256,26 +206,15 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
                               " times(s). . Please remove those references first.",
                               5000, Notification.Position.MIDDLE);
         } else {
-            final var dialog = getConfirmDialog(message);
+            final var dialog = ViewSupporter.getConfirmDialog("Delete Message", "message", messageId);
             dialog.addConfirmListener(_ -> {
-                // Remove message from adventure's messages Map
                 adventureData.getMessages().remove(messageId);
-
-                // Delete the message document from the database
                 messageService.deleteMessage(adventureData.getId(), messageId);
-
-                // Save adventure to update @DBRef references
                 adventureService.saveAdventureData(adventureData);
-
                 refreshGrid();
             });
-
             dialog.open();
         }
-    }
-
-    private static ConfirmDialog getConfirmDialog(final MessageViewModel aMessage) {
-        return ViewSupporter.getConfirmDialog("Delete Message", "message", aMessage.getId());
     }
 
     private void filterMessages(String searchTerm) {
@@ -284,9 +223,9 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
                 dataProvider.clearFilters();
             } else {
                 String lowerCaseSearchTerm = searchTerm.toLowerCase();
-                dataProvider.setFilter(mvm ->
-                                               mvm.getId().toLowerCase().contains(lowerCaseSearchTerm) ||
-                                               mvm.getMessageText().toLowerCase().contains(lowerCaseSearchTerm)
+                dataProvider.setFilter(adapter ->
+                        adapter.getId().toLowerCase().contains(lowerCaseSearchTerm) ||
+                        adapter.getMessageViewModel().getMessageText().toLowerCase().contains(lowerCaseSearchTerm)
                 );
             }
         }
@@ -294,20 +233,17 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
 
     private void refreshGrid() {
         if (adventureData != null) {
-            // Load messages from adventure's messages Map (loaded via @DBRef)
             List<MessageData> messageDataList = new ArrayList<>(adventureData.getMessages().values());
 
-            // Convert to view models with usage counts
-            List<MessageViewModel> messages = messageDataList.stream()
-                                                             .map(msgData -> {
-                                                                 int usageCount
-                                                                         = MessageUsageTracker.countMessageUsages(
-                                                                         adventureData, msgData.getMessageId());
-                                                                 return new MessageViewModel(msgData, usageCount);
-                                                             })
-                                                             .toList();
+            List<MessageDescriptionAdapter> adapters = messageDataList.stream()
+                    .map(msgData -> {
+                        int usageCount = MessageUsageTracker.countMessageUsages(adventureData,
+                                                                                msgData.getMessageId());
+                        return new MessageDescriptionAdapter(new MessageViewModel(msgData, usageCount));
+                    })
+                    .toList();
 
-            dataProvider = new ListDataProvider<>(messages);
+            dataProvider = new ListDataProvider<>(adapters);
             grid.setDataProvider(dataProvider);
         }
     }

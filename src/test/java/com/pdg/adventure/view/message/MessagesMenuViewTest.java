@@ -12,8 +12,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
-import com.pdg.adventure.server.storage.AdventureService;
-import com.pdg.adventure.server.storage.MessageService;
+import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.storage.service.MessageService;
 
 /**
  * Unit tests for MessagesMenuView business logic.

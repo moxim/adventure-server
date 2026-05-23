@@ -12,6 +12,7 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.view.command.action.MovePlayerActionEditor;
 
 class MovePlayerActionEditorTest {
 

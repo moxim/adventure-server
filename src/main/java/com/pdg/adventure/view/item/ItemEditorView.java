@@ -12,6 +12,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,16 +31,18 @@ import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.model.condition.CarriedConditionData;
 import com.pdg.adventure.model.condition.HereConditionData;
 import com.pdg.adventure.model.condition.NotConditionData;
-import com.pdg.adventure.server.storage.AdventureService;
-import com.pdg.adventure.server.storage.ItemService;
+import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.support.RouteIds;
+import com.pdg.adventure.view.support.ShowNotification;
 import com.pdg.adventure.view.support.ViewSupporter;
 
-@Route(value = "adventures/:adventureId/locations/:locationId/items/:itemId/edit", layout = ItemsMainLayout.class)
-@RouteAlias(value = "adventures/:adventureId/locations/:locationId/items/new", layout = ItemsMainLayout.class)
+@Route(value = "author/adventures/:adventureId/locations/:locationId/items/:itemId/edit", layout = ItemsMainLayout.class)
+@RouteAlias(value = "author/adventures/:adventureId/locations/:locationId/items/new", layout = ItemsMainLayout.class)
+@RolesAllowed("ROLE_AUTHOR")
 public class ItemEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
 
@@ -146,7 +149,7 @@ public class ItemEditorView extends VerticalLayout
                 }
             } else {
                 // Checkbox was unchecked - remove take/drop commands
-                removePickupCommands(itemData);
+                removePickupCommands(itemData, ShowNotification.SHOW_NOTIFICATION);
             }
         });
 
@@ -231,7 +234,7 @@ public class ItemEditorView extends VerticalLayout
         return true;
     }
 
-    private void removePickupCommands(ItemData anItemData) {
+    private void removePickupCommands(ItemData anItemData, final ShowNotification aRequestForNotification) {
         if (anItemData == null || anItemData.getCommandProviderData() == null) {
             return;
         }
@@ -251,11 +254,9 @@ public class ItemEditorView extends VerticalLayout
                     return false;
                 }
                 final CommandData rawTakeCommandData = getRawCommandData(
-                        adventureData.getVocabularyData().getTakeWord(),
-                        anItemData);
+                        adventureData.getVocabularyData().getTakeWord(), anItemData);
                 final CommandData rawDropCommandData = getRawCommandData(
-                        adventureData.getVocabularyData().getDropWord(),
-                        anItemData);
+                        adventureData.getVocabularyData().getDropWord(), anItemData);
                 return command.getCommandDescription().getCommandSpecification()
                               .equals(rawTakeCommandData.getCommandDescription().getCommandSpecification())
                        ||
@@ -268,12 +269,14 @@ public class ItemEditorView extends VerticalLayout
         });
 
         LOG.info("Removed take/drop commands from item: {}", anItemData.getId());
-        Notification.show("Take and drop commands removed", 2000, Notification.Position.BOTTOM_START);
+        if (aRequestForNotification.equals(ShowNotification.SHOW_NOTIFICATION)) {
+            Notification.show("Take and drop commands removed", 2000, Notification.Position.BOTTOM_START);
+        }
     }
 
     private void createPickupCommands(final Word aTakeVerb, final Word aDropVerb, final ItemData anItemData) {
         // First remove any existing take/drop commands to avoid duplicates
-        removePickupCommands(anItemData);
+        removePickupCommands(anItemData, ShowNotification.HIDE_NOTIFICATION);
 
         String itemDescription = ViewSupporter.formatDescription(anItemData);
 
