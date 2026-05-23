@@ -4,21 +4,6 @@ This package provides annotations to automatically register mappers with the `Ma
 
 ## Available Annotations
 
-### @RegisterMapper
-Explicit registration where you specify both the data object and business object classes:
-
-```java
-@Service
-@RegisterMapper(
-    dataObjectClass = VocabularyData.class,
-    businessObjectClass = Vocabulary.class,
-    priority = 10
-)
-public class VocabularyMapper implements Mapper<VocabularyData, Vocabulary> {
-    // No @PostConstruct registerMapper() needed!
-}
-```
-
 ### @AutoRegisterMapper
 Automatic registration that detects the types from the generic interface:
 

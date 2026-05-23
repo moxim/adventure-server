@@ -13,7 +13,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.DescriptionData;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.view.command.CommandsMenuView;
 
 /**
  * Unit tests for CommandsMenuView business logic.

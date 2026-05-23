@@ -7,7 +7,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.*;
 
 import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.support.RouteIds;
 

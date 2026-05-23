@@ -3,12 +3,14 @@ package com.pdg.adventure.view.adventure;
 
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.router.BeforeLeaveEvent;
+import jakarta.annotation.security.PermitAll;
 
 import com.pdg.adventure.view.component.AdventureAppLayout;
 
 /**
  * The main view is a top-level placeholder for other view.
  */
+@PermitAll
 public class AdventuresMainLayout extends AdventureAppLayout {
 
     public AdventuresMainLayout() {
@@ -19,7 +21,6 @@ public class AdventuresMainLayout extends AdventureAppLayout {
 
         setPrimarySection(Section.NAVBAR);
     }
-
 
     public static void checkIfUserWantsToLeavePage(BeforeLeaveEvent anEvent, boolean pageHasChanges) {
         if (pageHasChanges) {

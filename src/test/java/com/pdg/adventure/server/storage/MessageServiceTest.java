@@ -17,6 +17,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.pdg.adventure.model.MessageData;
+import com.pdg.adventure.server.storage.repository.MessageRepository;
+import com.pdg.adventure.server.storage.service.MessageService;
 
 @ExtendWith(MockitoExtension.class)
 class MessageServiceTest {

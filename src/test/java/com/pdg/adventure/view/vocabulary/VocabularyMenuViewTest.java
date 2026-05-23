@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 
 /**
  * Unit tests for VocabularyMenuView business logic.

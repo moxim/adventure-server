@@ -8,19 +8,21 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.server.storage.AdventureService;
-import com.pdg.adventure.server.storage.ItemService;
+import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.location.LocationEditorView;
 import com.pdg.adventure.view.support.RouteIds;
 
-@Route(value = "adventures/:adventureId/locations/:locationId/items", layout = ItemsMainLayout.class)
+@Route(value = "author/adventures/:adventureId/locations/:locationId/items", layout = ItemsMainLayout.class)
 @PageTitle("Items")
+@RolesAllowed("ROLE_AUTHOR")
 public class ItemsMenuView extends VerticalLayout implements BeforeEnterObserver {
 
     private final transient AdventureService adventureService;

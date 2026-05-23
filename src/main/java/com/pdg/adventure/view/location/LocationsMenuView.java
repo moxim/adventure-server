@@ -20,6 +20,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,15 +28,16 @@ import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
 import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
-@Route(value = "adventures/:adventureId/locations", layout = LocationsMainLayout.class)
-@RouteAlias(value = "adventures/locations", layout = LocationsMainLayout.class)
+@Route(value = "author/adventures/:adventureId/locations", layout = LocationsMainLayout.class)
+@RouteAlias(value = "author/adventures/locations", layout = LocationsMainLayout.class)
 @PageTitle("Locations")
+@RolesAllowed("ROLE_AUTHOR")
 public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObserver, BeforeEnterObserver {
 
     private static final String LOCATION_ID = "locationId";

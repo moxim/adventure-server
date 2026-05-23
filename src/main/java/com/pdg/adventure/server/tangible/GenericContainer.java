@@ -10,6 +10,7 @@ import java.util.List;
 import com.pdg.adventure.api.*;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
+import com.pdg.adventure.server.parser.CommandMatcher;
 import com.pdg.adventure.server.support.DescriptionProvider;
 
 public class GenericContainer extends Item implements Container {
@@ -133,14 +134,14 @@ public class GenericContainer extends Item implements Container {
 
     @Override
     public List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription) {
-        final List<Containable> items = ItemIdentifier.findItems(this, aCommandDescription);
         List<CommandChain> result = new ArrayList<>();
-        if (holdsDirections) {
-            result.addAll(
-                    getCommandMatcher().getMatchingCommandsFromCommandProvider(getContents(), aCommandDescription));
-        } else {
-            result.addAll(getCommandMatcher().getMatchingCommands(items, aCommandDescription));
-        }
+        final List<Containable> items = ItemIdentifier.findItems(this, aCommandDescription);
+//        result.addAll(CommandMatcher.getMatchingCommands(getContents(), aCommandDescription));
+        result.addAll(CommandMatcher.getMatchingCommands(items, aCommandDescription));
+        // the following is needed for any commands that do not apply to items nor directions,
+        // but may have been assigned to the location - oh really? this is not a location, but a container.
+        // Could it have commands that do not apply to items, but to the container itself?
+        // So we need to check those as well.
         result.addAll(super.getMatchingCommandChain(aCommandDescription));
         return result;
     }

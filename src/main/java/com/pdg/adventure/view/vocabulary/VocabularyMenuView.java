@@ -19,6 +19,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,15 +27,16 @@ import java.util.List;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
 import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
-@Route(value = "adventures/:adventureId/vocabulary", layout = VocabularyMainLayout.class)
+@Route(value = "author/adventures/:adventureId/vocabulary", layout = VocabularyMainLayout.class)
 //@RouteAlias(value = "adventures/vocabulary", layout = VocabularyMainLayout.class)
 @PageTitle("Vocabulary")
+@RolesAllowed("ROLE_AUTHOR")
 public class VocabularyMenuView extends VerticalLayout implements SaveListener, GuiListener {
 
     private transient final AdventureService adventureService;

@@ -1,6 +1,6 @@
 package com.pdg.adventure.server.mapper.action;
 
-import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.pdg.adventure.model.action.SetVariableActionData;
@@ -14,18 +14,14 @@ import com.pdg.adventure.server.support.VariableProvider;
 @AutoRegisterMapper(priority = 30, description = "Set variable action mapper")
 public class SetVariableActionMapper extends ActionMapper<SetVariableActionData, SetVariableAction> {
 
-    private VariableProvider variableProvider;
-    private MessagesHolder messagesHolder;
+    private final VariableProvider variableProvider;
+    private final MessagesHolder messagesHolder;
 
-    public SetVariableActionMapper(MapperSupporter aMapperSupporter) {
+    public SetVariableActionMapper(@Qualifier("variableProvider") VariableProvider aVariableProvider, MessagesHolder aMessagesHolder, MapperSupporter aMapperSupporter) {
         super(aMapperSupporter);
+        messagesHolder = aMessagesHolder;
+        variableProvider = aVariableProvider;
         aMapperSupporter.registerMapper(SetVariableActionData.class, SetVariableAction.class, this);
-    }
-
-    @PostConstruct
-    public void initializeDependencies() {
-        variableProvider = getMapperSupporter().getVariableProvider();
-        messagesHolder = getMapperSupporter().getMessagesHolder();
     }
 
     @Override

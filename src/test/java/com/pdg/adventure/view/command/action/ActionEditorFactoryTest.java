@@ -17,6 +17,7 @@ import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
+import com.pdg.adventure.view.command.action.*;
 
 class ActionEditorFactoryTest {
 

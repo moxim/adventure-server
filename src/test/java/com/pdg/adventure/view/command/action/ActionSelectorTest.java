@@ -13,6 +13,8 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.MessageData;
+import com.pdg.adventure.view.command.action.ActionEditorComponent;
+import com.pdg.adventure.view.command.action.ActionSelector;
 
 class ActionSelectorTest {
 

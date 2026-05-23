@@ -25,9 +25,8 @@ public class Location extends Thing implements Visitable, HasLight {
     }
 
     public Location(DescriptionProvider aDescriptionProvider, Container aPocket) {
-        super(aDescriptionProvider);
+        this(aDescriptionProvider);
         itemContainer = aPocket;
-        directions = new GenericContainer(aDescriptionProvider, true, 9999);
     }
 
     public ExecutionResult addItem(Containable anItem) {
@@ -79,7 +78,7 @@ public class Location extends Thing implements Visitable, HasLight {
 
     @Override
     public List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription) {
-        List<CommandChain> availableCommands = new ArrayList<>(super.getMatchingCommandChain(aCommandDescription));
+        List<CommandChain> availableCommands = new ArrayList<>(); // super.getMatchingCommandChain(aCommandDescription));
         availableCommands.addAll(itemContainer.getMatchingCommandChain(aCommandDescription));
         availableCommands.addAll(directions.getMatchingCommandChain(aCommandDescription));
         return availableCommands;

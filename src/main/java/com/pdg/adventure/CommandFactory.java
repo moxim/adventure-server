@@ -1,9 +1,13 @@
 package com.pdg.adventure;
 
+import java.util.Collection;
+
 import com.pdg.adventure.api.Action;
 import com.pdg.adventure.api.Actionable;
 import com.pdg.adventure.api.PreCondition;
+import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.action.*;
+import com.pdg.adventure.server.tangible.Thing;
 import com.pdg.adventure.server.condition.CarriedCondition;
 import com.pdg.adventure.server.condition.HereCondition;
 import com.pdg.adventure.server.condition.NotCondition;
@@ -19,15 +23,26 @@ import com.pdg.adventure.server.tangible.Item;
 public class CommandFactory {
     private final MessagesHolder allMessages;
     private final GameContext gameContext;
+    private final VocabularyData vocabulary;
 
-    public CommandFactory(MessagesHolder allMessages, GameContext gameContext) {
-        this.allMessages = allMessages;
-        this.gameContext = gameContext;
+    public CommandFactory(MessagesHolder aMessagesHolder, GameContext aGameContext, VocabularyData aVocabulary) {
+        allMessages = aMessagesHolder;
+        gameContext = aGameContext;
+        vocabulary = aVocabulary;
     }
 
     public void setUpLookCommands(Actionable aThing) {
         aThing.addCommand(new GenericCommand(new GenericCommandDescription("describe", aThing),
                                              new DescribeAction(aThing::getLongDescription, allMessages)));
+    }
+
+    public void applyExamineFallback(Collection<? extends Thing> things) {
+        if (vocabulary.getExamineWord() == null) return;
+        String verb = vocabulary.getExamineWord().getText();
+        if (verb.isBlank()) return;
+        for (Thing thing : things) {
+            thing.setExamineFallback(verb, thing::getLongDescription);
+        }
     }
 
     public void setUpWearCommands(Item anItem) {

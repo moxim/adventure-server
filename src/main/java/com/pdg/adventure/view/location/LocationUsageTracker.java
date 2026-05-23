@@ -160,7 +160,7 @@ public class LocationUsageTracker {
         List<LocationUsage> fromDirections = new ArrayList<>();
         checkCommandsInDirection(direction, sourceLocationId, sourceLocationDesc, targetLocationId, fromDirections);
         for (var usage : fromDirections) {
-            usage.usageType = ("in Direction: " + usage.getUsageType());
+            usage.usageType = "in Direction: " + usage.getUsageType();
         }
         usages.addAll(fromDirections);
     }
@@ -168,14 +168,9 @@ public class LocationUsageTracker {
     private static void checkCommandsInDirection(final DirectionData aDirection, String sourceLocationId,
                                                  String sourceLocationDesc, String targetLocationId,
                                                  List<LocationUsage> usages) {
-        if (aDirection.getCommandProviderData() == null ||
-            aDirection.getCommandProviderData().getAvailableCommands() == null) {
+        if (aDirection.getCommandData() == null) {
             return;
         }
-
-        Map<String, CommandChainData> commands = aDirection.getCommandProviderData().getAvailableCommands();
-        checkCommandChains(sourceLocationId, sourceLocationDesc, targetLocationId, usages, commands);
-
         checkCommand(sourceLocationId, sourceLocationDesc, targetLocationId, usages, aDirection.getCommandData(),
                      aDirection.getCommandData().getCommandDescription().getCommandSpecification());
     }

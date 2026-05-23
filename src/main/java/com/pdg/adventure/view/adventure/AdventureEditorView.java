@@ -12,6 +12,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,15 +20,17 @@ import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.view.item.AllItemsMenuView;
 import com.pdg.adventure.view.location.LocationsMenuView;
+import com.pdg.adventure.view.message.MessagesMenuView;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 import com.pdg.adventure.view.vocabulary.VocabularyMenuView;
 
-@Route(value = "adventures/:adventureId/edit", layout = AdventuresMainLayout.class)
-@RouteAlias(value = "adventures/new", layout = AdventuresMainLayout.class)
+@Route(value = "author/adventures/:adventureId/edit", layout = AdventuresMainLayout.class)
+@RouteAlias(value = "author/adventures/new", layout = AdventuresMainLayout.class)
+@RolesAllowed("ROLE_AUTHOR")
 public class AdventureEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
 
@@ -37,23 +40,21 @@ public class AdventureEditorView extends VerticalLayout
     private final Button testButton = new Button("Test");
     private final TextField startLocation;
     private final Binder<AdventureData> binder;
-    private transient final AdventureService adventureService;
+    private transient final AdventureAccessService accessService;
     AdventureData adventureData;
     private String pageTitle;
+    private boolean isNewAdventure;
 
-    public AdventureEditorView(AdventureService anAdventureService) {
+    public AdventureEditorView(AdventureAccessService anAccessService) {
 
-        adventureService = anAdventureService;
+        accessService = anAccessService;
         binder = new Binder<>(AdventureData.class);
 
         Button editLocationsButton = new Button("Manage Locations");
         editLocationsButton.addClickListener(_ -> {
             if (binder.writeBeanIfValid(adventureData)) {
-                UI.getCurrent().navigate(LocationsMenuView.class
-//                          , new RouteParameters(
-//                      new RouteParam("adventureId", adventureData.getId())));
-//            }});
-                ).ifPresent(editor -> editor.setAdventureData(adventureData));
+                UI.getCurrent().navigate(LocationsMenuView.class)
+                  .ifPresent(editor -> editor.setAdventureData(adventureData));
             }
         });
 
@@ -68,7 +69,7 @@ public class AdventureEditorView extends VerticalLayout
 
         Button editMessagesButton = new Button("Manage Messages", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
-                UI.getCurrent().navigate(com.pdg.adventure.view.message.MessagesMenuView.class,
+                UI.getCurrent().navigate(MessagesMenuView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                                             adventureData.getId())))
                   .ifPresent(editor -> editor.setData(adventureData));
@@ -88,9 +89,7 @@ public class AdventureEditorView extends VerticalLayout
         workflowButton.setEnabled(false);
 
         saveButton.setEnabled(false);
-        saveButton.addClickListener(_ -> {
-            validateSave(adventureData);
-        });
+        saveButton.addClickListener(_ -> validateSave(adventureData));
 
         testButton.setEnabled(false);
 
@@ -127,7 +126,12 @@ public class AdventureEditorView extends VerticalLayout
                 throw new RuntimeException("Alles Mist");
             }
 
-            adventureService.saveAdventureData(adventureData);
+            if (isNewAdventure) {
+                accessService.createAdventure(adventureData, ViewSupporter.getCurrentUser());
+                isNewAdventure = false;
+            } else {
+                accessService.saveAdventureData(adventureData, ViewSupporter.getCurrentUser());
+            }
             saveButton.setEnabled(false);
         } catch (ValidationException ve) {
             LOG.error(ve.getMessage());
@@ -181,15 +185,20 @@ public class AdventureEditorView extends VerticalLayout
     public void beforeEnter(BeforeEnterEvent event) {
         Optional<String> adventureId = event.getRouteParameters().get(RouteIds.ADVENTURE_ID.getValue());
         if (adventureId.isPresent()) {
-            setUpLoading(adventureId.get());
+            setUpLoading(adventureId.get(), event);
         } else {
             setUpNewEdit();
         }
         checkIfSaveAvailable();
     }
 
-    private void setUpLoading(String anAdventureId) {
-        loadAdventure(anAdventureId);
+    private void setUpLoading(String anAdventureId, BeforeEnterEvent event) {
+        boolean loaded = loadAdventure(anAdventureId);
+        if (!loaded) {
+            event.forwardTo(AdventuresMenuView.class);
+            return;
+        }
+        isNewAdventure = false;
         pageTitle = "Edit Adventure #" + anAdventureId;
     }
 
@@ -199,19 +208,24 @@ public class AdventureEditorView extends VerticalLayout
         playerPocket.getDescriptionData().setShortDescription("your pocket");
         playerPocket.setMaxSize(666);
         binder.setBean(adventureData);
+        isNewAdventure = true;
         pageTitle = "A new adventure awaits!";
     }
 
-    public void loadAdventure(String aAdventureId) {
-        Optional<AdventureData> loadedAdventure = adventureService.findAdventureById(aAdventureId);
+    /** Returns true if the adventure was found and the user has read access. */
+    public boolean loadAdventure(String aAdventureId) {
+        Optional<AdventureData> loadedAdventure =
+                accessService.findAdventureById(aAdventureId, ViewSupporter.getCurrentUser());
         if (loadedAdventure.isEmpty()) {
-            Notification.show("Could not find adventure with ID: {}".formatted(aAdventureId), 5000, Notification.Position.MIDDLE);
-            return;
+            Notification.show("Adventure not found or access denied: %s".formatted(aAdventureId),
+                              5000, Notification.Position.MIDDLE);
+            return false;
         }
         adventureData = loadedAdventure.get();
         startLocation.setValue(ViewSupporter.getLocationsShortedDescription(
                 adventureData.getLocationData().get(adventureData.getCurrentLocationId())));
         binder.setBean(adventureData);
+        return true;
     }
 
     @Override

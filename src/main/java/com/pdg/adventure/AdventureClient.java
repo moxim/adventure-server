@@ -13,7 +13,7 @@ import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.LoadAdventureAction;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.mapper.AdventureMapper;
-import com.pdg.adventure.server.storage.AdventureService;
+import com.pdg.adventure.server.storage.service.AdventureService;
 
 /**
  * The entry point of a Spring Boot application.
@@ -48,7 +48,6 @@ public class AdventureClient implements CommandLineRunner {
 
         final LoadAdventureAction loadAdventureAction = new LoadAdventureAction(adventureService, adventureMapper,
                                                                                 adventureConfig,
-                                                                                adventureConfig.allMessages(),
                                                                                 gameContext);
         loadAdventureAction.setAdventureId(adventureId);
         try {
@@ -59,7 +58,7 @@ public class AdventureClient implements CommandLineRunner {
         }
 
         MiniAdventure miniAdventure = new MiniAdventure(adventureConfig, adventureMapper, adventureService,
-                                                         gameContext);
+                                                         gameContext, adventureData.getVocabularyData());
         Thread.sleep(3000); // Wait for 3 seconds to let the user read the messages
 
         miniAdventure.run();

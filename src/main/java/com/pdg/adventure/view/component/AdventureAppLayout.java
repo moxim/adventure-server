@@ -20,12 +20,17 @@ import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import jakarta.annotation.security.PermitAll;
 
+import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.view.about.AboutView;
-import com.pdg.adventure.view.adventure.AdventuresMenuView;
+import com.pdg.adventure.view.admin.AdminDashboardView;
+import com.pdg.adventure.view.author.AuthorDashboardView;
+import com.pdg.adventure.view.login.LogoutView;
+import com.pdg.adventure.view.support.ViewSupporter;
 
-@StyleSheet(Lumo.STYLESHEET)  // loads the new lumo.css
-// @Getter
+@StyleSheet(Lumo.STYLESHEET)
+@PermitAll
 public class AdventureAppLayout extends AppLayout implements AfterNavigationObserver {
 
     private H2 viewTitle;
@@ -91,25 +96,29 @@ public class AdventureAppLayout extends AppLayout implements AfterNavigationObse
                         : new Header(anAppImage, appName);
 
         SideNav nav = new SideNav();
+        nav.addItem(new SideNavItem("About", AboutView.class, VaadinIcon.INFO_CIRCLE.create()));
 
-        nav.addItem(
-                new SideNavItem("About", AboutView.class, VaadinIcon.INFO_CIRCLE.create()),
-                new SideNavItem("Adventures", AdventuresMenuView.class, VaadinIcon.GRID.create())
-        );
+        UserData user = ViewSupporter.getCurrentUser();
+        if (user.isAdmin()) {
+            nav.addItem(new SideNavItem("Dashboard", AdminDashboardView.class, VaadinIcon.DASHBOARD.create()));
+        } else if (user.isAuthor()) {
+            nav.addItem( new SideNavItem("Dashboard", AuthorDashboardView.class, VaadinIcon.DASHBOARD.create()));
+        }
+
+        nav.addItem(new SideNavItem("Logout", LogoutView.class, VaadinIcon.SIGN_OUT.create()));
 
         // SideNavItem settings = new SideNavItem("Settings", VaadinIcon.COGS.create());
         // settings.addItem(new SideNavItem("Profile", ProfileView.class));
-        // settings.addItem(new SideNavItem("Security", SecurityView.class));
         // nav.addItem(settings);
 
-        VerticalLayout drawer = new VerticalLayout(header, nav);
-        drawer.setSizeFull();
-        drawer.setPadding(true);
-        drawer.setSpacing(false);
-        drawer.getThemeList().set("spacing-s", true);
-        drawer.setAlignItems(FlexComponent.Alignment.STRETCH);
+        VerticalLayout myDrawer = new VerticalLayout(header, nav);
+        myDrawer.setSizeFull();
+        myDrawer.setPadding(true);
+        myDrawer.setSpacing(false);
+        myDrawer.getThemeList().set("spacing-s", true);
+        myDrawer.setAlignItems(FlexComponent.Alignment.STRETCH);
 
-        return drawer;
+        return myDrawer;
     }
 
     public void createDrawer(String anAppName, Image anImage) {

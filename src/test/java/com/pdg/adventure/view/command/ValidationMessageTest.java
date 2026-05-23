@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.pdg.adventure.view.command.ValidationMessage;
+
 class ValidationMessageTest {
 
     private ValidationMessage validationMessage;

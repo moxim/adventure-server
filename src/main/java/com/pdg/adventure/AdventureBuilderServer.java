@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * Use the @PWA annotation make the pdg installable on phones, tablets
  * and some desktop browsers.
  */
+
 @SpringBootApplication
 //@EnableMongoRepositories(basePackages = "com.pdg.adventure.server.storage")
 //@Theme(value = "adventureBuilder")

@@ -18,12 +18,6 @@ import com.pdg.adventure.server.vocabulary.Vocabulary;
 @Configuration
 public class AdventureConfig {
 
-    private final Vocabulary vocabulary = new Vocabulary();
-    private final Map<String, Location> allLocations = new HashMap<>();
-    private final Map<String, Item> allItems = new HashMap<>();
-    private final Map<String, Container> allContainers = new HashMap<>();
-    private final MessagesHolder allMessages = new MessagesHolder();
-    private final VariableProvider allVariables = new VariableProvider();
     private final GameContext gameContext;
 
     public AdventureConfig(@Lazy GameContext aGameContext) {
@@ -35,32 +29,38 @@ public class AdventureConfig {
     }
 
     @Bean
+    @Lazy
     public Map<String, Location> allLocations() {
-        return allLocations;
+        return new HashMap<>();
     }
 
     @Bean
+    @Lazy
     public Map<String, Item> allItems() {
-        return allItems;
+        return new HashMap<>();
     }
 
     @Bean
+    @Lazy
     public Map<String, Container> allContainers() {
-        return allContainers;
+        return new HashMap<>();
     }
 
     @Bean
+    @Lazy
     public Vocabulary allWords() {
-        return vocabulary;
+        return new Vocabulary();
     }
 
     @Bean
+    @Lazy
     public MessagesHolder allMessages() {
-        return allMessages;
+        return new MessagesHolder();
     }
 
     @Bean
+    @Lazy
     public VariableProvider allVariables() {
-        return allVariables;
+        return new VariableProvider();
     }
 }

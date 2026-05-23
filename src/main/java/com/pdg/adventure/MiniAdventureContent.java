@@ -1,6 +1,7 @@
 package com.pdg.adventure;
 
 import lombok.Getter;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.Map;
 
@@ -47,7 +48,7 @@ public class MiniAdventureContent {
     @Getter
     private Container pocket;
 
-    public MiniAdventureContent(AdventureConfig adventureConfig, GameContext gameContext, CommandFactory commandFactory) {
+    public MiniAdventureContent(@Lazy AdventureConfig adventureConfig, GameContext gameContext, CommandFactory commandFactory) {
         this.commandFactory = commandFactory;
         this.gameContext = gameContext;
         this.allMessages = adventureConfig.allMessages();

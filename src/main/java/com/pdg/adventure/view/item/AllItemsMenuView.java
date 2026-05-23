@@ -17,6 +17,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +26,10 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
-import com.pdg.adventure.server.storage.AdventureService;
-import com.pdg.adventure.server.storage.ItemService;
+import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
+import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -35,8 +37,9 @@ import com.pdg.adventure.view.support.ViewSupporter;
  * View that shows all items across all locations in an adventure.
  * This provides an adventure-level view of items, similar to how LocationsMenuView shows all locations.
  */
-@Route(value = "adventures/:adventureId/items", layout = ItemsMainLayout.class)
+@Route(value = "author/adventures/:adventureId/items", layout = ItemsMainLayout.class)
 @PageTitle("All Items")
+@RolesAllowed("ROLE_AUTHOR")
 public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObserver {
 
     private final transient AdventureService adventureService;
@@ -46,7 +49,7 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
     private final IntegerField numberOfItems;
     private transient ItemViewSupporter itemViewSupporter;
     private transient AdventureData adventureData;
-    private ListDataProvider<ItemLocationPair> dataProvider;
+    private ListDataProvider<ItemLocationPairAdapter> dataProvider;
 
     public AllItemsMenuView(AdventureService anAdventureService, ItemService anItemService) {
         setSizeFull();
@@ -118,19 +121,14 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
             if (searchTerm == null || searchTerm.trim().isEmpty()) {
                 dataProvider.clearFilters();
             } else {
-                String lowerCaseSearchTerm = searchTerm.toLowerCase();
-                dataProvider.setFilter(pair -> {
-                    ItemData item = pair.item();
-                    String id = item.getId().toLowerCase();
-                    String adjective = item.getDescriptionData().getSafeAdjective().toLowerCase();
-                    String noun = item.getDescriptionData().getSafeNoun().toLowerCase();
-                    String shortDesc = item.getDescriptionData().getShortDescription().toLowerCase();
-                    String locationDesc = ViewSupporter.formatDescription(pair.location()).toLowerCase();
-
-                    return id.contains(lowerCaseSearchTerm) ||
-                           adjective.contains(lowerCaseSearchTerm) || noun.contains(lowerCaseSearchTerm) ||
-                           shortDesc.contains(lowerCaseSearchTerm) || locationDesc.contains(lowerCaseSearchTerm);
-                });
+                String lower = searchTerm.toLowerCase();
+                dataProvider.setFilter(adapter ->
+                        adapter.getId().toLowerCase().contains(lower) ||
+                        adapter.getAdjective().toLowerCase().contains(lower) ||
+                        adapter.getNoun().toLowerCase().contains(lower) ||
+                        adapter.getShortDescription().toLowerCase().contains(lower) ||
+                        adapter.getLocationDescription().toLowerCase().contains(lower)
+                );
             }
         }
     }
@@ -187,48 +185,32 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
         gridContainer.add(getItemLocationPairGrid(itemPairs));
     }
 
-    private Grid<ItemLocationPair> getItemLocationPairGrid(List<ItemLocationPair> itemPairs) {
-        Grid<ItemLocationPair> grid = new Grid<>(ItemLocationPair.class, false);
+    private Grid<ItemLocationPairAdapter> getItemLocationPairGrid(List<ItemLocationPair> itemPairs) {
+        List<ItemLocationPairAdapter> adapters = itemPairs.stream()
+                .map(ItemLocationPairAdapter::new)
+                .toList();
 
-        grid.addColumn(pair -> pair.item().getId())
-            .setHeader(VocabularyData.ID_TEXT).setSortable(true).setAutoWidth(true).setFlexGrow(0);
+        GridProvider<ItemLocationPairAdapter> gridProvider = new GridProvider<>(ItemLocationPairAdapter.class);
+        gridProvider.addColumn(ItemLocationPairAdapter::getAdjective, VocabularyData.ADJECTIVE_TEXT);
+        gridProvider.addColumn(ItemLocationPairAdapter::getNoun, VocabularyData.NOUN_TEXT);
+        gridProvider.addColumn(ItemLocationPairAdapter::getLocationDescription, "Location");
+        gridProvider.addColumn(ItemLocationPairAdapter::getContainable, VocabularyData.CONTAINABLE_TEXT);
+        gridProvider.addColumn(ItemLocationPairAdapter::getWearable, VocabularyData.WEARABLE_TEXT);
+        gridProvider.addColumn(ItemLocationPairAdapter::getWorn, VocabularyData.WORN_TEXT);
 
-        grid.addColumn(pair -> pair.item().getDescriptionData().getSafeAdjective())
-            .setHeader(VocabularyData.ADJECTIVE_TEXT);
-
-        grid.addColumn(pair -> pair.item().getDescriptionData().getSafeNoun()).setHeader(VocabularyData.NOUN_TEXT)
-            .setSortable(true);
-
-        grid.addColumn(pair -> pair.item().getDescriptionData().getShortDescription())
-            .setHeader(VocabularyData.SHORT_TEXT).setAutoWidth(true).setSortable(true);
-
-        grid.addColumn(pair -> ViewSupporter.formatDescription(pair.location())).setHeader("Location")
-            .setAutoWidth(true).setSortable(true);
-
-        grid.addColumn(pair -> pair.item().isContainable() ? VocabularyData.YES_TEXT : VocabularyData.NO_TEXT)
-            .setHeader(VocabularyData.CONTAINABLE_TEXT).setAutoWidth(true);
-
-        grid.addColumn(pair -> pair.item().isWearable() ? VocabularyData.YES_TEXT : VocabularyData.NO_TEXT)
-            .setHeader(VocabularyData.WEARABLE_TEXT).setAutoWidth(true);
-
-        grid.addColumn(pair -> pair.item().isWorn() ? VocabularyData.YES_TEXT : VocabularyData.NO_TEXT)
-            .setHeader(VocabularyData.WORN_TEXT).setAutoWidth(true);
-
-
-        ViewSupporter.setSize(grid);
-        grid.setEmptyStateText("Create some items.");
-
-        dataProvider = new ListDataProvider<>(itemPairs);
-        grid.setDataProvider(dataProvider);
-
-        grid.addItemDoubleClickListener(e -> {
-            ItemLocationPair pair = e.getItem();
+        gridProvider.addItemDoubleClickListener(e -> {
+            ItemLocationPair pair = e.getItem().getPair();
             navigateToItemEditor(pair.item().getId(), pair.location().getId());
         });
 
-        // Add context menu
-        createContextMenu(grid);
+        Grid<ItemLocationPairAdapter> grid = gridProvider.getGrid();
+        ViewSupporter.setSize(grid);
+        grid.setEmptyStateText("Create some items.");
 
+        dataProvider = new ListDataProvider<>(adapters);
+        grid.setDataProvider(dataProvider);
+
+        createContextMenu(grid);
         return grid;
     }
 
@@ -243,11 +225,13 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
         });
     }
 
-    private void createContextMenu(Grid<ItemLocationPair> grid) {
-        GridContextMenu<ItemLocationPair> contextMenu = grid.addContextMenu();
+    private void createContextMenu(Grid<ItemLocationPairAdapter> grid) {
+        GridContextMenu<ItemLocationPairAdapter> contextMenu = grid.addContextMenu();
 
-        contextMenu.addItem("Edit", e -> e.getItem().ifPresent(
-                pair -> navigateToItemEditor(pair.item().getId(), pair.location().getId())));
+        contextMenu.addItem("Edit", e -> e.getItem().ifPresent(adapter -> {
+            ItemLocationPair pair = adapter.getPair();
+            navigateToItemEditor(pair.item().getId(), pair.location().getId());
+        }));
 
         contextMenu.addItem("Find Usage", e -> e.getItem().ifPresent(this::showItemUsage));
 
@@ -256,16 +240,13 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
         contextMenu.addItem("Delete", e -> e.getItem().ifPresent(this::confirmDeleteItem));
     }
 
-    private void showItemUsage(ItemLocationPair pair) {
-        ItemData item = pair.item();
+    private void showItemUsage(ItemLocationPairAdapter adapter) {
+        ItemData item = adapter.getPair().item();
         List<ItemUsageTracker.ItemUsage> usages = ItemUsageTracker.findItemUsages(adventureData, item.getId());
         ViewSupporter.showUsages("Item Usage", "item", item.getId(), usages);
     }
 
-    private void confirmDeleteItem(ItemLocationPair pair) {
-        ItemData item = pair.item();
-        LocationData location = pair.location();
-
-        itemViewSupporter.confirmDeleteItem(location, item);
+    private void confirmDeleteItem(ItemLocationPairAdapter adapter) {
+        itemViewSupporter.confirmDeleteItem(adapter.getPair().location(), adapter.getPair().item());
     }
 }
