@@ -8,6 +8,6 @@ import com.pdg.adventure.model.basic.BasicData;
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class IncrementVariableActionData extends BasicData {
-    private final String name;
-    private final String value;
+    private String name;
+    private String value;
 }

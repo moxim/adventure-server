@@ -9,6 +9,7 @@ import com.pdg.adventure.model.action.DescribeActionData;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.DescribeAction;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
+import com.pdg.adventure.server.exception.ItemNotFoundException;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.Item;
@@ -34,6 +35,9 @@ public class DescribeActionMapper extends ActionMapper<DescribeActionData, Descr
 
     @Override
     public DescribeActionData mapToDO(DescribeAction action) {
+        DescribeActionData actionData = new DescribeActionData();
+        actionData.setId(action.getId());
+        actionData.setTargetId(null); // TODO: Not possible to get targetId from DescribeAction, as it only has a Supplier<String> for the description
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
@@ -46,6 +50,6 @@ public class DescribeActionMapper extends ActionMapper<DescribeActionData, Descr
         if (location != null) {
             return location.getLongDescription();
         }
-        return "";
+        throw new ItemNotFoundException(targetId);
     }
 }
