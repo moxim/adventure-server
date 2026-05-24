@@ -13,7 +13,7 @@ public class CarriedCondition extends AbstractCondition {
 
     @Getter
     private final Item item;
-    private final GameContext gameContext;
+    private final transient GameContext gameContext;
 
     public CarriedCondition(Item anItem, GameContext aGameContext) {
         item = anItem;

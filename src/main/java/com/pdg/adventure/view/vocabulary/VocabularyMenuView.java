@@ -39,7 +39,7 @@ import com.pdg.adventure.view.support.ViewSupporter;
 @RolesAllowed("ROLE_AUTHOR")
 public class VocabularyMenuView extends VerticalLayout implements SaveListener, GuiListener {
 
-    private transient final AdventureService adventureService;
+    private final transient AdventureService adventureService;
     private AdventureData adventureData;
     private VocabularyData vocabularyData;
 

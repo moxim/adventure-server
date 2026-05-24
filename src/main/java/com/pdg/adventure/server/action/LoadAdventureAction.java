@@ -26,10 +26,10 @@ public class LoadAdventureAction extends AbstractAction {
 
     private static final Logger LOG = LoggerFactory.getLogger(LoadAdventureAction.class);
 
-    private final AdventureService adventureService;
-    private final AdventureMapper adventureMapper;
-    private final AdventureConfig adventureConfig;
-    private final GameContext gameContext;
+    private final transient AdventureService adventureService;
+    private final transient AdventureMapper adventureMapper;
+    private final transient AdventureConfig adventureConfig;
+    private final transient GameContext gameContext;
 
     @Setter
     private String adventureId;

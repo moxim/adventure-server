@@ -38,7 +38,7 @@ import com.pdg.adventure.view.support.ViewSupporter;
 @RolesAllowed("ROLE_AUTHOR")
 public class CommandsMenuView extends VerticalLayout
         implements HasDynamicTitle, BeforeEnterObserver {
-    private transient final AdventureService adventureService;
+    private final transient AdventureService adventureService;
     private final Binder<CommandProviderData> binder;
     private final Div gridContainer;
     private final Button saveButton;

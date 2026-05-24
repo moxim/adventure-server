@@ -38,8 +38,8 @@ public class WordEditorDialogue {
     private final VocabularyData vocabularyData;
     private transient Word currentWord;
 
-    private transient final List<GuiListener> guiListeners;
-    private transient final List<SaveListener> saveListeners;
+    private final transient List<GuiListener> guiListeners;
+    private final transient List<SaveListener> saveListeners;
 
     public enum EditType {
         EDIT("Edit"),

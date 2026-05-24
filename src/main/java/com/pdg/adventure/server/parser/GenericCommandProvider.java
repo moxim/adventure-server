@@ -82,11 +82,10 @@ public class GenericCommandProvider implements CommandProvider {
                 continue;
             }
 
-            // treat null as EMPTY_STRING just in case
-            String inVerb = verb == null ? VocabularyData.EMPTY_STRING : verb;
-            String inAdj = adjective == null ? VocabularyData.EMPTY_STRING : adjective;
-            String itVerb = itemVerb == null ? VocabularyData.EMPTY_STRING : itemVerb;
-            String itAdj = itemAdjective == null ? VocabularyData.EMPTY_STRING : itemAdjective;
+            String inVerb = getWordOrEmptyStringIfNull(verb);
+            String inAdj = getWordOrEmptyStringIfNull(adjective);
+            String itVerb = getWordOrEmptyStringIfNull(itemVerb);
+            String itAdj = getWordOrEmptyStringIfNull(itemAdjective);
 
             boolean verbMatches = itVerb.equals(inVerb)
                     || VocabularyData.EMPTY_STRING.equals(itVerb)
@@ -110,6 +109,11 @@ public class GenericCommandProvider implements CommandProvider {
             }
         }
         return false;
+    }
+
+    private String getWordOrEmptyStringIfNull(String aWord) {
+        // treat null as EMPTY_STRING just in case, so that it can match with wildcards
+        return aWord == null ? VocabularyData.EMPTY_STRING : aWord;
     }
 
     @Override

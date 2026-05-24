@@ -23,7 +23,7 @@ import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 @RolesAllowed("ROLE_ADMIN") // Only Admins can access this
 public class UserManagementView extends VerticalLayout {
 
-    private final UserService userService;
+    private final transient UserService userService;
     private final Grid<UserData> grid = new Grid<>(UserData.class, false);
 
     public UserManagementView(UserService userService) {
