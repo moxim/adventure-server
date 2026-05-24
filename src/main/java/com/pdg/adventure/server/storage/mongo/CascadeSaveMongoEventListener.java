@@ -36,6 +36,7 @@ public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Ob
         uuidIdGenerationMongoEventListener = aUuidIdGenerationMongoEventListener;
     }
 
+    @Override
     public void onBeforeConvert(BeforeConvertEvent<Object> event) {
         int depth = eventDepth.get();
         if (depth == 0) {
@@ -73,22 +74,30 @@ public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Ob
                 }
 
                 if (field.isAnnotationPresent(CascadeSave.class)) {
-                    if (fieldValue instanceof Iterable<?> iterable && !(fieldValue instanceof Map)) {
-                        for (Object item : iterable) {
-                            if (item != null) assignUuidsRecursively(item);
-                        }
-                    } else if (fieldValue instanceof Map<?, ?> map) {
-                        for (Object mapValue : map.values()) {
-                            if (mapValue != null) assignUuidsRecursively(mapValue);
-                        }
-                    } else {
-                        assignUuidsRecursively(fieldValue);
-                    }
+                    handleAnnotatedField(fieldValue);
                 } else if (isEmbeddedObject(field, fieldValue)) {
                     assignUuidsRecursively(fieldValue);
                 }
             }, ReflectionUtils.COPYABLE_FIELDS);
             current = current.getSuperclass();
+        }
+    }
+
+    private void handleAnnotatedField(final Object fieldValue) {
+        switch (fieldValue) {
+            case Iterable<?> iterable when !(fieldValue instanceof Map) -> {
+                for (Object item : iterable) {
+                    if (item != null) assignUuidsRecursively(item);
+                }
+            }
+            case Map<?, ?> map -> {
+                for (Object mapValue : map.values()) {
+                    if (mapValue != null) assignUuidsRecursively(mapValue);
+                }
+            }
+            default -> {
+                assignUuidsRecursively(fieldValue);
+            }
         }
     }
 
@@ -140,40 +149,51 @@ public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Ob
             );
         }
 
-        if (value instanceof Iterable<?> iterable && !(value instanceof Map)) {
-            // Handle List/Set: Save each element
-            for (Object item : iterable) {
-                if (item != null) {
-                    if (item instanceof Ided ided) {
-                        uuidIdGenerationMongoEventListener.onBeforeConvert(
-                                new BeforeConvertEvent<>(ided, null)
-                        );
-                    }
-                    mongoTemplate.save(item);
-                    recurseAndCascade(item);  // Recurse into saved item if needed
-                }
+        switch (value) {
+            case Iterable<?> iterable when !(value instanceof Map) -> {
+                handleListsAndSets(iterable);
             }
-        } else if (value instanceof Map<?, ?> map) {
-            // Handle Map: Save each value
-            for (Object mapValue : map.values()) {
-                if (mapValue != null) {
-                    if (mapValue instanceof Ided ided) {
-                        uuidIdGenerationMongoEventListener.onBeforeConvert(
-                                new BeforeConvertEvent<>(ided, null)
-                        );
-                    }
-                    mongoTemplate.save(mapValue);
-                    recurseAndCascade(mapValue);
-                }
+            case Map<?, ?> map -> {
+                handleMaps(map);
             }
-        } else {
-            // Handle single object
-            mongoTemplate.save(value);
-            recurseAndCascade(value);  // Recurse after save
+            default -> {
+                handleSingleObject(value);
+            }
         }
 
         if (value instanceof Ided ided) {
             LOG.debug("Value: ", value.getClass().getSimpleName() + " with id: " + ided.getId());
+        }
+    }
+
+    private void handleSingleObject(final Object value) {
+        mongoTemplate.save(value);
+        recurseAndCascade(value);  // Recurse after save
+    }
+
+    private void handleMaps(final Map<?, ?> map) {
+        for (Object mapValue : map.values()) {
+            if (mapValue != null) {
+                if (mapValue instanceof Ided ided) {
+                    uuidIdGenerationMongoEventListener.onBeforeConvert(
+                            new BeforeConvertEvent<>(ided, null)
+                    );
+                }
+                handleSingleObject(mapValue);
+            }
+        }
+    }
+
+    private void handleListsAndSets(final Iterable<?> iterable) {
+        for (Object item : iterable) {
+            if (item != null) {
+                if (item instanceof Ided ided) {
+                    uuidIdGenerationMongoEventListener.onBeforeConvert(
+                            new BeforeConvertEvent<>(ided, null)
+                    );
+                }
+                handleSingleObject(item);
+            }
         }
     }
 

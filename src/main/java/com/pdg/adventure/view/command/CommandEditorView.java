@@ -16,7 +16,6 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.*;
 import jakarta.annotation.security.RolesAllowed;
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +108,7 @@ public class CommandEditorView extends VerticalLayout
         add(commandLayout, details, resetBackSaveView);
     }
 
-    private @NonNull Grid<CommandData> createCommandChainGrid() {
+    private Grid<CommandData> createCommandChainGrid() {
         final Grid<CommandData> newCommandChainGrid = new Grid<>(CommandData.class, false);
 
         newCommandChainGrid.addColumn(cmd -> {
