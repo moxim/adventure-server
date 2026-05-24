@@ -161,8 +161,8 @@ class CommandExecutorTest {
 
         // then
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
-        assertThat(result.getResultMessage()).isEqualTo(
-                "What do you want to %s?".formatted(smallTreeCommand.getVerb()));
+        assertThat(result.getResultMessage()).isEqualTo("Which %s do you want to %s?"
+                .formatted(smallTreeCommand.getNoun(), smallTreeCommand.getVerb()));
     }
 
     @Test
@@ -200,7 +200,7 @@ class CommandExecutorTest {
 
         // then
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
-        assertThat(result.getResultMessage()).isEqualTo("What do you want to climb?");
+        assertThat(result.getResultMessage()).isEqualTo("Which tree do you want to climb?");
     }
 
 }

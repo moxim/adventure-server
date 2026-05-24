@@ -27,11 +27,18 @@ public class IncrementVariableActionMapper extends ActionMapper<IncrementVariabl
 
     @Override
     public IncrementVariableAction mapToBO(IncrementVariableActionData from) {
-        return new IncrementVariableAction(from.getName(), from.getValue(), variableProvider, messagesHolder);
+        final var action = new IncrementVariableAction(from.getName(), from.getValue(),
+                                                                        variableProvider, messagesHolder);
+        action.setId(from.getId());
+        return action;
     }
 
     @Override
     public IncrementVariableActionData mapToDO(IncrementVariableAction from) {
-        return new IncrementVariableActionData(from.getName(), from.getValue());
+        IncrementVariableActionData actionData = new IncrementVariableActionData();
+        actionData.setName(from.getName());
+        actionData.setValue(from.getValue());
+        actionData.setId(from.getId());
+        return actionData;
     }
 }

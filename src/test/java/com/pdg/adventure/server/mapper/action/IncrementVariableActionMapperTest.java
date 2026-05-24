@@ -28,24 +28,27 @@ class IncrementVariableActionMapperTest {
 
     @Test
     void mapToBO_buildsActionWithNameAndValue() {
-        IncrementVariableActionData data = new IncrementVariableActionData(VAR_NAME, VAR_VALUE);
+        IncrementVariableActionData data = new IncrementVariableActionData();
+        data.setName(VAR_NAME);
+        data.setValue(VAR_VALUE);
+        data.setId("id");
 
         IncrementVariableAction result = mapper.mapToBO(data);
 
         assertThat(result).isNotNull().isInstanceOf(IncrementVariableAction.class);
         assertThat(result.getName()).isEqualTo(VAR_NAME);
         assertThat(result.getValue()).isEqualTo(VAR_VALUE);
+        assertThat(result.getId()).isEqualTo(data.getId());
     }
 
     @Test
     void mapToDO_roundTripsNameAndValue() {
         IncrementVariableAction action = new IncrementVariableAction(VAR_NAME, VAR_VALUE, variableProvider,
                                                                      messagesHolder);
-
         IncrementVariableActionData data = mapper.mapToDO(action);
-
         assertThat(data).isNotNull();
         assertThat(data.getName()).isEqualTo(VAR_NAME);
         assertThat(data.getValue()).isEqualTo(VAR_VALUE);
+        assertThat(data.getId()).isEqualTo(action.getId());
     }
 }
