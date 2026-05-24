@@ -12,7 +12,7 @@ import com.pdg.adventure.server.storage.message.MessagesHolder;
 public class MovePlayerAction extends AbstractAction {
     @Getter
     private final Location destination;
-    private final GameContext gameContext;
+    private final transient GameContext gameContext;
 
     public MovePlayerAction(Location aDestination,
                             MessagesHolder aMessagesHolder,

@@ -10,7 +10,7 @@ import com.pdg.adventure.server.parser.CommandExecutionResult;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class PlayerAtCondition extends AbstractCondition {
     private final Location location;
-    private final GameContext gameContext;
+    private final transient GameContext gameContext;
 
     public PlayerAtCondition(Location aLocation, GameContext aGameContext) {
         location = aLocation;

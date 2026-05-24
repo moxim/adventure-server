@@ -16,7 +16,7 @@ import com.pdg.adventure.server.support.ArticleProvider;
 public class GenericDirection implements Direction {
 
     private String id;
-    private final CommandHandler commandHandler;
+    private final transient CommandHandler commandHandler;
     @Getter
     private final String destinationId;
     @Getter

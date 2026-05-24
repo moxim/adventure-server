@@ -6,7 +6,7 @@ import com.pdg.adventure.view.support.ViewSupporter;
 
 public class ItemLocationPairAdapter implements Describable {
 
-    private final ItemLocationPair pair;
+    private final transient ItemLocationPair pair;
 
     public ItemLocationPairAdapter(ItemLocationPair aPair) {
         pair = aPair;

@@ -40,7 +40,7 @@ public class AdventureEditorView extends VerticalLayout
     private final Button testButton = new Button("Test");
     private final TextField startLocation;
     private final Binder<AdventureData> binder;
-    private transient final AdventureAccessService accessService;
+    private final transient AdventureAccessService accessService;
     AdventureData adventureData;
     private String pageTitle;
     private boolean isNewAdventure;

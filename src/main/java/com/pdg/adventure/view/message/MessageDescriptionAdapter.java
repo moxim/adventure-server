@@ -4,7 +4,7 @@ import com.pdg.adventure.api.Describable;
 
 public class MessageDescriptionAdapter implements Describable {
 
-    private final MessageViewModel messageViewModel;
+    private final transient MessageViewModel messageViewModel;
 
     public MessageDescriptionAdapter(MessageViewModel aMessageViewModel) {
         messageViewModel = aMessageViewModel;

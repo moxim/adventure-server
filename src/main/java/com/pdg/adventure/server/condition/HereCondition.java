@@ -13,7 +13,7 @@ public class HereCondition extends AbstractCondition {
 
     @Getter
     private final Item thing;
-    private final GameContext gameContext;
+    private final transient GameContext gameContext;
 
     public HereCondition(Item aThing, GameContext aGameContext) {
         thing = aThing;

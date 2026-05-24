@@ -28,7 +28,7 @@ import com.pdg.adventure.view.support.ViewSupporter;
 @RolesAllowed("ROLE_AUTHOR")
 public class AdventuresMenuView extends VerticalLayout {
 
-    private transient final AdventureAccessService accessService;
+    private final transient AdventureAccessService accessService;
 
     private String targetAdventureId;
     private final Button runAdventure;

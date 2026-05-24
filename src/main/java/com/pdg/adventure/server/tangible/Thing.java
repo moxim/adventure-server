@@ -18,7 +18,7 @@ public class Thing implements Actionable {
     private String id;
     @Setter
     private DescriptionProvider descriptionProvider;
-    private final CommandHandler commandHandler;
+    private final transient CommandHandler commandHandler;
 
     public Thing(DescriptionProvider aDescriptionProvider) {
         commandHandler = new CommandHandler();

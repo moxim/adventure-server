@@ -46,7 +46,7 @@ public class CommandEditorView extends VerticalLayout
 
     private static final Logger LOG = LoggerFactory.getLogger(CommandEditorView.class);
 
-    private transient final AdventureService adventureService;
+    private final transient AdventureService adventureService;
     private final Binder<CommandViewModel> binder;
     private final VocabularyPicker nounSelector;
     private final VocabularyPicker adjectiveSelector;
