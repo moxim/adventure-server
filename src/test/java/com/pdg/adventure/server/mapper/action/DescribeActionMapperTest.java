@@ -18,6 +18,7 @@ import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.action.DescribeActionData;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.DescribeAction;
+import com.pdg.adventure.server.exception.ItemNotFoundException;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
@@ -78,9 +79,9 @@ class DescribeActionMapperTest {
         when(adventureConfig.allLocations()).thenReturn(Map.of());
 
         DescribeAction action = mapper.mapToBO(data);
-        ExecutionResult result = action.execute();
 
-        assertThat(result.getResultMessage()).isEmpty();
+        assertThatThrownBy(() -> action.execute())
+                .isInstanceOf(ItemNotFoundException.class);
     }
 
     @Test
