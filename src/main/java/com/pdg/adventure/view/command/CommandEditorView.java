@@ -16,6 +16,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.*;
 import jakarta.annotation.security.RolesAllowed;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,65 +79,14 @@ public class CommandEditorView extends VerticalLayout
         adjectiveSelector = new VocabularyPickerField("Adjective", "You may filter on adjectives.");
         nounSelector = new VocabularyPickerField("Noun", "You may filter on nouns.");
 
-        binder.forField(verbSelector).asRequired("Verb is required")
-              .withValidator(word -> word != null && !word.getText().isEmpty(), "Please select a verb with text")
-              .bind(CommandViewModel::getVerb, CommandViewModel::setVerb);
-        binder.forField(adjectiveSelector).bind(CommandViewModel::getAdjective, CommandViewModel::setAdjective);
-        binder.forField(nounSelector).bind(CommandViewModel::getNoun, CommandViewModel::setNoun);
-
-        binder.addStatusChangeListener(event -> {
-            updateSaveButtonState();
-            resetButton.setEnabled(event.getBinder().hasChanges() || actionEditorHasChanges);
-        });
+        setUpBinding();
 
         HorizontalLayout commandLayout = new HorizontalLayout(verbSelector, adjectiveSelector, nounSelector);
 
         final ResetBackSaveView resetBackSaveView = setUpNavidationButtons();
 
         // Create command chain grid
-        commandChainGrid = new Grid<>(CommandData.class, false);
-
-        commandChainGrid.addColumn(cmd -> {
-            if (cmd.getAction() != null) {
-                return cmd.getAction().getActionName();
-            }
-            return "none";
-        }).setHeader("Primary Action").setAutoWidth(true);
-
-        commandChainGrid.addColumn(cmd -> {
-            if (cmd.getPreConditions() != null && !cmd.getPreConditions().isEmpty()) {
-                try {
-                    return cmd.getPreConditions().getFirst().getPreconditionName();
-                } catch (UnsupportedOperationException _) {
-                    return "none";
-                }
-            }
-            return "none";
-        }).setHeader("First Precondition").setAutoWidth(true);
-
-        commandChainGrid.addColumn(cmd -> {
-            if (cmd.getFollowUpActions() != null && !cmd.getFollowUpActions().isEmpty()) {
-                return cmd.getFollowUpActions().getFirst().getActionName();
-            }
-            return "none";
-        }).setHeader("First Followup Action").setAutoWidth(true);
-
-        commandChainGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        commandChainGrid.setMaxHeight("300px"); // Limit height so it doesn't dominate the UI
-        commandChainGrid.setMinWidth("630px");
-        commandChainGrid.addSelectionListener(selection -> {
-            selection.getFirstSelectedItem().ifPresent(selectedCommand -> {
-                // Find the index of the selected command
-                if (currentCommandChain != null) {
-                    selectedCommandIndex = currentCommandChain.getCommands().indexOf(selectedCommand);
-                    if (selectedCommandIndex >= 0) {
-                        commandData = selectedCommand;
-                        // Show the action editor for this command
-                        showActionEditorForCommand(commandData.getAction());
-                    }
-                }
-            });
-        });
+        commandChainGrid = createCommandChainGrid();
 
         // Add context menu for deleting commands from the chain
         GridContextMenu<CommandData> contextMenu = commandChainGrid.addContextMenu();
@@ -157,6 +107,66 @@ public class CommandEditorView extends VerticalLayout
         Details details = new Details("Preconditions & Actions", vl1);
 
         add(commandLayout, details, resetBackSaveView);
+    }
+
+    private @NonNull Grid<CommandData> createCommandChainGrid() {
+        final Grid<CommandData> newCommandChainGrid = new Grid<>(CommandData.class, false);
+
+        newCommandChainGrid.addColumn(cmd -> {
+            if (cmd.getAction() != null) {
+                return cmd.getAction().getActionName();
+            }
+            return "none";
+        }).setHeader("Primary Action").setAutoWidth(true);
+
+        newCommandChainGrid.addColumn(cmd -> {
+            if (cmd.getPreConditions() != null && !cmd.getPreConditions().isEmpty()) {
+                try {
+                    return cmd.getPreConditions().getFirst().getPreconditionName();
+                } catch (UnsupportedOperationException _) {
+                    return "none";
+                }
+            }
+            return "none";
+        }).setHeader("First Precondition").setAutoWidth(true);
+
+        newCommandChainGrid.addColumn(cmd -> {
+            if (cmd.getFollowUpActions() != null && !cmd.getFollowUpActions().isEmpty()) {
+                return cmd.getFollowUpActions().getFirst().getActionName();
+            }
+            return "none";
+        }).setHeader("First Followup Action").setAutoWidth(true);
+
+        newCommandChainGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        newCommandChainGrid.setMaxHeight("300px"); // Limit height so it doesn't dominate the UI
+        newCommandChainGrid.setMinWidth("630px");
+        newCommandChainGrid.addSelectionListener(selection -> {
+            selection.getFirstSelectedItem().ifPresent(selectedCommand -> {
+                // Find the index of the selected command
+                if (currentCommandChain != null) {
+                    selectedCommandIndex = currentCommandChain.getCommands().indexOf(selectedCommand);
+                    if (selectedCommandIndex >= 0) {
+                        commandData = selectedCommand;
+                        // Show the action editor for this command
+                        showActionEditorForCommand(commandData.getAction());
+                    }
+                }
+            });
+        });
+        return newCommandChainGrid;
+    }
+
+    private void setUpBinding() {
+        binder.forField(verbSelector).asRequired("Verb is required")
+              .withValidator(word -> word != null && !word.getText().isEmpty(), "Please select a verb with text")
+              .bind(CommandViewModel::getVerb, CommandViewModel::setVerb);
+        binder.forField(adjectiveSelector).bind(CommandViewModel::getAdjective, CommandViewModel::setAdjective);
+        binder.forField(nounSelector).bind(CommandViewModel::getNoun, CommandViewModel::setNoun);
+
+        binder.addStatusChangeListener(event -> {
+            updateSaveButtonState();
+            resetButton.setEnabled(event.getBinder().hasChanges() || actionEditorHasChanges);
+        });
     }
 
     private ResetBackSaveView setUpNavidationButtons() {
