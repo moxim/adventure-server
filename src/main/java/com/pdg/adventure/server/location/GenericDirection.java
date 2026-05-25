@@ -111,7 +111,7 @@ public class GenericDirection implements Direction {
     }
 
     public void setExamineFallback(String aVerb, Supplier<String> aDescription) {
-        commandHandler.setExamineFallback(aVerb, aDescription);
+        commandHandler.setExamineFallback(aVerb, aDescription, this::getNoun, this::getAdjective);
     }
 
     // -------------------------------------------------------------------------

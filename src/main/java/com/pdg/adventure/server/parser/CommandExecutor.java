@@ -47,19 +47,25 @@ public class CommandExecutor {
     }
 
     private void reduceCommandChains(List<CommandChain> availableCommandChains, CommandDescription aCommand) {
-        var iterator = availableCommandChains.iterator();
-        while (iterator.hasNext()) {
-            CommandChain chain = iterator.next();
-            if (chain.getCommands().isEmpty()) {
-                iterator.remove();
-            } else {
-                Command command = chain.getCommands().getFirst();
-                if (!VocabularyData.EMPTY_STRING.equals(aCommand.getAdjective())) {
-                    if (!command.getDescription().getAdjective().equals(aCommand.getAdjective())) {
-                        iterator.remove();
-                    }
-                }
-            }
+        availableCommandChains.removeIf(c -> c.getCommands().isEmpty());
+
+        // GenericCommandProvider treats EMPTY_STRING as a wildcard, so a chain whose own
+        // adjective is empty is a valid match for any input adjective. Drop chains with a
+        // non-empty, non-matching adjective. Then, if any exact-adjective match remains,
+        // also drop the wildcards so the engine can pick the specific one unambiguously.
+        String cmdAdj = aCommand.getAdjective();
+        if (VocabularyData.EMPTY_STRING.equals(cmdAdj)) {
+            return;
+        }
+        availableCommandChains.removeIf(c -> {
+            String adj = c.getCommands().getFirst().getDescription().getAdjective();
+            return !VocabularyData.EMPTY_STRING.equals(adj) && !adj.equals(cmdAdj);
+        });
+        boolean hasExactMatch = availableCommandChains.stream().anyMatch(c ->
+                cmdAdj.equals(c.getCommands().getFirst().getDescription().getAdjective()));
+        if (hasExactMatch) {
+            availableCommandChains.removeIf(c ->
+                    VocabularyData.EMPTY_STRING.equals(c.getCommands().getFirst().getDescription().getAdjective()));
         }
     }
 
