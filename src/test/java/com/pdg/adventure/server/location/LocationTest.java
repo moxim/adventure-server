@@ -8,11 +8,14 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.pdg.adventure.api.CommandChain;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.Direction;
 import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
+import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
@@ -98,6 +101,44 @@ class LocationTest {
         // then
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
         assertThat(result.getResultMessage()).isEqualTo("You can't do that.");
+    }
+
+    @Test
+    void describeItemAtLocation_returnsOnlyTheItemChain_notTheLocationFallback() {
+        // given: the location has an examine fallback (verb "describe") and holds an item
+        // with its own real "describe basket" command.
+        sut.setExamineFallback("describe", sut::getLongDescription);
+        Item basket = new Item(new DescriptionProvider("basket"), true);
+        basket.addCommand(new GenericCommand(new GenericCommandDescription("describe", basket),
+                                             new MessageAction("A wicker basket.", new MessagesHolder())));
+        sut.addItem(basket);
+
+        // when: the user asks to describe the basket
+        List<CommandChain> chains = sut.getMatchingCommandChain(
+                new GenericCommandDescription("describe", "basket"));
+
+        // then: only the basket's chain is returned — the location's fallback must not fire
+        assertThat(chains).hasSize(1);
+        assertThat(chains.getFirst().execute().getResultMessage()).isEqualTo("A wicker basket.");
+    }
+
+    @Test
+    void describeItemWithAdjective_resolvesToMatchingItem() {
+        // given: the location has an examine fallback and holds a "short sword"
+        // (adjective=short, noun=sword) with a real describe command.
+        sut.setExamineFallback("describe", sut::getLongDescription);
+        Item shortSword = new Item(new DescriptionProvider("short", "sword"), true);
+        shortSword.addCommand(new GenericCommand(new GenericCommandDescription("describe", shortSword),
+                                                 new MessageAction("A short sword.", new MessagesHolder())));
+        sut.addItem(shortSword);
+
+        // when: the user asks to describe the short sword
+        List<CommandChain> chains = sut.getMatchingCommandChain(
+                new GenericCommandDescription("describe", "short", "sword"));
+
+        // then: only the short sword's chain is returned
+        assertThat(chains).hasSize(1);
+        assertThat(chains.getFirst().execute().getResultMessage()).isEqualTo("A short sword.");
     }
 
     @Test

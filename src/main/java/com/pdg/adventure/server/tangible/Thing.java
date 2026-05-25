@@ -27,7 +27,7 @@ public class Thing implements Actionable {
     }
 
     public void setExamineFallback(String aVerb, Supplier<String> aDescription) {
-        commandHandler.setExamineFallback(aVerb, aDescription);
+        commandHandler.setExamineFallback(aVerb, aDescription, this::getNoun, this::getAdjective);
     }
 
     @Override

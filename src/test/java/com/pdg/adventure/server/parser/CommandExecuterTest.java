@@ -186,6 +186,20 @@ class CommandExecutorTest {
     }
 
     @Test
+    void commandWithAdjectiveMatchesItemWithoutAdjective() {
+        // given: a generic tree whose describe command has no adjective (wildcard)
+        Item genericTree = new Item(new DescriptionProvider("tree"), true);
+        genericTree.addCommand(new GenericCommand(partialCommand, successAction));
+        location.getItemContainer().add(genericTree);
+
+        // when: the user issues a command with an adjective
+        final ExecutionResult result = sut.execute(smallTreeCommand);
+
+        // then: the wildcard chain still matches and executes
+        assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
+    }
+
+    @Test
     void ambiguousCommandForItemsWithDifferentNamesMustFail() {
         // given
         Item someTree = new Item(new DescriptionProvider("tree"), true);

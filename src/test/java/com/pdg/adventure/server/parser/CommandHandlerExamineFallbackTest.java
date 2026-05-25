@@ -23,7 +23,7 @@ class CommandHandlerExamineFallbackTest {
 
     @Test
     void fallback_firesWhenNoExplicitCommandMatchesExamineVerb() {
-        commandHandler.setExamineFallback(EXAMINE_VERB, () -> FALLBACK_DESCRIPTION);
+        commandHandler.setExamineFallback(EXAMINE_VERB, () -> FALLBACK_DESCRIPTION, () -> "sword", () -> "");
 
         ExecutionResult result = commandHandler.applyCommand(new GenericCommandDescription(EXAMINE_VERB, "sword"));
 
@@ -34,7 +34,7 @@ class CommandHandlerExamineFallbackTest {
 
     @Test
     void fallback_doesNotFireForOtherVerbs() {
-        commandHandler.setExamineFallback(EXAMINE_VERB, () -> FALLBACK_DESCRIPTION);
+        commandHandler.setExamineFallback(EXAMINE_VERB, () -> FALLBACK_DESCRIPTION, () -> "sword", () -> "");
 
         ExecutionResult result = commandHandler.applyCommand(new GenericCommandDescription("look", "sword"));
 
@@ -50,7 +50,7 @@ class CommandHandlerExamineFallbackTest {
 
     @Test
     void explicitCommand_suppressesFallback() {
-        commandHandler.setExamineFallback(EXAMINE_VERB, () -> FALLBACK_DESCRIPTION);
+        commandHandler.setExamineFallback(EXAMINE_VERB, () -> FALLBACK_DESCRIPTION, () -> "sword", () -> "");
 
         GenericCommandDescription desc = new GenericCommandDescription(EXAMINE_VERB, "sword");
         commandHandler.addCommand(new GenericCommand(desc,
@@ -64,7 +64,7 @@ class CommandHandlerExamineFallbackTest {
 
     @Test
     void getMatchingCommandChain_returnsFallbackChainWhenNoExplicitMatch() {
-        commandHandler.setExamineFallback(EXAMINE_VERB, () -> FALLBACK_DESCRIPTION);
+        commandHandler.setExamineFallback(EXAMINE_VERB, () -> FALLBACK_DESCRIPTION, () -> "sword", () -> "");
 
         var chains = commandHandler.getMatchingCommandChain(new GenericCommandDescription(EXAMINE_VERB, "sword"));
 
@@ -77,5 +77,53 @@ class CommandHandlerExamineFallbackTest {
         var chains = commandHandler.getMatchingCommandChain(new GenericCommandDescription(EXAMINE_VERB, "sword"));
 
         assertThat(chains).isEmpty();
+    }
+
+    @Test
+    void fallback_doesNotFireWhenNounDoesNotMatchOwner() {
+        commandHandler.setExamineFallback(EXAMINE_VERB, () -> FALLBACK_DESCRIPTION, () -> "kitchen", () -> "");
+
+        var chains = commandHandler.getMatchingCommandChain(new GenericCommandDescription(EXAMINE_VERB, "sword"));
+
+        assertThat(chains).isEmpty();
+    }
+
+    @Test
+    void fallback_firesWhenCommandHasNoNoun() {
+        commandHandler.setExamineFallback(EXAMINE_VERB, () -> FALLBACK_DESCRIPTION, () -> "kitchen", () -> "");
+
+        var chains = commandHandler.getMatchingCommandChain(new GenericCommandDescription(EXAMINE_VERB));
+
+        assertThat(chains).hasSize(1);
+    }
+
+    @Test
+    void fallback_doesNotFireWhenAdjectiveDoesNotMatchOwner() {
+        commandHandler.setExamineFallback(EXAMINE_VERB, () -> FALLBACK_DESCRIPTION, () -> "sword", () -> "rusty");
+
+        var chains = commandHandler.getMatchingCommandChain(
+                new GenericCommandDescription(EXAMINE_VERB, "shiny", "sword"));
+
+        assertThat(chains).isEmpty();
+    }
+
+    @Test
+    void fallback_firesWhenAdjectiveMatchesOwner() {
+        commandHandler.setExamineFallback(EXAMINE_VERB, () -> FALLBACK_DESCRIPTION, () -> "sword", () -> "rusty");
+
+        var chains = commandHandler.getMatchingCommandChain(
+                new GenericCommandDescription(EXAMINE_VERB, "rusty", "sword"));
+
+        assertThat(chains).hasSize(1);
+    }
+
+    @Test
+    void fallback_firesWhenCommandHasNoAdjective() {
+        commandHandler.setExamineFallback(EXAMINE_VERB, () -> FALLBACK_DESCRIPTION, () -> "sword", () -> "rusty");
+
+        var chains = commandHandler.getMatchingCommandChain(
+                new GenericCommandDescription(EXAMINE_VERB, "sword"));
+
+        assertThat(chains).hasSize(1);
     }
 }
