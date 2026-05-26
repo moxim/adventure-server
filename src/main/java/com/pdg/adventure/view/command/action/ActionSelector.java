@@ -24,6 +24,7 @@ import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.model.action.DropActionData;
 import com.pdg.adventure.model.action.RemoveActionData;
 import com.pdg.adventure.model.action.TakeActionData;
+import com.pdg.adventure.model.action.WearActionData;
 
 /**
  * Component for selecting an action type and creating its corresponding editor.
@@ -101,6 +102,7 @@ public class ActionSelector extends HorizontalLayout {
         types.add(new ActionTypeDescriptor("Inventory", "Show the player's inventory", InventoryActionData::new));
         types.add(new ActionTypeDescriptor("Take", "Player picks up an item", TakeActionData::new));
         types.add(new ActionTypeDescriptor("Drop", "Player drops an item", DropActionData::new));
+        types.add(new ActionTypeDescriptor("Wear", "Player wears a wearable item", WearActionData::new));
 
         return types;
     }

@@ -26,6 +26,7 @@ import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.model.action.DropActionData;
 import com.pdg.adventure.model.action.RemoveActionData;
 import com.pdg.adventure.model.action.TakeActionData;
+import com.pdg.adventure.model.action.WearActionData;
 import com.pdg.adventure.view.command.action.*;
 
 class ActionEditorFactoryTest {
@@ -149,6 +150,12 @@ class ActionEditorFactoryTest {
     void createEditor_withDropActionData_shouldReturnDropActionEditor() {
         ActionEditorComponent editor = ActionEditorFactory.createEditor(new DropActionData(), adventureData);
         assertThat(editor).isNotNull().isInstanceOf(DropActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withWearActionData_shouldReturnWearActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new WearActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(WearActionEditor.class);
     }
 
     @Test

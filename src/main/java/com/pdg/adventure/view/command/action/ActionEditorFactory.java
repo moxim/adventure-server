@@ -14,6 +14,7 @@ import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.model.action.DropActionData;
 import com.pdg.adventure.model.action.RemoveActionData;
 import com.pdg.adventure.model.action.TakeActionData;
+import com.pdg.adventure.model.action.WearActionData;
 
 /**
  * Factory for creating action editor components.
@@ -48,6 +49,7 @@ public class ActionEditorFactory {
             case InventoryActionData inventoryActionData -> new InventoryActionEditor(inventoryActionData);
             case TakeActionData takeActionData -> new TakeActionEditor(takeActionData, adventureData);
             case DropActionData dropActionData -> new DropActionEditor(dropActionData, adventureData);
+            case WearActionData wearActionData -> new WearActionEditor(wearActionData, adventureData);
             default -> throw new UnsupportedOperationException(
                     "No editor available for action type: " + actionData.getClass().getSimpleName()
             );
