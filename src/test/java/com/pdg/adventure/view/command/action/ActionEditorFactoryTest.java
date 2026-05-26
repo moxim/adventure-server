@@ -23,7 +23,9 @@ import com.pdg.adventure.model.action.InventoryActionData;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
+import com.pdg.adventure.model.action.DropActionData;
 import com.pdg.adventure.model.action.RemoveActionData;
+import com.pdg.adventure.model.action.TakeActionData;
 import com.pdg.adventure.view.command.action.*;
 
 class ActionEditorFactoryTest {
@@ -135,6 +137,18 @@ class ActionEditorFactoryTest {
     void createEditor_withInventoryActionData_shouldReturnInventoryActionEditor() {
         ActionEditorComponent editor = ActionEditorFactory.createEditor(new InventoryActionData(), adventureData);
         assertThat(editor).isNotNull().isInstanceOf(InventoryActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withTakeActionData_shouldReturnTakeActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new TakeActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(TakeActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withDropActionData_shouldReturnDropActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new DropActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(DropActionEditor.class);
     }
 
     @Test
