@@ -24,6 +24,7 @@ import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.model.action.DropActionData;
 import com.pdg.adventure.model.action.RemoveActionData;
 import com.pdg.adventure.model.action.TakeActionData;
+import com.pdg.adventure.model.action.QuitActionData;
 import com.pdg.adventure.model.action.SetVariableActionData;
 import com.pdg.adventure.model.action.WearActionData;
 
@@ -106,6 +107,7 @@ public class ActionSelector extends HorizontalLayout {
         types.add(new ActionTypeDescriptor("Wear", "Player wears a wearable item", WearActionData::new));
         types.add(new ActionTypeDescriptor("Set Variable", "Set a named variable to a specific value",
                                            () -> new SetVariableActionData(null, null)));
+        types.add(new ActionTypeDescriptor("Quit", "Terminate the game", QuitActionData::new));
 
         return types;
     }

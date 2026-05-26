@@ -26,6 +26,7 @@ import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.model.action.DropActionData;
 import com.pdg.adventure.model.action.RemoveActionData;
 import com.pdg.adventure.model.action.TakeActionData;
+import com.pdg.adventure.model.action.QuitActionData;
 import com.pdg.adventure.model.action.SetVariableActionData;
 import com.pdg.adventure.model.action.WearActionData;
 import com.pdg.adventure.view.command.action.*;
@@ -163,6 +164,12 @@ class ActionEditorFactoryTest {
     void createEditor_withSetVariableActionData_shouldReturnSetVariableActionEditor() {
         ActionEditorComponent editor = ActionEditorFactory.createEditor(new SetVariableActionData(null, null), adventureData);
         assertThat(editor).isNotNull().isInstanceOf(SetVariableActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withQuitActionData_shouldReturnQuitActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new QuitActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(QuitActionEditor.class);
     }
 
     @Test
