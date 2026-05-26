@@ -14,9 +14,16 @@ import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.action.ActionData;
+import com.pdg.adventure.model.action.CreateActionData;
+import com.pdg.adventure.model.action.DecrementVariableActionData;
+import com.pdg.adventure.model.action.DescribeActionData;
+import com.pdg.adventure.model.action.DestroyActionData;
+import com.pdg.adventure.model.action.IncrementVariableActionData;
+import com.pdg.adventure.model.action.InventoryActionData;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
+import com.pdg.adventure.model.action.RemoveActionData;
 import com.pdg.adventure.view.command.action.*;
 
 class ActionEditorFactoryTest {
@@ -85,6 +92,49 @@ class ActionEditorFactoryTest {
         // Then
         assertThat(editor).isNotNull().isInstanceOf(MessageActionEditor.class);
         assertThat(editor.getActionData()).isSameAs(actionData);
+    }
+
+    @Test
+    void createEditor_withDestroyActionData_shouldReturnDestroyActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new DestroyActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(DestroyActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withRemoveActionData_shouldReturnRemoveActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new RemoveActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(RemoveActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withIncrementVariableActionData_shouldReturnIncrementVariableActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new IncrementVariableActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(IncrementVariableActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withDecrementVariableActionData_shouldReturnDecrementVariableActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new DecrementVariableActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(DecrementVariableActionEditor.class);
+    }
+
+
+    @Test
+    void createEditor_withDescribeActionData_shouldReturnDescribeActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new DescribeActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(DescribeActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withCreateActionData_shouldReturnCreateActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new CreateActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(CreateActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withInventoryActionData_shouldReturnInventoryActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new InventoryActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(InventoryActionEditor.class);
     }
 
     @Test

@@ -12,9 +12,16 @@ import java.util.function.Supplier;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.action.ActionData;
+import com.pdg.adventure.model.action.CreateActionData;
+import com.pdg.adventure.model.action.DecrementVariableActionData;
+import com.pdg.adventure.model.action.DescribeActionData;
+import com.pdg.adventure.model.action.DestroyActionData;
+import com.pdg.adventure.model.action.IncrementVariableActionData;
+import com.pdg.adventure.model.action.InventoryActionData;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
+import com.pdg.adventure.model.action.RemoveActionData;
 
 /**
  * Component for selecting an action type and creating its corresponding editor.
@@ -77,8 +84,19 @@ public class ActionSelector extends HorizontalLayout {
 
         types.add(new ActionTypeDescriptor("Message", "Display a message to the player", MessageActionData::new));
 
-        // TODO: Add more action types as editors are implemented
-        // types.add(new ActionTypeDescriptor("Set Variable", "Set a variable value", SetVariableActionData::new));
+        types.add(new ActionTypeDescriptor("Destroy", "Remove an item from the game permanently",
+                                           DestroyActionData::new));
+        types.add(new ActionTypeDescriptor("Remove (Un-wear)", "Remove a wearable item from the player",
+                                           RemoveActionData::new));
+        types.add(new ActionTypeDescriptor("Increment Variable", "Increment a named variable by an amount",
+                                           IncrementVariableActionData::new));
+        types.add(new ActionTypeDescriptor("Decrement Variable", "Decrement a named variable by an amount",
+                                           DecrementVariableActionData::new));
+        types.add(new ActionTypeDescriptor("Describe", "Show the description of an item or location",
+                                           DescribeActionData::new));
+        types.add(new ActionTypeDescriptor("Create Item", "Place an item into a container or location",
+                                           CreateActionData::new));
+        types.add(new ActionTypeDescriptor("Inventory", "Show the player's inventory", InventoryActionData::new));
 
         return types;
     }
