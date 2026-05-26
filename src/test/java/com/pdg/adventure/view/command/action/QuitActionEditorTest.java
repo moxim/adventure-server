@@ -35,4 +35,12 @@ class QuitActionEditorTest {
 
         assertThat(editor.getChildren().count()).isGreaterThan(0);
     }
+
+    @Test
+    void getActionTypeName_shouldReturnQuitActionName() {
+        QuitActionData actionData = new QuitActionData();
+        QuitActionEditor editor = new QuitActionEditor(actionData);
+
+        assertThat(editor.getActionTypeName()).isEqualTo(actionData.getActionName());
+    }
 }
