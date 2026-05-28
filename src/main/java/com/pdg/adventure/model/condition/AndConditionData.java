@@ -6,6 +6,6 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class AndConditionData extends PreConditionData {
-    private String preConditionId;
-    private String anotherPreConditionId;
+    private PreConditionData preCondition;
+    private PreConditionData anotherPreCondition;
 }
