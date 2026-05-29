@@ -1,0 +1,50 @@
+package com.pdg.adventure.view.command.condition;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.pdg.adventure.model.condition.NotConditionData;
+import com.pdg.adventure.model.condition.PreConditionData;
+
+class ConditionRowTest {
+
+    private ConditionEditorComponent editor;
+
+    @BeforeEach
+    void setUp() {
+        com.pdg.adventure.model.condition.EqualsConditionData eqData = new com.pdg.adventure.model.condition.EqualsConditionData();
+        editor = new EqualsConditionEditor(eqData);
+        editor.initialize();
+    }
+
+    @Test
+    void toConditionData_withNegateUnchecked_returnsLeafData() {
+        ConditionRow row = new ConditionRow(editor, false);
+        PreConditionData result = row.toConditionData();
+        assertThat(result).isSameAs(editor.getConditionData());
+        assertThat(result).isNotInstanceOf(NotConditionData.class);
+    }
+
+    @Test
+    void toConditionData_withNegateChecked_returnsNotConditionDataWrappingLeaf() {
+        ConditionRow row = new ConditionRow(editor, true);
+        PreConditionData result = row.toConditionData();
+        assertThat(result).isInstanceOf(NotConditionData.class);
+        assertThat(((NotConditionData) result).getPreCondition()).isSameAs(editor.getConditionData());
+    }
+
+    @Test
+    void constructor_buildsUI() {
+        ConditionRow row = new ConditionRow(editor, false);
+        assertThat(row.getChildren().count()).isGreaterThan(0);
+    }
+
+    @Test
+    void setOnRemove_acceptsCallback() {
+        ConditionRow row = new ConditionRow(editor, false);
+        row.setOnRemove(() -> {});
+        assertThat(row).isNotNull();
+    }
+}
