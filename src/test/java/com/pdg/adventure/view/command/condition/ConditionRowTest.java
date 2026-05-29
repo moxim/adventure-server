@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.pdg.adventure.model.condition.EqualsConditionData;
 import com.pdg.adventure.model.condition.NotConditionData;
 import com.pdg.adventure.model.condition.PreConditionData;
 
@@ -14,7 +15,7 @@ class ConditionRowTest {
 
     @BeforeEach
     void setUp() {
-        com.pdg.adventure.model.condition.EqualsConditionData eqData = new com.pdg.adventure.model.condition.EqualsConditionData();
+        EqualsConditionData eqData = new EqualsConditionData();
         editor = new EqualsConditionEditor(eqData);
         editor.initialize();
     }
