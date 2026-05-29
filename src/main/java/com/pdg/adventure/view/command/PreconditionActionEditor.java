@@ -7,30 +7,32 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.util.List;
 
+import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.action.ActionData;
-import com.pdg.adventure.model.condition.PreConditionData;
+import com.pdg.adventure.view.command.condition.ConditionListEditor;
 import com.pdg.adventure.view.component.GridFactory;
 
 public class PreconditionActionEditor extends VerticalLayout {
-    private final Grid<PreConditionData> preconditionGrid;
+    private final ConditionListEditor conditionListEditor;
     private final Grid<ActionData> actionGrid;
 
-    public PreconditionActionEditor() {
-        preconditionGrid = GridFactory.createGrid(PreConditionData.class, List.of(
-                new GridFactory.ColumnConfig<>(p -> p.getId(), "ID", false)
-        ));
+    public PreconditionActionEditor(AdventureData adventureData) {
+        conditionListEditor = new ConditionListEditor(adventureData);
+
         actionGrid = GridFactory.createGrid(ActionData.class, List.of(
                 new GridFactory.ColumnConfig<>(a -> a.getId(), "ID", false)
         ));
-        Button addPrecondition = new Button("Add Precondition", _ -> addPrecondition());
         Button addAction = new Button("Add Action", _ -> addAction());
-        Details details = new Details("Preconditions & Actions", new VerticalLayout(
-                addPrecondition, preconditionGrid, addAction, actionGrid));
-        add(details);
+
+        Details preconditionsSection = new Details("Preconditions", conditionListEditor);
+        Details actionsSection = new Details("Actions", new VerticalLayout(addAction, actionGrid));
+
+        add(preconditionsSection, actionsSection);
     }
 
-    private void addPrecondition() {
-        // Implement based on PreConditionData structure
+    public void setCommand(CommandData commandData) {
+        conditionListEditor.setConditions(commandData.getPreConditions());
     }
 
     private void addAction() {
