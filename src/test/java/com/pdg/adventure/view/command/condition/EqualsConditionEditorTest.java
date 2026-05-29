@@ -10,7 +10,7 @@ class EqualsConditionEditorTest {
 
     @Test
     void validate_withEmptyFields_returnsFalse() {
-        EqualsConditionEditor editor = new EqualsConditionEditor(new EqualsConditionData("", ""));
+        EqualsConditionEditor editor = new EqualsConditionEditor(new EqualsConditionData());
         editor.initialize();
         assertThat(editor.validate()).isFalse();
     }
@@ -25,14 +25,14 @@ class EqualsConditionEditorTest {
 
     @Test
     void constructor_setsConditionDataReference() {
-        EqualsConditionData data = new EqualsConditionData("", "");
+        EqualsConditionData data = new EqualsConditionData();
         EqualsConditionEditor editor = new EqualsConditionEditor(data);
         assertThat(editor.getConditionData()).isSameAs(data);
     }
 
     @Test
     void initialize_buildsUI() {
-        EqualsConditionEditor editor = new EqualsConditionEditor(new EqualsConditionData("", ""));
+        EqualsConditionEditor editor = new EqualsConditionEditor(new EqualsConditionData());
         editor.initialize();
         assertThat(editor.getChildren().count()).isGreaterThan(0);
     }
