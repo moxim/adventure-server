@@ -48,4 +48,23 @@ class ConditionRowTest {
         row.setOnRemove(() -> {});
         assertThat(row).isNotNull();
     }
+
+    @Test
+    void constructor_withFilledEditor_summaryIncludesContent() {
+        EqualsConditionData eqData = new EqualsConditionData();
+        eqData.setVariableName("score");
+        eqData.setValue("10");
+        ConditionEditorComponent filledEditor = new EqualsConditionEditor(eqData);
+        filledEditor.initialize();
+
+        ConditionRow row = new ConditionRow(filledEditor, false);
+
+        assertThat(row.getSummaryText()).contains("Equals").contains("score");
+    }
+
+    @Test
+    void constructor_withEmptyEditor_summaryShowsTypeNameAndNone() {
+        ConditionRow row = new ConditionRow(editor, false);
+        assertThat(row.getSummaryText()).isEqualTo("Equals: (none)");
+    }
 }
