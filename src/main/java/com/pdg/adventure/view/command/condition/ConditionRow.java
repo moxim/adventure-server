@@ -22,7 +22,9 @@ public class ConditionRow extends Details {
 
         String typeName = editor.getConditionData().getPreconditionName()
                                .replace("ConditionData", "");
-        setSummaryText(typeName);
+        String summary = editor.getConditionSummary();
+        String headerText = summary.isBlank() ? typeName : typeName + ": " + summary;
+        setSummaryText(headerText);
 
         negateCheckbox = new Checkbox("Negate", negate);
 

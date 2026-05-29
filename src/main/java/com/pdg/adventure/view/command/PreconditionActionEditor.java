@@ -35,6 +35,10 @@ public class PreconditionActionEditor extends VerticalLayout {
         conditionListEditor.setConditions(commandData.getPreConditions());
     }
 
+    public void saveToCommand(CommandData commandData) {
+        commandData.setPreConditions(conditionListEditor.getConditions());
+    }
+
     private void addAction() {
         // Implement based on ActionData structure
     }
