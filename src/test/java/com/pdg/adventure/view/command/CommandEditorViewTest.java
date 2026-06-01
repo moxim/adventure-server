@@ -1,5 +1,7 @@
 package com.pdg.adventure.view.command;
 
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -7,14 +9,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import com.pdg.adventure.model.*;
+import com.pdg.adventure.model.action.MovePlayerActionData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.view.command.CommandEditorView;
 
 /**
  * Unit tests for CommandEditorView business logic.
@@ -108,5 +113,42 @@ class CommandEditorViewTest {
 
         // then
         assertThat(title).isNull();
+    }
+
+    @Test
+    void loadingExistingCommandWithAction_buildsEditorWithoutThrowing() {
+        // Regression: opening an existing command whose first action is a real action must build
+        // the action editor without throwing. Drives setData -> (lazy) PreconditionActionEditor ->
+        // setCommand -> ActionListEditor.setActions -> ActionEditorFactory.createEditor(action,
+        // adventureData) -> buildUI() -- the chain that previously NPE'd on a null adventureData.
+        Word go = vocabularyData.getWords().stream()
+                .filter(w -> "go".equals(w.getText())).findFirst().orElseThrow();
+        Word north = vocabularyData.getWords().stream()
+                .filter(w -> "north".equals(w.getText())).findFirst().orElseThrow();
+
+        CommandDescriptionData commandDescription = new CommandDescriptionData();
+        commandDescription.setVerb(go);
+        commandDescription.setNoun(north);
+
+        MovePlayerActionData moveAction = new MovePlayerActionData();
+        moveAction.setLocationId("location-1");
+
+        CommandData commandWithAction = new CommandData();
+        commandWithAction.setCommandDescription(commandDescription);
+        commandWithAction.addAction(moveAction);
+        commandProviderData.add(commandWithAction);
+
+        String spec = commandDescription.getCommandSpecification();
+
+        view = new CommandEditorView(adventureService);
+        view.setUpLoading(spec);
+
+        assertThatCode(() -> view.setData(adventureData, locationData, gridDataView(spec)))
+                .doesNotThrowAnyException();
+    }
+
+    private GridListDataView<CommandDescriptionAdapter> gridDataView(String spec) {
+        Grid<CommandDescriptionAdapter> grid = new Grid<>();
+        return grid.setItems(List.of(new CommandDescriptionAdapter(spec)));
     }
 }

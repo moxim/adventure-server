@@ -292,6 +292,15 @@ public class CommandEditorView extends VerticalLayout
         return pageTitle;
     }
 
+    /**
+     * Test/loader seam: set the id (command specification) of the command chain to edit.
+     * Mirrors {@code DirectionEditorView.setUpLoading(String)}; normally {@link #beforeEnter}
+     * derives this from the route parameters.
+     */
+    protected void setUpLoading(String aCommandId) {
+        commandId = aCommandId;
+    }
+
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         final Optional<String> optionalCommandId = event.getRouteParameters().get(RouteIds.COMMAND_ID.getValue());
