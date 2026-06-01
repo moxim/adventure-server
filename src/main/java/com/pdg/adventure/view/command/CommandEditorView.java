@@ -105,7 +105,7 @@ public class CommandEditorView extends VerticalLayout
         vl1.add(actionEditorContainer);
         Details details = new Details("Preconditions & Actions", vl1);
 
-        add(commandLayout, details, resetBackSaveView);
+        add(commandLayout, details, resetBackSaveView, new PreconditionActionEditor(adventureData));
     }
 
     private Grid<CommandData> createCommandChainGrid() {
