@@ -209,21 +209,11 @@ public class LocationUsageTracker {
     private static void checkCommand(final String sourceLocationId, final String sourceLocationDesc,
                                      final String targetLocationId, final List<LocationUsage> usages,
                                      final CommandData command, final String commandSpec) {
-        // Check primary action
-        if (command.getAction() != null) {
-            checkMoveAction(command.getAction(), sourceLocationId, sourceLocationDesc,
-                            commandSpec, "Primary Action", targetLocationId, usages);
-        }
-
-        // Check follow-up actions
-        if (command.getFollowUpActions() != null) {
-            int followUpIndex = 1;
-            for (ActionData followUpAction : command.getFollowUpActions()) {
-                checkMoveAction(followUpAction, sourceLocationId, sourceLocationDesc,
-                                commandSpec, "Follow-up Action #" + followUpIndex,
-                                targetLocationId, usages);
-                followUpIndex++;
-            }
+        int actionIndex = 1;
+        for (ActionData action : command.getActions()) {
+            checkMoveAction(action, sourceLocationId, sourceLocationDesc,
+                            commandSpec, "Action #" + actionIndex, targetLocationId, usages);
+            actionIndex++;
         }
     }
 

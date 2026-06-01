@@ -9,16 +9,22 @@ import com.pdg.adventure.api.*;
 public class GenericCommand implements Command {
     private final CommandDescription commandDescription;
     private final List<PreCondition> preConditions;
-    private final List<Action> followUpActions;
-    private final Action mainAction;
+    private final List<Action> actions;
     private String id;
 
-    public GenericCommand(CommandDescription aCommandDescription, Action anAction) {
+    public GenericCommand(CommandDescription aCommandDescription) {
         commandDescription = aCommandDescription;
         preConditions = new ArrayList<>();
-        followUpActions = new ArrayList<>();
-        mainAction = anAction;
+        actions = new ArrayList<>();
         id = UUID.randomUUID().toString();
+    }
+
+    /** Convenience: seed the command with its first action (sugar, not a privileged action). */
+    public GenericCommand(CommandDescription aCommandDescription, Action anAction) {
+        this(aCommandDescription);
+        if (anAction != null) {
+            actions.add(anAction);
+        }
     }
 
     @Override
@@ -31,18 +37,14 @@ public class GenericCommand implements Command {
         id = anId;
     }
 
-    public Action getAction() {
-        return mainAction;
-    }
-
     @Override
     public List<PreCondition> getPreconditions() {
         return preConditions;
     }
 
     @Override
-    public List<Action> getFollowUpActions() {
-        return followUpActions;
+    public List<Action> getActions() {
+        return actions;
     }
 
     @Override
@@ -54,25 +56,19 @@ public class GenericCommand implements Command {
     public ExecutionResult execute() {
         ExecutionResult result = checkPreconditions();
         if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
-            ExecutionResult fromAction = mainAction.execute();
-            setExecutionResult(result, fromAction);
-            if (fromAction.getExecutionState() == ExecutionResult.State.SUCCESS) {
-                ExecutionResult fromFollowupActions = executeFollowupActions();
-                if (fromFollowupActions.getExecutionState() == ExecutionResult.State.FAILURE) {
-                    setExecutionResult(result, fromFollowupActions);
+            boolean first = true;
+            for (Action action : actions) {
+                ExecutionResult fromAction = action.execute();
+                if (first) {
+                    setExecutionResult(result, fromAction);
+                    first = false;
+                    if (fromAction.getExecutionState() == ExecutionResult.State.FAILURE) {
+                        break;
+                    }
+                } else if (fromAction.getExecutionState() == ExecutionResult.State.FAILURE) {
+                    setExecutionResult(result, fromAction);
+                    break;
                 }
-            }
-        }
-        return result;
-    }
-
-    private ExecutionResult executeFollowupActions() {
-        ExecutionResult result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
-        for (Action followUpAction : followUpActions) {
-            ExecutionResult tmp = followUpAction.execute();
-            if (tmp.getExecutionState() == ExecutionResult.State.FAILURE) {
-                setExecutionResult(result, tmp);
-                break;
             }
         }
         return result;
@@ -100,15 +96,9 @@ public class GenericCommand implements Command {
         preConditions.add(aCondition);
     }
 
-    /**
-     * Add another action that should happen if the mainAction can happen.
-     * (e.g. if the player opens a door he forgot to check for traps a trap sets off)
-     *
-     * @param anAction
-     */
     @Override
-    public void addFollowUpAction(Action anAction) {
-        followUpActions.add(anAction);
+    public void addAction(Action anAction) {
+        actions.add(anAction);
     }
 
     @Override
@@ -124,6 +114,6 @@ public class GenericCommand implements Command {
     }
 
     public String toString() {
-        return commandDescription.getDescription() + (mainAction == null ? "" : "[" + mainAction + "]");
+        return commandDescription.getDescription() + (actions.isEmpty() ? "" : actions.toString());
     }
 }

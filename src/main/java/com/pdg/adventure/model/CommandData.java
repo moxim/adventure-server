@@ -16,8 +16,7 @@ import com.pdg.adventure.model.condition.PreConditionData;
 public class CommandData extends BasicData {
     private CommandDescriptionData commandDescription;
     private List<PreConditionData> preConditions;
-    private List<? extends ActionData> followUpActions;
-    private ActionData action;
+    private List<ActionData> actions;
 
     public CommandData() {
         this(new CommandDescriptionData());
@@ -26,14 +25,14 @@ public class CommandData extends BasicData {
     public CommandData(CommandDescriptionData aCommandDescriptionData) {
         commandDescription = aCommandDescriptionData;
         preConditions = new ArrayList<>();
-        followUpActions = new ArrayList<>();
+        actions = new ArrayList<>();
     }
 
-    public void setAction(ActionData action) {
-        if (action == null) {
+    /** Append an action. Null-checks, preserving the old setAction guard intent. */
+    public void addAction(ActionData anAction) {
+        if (anAction == null) {
             throw new IllegalArgumentException("Action cannot be null");
         }
-        this.action = action;
+        actions.add(anAction);
     }
 }
-

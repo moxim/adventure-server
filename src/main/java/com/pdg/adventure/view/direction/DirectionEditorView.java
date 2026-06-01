@@ -17,6 +17,7 @@ import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -244,7 +245,7 @@ public class DirectionEditorView extends VerticalLayout
 
             final MovePlayerActionData movePlayerActionData = new MovePlayerActionData();
             movePlayerActionData.setLocationId(aDirectionViewModel.getDestinationId());
-            directionData.getCommandData().setAction(movePlayerActionData);
+            directionData.getCommandData().setActions(new ArrayList<>(List.of(movePlayerActionData)));
 
             final Set<DirectionData> directionsData = locationData.getDirectionsData();
             directionsData.add(directionData);

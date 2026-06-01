@@ -134,7 +134,7 @@ class LocationUsageTrackerTest {
         assertThat(usage.getSourceLocationId()).isEqualTo("hall");
         assertThat(usage.getSourceLocationDescription()).isEqualTo("Hall");
         assertThat(usage.getCommandSpecification()).isEqualTo("use trap door");
-        assertThat(usage.getContext()).isEqualTo("Primary Action");
+        assertThat(usage.getContext()).isEqualTo("Action #1");
     }
 
     @Test
@@ -153,7 +153,7 @@ class LocationUsageTrackerTest {
         assertThat(usages).hasSize(1);
         LocationUsageTracker.LocationUsage usage = usages.getFirst();
         assertThat(usage.getUsageType()).isEqualTo("Move Action");
-        assertThat(usage.getContext()).isEqualTo("Follow-up Action #1");
+        assertThat(usage.getContext()).isEqualTo("Action #2");
     }
 
     @Test
@@ -382,7 +382,7 @@ class LocationUsageTrackerTest {
 
         MovePlayerActionData moveAction = new MovePlayerActionData();
         moveAction.setLocationId(targetLocationId);
-        command.setAction(moveAction);
+        command.addAction(moveAction);
 
         commandChain.getCommands().add(command);
         commands.put(commandSpec, commandChain);
@@ -409,16 +409,13 @@ class LocationUsageTrackerTest {
         CommandChainData commandChain = new CommandChainData();
         CommandData command = new CommandData();
 
-        // Primary action is not a move action
-        command.setAction(new MovePlayerActionData()); // dummy action
+        // Action #1: not the target move action (dummy)
+        command.addAction(new MovePlayerActionData()); // dummy action
 
-        // Follow-up action is a move action
+        // Action #2: move action to the target location
         MovePlayerActionData followUpMove = new MovePlayerActionData();
         followUpMove.setLocationId(targetLocationId);
-
-        List<MovePlayerActionData> followUpActions = new ArrayList<>();
-        followUpActions.add(followUpMove);
-        command.setFollowUpActions(followUpActions);
+        command.addAction(followUpMove);
 
         commandChain.getCommands().add(command);
         commands.put(commandSpec, commandChain);

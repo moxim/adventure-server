@@ -158,21 +158,11 @@ public class ItemUsageTracker {
                                                      final CommandChainData chain,
                                                      final String commandSpec) {
         for (CommandData command : chain.getCommands()) {
-            // Check primary action
-            if (command.getAction() != null) {
-                checkItemAction(command.getAction(), sourceLocationId, sourceLocationDesc,
-                                commandSpec, "Primary Action", targetItemId, usages);
-            }
-
-            // Check follow-up actions
-            if (command.getFollowUpActions() != null) {
-                int followUpIndex = 1;
-                for (ActionData followUpAction : command.getFollowUpActions()) {
-                    checkItemAction(followUpAction, sourceLocationId, sourceLocationDesc,
-                                    commandSpec, "Follow-up Action #" + followUpIndex,
-                                    targetItemId, usages);
-                    followUpIndex++;
-                }
+            int actionIndex = 1;
+            for (ActionData action : command.getActions()) {
+                checkItemAction(action, sourceLocationId, sourceLocationDesc,
+                                commandSpec, "Action #" + actionIndex, targetItemId, usages);
+                actionIndex++;
             }
         }
     }

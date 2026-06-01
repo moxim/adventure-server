@@ -1,6 +1,8 @@
 package com.pdg.adventure.view.command.condition;
 
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,6 +14,8 @@ import com.pdg.adventure.model.condition.PreConditionData;
 public class ConditionListEditor extends VerticalLayout {
     private final AdventureData adventureData;
     private final VerticalLayout rowsLayout;
+    @Setter
+    private Runnable onChange;
 
     public ConditionListEditor(AdventureData adventureData) {
         this.adventureData = adventureData;
@@ -21,7 +25,7 @@ public class ConditionListEditor extends VerticalLayout {
         rowsLayout.setSpacing(true);
 
         ConditionSelector selector = new ConditionSelector();
-        selector.setConditionSelectedListener(data -> addRow(data, false));
+        selector.setConditionSelectedListener(data -> { addRow(data, false); notifyChange(); });
 
         setPadding(false);
         add(rowsLayout, selector);
@@ -48,7 +52,17 @@ public class ConditionListEditor extends VerticalLayout {
     private void addRow(PreConditionData data, boolean negate) {
         ConditionEditorComponent editor = ConditionEditorFactory.createEditor(data, adventureData);
         ConditionRow row = new ConditionRow(editor, negate);
-        row.setOnRemove(() -> rowsLayout.remove(row));
+        row.setOnRemove(() -> { rowsLayout.remove(row); notifyChange(); });
         rowsLayout.add(row);
+        // Fire change on client-side leaf-field edits (mirrors ActionListEditor).
+        editor.getChildren().forEach(child -> {
+            if (child instanceof HasValue<?, ?> hasValue) {
+                hasValue.addValueChangeListener(e -> { if (e.isFromClient()) notifyChange(); });
+            }
+        });
+    }
+
+    private void notifyChange() {
+        if (onChange != null) onChange.run();
     }
 }

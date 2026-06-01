@@ -1,45 +1,45 @@
 package com.pdg.adventure.view.command;
 
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.details.Details;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-
-import java.util.List;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.CommandData;
-import com.pdg.adventure.model.action.ActionData;
+import com.pdg.adventure.view.command.action.ActionListEditor;
 import com.pdg.adventure.view.command.condition.ConditionListEditor;
-import com.pdg.adventure.view.component.GridFactory;
 
 public class PreconditionActionEditor extends VerticalLayout {
     private final ConditionListEditor conditionListEditor;
-    private final Grid<ActionData> actionGrid;
+    private final ActionListEditor actionListEditor;
 
     public PreconditionActionEditor(AdventureData adventureData) {
         conditionListEditor = new ConditionListEditor(adventureData);
-
-        actionGrid = GridFactory.createGrid(ActionData.class, List.of(
-                new GridFactory.ColumnConfig<>(a -> a.getId(), "ID", false)
-        ));
-        Button addAction = new Button("Add Action", _ -> addAction());
+        actionListEditor = new ActionListEditor(adventureData);
 
         Details preconditionsSection = new Details("Preconditions", conditionListEditor);
-        Details actionsSection = new Details("Actions", new VerticalLayout(addAction, actionGrid));
+        Details actionsSection = new Details("Actions", actionListEditor);
 
+        setPadding(false);
         add(preconditionsSection, actionsSection);
     }
 
     public void setCommand(CommandData commandData) {
         conditionListEditor.setConditions(commandData.getPreConditions());
+        actionListEditor.setActions(commandData.getActions());
     }
 
     public void saveToCommand(CommandData commandData) {
         commandData.setPreConditions(conditionListEditor.getConditions());
+        commandData.setActions(actionListEditor.getActions());
     }
 
-    private void addAction() {
-        // Implement based on ActionData structure
+    public boolean validate() {
+        return actionListEditor.validate();
+    }
+
+    /** Wire a single change callback to both editors so the host view can track dirtiness. */
+    public void setOnChange(Runnable onChange) {
+        conditionListEditor.setOnChange(onChange);
+        actionListEditor.setOnChange(onChange);
     }
 }
