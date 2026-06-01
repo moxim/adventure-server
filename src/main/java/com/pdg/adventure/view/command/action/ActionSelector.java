@@ -35,7 +35,7 @@ import com.pdg.adventure.model.action.WearActionData;
 public class ActionSelector extends HorizontalLayout {
     private final AdventureData adventureData;
     private final ComboBox<ActionTypeDescriptor> actionTypeSelector;
-    private final Button useButton;
+    private final Button addButton;
     @Setter
     private transient ActionEditorSelectedListener editorSelectedListener;
 
@@ -50,15 +50,15 @@ public class ActionSelector extends HorizontalLayout {
         actionTypeSelector.setWidthFull();
 
         // Create the Use button
-        useButton = new Button("Use");
-        useButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        useButton.setEnabled(false);
+        addButton = new Button("Add");
+        addButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        addButton.setEnabled(false);
 
         // Enable the button only when an action is selected
-        actionTypeSelector.addValueChangeListener(e -> useButton.setEnabled(e.getValue() != null));
+        actionTypeSelector.addValueChangeListener(e -> addButton.setEnabled(e.getValue() != null));
 
         // Handle the Use button click
-        useButton.addClickListener(_ -> {
+        addButton.addClickListener(_ -> {
             ActionTypeDescriptor selectedType = actionTypeSelector.getValue();
             if (selectedType != null) {
                 ActionEditorComponent editor = createEditor(selectedType);
@@ -71,7 +71,7 @@ public class ActionSelector extends HorizontalLayout {
         // Layout setup
         setWidthFull();
         setAlignItems(Alignment.END);
-        add(actionTypeSelector, useButton);
+        add(actionTypeSelector, addButton);
         expand(actionTypeSelector);
     }
 
