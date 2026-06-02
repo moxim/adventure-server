@@ -20,13 +20,14 @@ public class ConditionRow extends Details {
     public ConditionRow(ConditionEditorComponent editor, boolean negate) {
         this.editor = editor;
 
-        String typeName = editor.getConditionData().getPreconditionName()
-                               .replace("ConditionData", "");
-        String summary = editor.getConditionSummary();
-        String headerText = summary.isBlank() ? typeName : typeName + ": " + summary;
-        setSummaryText(headerText);
+        String virginTypeName = editor.getConditionData().getPreconditionName()
+                                       .replace("ConditionData", "");
 
         negateCheckbox = new Checkbox("Negate", negate);
+        determineSummaryText(editor, virginTypeName);
+        negateCheckbox.addValueChangeListener(e -> {
+            determineSummaryText(editor, virginTypeName);
+        });
 
         Button removeButton = new Button("Remove");
         removeButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
@@ -39,8 +40,20 @@ public class ConditionRow extends Details {
         setWidthFull();
     }
 
+    private void determineSummaryText(final ConditionEditorComponent editor, final String virginTypeName) {
+        String typeName = virginTypeName;
+        if (Boolean.TRUE.equals(negateCheckbox.getValue())) {
+            typeName = "Not" + typeName;
+        } else {
+            typeName = virginTypeName;
+        }
+        String summary = editor.getConditionSummary();
+        String headerText = summary.isBlank() ? typeName : typeName + ": " + summary;
+        setSummaryText(headerText);
+    }
+
     public PreConditionData toConditionData() {
-        if (negateCheckbox.getValue()) {
+        if (Boolean.TRUE.equals(negateCheckbox.getValue())) {
             NotConditionData not = new NotConditionData();
             not.setPreCondition(editor.getConditionData());
             return not;

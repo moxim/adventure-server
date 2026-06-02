@@ -3,10 +3,10 @@ package com.pdg.adventure.view.command;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -15,6 +15,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.*;
 import jakarta.annotation.security.RolesAllowed;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +47,7 @@ public class CommandEditorView extends VerticalLayout
     private final VocabularyPicker nounSelector;
     private final VocabularyPicker adjectiveSelector;
     private final VocabularyPicker verbSelector;
+    private final Span preconditionAndActionHolder;
     private PreconditionActionEditor preconditionActionEditor;
     private transient String commandId;
     private String pageTitle;
@@ -89,11 +91,14 @@ public class CommandEditorView extends VerticalLayout
         VerticalLayout vl1 = new VerticalLayout();
         vl1.add(new Span("Command Chain"));
         vl1.add(commandChainGrid);
-        Details details = new Details("Preconditions & Actions", vl1);
+
+        preconditionAndActionHolder = new Span();
+        VerticalLayout details = new VerticalLayout(new NativeLabel("Preconditions & Actions"), preconditionAndActionHolder);
+        HorizontalLayout hl1 = new HorizontalLayout(vl1, details);
 
         // The precondition/action editor is built lazily in setData(), once adventureData is
         // available (its action/condition leaf editors dereference adventureData when populated).
-        add(commandLayout, details, resetBackSaveView);
+        add(commandLayout, hl1, resetBackSaveView);
     }
 
     private Grid<CommandData> createCommandChainGrid() {
@@ -251,17 +256,7 @@ public class CommandEditorView extends VerticalLayout
         boolean isEditingExistingCommand = commandId != null && !commandId.isEmpty() &&
                                            commandId.equals(newSpecification);
 
-        CommandData command;
-        if (isEditingExistingCommand && commandData != null) {
-            // We're editing an existing command with the same specification - update it in place
-            command = commandData;
-            command.setCommandDescription(updatedCommandDescription);
-        } else {
-            // We're creating a new command or the specification changed
-            command = new CommandData();
-//            command.setId(UUID.randomUUID().toString()); // Ensure unique ID for grid
-            command.setCommandDescription(updatedCommandDescription);
-        }
+        final CommandData command = getEditingCommandData(isEditingExistingCommand, updatedCommandDescription);
 
         // Persist the preconditions and actions from the editor
         preconditionActionEditor.saveToCommand(command);
@@ -284,6 +279,22 @@ public class CommandEditorView extends VerticalLayout
         }
         // If isEditingExistingCommand is true, the command is already in the chain and has been updated in place
 
+        return command;
+    }
+
+    private @NonNull CommandData getEditingCommandData(final boolean isEditingExistingCommand,
+                                                final CommandDescriptionData updatedCommandDescription) {
+        CommandData command;
+        if (isEditingExistingCommand && commandData != null) {
+            // We're editing an existing command with the same specification - update it in place
+            command = commandData;
+            command.setCommandDescription(updatedCommandDescription);
+        } else {
+            // We're creating a new command or the specification changed
+            command = new CommandData();
+//            command.setId(UUID.randomUUID().toString()); // Ensure unique ID for grid
+            command.setCommandDescription(updatedCommandDescription);
+        }
         return command;
     }
 
@@ -335,7 +346,7 @@ public class CommandEditorView extends VerticalLayout
                 updateSaveButtonState();
                 resetButton.setEnabled(true);
             });
-            add(preconditionActionEditor);
+            preconditionAndActionHolder.add(preconditionActionEditor);
         }
 
         // Find existing command or create new one
