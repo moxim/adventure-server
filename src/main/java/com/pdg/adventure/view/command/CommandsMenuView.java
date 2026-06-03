@@ -63,7 +63,7 @@ public class CommandsMenuView extends VerticalLayout
             UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-              .ifPresent(editor -> editor.setData(adventureData, locationData, gridListDataView));
+              .ifPresent(editor -> editor.setData(adventureData, locationData));
 
 //            showCreateDialog(availableCommands);
         });
@@ -163,7 +163,7 @@ public class CommandsMenuView extends VerticalLayout
                   new RouteParam(RouteIds.COMMAND_ID.getValue(), aCommandId),
                   new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
                   new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-          .ifPresent(editor -> editor.setData(adventureData, locationData, gridListDataView));
+          .ifPresent(editor -> editor.setData(adventureData, locationData));
     }
 
     private class CommandContextMenu extends GridContextMenu<CommandDescriptionAdapter> {

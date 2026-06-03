@@ -1,7 +1,5 @@
 package com.pdg.adventure.view.command;
 
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -95,7 +92,7 @@ class CommandEditorViewTest {
         view = new CommandEditorView(adventureService);
 
         // when
-        view.setData(adventureData, locationData, null);
+        view.setData(adventureData, locationData);
 
         // then
         // View should be populated with data
@@ -143,12 +140,7 @@ class CommandEditorViewTest {
         view = new CommandEditorView(adventureService);
         view.setUpLoading(spec);
 
-        assertThatCode(() -> view.setData(adventureData, locationData, gridDataView(spec)))
+        assertThatCode(() -> view.setData(adventureData, locationData))
                 .doesNotThrowAnyException();
-    }
-
-    private GridListDataView<CommandDescriptionAdapter> gridDataView(String spec) {
-        Grid<CommandDescriptionAdapter> grid = new Grid<>();
-        return grid.setItems(List.of(new CommandDescriptionAdapter(spec)));
     }
 }

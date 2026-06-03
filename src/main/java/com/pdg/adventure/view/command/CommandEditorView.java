@@ -5,7 +5,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
-import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -54,7 +53,6 @@ public class CommandEditorView extends VerticalLayout
     private Button saveButton;
     private Button resetButton;
     private LocationData locationData;
-    private GridListDataView<CommandDescriptionAdapter> gridListDataView;
     private AdventureData adventureData;
     private CommandProviderData commandProviderData;
     private transient CommandViewModel cvm;
@@ -205,7 +203,7 @@ public class CommandEditorView extends VerticalLayout
 
             if (binder.validate().isOk()) {
                 binder.writeBean(cvm);
-                commandData = swivelTheSaveButton(gridListDataView);
+                commandData = swivelTheSaveButton();
                 adventureService.saveLocationData(locationData);
 
                 // Update commandId to the new specification (in case it changed)
@@ -237,7 +235,7 @@ public class CommandEditorView extends VerticalLayout
         }
     }
 
-    private CommandData swivelTheSaveButton(GridListDataView<CommandDescriptionAdapter> aGridListDataView) {
+    private CommandData swivelTheSaveButton() {
         // Use the commandDescriptionData that was updated via the binder
         final CommandDescriptionData updatedCommandDescription = cvm.getData();
         final String newSpecification = updatedCommandDescription.getCommandSpecification();
@@ -247,9 +245,6 @@ public class CommandEditorView extends VerticalLayout
         // If editing an existing command and the specification has changed, remove the old entry
         if (commandId != null && !commandId.isEmpty() && !commandId.equals(newSpecification)) {
             availableCommandsHelper.remove(commandId);
-            // Remove old item from grid
-            aGridListDataView.getItems().filter(item -> item.getShortDescription().equals(commandId)).findFirst()
-                             .ifPresent(aGridListDataView::removeItem);
         }
 
         // Determine if we're editing an existing command or creating a new one
@@ -267,17 +262,14 @@ public class CommandEditorView extends VerticalLayout
             final CommandChainData chainData = new CommandChainData();
             chainData.getCommands().add(command);
             availableCommandsHelper.put(newSpecification, chainData);
-            // Add to grid only if it's truly new
-            aGridListDataView.addItem(new CommandDescriptionAdapter(newSpecification));
         } else if (!isEditingExistingCommand) {
-            // Command specification already exists and we're adding a new variant (not editing existing)
-            // Commands with the same description are chained together
-            // The chain will execute commands until one with met preconditions succeeds
+            // Command specification already exists and we're adding a new variant (not editing existing).
+            // Commands with the same description are chained together; the chain executes until one
+            // with met preconditions succeeds.
             commandChainData.getCommands().add(command);
-            // Refresh grid to show updated data
-            aGridListDataView.refreshAll();
         }
-        // If isEditingExistingCommand is true, the command is already in the chain and has been updated in place
+        // If isEditingExistingCommand is true, the command is already in the chain and updated in place.
+        // The menu grid reflects all of the above on return: navigateBack() re-runs CommandsMenuView.setData().
 
         return command;
     }
@@ -329,11 +321,9 @@ public class CommandEditorView extends VerticalLayout
         AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges() || editorHasChanges);
     }
 
-    public void setData(AdventureData anAdventureData, LocationData aLocationData,
-                        GridListDataView<CommandDescriptionAdapter> aGridListDataView) {
+    public void setData(AdventureData anAdventureData, LocationData aLocationData) {
         adventureData = anAdventureData;
         locationData = aLocationData;
-        gridListDataView = aGridListDataView;
 
         commandProviderData = locationData.getCommandProviderData();
 
