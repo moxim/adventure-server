@@ -10,6 +10,22 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.action.ActionData;
+import com.pdg.adventure.model.action.CreateActionData;
+import com.pdg.adventure.model.action.DecrementVariableActionData;
+import com.pdg.adventure.model.action.DescribeActionData;
+import com.pdg.adventure.model.action.DestroyActionData;
+import com.pdg.adventure.model.action.DropActionData;
+import com.pdg.adventure.model.action.IncrementVariableActionData;
+import com.pdg.adventure.model.action.InventoryActionData;
+import com.pdg.adventure.model.action.MessageActionData;
+import com.pdg.adventure.model.action.MoveItemActionData;
+import com.pdg.adventure.model.action.MovePlayerActionData;
+import com.pdg.adventure.model.action.QuitActionData;
+import com.pdg.adventure.model.action.RemoveActionData;
+import com.pdg.adventure.model.action.SetVariableActionData;
+import com.pdg.adventure.model.action.TakeActionData;
+import com.pdg.adventure.model.action.WearActionData;
 import com.pdg.adventure.model.condition.CarriedConditionData;
 import com.pdg.adventure.model.condition.EqualsConditionData;
 import com.pdg.adventure.model.condition.GreaterThanConditionData;
@@ -79,6 +95,65 @@ public class PreconditionActionFormatter {
             return "SAME " + txt(same.getVariableNameOne()) + " " + txt(same.getVariableNameTwo());
         }
         return c.getPreconditionName().replace("ConditionData", "").toUpperCase(Locale.ROOT);
+    }
+
+    public List<String> formatActions(List<ActionData> actions) {
+        if (actions == null) {
+            return List.of();
+        }
+        return actions.stream().map(this::formatAction).collect(Collectors.toList());
+    }
+
+    public String formatAction(ActionData a) {
+        if (a == null) {
+            return "?";
+        }
+        if (a instanceof SetVariableActionData sv) {
+            return "SETVAR " + txt(sv.getVariableName()) + " " + txt(sv.getVariableValue());
+        }
+        if (a instanceof IncrementVariableActionData iv) {
+            return "INCVAR " + txt(iv.getName()) + " " + txt(iv.getValue());
+        }
+        if (a instanceof DecrementVariableActionData dv) {
+            return "DECVAR " + txt(dv.getName()) + " " + txt(dv.getValue());
+        }
+        if (a instanceof MessageActionData m) {
+            return "MESSAGE " + txt(m.getMessageId());
+        }
+        if (a instanceof CreateActionData cr) {
+            return "CREATE_ITEM " + resolveName(cr.getThingId());
+        }
+        if (a instanceof DestroyActionData d) {
+            return "DESTROY " + resolveName(d.getThingId());
+        }
+        if (a instanceof DropActionData d) {
+            return "DROP " + resolveName(d.getThingId());
+        }
+        if (a instanceof TakeActionData t) {
+            return "TAKE " + resolveName(t.getThingId());
+        }
+        if (a instanceof WearActionData w) {
+            return "WEAR " + resolveName(w.getThingId());
+        }
+        if (a instanceof RemoveActionData r) {
+            return "REMOVE " + resolveName(r.getThingId());
+        }
+        if (a instanceof MoveItemActionData mi) {
+            return "MOVE_ITEM " + resolveName(mi.getThingId()) + " " + resolveName(mi.getDestinationId());
+        }
+        if (a instanceof MovePlayerActionData mp) {
+            return "MOVE_PLAYER " + resolveName(mp.getLocationId());
+        }
+        if (a instanceof DescribeActionData de) {
+            return "DESCRIBE " + resolveName(de.getTargetId());
+        }
+        if (a instanceof InventoryActionData) {
+            return "INVENTORY";
+        }
+        if (a instanceof QuitActionData) {
+            return "QUIT";
+        }
+        return a.getActionName().replace("ActionData", "").toUpperCase(Locale.ROOT);
     }
 
     private String resolveName(String id) {
