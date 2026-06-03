@@ -1,23 +1,26 @@
 package com.pdg.adventure.view.command;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.*;
 import jakarta.annotation.security.RolesAllowed;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static com.pdg.adventure.view.support.RouteIds.ADVENTURE_ID;
@@ -25,12 +28,12 @@ import static com.pdg.adventure.view.support.RouteIds.LOCATION_ID;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.CommandChainData;
+import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.CommandProviderData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.location.LocationEditorView;
-import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -45,12 +48,13 @@ public class CommandsMenuView extends VerticalLayout
     private final Button resetButton;
     private final Button backButton;
     private final Button createButton;
-    private Grid<CommandDescriptionAdapter> grid;
+    private Grid<CommandData> grid;
     private String pageTitle;
     private LocationData locationData;
     private AdventureData adventureData;
     private CommandProviderData commandProviderData;
-    private GridListDataView<CommandDescriptionAdapter> gridListDataView;
+    private GridListDataView<CommandData> gridListDataView;
+    private transient PreconditionActionFormatter formatter;
 
     public CommandsMenuView(AdventureService anAdventureService) {
         adventureService = anAdventureService;
@@ -96,14 +100,30 @@ public class CommandsMenuView extends VerticalLayout
         add(hl);
     }
 
-    private Grid<CommandDescriptionAdapter> getSimpleGrid() {
-        GridProvider<CommandDescriptionAdapter> gridProvider = new GridProvider<>(CommandDescriptionAdapter.class);
-        gridProvider.getGrid().getColumns().get(1).setHeader("Command");
-        gridProvider.addColumn(CommandDescriptionAdapter::getVerb, "Verb");
-        gridProvider.addColumn(CommandDescriptionAdapter::getAdjective, "Adjective");
-        gridProvider.addColumn(CommandDescriptionAdapter::getNoun, "Noun");
-        ViewSupporter.setSize(gridProvider.getGrid());
-        return gridProvider.getGrid();
+    private Grid<CommandData> buildGrid() {
+        Grid<CommandData> aGrid = new Grid<>(CommandData.class, false);
+        aGrid.addColumn(ViewSupporter::formatId).setHeader("ID").setAutoWidth(true).setFlexGrow(0);
+        aGrid.addColumn(cmd -> ViewSupporter.getWordText(cmd.getCommandDescription().getVerb()))
+             .setHeader("Verb").setAutoWidth(true);
+        aGrid.addColumn(cmd -> ViewSupporter.getWordText(cmd.getCommandDescription().getAdjective()))
+             .setHeader("Adjective").setAutoWidth(true);
+        aGrid.addColumn(cmd -> ViewSupporter.getWordText(cmd.getCommandDescription().getNoun()))
+             .setHeader("Noun").setAutoWidth(true);
+        aGrid.addColumn(new ComponentRenderer<>(cmd -> stack(formatter.formatConditions(cmd.getPreConditions()))))
+             .setHeader("Preconditions").setAutoWidth(true);
+        aGrid.addColumn(new ComponentRenderer<>(cmd -> stack(formatter.formatActions(cmd.getActions()))))
+             .setHeader("Actions").setAutoWidth(true);
+        aGrid.addThemeVariants(GridVariant.LUMO_WRAP_CELL_CONTENT);
+        ViewSupporter.setSize(aGrid);
+        return aGrid;
+    }
+
+    /** Stack each rendered line in its own Span so multi-entry precondition/action cells wrap vertically. */
+    private static Component stack(List<String> lines) {
+        Div box = new Div();
+        box.getStyle().set("display", "flex").set("flex-direction", "column");
+        lines.forEach(line -> box.add(new Span(line)));
+        return box;
     }
 
     @Override
@@ -122,13 +142,12 @@ public class CommandsMenuView extends VerticalLayout
         pageTitle = "Commands for location #" + locationId;
     }
 
-    private GridListDataView<CommandDescriptionAdapter> fillGrid(CommandProviderData commandProviderData) {
-        final Map<String, CommandChainData> availableCommands = commandProviderData.getAvailableCommands();
-        final List<CommandDescriptionAdapter> commandDescriptionAdapters = new ArrayList<>(availableCommands.size());
-        for (String command : availableCommands.keySet()) {
-            commandDescriptionAdapters.add(new CommandDescriptionAdapter(command));
+    private GridListDataView<CommandData> fillGrid(CommandProviderData aCommandProviderData) {
+        final List<CommandData> rows = new ArrayList<>();
+        for (CommandChainData chain : aCommandProviderData.getAvailableCommands().values()) {
+            rows.addAll(chain.getCommands());
         }
-        return grid.setItems(commandDescriptionAdapters);
+        return grid.setItems(rows);
     }
 
     public void setData(AdventureData anAdventureData, LocationData aLocationData) {
@@ -138,15 +157,14 @@ public class CommandsMenuView extends VerticalLayout
         commandProviderData = locationData.getCommandProviderData();
         binder.setBean(commandProviderData);
 
-        grid = getSimpleGrid();
-//        grid = new GridUnbufferedInlineEditor(availableCommands, vocabularyData, saveButton);
+        formatter = new PreconditionActionFormatter(adventureData);
+        grid = buildGrid();
         grid.setEmptyStateText("Create some commands.");
 
-        // Add double-click listener to edit commands
-        grid.addItemDoubleClickListener(e -> {
-            String commandSpec = e.getItem().getShortDescription(); // This returns the command specification
-            navigateToCommandEditor(commandSpec);
-        });
+        // Double-click edits the command. Editing is keyed by the command spec; CommandEditorView is
+        // chain-aware and opens the chain (at index 0) for that spec.
+        grid.addItemDoubleClickListener(e ->
+                navigateToCommandEditor(e.getItem().getCommandDescription().getCommandSpecification()));
 
         gridListDataView = fillGrid(locationData.getCommandProviderData());
 
@@ -166,26 +184,27 @@ public class CommandsMenuView extends VerticalLayout
           .ifPresent(editor -> editor.setData(adventureData, locationData));
     }
 
-    private class CommandContextMenu extends GridContextMenu<CommandDescriptionAdapter> {
-        public CommandContextMenu(Grid<CommandDescriptionAdapter> target) {
+    private class CommandContextMenu extends GridContextMenu<CommandData> {
+        public CommandContextMenu(Grid<CommandData> target) {
             super(target);
 
-            addItem("Edit", e -> e.getItem().ifPresent(command -> {
-                String commandSpec = command.getShortDescription();
-                navigateToCommandEditor(commandSpec);
-            }));
+            addItem("Edit", e -> e.getItem().ifPresent(command ->
+                    navigateToCommandEditor(command.getCommandDescription().getCommandSpecification())));
 
             addComponent(new Hr());
 
             addItem("Delete", e -> e.getItem().ifPresent(command -> {
-                String commandSpec = command.getShortDescription();
-                // Remove from the data view
+                String commandSpec = command.getCommandDescription().getCommandSpecification();
+                CommandChainData chain = commandProviderData.getAvailableCommands().get(commandSpec);
+                if (chain != null) {
+                    chain.getCommands().remove(command);
+                    // Drop the whole spec entry once its chain is empty.
+                    if (chain.getCommands().isEmpty()) {
+                        commandProviderData.getAvailableCommands().remove(commandSpec);
+                    }
+                }
                 gridListDataView.removeItem(command);
-                // Remove from the command provider data
-                commandProviderData.getAvailableCommands().remove(commandSpec);
-                // Save changes
                 adventureService.saveLocationData(locationData);
-                // Refresh grid
                 gridListDataView.refreshAll();
             }));
         }
