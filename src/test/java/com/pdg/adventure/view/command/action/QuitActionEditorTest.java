@@ -43,4 +43,13 @@ class QuitActionEditorTest {
 
         assertThat(editor.getActionTypeName()).isEqualTo(actionData.getActionName());
     }
+
+    @Test
+    void getActionSummary_returnsEmpty() {
+        QuitActionData actionData = new QuitActionData();
+        QuitActionEditor editor = new QuitActionEditor(actionData);
+        editor.initialize();
+
+        assertThat(editor.getActionSummary()).isEmpty();
+    }
 }

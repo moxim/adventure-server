@@ -1,6 +1,6 @@
 package com.pdg.adventure.view.command;
 
-import com.vaadin.flow.component.details.Details;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import com.pdg.adventure.model.AdventureData;
@@ -16,8 +16,8 @@ public class PreconditionActionEditor extends VerticalLayout {
         conditionListEditor = new ConditionListEditor(adventureData);
         actionListEditor = new ActionListEditor(adventureData);
 
-        Details preconditionsSection = new Details("Preconditions", conditionListEditor);
-        Details actionsSection = new Details("Actions", actionListEditor);
+        var preconditionsSection = new VerticalLayout(new NativeLabel("Preconditions"), conditionListEditor);
+        var actionsSection = new VerticalLayout(new NativeLabel("Actions"), actionListEditor);
 
         setPadding(false);
         add(preconditionsSection, actionsSection);

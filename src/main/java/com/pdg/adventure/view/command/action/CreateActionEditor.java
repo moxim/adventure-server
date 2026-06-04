@@ -115,6 +115,15 @@ public class CreateActionEditor extends ActionEditorComponent {
         return itemValid && containerValid;
     }
 
+    @Override
+    public String getActionSummary() {
+        String item = (itemSelector != null && itemSelector.getValue() != null)
+                ? ViewSupporter.formatDescription(itemSelector.getValue()) : "?";
+        String container = (containerSelector != null && containerSelector.getValue() != null)
+                ? ViewSupporter.formatDescription(containerSelector.getValue()) : "?";
+        return item + " @ " + container;
+    }
+
     /**
      * Collects all items from all locations in the adventure and from player's pocket.
      */

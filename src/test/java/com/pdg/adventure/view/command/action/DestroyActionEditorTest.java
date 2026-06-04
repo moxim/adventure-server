@@ -108,4 +108,21 @@ class DestroyActionEditorTest {
 
         assertThat(editor.getChildren().count()).isGreaterThan(0);
     }
+
+    @Test
+    void getActionSummary_withNoSelection_returnsNone() {
+        DestroyActionEditor editor = new DestroyActionEditor(destroyActionData, adventureData);
+        editor.initialize();
+
+        assertThat(editor.getActionSummary()).isEqualTo("(none)");
+    }
+
+    @Test
+    void getActionSummary_withItemSelected_returnsItemDescription() {
+        destroyActionData.setThingId(item1.getId());
+        DestroyActionEditor editor = new DestroyActionEditor(destroyActionData, adventureData);
+        editor.initialize();
+
+        assertThat(editor.getActionSummary()).isEqualTo("Rusty Key");
+    }
 }

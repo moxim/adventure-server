@@ -14,39 +14,50 @@ import com.pdg.adventure.model.condition.PreConditionData;
 public class ConditionRow extends Details {
     private final ConditionEditorComponent editor;
     private final Checkbox negateCheckbox;
+    private final String virginTypeName;
     @Setter
     private Runnable onRemove;
+    @Setter
+    private Runnable onChange;
+    @Setter
+    private Runnable onMoveUp;
+    @Setter
+    private Runnable onMoveDown;
 
     public ConditionRow(ConditionEditorComponent editor, boolean negate) {
         this.editor = editor;
-
-        String virginTypeName = editor.getConditionData().getPreconditionName()
-                                       .replace("ConditionData", "");
+        this.virginTypeName = editor.getConditionData().getPreconditionName()
+                                     .replace("ConditionData", "");
 
         negateCheckbox = new Checkbox("Negate", negate);
-        determineSummaryText(editor, virginTypeName);
+        refreshSummary();
         negateCheckbox.addValueChangeListener(e -> {
-            determineSummaryText(editor, virginTypeName);
+            refreshSummary();
+            if (onChange != null) onChange.run();
         });
+
+        Button upButton = new Button("Up");
+        upButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
+        upButton.addClickListener(_ -> { if (onMoveUp != null) onMoveUp.run(); });
+
+        Button downButton = new Button("Down");
+        downButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
+        downButton.addClickListener(_ -> { if (onMoveDown != null) onMoveDown.run(); });
 
         Button removeButton = new Button("Remove");
         removeButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
         removeButton.addClickListener(_ -> { if (onRemove != null) onRemove.run(); });
 
-        HorizontalLayout controls = new HorizontalLayout(negateCheckbox, removeButton);
+        HorizontalLayout controls = new HorizontalLayout(negateCheckbox, upButton, downButton, removeButton);
         controls.setAlignItems(FlexComponent.Alignment.CENTER);
 
         add(controls, editor);
         setWidthFull();
     }
 
-    private void determineSummaryText(final ConditionEditorComponent editor, final String virginTypeName) {
-        String typeName = virginTypeName;
-        if (Boolean.TRUE.equals(negateCheckbox.getValue())) {
-            typeName = "Not" + typeName;
-        } else {
-            typeName = virginTypeName;
-        }
+    /** Recompute the header from the editor's current target value and the negate state. */
+    public void refreshSummary() {
+        String typeName = Boolean.TRUE.equals(negateCheckbox.getValue()) ? "Not" + virginTypeName : virginTypeName;
         String summary = editor.getConditionSummary();
         String headerText = summary.isBlank() ? typeName : typeName + ": " + summary;
         setSummaryText(headerText);

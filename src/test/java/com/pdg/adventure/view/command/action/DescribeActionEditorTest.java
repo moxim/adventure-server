@@ -127,4 +127,31 @@ class DescribeActionEditorTest {
         // Then
         assertThat(editor.getChildren().count()).isGreaterThan(0);
     }
+
+    @Test
+    void getActionSummary_withNoTarget_returnsNone() {
+        DescribeActionEditor editor = new DescribeActionEditor(describeActionData, adventureData);
+        editor.initialize();
+
+        assertThat(editor.getActionSummary()).isEqualTo("(none)");
+    }
+
+    @Test
+    void getActionSummary_withItemTarget_returnsCleanDescription() {
+        // The combobox label is "Item: Rusty Key"; the summary uses the un-prefixed description.
+        describeActionData.setTargetId(item1.getId());
+        DescribeActionEditor editor = new DescribeActionEditor(describeActionData, adventureData);
+        editor.initialize();
+
+        assertThat(editor.getActionSummary()).isEqualTo("Rusty Key");
+    }
+
+    @Test
+    void getActionSummary_withLocationTarget_returnsCleanDescription() {
+        describeActionData.setTargetId(location1.getId());
+        DescribeActionEditor editor = new DescribeActionEditor(describeActionData, adventureData);
+        editor.initialize();
+
+        assertThat(editor.getActionSummary()).isEqualTo("Forest");
+    }
 }

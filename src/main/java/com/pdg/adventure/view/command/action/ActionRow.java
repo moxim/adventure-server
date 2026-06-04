@@ -20,7 +20,7 @@ public class ActionRow extends Details {
 
     public ActionRow(ActionEditorComponent anEditor) {
         editor = anEditor;
-        setSummaryText(anEditor.getActionTypeName().replace("ActionData", ""));
+        refreshSummary();
 
         Button upButton = new Button("Up");
         upButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
@@ -39,6 +39,13 @@ public class ActionRow extends Details {
 
         add(controls, anEditor);
         setWidthFull();
+    }
+
+    /** Recompute the header from the editor's current target value. */
+    public void refreshSummary() {
+        String typeName = editor.getActionTypeName().replace("ActionData", "");
+        String summary = editor.getActionSummary();
+        setSummaryText(summary.isBlank() ? typeName : typeName + ": " + summary);
     }
 
     public ActionData toActionData() {

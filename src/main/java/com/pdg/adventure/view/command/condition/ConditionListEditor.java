@@ -1,5 +1,6 @@
 package com.pdg.adventure.view.command.condition;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import lombok.Setter;
@@ -53,13 +54,28 @@ public class ConditionListEditor extends VerticalLayout {
         ConditionEditorComponent editor = ConditionEditorFactory.createEditor(data, adventureData);
         ConditionRow row = new ConditionRow(editor, negate);
         row.setOnRemove(() -> { rowsLayout.remove(row); notifyChange(); });
+        row.setOnChange(this::notifyChange);
+        row.setOnMoveUp(() -> moveRow(row, -1));
+        row.setOnMoveDown(() -> moveRow(row, 1));
         rowsLayout.add(row);
-        // Fire change on client-side leaf-field edits (mirrors ActionListEditor).
+        // On leaf-field edits: refresh the row header live, and mark dirty for client edits (mirrors ActionListEditor).
         editor.getChildren().forEach(child -> {
             if (child instanceof HasValue<?, ?> hasValue) {
-                hasValue.addValueChangeListener(e -> { if (e.isFromClient()) notifyChange(); });
+                hasValue.addValueChangeListener(e -> {
+                    row.refreshSummary();
+                    if (e.isFromClient()) notifyChange();
+                });
             }
         });
+    }
+
+    private void moveRow(ConditionRow row, int delta) {
+        List<Component> children = rowsLayout.getChildren().collect(Collectors.toList());
+        int newIndex = children.indexOf(row) + delta;
+        if (newIndex < 0 || newIndex >= children.size()) return;
+        rowsLayout.remove(row);
+        rowsLayout.addComponentAtIndex(newIndex, row);
+        notifyChange();
     }
 
     private void notifyChange() {

@@ -34,4 +34,9 @@ public class InventoryActionEditor extends ActionEditorComponent {
     public boolean validate() {
         return true;
     }
+
+    @Override
+    public String getActionSummary() {
+        return "";
+    }
 }

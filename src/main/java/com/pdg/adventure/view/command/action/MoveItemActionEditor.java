@@ -116,6 +116,15 @@ public class MoveItemActionEditor extends ActionEditorComponent {
         return itemValid && destinationValid;
     }
 
+    @Override
+    public String getActionSummary() {
+        String item = (itemSelector != null && itemSelector.getValue() != null)
+                ? ViewSupporter.formatDescription(itemSelector.getValue()) : "?";
+        String dest = (destinationSelector != null && destinationSelector.getValue() != null)
+                ? formatContainerLabel(destinationSelector.getValue()) : "?";
+        return item + " @ " + dest;
+    }
+
     /**
      * Collects all items from all locations in the adventure.
      */

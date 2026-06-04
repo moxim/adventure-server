@@ -33,4 +33,9 @@ public class QuitActionEditor extends ActionEditorComponent {
     public boolean validate() {
         return true;
     }
+
+    @Override
+    public String getActionSummary() {
+        return "";
+    }
 }

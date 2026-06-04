@@ -65,6 +65,12 @@ public class DropActionEditor extends ActionEditorComponent {
         return valid;
     }
 
+    @Override
+    public String getActionSummary() {
+        if (itemSelector == null || itemSelector.getValue() == null) return "(none)";
+        return ViewSupporter.formatDescription(itemSelector.getValue());
+    }
+
     private List<ItemData> collectAllItems() {
         List<ItemData> allItems = new ArrayList<>();
 

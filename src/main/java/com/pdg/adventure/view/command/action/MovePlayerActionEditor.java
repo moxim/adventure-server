@@ -69,4 +69,10 @@ public class MovePlayerActionEditor extends ActionEditorComponent {
         }
         return isValid;
     }
+
+    @Override
+    public String getActionSummary() {
+        if (locationSelector == null || locationSelector.getValue() == null) return "(none)";
+        return ViewSupporter.formatDescription(locationSelector.getValue());
+    }
 }

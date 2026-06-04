@@ -80,6 +80,12 @@ public class RemoveActionEditor extends ActionEditorComponent {
         return itemValid;
     }
 
+    @Override
+    public String getActionSummary() {
+        if (itemSelector == null || itemSelector.getValue() == null) return "(none)";
+        return ViewSupporter.formatDescription(itemSelector.getValue());
+    }
+
     /**
      * Collects all items from all locations and the player's pocket.
      */

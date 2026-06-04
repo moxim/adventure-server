@@ -77,4 +77,15 @@ class IncrementVariableActionEditorTest {
         // Then
         assertThat(editor.getChildren().count()).isGreaterThan(0);
     }
+
+    @Test
+    void getActionSummary_withNameAndValue_returnsIncrement() {
+        IncrementVariableActionData actionData = new IncrementVariableActionData();
+        actionData.setName("score");
+        actionData.setValue("5");
+        IncrementVariableActionEditor editor = new IncrementVariableActionEditor(actionData);
+        editor.initialize();
+
+        assertThat(editor.getActionSummary()).isEqualTo("score += 5");
+    }
 }

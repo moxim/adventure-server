@@ -52,4 +52,22 @@ class SetVariableActionEditorTest {
 
         assertThat(editor.getChildren().count()).isGreaterThan(0);
     }
+
+    @Test
+    void getActionSummary_withNoName_returnsNone() {
+        SetVariableActionData actionData = new SetVariableActionData(null, null);
+        SetVariableActionEditor editor = new SetVariableActionEditor(actionData);
+        editor.initialize();
+
+        assertThat(editor.getActionSummary()).isEqualTo("(none)");
+    }
+
+    @Test
+    void getActionSummary_withNameAndValue_returnsAssignment() {
+        SetVariableActionData actionData = new SetVariableActionData("score", "100");
+        SetVariableActionEditor editor = new SetVariableActionEditor(actionData);
+        editor.initialize();
+
+        assertThat(editor.getActionSummary()).isEqualTo("score = 100");
+    }
 }

@@ -140,4 +140,22 @@ class CreateActionEditorTest {
         // Then
         assertThat(editor.getChildren().count()).isGreaterThan(0);
     }
+
+    @Test
+    void getActionSummary_withNothingSelected_returnsPlaceholders() {
+        CreateActionEditor editor = new CreateActionEditor(createActionData, adventureData);
+        editor.initialize();
+
+        assertThat(editor.getActionSummary()).isEqualTo("? @ ?");
+    }
+
+    @Test
+    void getActionSummary_withItemAndContainer_returnsItemAtContainer() {
+        createActionData.setThingId(item1.getId());
+        createActionData.setContainerProviderId(location1.getId());
+        CreateActionEditor editor = new CreateActionEditor(createActionData, adventureData);
+        editor.initialize();
+
+        assertThat(editor.getActionSummary()).isEqualTo("Rusty Key @ Forest");
+    }
 }

@@ -69,4 +69,14 @@ public class DecrementVariableActionEditor extends ActionEditorComponent {
 
         return nameValid && valueValid;
     }
+
+    @Override
+    public String getActionSummary() {
+        String name = (nameField != null && !nameField.getValue().isEmpty())
+                ? nameField.getValue() : "";
+        String amount = (valueField != null && !valueField.getValue().isEmpty())
+                ? valueField.getValue() : "";
+        if (name.isEmpty()) return "(none)";
+        return name + " -= " + amount;
+    }
 }

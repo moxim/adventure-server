@@ -73,4 +73,14 @@ public class IncrementVariableActionEditor extends ActionEditorComponent {
 
         return nameValid && valueValid;
     }
+
+    @Override
+    public String getActionSummary() {
+        String name = (variableNameField != null && !variableNameField.getValue().isEmpty())
+                ? variableNameField.getValue() : "";
+        String amount = (incrementAmountField != null && !incrementAmountField.getValue().isEmpty())
+                ? incrementAmountField.getValue() : "";
+        if (name.isEmpty()) return "(none)";
+        return name + " += " + amount;
+    }
 }

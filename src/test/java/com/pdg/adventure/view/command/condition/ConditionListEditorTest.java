@@ -1,5 +1,10 @@
 package com.pdg.adventure.view.command.condition;
 
+import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -11,6 +16,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
+import com.pdg.adventure.model.ItemData;
+import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.model.condition.CarriedConditionData;
 import com.pdg.adventure.model.condition.NotConditionData;
 import com.pdg.adventure.model.condition.PreConditionData;
@@ -90,5 +97,113 @@ class ConditionListEditorTest {
         CarriedConditionData retrieved = (CarriedConditionData) result.getFirst();
         assertThat(retrieved.getId()).isEqualTo("round-trip-id");
         assertThat(retrieved.getItemId()).isEqualTo("sword");
+    }
+
+    @Test
+    void moveDown_onFirstRow_reordersConditions() {
+        ConditionListEditor editor = new ConditionListEditor(adventureData);
+        editor.setConditions(List.of(carried("first"), carried("second")));
+
+        clickButton(rowsOf(editor).getFirst(), "Down");
+
+        List<PreConditionData> result = editor.getConditions();
+        assertThat(((CarriedConditionData) result.get(0)).getItemId()).isEqualTo("second");
+        assertThat(((CarriedConditionData) result.get(1)).getItemId()).isEqualTo("first");
+    }
+
+    @Test
+    void moveUp_onSecondRow_reordersConditions() {
+        ConditionListEditor editor = new ConditionListEditor(adventureData);
+        editor.setConditions(List.of(carried("first"), carried("second")));
+
+        clickButton(rowsOf(editor).get(1), "Up");
+
+        List<PreConditionData> result = editor.getConditions();
+        assertThat(((CarriedConditionData) result.get(0)).getItemId()).isEqualTo("second");
+        assertThat(((CarriedConditionData) result.get(1)).getItemId()).isEqualTo("first");
+    }
+
+    @Test
+    void moveUp_onFirstRow_isNoOp() {
+        ConditionListEditor editor = new ConditionListEditor(adventureData);
+        editor.setConditions(List.of(carried("first"), carried("second")));
+
+        clickButton(rowsOf(editor).getFirst(), "Up");
+
+        List<PreConditionData> result = editor.getConditions();
+        assertThat(((CarriedConditionData) result.get(0)).getItemId()).isEqualTo("first");
+        assertThat(((CarriedConditionData) result.get(1)).getItemId()).isEqualTo("second");
+    }
+
+    private CarriedConditionData carried(String itemId) {
+        CarriedConditionData data = new CarriedConditionData();
+        data.setItemId(itemId);
+        return data;
+    }
+
+    private List<ConditionRow> rowsOf(ConditionListEditor editor) {
+        return editor.getChildren()
+                .filter(c -> c instanceof VerticalLayout)
+                .findFirst()
+                .map(rowsLayout -> rowsLayout.getChildren()
+                        .filter(c -> c instanceof ConditionRow)
+                        .map(c -> (ConditionRow) c)
+                        .toList())
+                .orElseThrow();
+    }
+
+    // ConditionRow (Details) -> Div -> HorizontalLayout(controls) -> Button
+    private void clickButton(ConditionRow row, String text) {
+        row.getChildren()
+                .filter(c -> c instanceof Div)
+                .findFirst()
+                .flatMap(div -> ((Div) div).getChildren()
+                        .filter(c -> c instanceof HorizontalLayout)
+                        .findFirst())
+                .flatMap(hl -> ((HorizontalLayout) hl).getChildren()
+                        .filter(c -> c instanceof Button)
+                        .map(c -> (Button) c)
+                        .filter(b -> text.equals(b.getText()))
+                        .findFirst())
+                .orElseThrow()
+                .click();
+    }
+
+    @Test
+    void editingLeafField_updatesRowSummaryLive() {
+        ItemData sword = new ItemData();
+        sword.setId("sword-1");
+        DescriptionData desc = new DescriptionData();
+        desc.setShortDescription("Sword");
+        sword.setDescriptionData(desc);
+        List<ItemData> pocketItems = new ArrayList<>();
+        pocketItems.add(sword);
+        adventureData.getPlayerPocket().setItems(pocketItems);
+
+        ConditionListEditor editor = new ConditionListEditor(adventureData);
+        editor.setConditions(List.of(new CarriedConditionData()));
+        ConditionRow row = rowsOf(editor).getFirst();
+        assertThat(row.getSummaryText()).isEqualTo("Carried: (none)");
+
+        // Simulate the user picking an item in the editor's combo box — no manual refresh.
+        setFirstEditorField(row, sword);
+
+        assertThat(row.getSummaryText()).isEqualTo("Carried: Sword");
+    }
+
+    // ConditionRow (Details) -> Div -> ConditionEditorComponent -> first HasValue field
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void setFirstEditorField(ConditionRow row, Object value) {
+        ConditionEditorComponent editor = row.getChildren()
+                .filter(c -> c instanceof Div).findFirst()
+                .flatMap(div -> ((Div) div).getChildren()
+                        .filter(c -> c instanceof ConditionEditorComponent).findFirst())
+                .map(c -> (ConditionEditorComponent) c)
+                .orElseThrow();
+        HasValue field = (HasValue) editor.getChildren()
+                .filter(c -> c instanceof HasValue)
+                .findFirst()
+                .orElseThrow();
+        field.setValue(value);
     }
 }

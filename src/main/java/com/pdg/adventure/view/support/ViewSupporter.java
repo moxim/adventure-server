@@ -303,7 +303,7 @@ public class ViewSupporter {
 
     public static void setSize(Grid<?> aGrid) {
         aGrid.setSizeFull();
-        aGrid.setMaxWidth("1024px");
+//        aGrid.setMaxWidth("1024px");
         aGrid.setMinWidth("480px");
         aGrid.setMaxHeight("640px");
         aGrid.setMinHeight("500px");

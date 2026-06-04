@@ -66,4 +66,14 @@ public class SetVariableActionEditor extends ActionEditorComponent {
 
         return nameValid && valueValid;
     }
+
+    @Override
+    public String getActionSummary() {
+        String name = (variableNameField != null && !variableNameField.getValue().isEmpty())
+                ? variableNameField.getValue() : "";
+        String value = (variableValueField != null && !variableValueField.getValue().isEmpty())
+                ? variableValueField.getValue() : "";
+        if (name.isEmpty()) return "(none)";
+        return name + " = " + value;
+    }
 }

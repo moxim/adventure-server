@@ -88,6 +88,15 @@ public class DescribeActionEditor extends ActionEditorComponent {
         return targetSelector.getValue() != null;
     }
 
+    @Override
+    public String getActionSummary() {
+        if (targetSelector == null || targetSelector.getValue() == null) return "(none)";
+        return switch (targetSelector.getValue()) {
+            case ItemTarget it -> ViewSupporter.formatDescription(it.data());
+            case LocationTarget lt -> ViewSupporter.formatDescription(lt.data());
+        };
+    }
+
     private List<DescribableTarget> collectAllTargets() {
         List<DescribableTarget> targets = new ArrayList<>();
 

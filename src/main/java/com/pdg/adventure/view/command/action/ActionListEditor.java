@@ -59,10 +59,14 @@ public class ActionListEditor extends VerticalLayout {
         row.setOnRemove(() -> { rowsLayout.remove(row); notifyChange(); });
         row.setOnMoveUp(() -> moveRow(row, -1));
         row.setOnMoveDown(() -> moveRow(row, 1));
-        // Fire change on client-side leaf-field edits (ports the old CommandEditorView.attachActionEditorListeners).
+        // On leaf-field edits: refresh the row header live, and mark dirty for client edits
+        // (ports the old CommandEditorView.attachActionEditorListeners).
         editor.getChildren().forEach(child -> {
             if (child instanceof HasValue<?, ?> hasValue) {
-                hasValue.addValueChangeListener(e -> { if (e.isFromClient()) notifyChange(); });
+                hasValue.addValueChangeListener(e -> {
+                    row.refreshSummary();
+                    if (e.isFromClient()) notifyChange();
+                });
             }
         });
         rowsLayout.add(row);

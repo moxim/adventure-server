@@ -1,5 +1,9 @@
 package com.pdg.adventure.view.command.condition;
 
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -47,6 +51,68 @@ class ConditionRowTest {
         ConditionRow row = new ConditionRow(editor, false);
         row.setOnRemove(() -> {});
         assertThat(row).isNotNull();
+    }
+
+    @Test
+    void setOnChange_firesWhenNegateCheckboxToggles() {
+        ConditionRow row = new ConditionRow(editor, false);
+        boolean[] fired = {false};
+        row.setOnChange(() -> fired[0] = true);
+
+        findNegateCheckbox(row).setValue(true);
+
+        assertThat(fired[0]).isTrue();
+    }
+
+    @Test
+    void upButton_firesOnMoveUp() {
+        ConditionRow row = new ConditionRow(editor, false);
+        boolean[] fired = {false};
+        row.setOnMoveUp(() -> fired[0] = true);
+
+        findButton(row, "Up").click();
+
+        assertThat(fired[0]).isTrue();
+    }
+
+    @Test
+    void downButton_firesOnMoveDown() {
+        ConditionRow row = new ConditionRow(editor, false);
+        boolean[] fired = {false};
+        row.setOnMoveDown(() -> fired[0] = true);
+
+        findButton(row, "Down").click();
+
+        assertThat(fired[0]).isTrue();
+    }
+
+    // Details wraps content in a Div: ConditionRow -> Div -> HorizontalLayout(controls) -> {Checkbox, Buttons}
+    private HorizontalLayout controls(ConditionRow row) {
+        return row.getChildren()
+                .filter(c -> c instanceof Div)
+                .findFirst()
+                .flatMap(div -> ((Div) div).getChildren()
+                        .filter(c -> c instanceof HorizontalLayout)
+                        .findFirst())
+                .map(c -> (HorizontalLayout) c)
+                .orElseThrow();
+    }
+
+    private Checkbox findNegateCheckbox(ConditionRow row) {
+        return controls(row).getChildren()
+                .filter(c -> c instanceof Checkbox)
+                .map(c -> (Checkbox) c)
+                .findFirst()
+                .orElseThrow();
+    }
+
+    private Button findButton(ConditionRow row, String text) {
+        return controls(row).getChildren()
+                .filter(c -> c instanceof Button)
+                .map(c -> (Button) c)
+                .filter(b -> text.equals(b.getText()))
+                .findFirst()
+                .orElseThrow();
     }
 
     @Test
