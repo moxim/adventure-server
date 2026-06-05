@@ -55,23 +55,24 @@ public class GenericCommand implements Command {
     @Override
     public ExecutionResult execute() {
         ExecutionResult result = checkPreconditions();
-        if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
-            boolean first = true;
-            for (Action action : actions) {
-                ExecutionResult fromAction = action.execute();
-                if (first) {
-                    setExecutionResult(result, fromAction);
-                    first = false;
-                    if (fromAction.getExecutionState() == ExecutionResult.State.FAILURE) {
-                        break;
-                    }
-                } else if (fromAction.getExecutionState() == ExecutionResult.State.FAILURE) {
-                    setExecutionResult(result, fromAction);
-                    break;
-                }
+        if (result.getExecutionState() != ExecutionResult.State.SUCCESS) {
+            return result;                 // preconditions unmet → command does not apply
+        }
+        List<String> messages = new ArrayList<>();
+        for (Action action : actions) {
+            ExecutionResult fromAction = action.execute();
+            if (fromAction.getExecutionState() == ExecutionResult.State.FAILURE) {
+                result.setExecutionState(ExecutionResult.State.FAILURE);
+                result.setResultMessage(fromAction.getResultMessage());
+                return result;             // a failing action fails the whole command
+            }
+            String msg = fromAction.getResultMessage();
+            if (msg != null && !msg.isBlank()) {
+                messages.add(msg);
             }
         }
-        return result;
+        result.setResultMessage(String.join(System.lineSeparator(), messages));
+        return result;                     // SUCCESS, all action messages joined
     }
 
     private ExecutionResult checkPreconditions() {

@@ -37,13 +37,26 @@ class GenericCommandExecuteTest {
     }
 
     @Test
-    void firstActionSuccessMessageSurfaces_laterSuccessesDiscarded() {
+    void allActionSuccessMessagesAreAccumulated() {
         GenericCommand cmd = new GenericCommand(mock(CommandDescription.class));
         cmd.addAction(action(ExecutionResult.State.SUCCESS, "first"));
         cmd.addAction(action(ExecutionResult.State.SUCCESS, "second"));
         ExecutionResult result = cmd.execute();
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
-        assertThat(result.getResultMessage()).isEqualTo("first");
+        assertThat(result.getResultMessage())
+                .isEqualTo("first" + System.lineSeparator() + "second");
+    }
+
+    @Test
+    void blankActionMessagesAreSkippedWhenAccumulating() {
+        GenericCommand cmd = new GenericCommand(mock(CommandDescription.class));
+        cmd.addAction(action(ExecutionResult.State.SUCCESS, "shown"));
+        cmd.addAction(action(ExecutionResult.State.SUCCESS, ""));   // side-effect-only action
+        cmd.addAction(action(ExecutionResult.State.SUCCESS, "also"));
+        ExecutionResult result = cmd.execute();
+        assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
+        assertThat(result.getResultMessage())
+                .isEqualTo("shown" + System.lineSeparator() + "also");
     }
 
     @Test
