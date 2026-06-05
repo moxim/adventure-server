@@ -153,6 +153,7 @@ public class CommandEditorView extends VerticalLayout
         final ResetBackSaveView resetBackSaveView = new ResetBackSaveView();
 
         Button backButton = resetBackSaveView.getBack();
+        backButton.addClickShortcut(Key.ESCAPE);
         saveButton = resetBackSaveView.getSave();
         saveButton.setEnabled(false);
         resetButton = resetBackSaveView.getReset();

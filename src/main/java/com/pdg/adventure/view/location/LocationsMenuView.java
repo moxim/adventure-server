@@ -2,7 +2,6 @@ package com.pdg.adventure.view.location;
 
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -69,7 +68,6 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         startLocationTF = getEntryLocation();
         startLocationTF.setTooltipText("This is the location where a new adventures start.");
         startLocationTF.setReadOnly(true);
-        startLocationTF.setWidth(300, Unit.PIXELS);
 
         numberOfLocations = new IntegerField("Locations:");
         numberOfLocations.setTooltipText("This is the number of locations you have defined.");
@@ -101,7 +99,9 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         backButton.addClickShortcut(Key.ESCAPE);
 
         VerticalLayout leftSide = new VerticalLayout(startLocationTF, numberOfLocations, edit, create, backButton);
-        leftSide.setMaxWidth("30%");
+        leftSide.setMaxWidth("25%");
+        leftSide.setMinWidth("25%");
+        leftSide.setWidth("25%");
 
         searchField = new TextField();
         searchField.setWidth("50%");

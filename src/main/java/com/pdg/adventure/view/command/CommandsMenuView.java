@@ -60,6 +60,7 @@ public class CommandsMenuView extends VerticalLayout
         adventureService = anAdventureService;
         binder = new BeanValidationBinder<>(CommandProviderData.class);
 
+        setSizeFull();
         gridContainer = new Div("Commands");
         gridContainer.setSizeFull();
 
@@ -93,10 +94,13 @@ public class CommandsMenuView extends VerticalLayout
         });
 
         VerticalLayout vll = new VerticalLayout(createButton, backButton, resetButton, saveButton);
+        vll.setMaxWidth("10%");
+        vll.setMinWidth("10%");
+        vll.setWidth("10%");
         VerticalLayout vlr = new VerticalLayout(gridContainer);
-        vlr.setSizeFull();
 
         HorizontalLayout hl = new HorizontalLayout(vll, vlr);
+        hl.setSizeFull();
         add(hl);
     }
 
@@ -171,6 +175,7 @@ public class CommandsMenuView extends VerticalLayout
         // Add context menu
         new CommandContextMenu(grid);
 
+        gridContainer.setSizeFull();
         gridContainer.add(grid);
         saveButton.setEnabled(false);
         resetButton.setEnabled(false);
