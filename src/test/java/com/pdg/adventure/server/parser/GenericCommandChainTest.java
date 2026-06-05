@@ -87,4 +87,36 @@ class GenericCommandChainTest {
         assertThat(result.getResultMessage())
                 .isEqualTo("shown" + System.lineSeparator() + "again");
     }
+
+    @Test
+    void jumpSeaScenario_noSuit_showsNoSuitAndAlsoHere() {
+        // Player is NOT wearing the suit: WORN command is skipped,
+        // NOT_WORN command applies, and the no-precondition command always applies.
+        GenericCommandChain jumpSea = new GenericCommandChain();
+        jumpSea.addCommand(command(precondition(ExecutionResult.State.FAILURE), "jump_sea_ok"));            // WORN: skipped
+        jumpSea.addCommand(command(precondition(ExecutionResult.State.SUCCESS), "jetty_jump_sea_no_suit")); // NOT_WORN
+        jumpSea.addCommand(command(null, "jump_sea_also_here"));                                            // always
+
+        ExecutionResult result = jumpSea.execute();
+
+        assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
+        assertThat(result.getResultMessage())
+                .isEqualTo("jetty_jump_sea_no_suit" + System.lineSeparator() + "jump_sea_also_here");
+    }
+
+    @Test
+    void jumpSeaScenario_suitOn_showsOkAndAlsoHere() {
+        // Player IS wearing the suit at the jetty: WORN command applies,
+        // NOT_WORN is skipped, and the no-precondition command always applies.
+        GenericCommandChain jumpSea = new GenericCommandChain();
+        jumpSea.addCommand(command(precondition(ExecutionResult.State.SUCCESS), "jump_sea_ok"));            // WORN
+        jumpSea.addCommand(command(precondition(ExecutionResult.State.FAILURE), "jetty_jump_sea_no_suit")); // NOT_WORN: skipped
+        jumpSea.addCommand(command(null, "jump_sea_also_here"));                                            // always
+
+        ExecutionResult result = jumpSea.execute();
+
+        assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
+        assertThat(result.getResultMessage())
+                .isEqualTo("jump_sea_ok" + System.lineSeparator() + "jump_sea_also_here");
+    }
 }
