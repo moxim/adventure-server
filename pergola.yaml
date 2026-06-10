@@ -1,0 +1,81 @@
+version: v1
+
+components:
+# ---- Application: Spring Boot 4 + Vaadin 25, built from the repo Dockerfile ----
+- name: app
+  docker:
+    file: Dockerfile
+    build-context: .
+  ports:
+  - 8080
+  ingresses:
+  - host: app
+    path: /
+    port: 8080
+  resources:
+    cpu: "1000m"
+    memory: "1536Mi"
+  env:
+  # Internal hostnames of the database components.
+  - name: MONGO_HOST
+    component-ref: mongo
+  - name: MYSQL_HOST
+    component-ref: mysql
+  # Secrets (set per-stage via config-data).
+  - name: MONGO_ROOT_PASSWORD
+    config-ref: MONGO_ROOT_PASSWORD
+  - name: MYSQL_PASSWORD
+    config-ref: MYSQL_PASSWORD
+  - name: REMEMBER_ME_KEY
+    config-ref: REMEMBER_ME_KEY
+  # MongoDB (adventure storage). Overrides the dev defaults in application.properties
+  # using the standard Spring Boot property so no source change is needed.
+  - name: SPRING_DATA_MONGODB_URI
+    value: "mongodb://root:$(MONGO_ROOT_PASSWORD)@$(MONGO_HOST):27017/adventures?authSource=admin"
+  # MySQL (user / security data).
+  - name: SPRING_DATASOURCE_URL
+    value: "jdbc:mysql://$(MYSQL_HOST):3306/adventure_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+  - name: SPRING_DATASOURCE_USERNAME
+    value: "adventure_user"
+  - name: SPRING_DATASOURCE_PASSWORD
+    value: "$(MYSQL_PASSWORD)"
+  # Remember-me cookie signing key — injected as JSON so the hyphenated
+  # property name binds correctly in production.
+  - name: SPRING_APPLICATION_JSON
+    value: '{"security":{"remember-me":{"key":"$(REMEMBER_ME_KEY)"}}}'
+
+# ---- MongoDB: adventure documents ----
+- name: mongo
+  docker:
+    image: mongo:8.0.0
+  ports:
+  - 27017
+  storage:
+  - name: mongodb-data
+    path: /data/db
+    size: 8Gi
+  env:
+  - name: MONGO_INITDB_ROOT_USERNAME
+    value: "root"
+  - name: MONGO_INITDB_ROOT_PASSWORD
+    config-ref: MONGO_ROOT_PASSWORD
+
+# ---- MySQL: user accounts, authors, players ----
+- name: mysql
+  docker:
+    image: mysql:9.6.0
+  ports:
+  - 3306
+  storage:
+  - name: mysql-data
+    path: /var/lib/mysql
+    size: 8Gi
+  env:
+  - name: MYSQL_ROOT_PASSWORD
+    config-ref: MYSQL_ROOT_PASSWORD
+  - name: MYSQL_DATABASE
+    value: "adventure_db"
+  - name: MYSQL_USER
+    value: "adventure_user"
+  - name: MYSQL_PASSWORD
+    config-ref: MYSQL_PASSWORD
