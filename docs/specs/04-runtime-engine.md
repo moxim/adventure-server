@@ -293,8 +293,6 @@ when the variable is not defined.
 
 | Condition | Semantics |
 |-----------|-----------|
-| `AndCondition(a, b)` | Run `a`; if FAILURE return it. Else run `b`; if FAILURE return it. Else SUCCESS. (Short-circuits on the first failure.) |
-| `OrCondition(a, b)` | SUCCESS if either passes. |
 | `NotCondition(inner)` | Inverts the inner result; clears the inner's message. |
 
 `Command.execute()` runs the condition list **in order** and stops at the first

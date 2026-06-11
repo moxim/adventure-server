@@ -14,7 +14,7 @@
 
 **Decision 1 — One row per `CommandData` (flatten chains).** `CommandProviderData.availableCommands` is `Map<String, CommandChainData>`; each chain holds `List<CommandData>`. The mockup shows two rows (`123`, `xyz`) that share the spec `open cage` but differ in id/preconditions/actions — so a row is a single `CommandData`, gathered across all chains.
 
-**Decision 2 — New pure `PreconditionActionFormatter` (the genuinely new piece).** Actions have no summary today (only a type name); the existing condition `getConditionSummary()` reads built editor UI state, not data, so it is not reusable. The formatter switches on the concrete subtype, recurses for `Not`, and uses `AdventureData` to resolve `thingId`/`locationId` → display names. Notation is the mockup's uppercase DSL (`HERE`, `NOT_`, `SETVAR`, `CREATE_ITEM`, `QUIT`, …) — invented here because those tokens exist nowhere in the codebase. `AndConditionData`/`OrConditionData` are obsolete and intentionally **not** handled (a stray instance falls through to the safe default-name branch).
+**Decision 2 — New pure `PreconditionActionFormatter` (the genuinely new piece).** Actions have no summary today (only a type name); the existing condition `getConditionSummary()` reads built editor UI state, not data, so it is not reusable. The formatter switches on the concrete subtype, recurses for `Not`, and uses `AdventureData` to resolve `thingId`/`locationId` → display names. Notation is the mockup's uppercase DSL (`HERE`, `NOT_`, `SETVAR`, `CREATE_ITEM`, `QUIT`, …) — invented here because those tokens exist nowhere in the codebase. 
 
 **Decision 3 — Decouple `CommandEditorView` from the menu's data view (delete, don't migrate).** Today `CommandsMenuView` threads its `GridListDataView<CommandDescriptionAdapter>` into `CommandEditorView.swivelTheSaveButton`, which incrementally adds/removes adapter rows. That code assumes **one row per spec** — `getItems().filter(... .equals(commandId)).findFirst()...removeItem` would delete one of N rows once a spec maps to several `CommandData`. It is also redundant: `validateSave()` ends with `navigateBack()`, which re-runs `CommandsMenuView.setData()` (a full reload from data). So the correct resolution is to **remove** the third `setData` parameter, the field, and the grid-sync calls — not to migrate them. Menu freshness after save is guaranteed by the reload.
 
@@ -45,8 +45,6 @@
 
 ## Task 1: PreconditionActionFormatter — conditions
 
-> **Scope update (user):** `AndConditionData`/`OrConditionData` are obsolete and intentionally omitted — the actual files created below do **not** include their two `if` branches in `formatCondition`, the `andJoinsWithAnd`/`orJoinsWithOr` tests, or the `AndConditionData`/`OrConditionData` imports.
-
 **Files:**
 - Create: `server/src/main/java/com/pdg/adventure/view/command/PreconditionActionFormatter.java`
 - Test: `server/src/test/java/com/pdg/adventure/view/command/PreconditionActionFormatterConditionsTest.java`
@@ -67,7 +65,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.basic.DescriptionData;
-import com.pdg.adventure.model.condition.AndConditionData;
 import com.pdg.adventure.model.condition.CarriedConditionData;
 import com.pdg.adventure.model.condition.EqualsConditionData;
 import com.pdg.adventure.model.condition.GreaterThanConditionData;
@@ -75,7 +72,6 @@ import com.pdg.adventure.model.condition.HereConditionData;
 import com.pdg.adventure.model.condition.ItemAtConditionData;
 import com.pdg.adventure.model.condition.LowerThanConditionData;
 import com.pdg.adventure.model.condition.NotConditionData;
-import com.pdg.adventure.model.condition.OrConditionData;
 import com.pdg.adventure.model.condition.PlayerAtConditionData;
 import com.pdg.adventure.model.condition.SameConditionData;
 import com.pdg.adventure.model.condition.WornConditionData;
@@ -165,26 +161,6 @@ class PreconditionActionFormatterConditionsTest {
     }
 
     @Test
-    void andJoinsWithAnd() {
-        AndConditionData and = new AndConditionData();
-        and.setPreCondition(here("a"));
-        CarriedConditionData car = new CarriedConditionData();
-        car.setItemId("b");
-        and.setAnotherPreCondition(car);
-        assertThat(formatter.formatCondition(and)).isEqualTo("HERE a AND CARRIED b");
-    }
-
-    @Test
-    void orJoinsWithOr() {
-        OrConditionData or = new OrConditionData();
-        or.setPreCondition(here("a"));
-        WornConditionData worn = new WornConditionData();
-        worn.setThingId("b");
-        or.setAnotherPreCondition(worn);
-        assertThat(formatter.formatCondition(or)).isEqualTo("HERE a OR WORN b");
-    }
-
-    @Test
     void nullConditionIsRenderedSafely() {
         assertThat(formatter.formatCondition(null)).isEqualTo("?");
     }
@@ -244,7 +220,6 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.model.condition.AndConditionData;
 import com.pdg.adventure.model.condition.CarriedConditionData;
 import com.pdg.adventure.model.condition.EqualsConditionData;
 import com.pdg.adventure.model.condition.GreaterThanConditionData;
@@ -252,7 +227,6 @@ import com.pdg.adventure.model.condition.HereConditionData;
 import com.pdg.adventure.model.condition.ItemAtConditionData;
 import com.pdg.adventure.model.condition.LowerThanConditionData;
 import com.pdg.adventure.model.condition.NotConditionData;
-import com.pdg.adventure.model.condition.OrConditionData;
 import com.pdg.adventure.model.condition.PlayerAtConditionData;
 import com.pdg.adventure.model.condition.PreConditionData;
 import com.pdg.adventure.model.condition.SameConditionData;
@@ -286,12 +260,6 @@ public class PreconditionActionFormatter {
         }
         if (c instanceof NotConditionData not) {
             return "NOT_" + formatCondition(not.getPreCondition());
-        }
-        if (c instanceof AndConditionData and) {
-            return formatCondition(and.getPreCondition()) + " AND " + formatCondition(and.getAnotherPreCondition());
-        }
-        if (c instanceof OrConditionData or) {
-            return formatCondition(or.getPreCondition()) + " OR " + formatCondition(or.getAnotherPreCondition());
         }
         if (c instanceof HereConditionData here) {
             return "HERE " + resolveName(here.getThingId());
