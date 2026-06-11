@@ -16,8 +16,8 @@ public class PreconditionActionEditor extends VerticalLayout {
         conditionListEditor = new ConditionListEditor(adventureData);
         actionListEditor = new ActionListEditor(adventureData);
 
-        var preconditionsSection = new VerticalLayout(new NativeLabel("Preconditions"), conditionListEditor);
-        var actionsSection = new VerticalLayout(new NativeLabel("Actions"), actionListEditor);
+        VerticalLayout preconditionsSection = new VerticalLayout(new NativeLabel("Preconditions"), conditionListEditor);
+        VerticalLayout actionsSection = new VerticalLayout(new NativeLabel("Actions"), actionListEditor);
 
         setPadding(false);
         add(preconditionsSection, actionsSection);
