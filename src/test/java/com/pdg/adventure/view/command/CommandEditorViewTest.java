@@ -13,7 +13,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import com.pdg.adventure.model.*;
+import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
+import com.pdg.adventure.model.condition.WornConditionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.storage.service.AdventureService;
@@ -142,5 +144,42 @@ class CommandEditorViewTest {
 
         assertThatCode(() -> view.setData(adventureData, locationData))
                 .doesNotThrowAnyException();
+    }
+
+    @Test
+    void commandChainGridLabels_useFriendlyText_notInternalClassNames() {
+        // given: a command whose first action is a Message and first precondition is Worn,
+        // placed in the "go||north" chain so setData() loads it and builds the formatter.
+        Word go = vocabularyData.getWords().stream()
+                .filter(w -> "go".equals(w.getText())).findFirst().orElseThrow();
+        Word north = vocabularyData.getWords().stream()
+                .filter(w -> "north".equals(w.getText())).findFirst().orElseThrow();
+
+        CommandDescriptionData description = new CommandDescriptionData();
+        description.setVerb(go);
+        description.setNoun(north);
+
+        MessageActionData message = new MessageActionData();
+        message.setMessageId("welcome");
+        WornConditionData worn = new WornConditionData();
+        worn.setThingId("cloak-id");
+
+        CommandData command = new CommandData();
+        command.setCommandDescription(description);
+        command.addAction(message);
+        command.getPreConditions().add(worn);
+        commandProviderData.add(command);
+
+        view = new CommandEditorView(adventureService);
+        view.setUpLoading(description.getCommandSpecification());
+        view.setData(adventureData, locationData);
+
+        // when
+        String actionLabel = view.firstActionLabel(command);
+        String preconditionLabel = view.firstPreconditionLabel(command);
+
+        // then: the grid shows human-readable text, never internal *Data class names
+        assertThat(actionLabel).doesNotContain("ActionData").startsWith("MESSAGE");
+        assertThat(preconditionLabel).doesNotContain("ConditionData").startsWith("WORN");
     }
 }

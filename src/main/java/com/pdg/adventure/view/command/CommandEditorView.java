@@ -59,6 +59,7 @@ public class CommandEditorView extends VerticalLayout
     private transient CommandData commandData;
     private boolean editorHasChanges = false; // Track if the precondition/action editor has been modified
     private final Grid<CommandData> commandChainGrid; // Grid to display all commands in the chain
+    private transient PreconditionActionFormatter chainFormatter; // Renders chain rows as friendly text
     private transient CommandChainData currentCommandChain; // The command chain being edited
     private int selectedCommandIndex = 0; // Which command in the chain we're currently editing
 
@@ -102,20 +103,8 @@ public class CommandEditorView extends VerticalLayout
     private Grid<CommandData> createCommandChainGrid() {
         final Grid<CommandData> newCommandChainGrid = new Grid<>(CommandData.class, false);
 
-        newCommandChainGrid.addColumn(cmd ->
-                cmd.getActions().isEmpty() ? "none" : cmd.getActions().getFirst().getActionName()
-        ).setHeader("First Action").setAutoWidth(true);
-
-        newCommandChainGrid.addColumn(cmd -> {
-            if (cmd.getPreConditions() != null && !cmd.getPreConditions().isEmpty()) {
-                try {
-                    return cmd.getPreConditions().getFirst().getPreconditionName();
-                } catch (UnsupportedOperationException _) {
-                    return "none";
-                }
-            }
-            return "none";
-        }).setHeader("First Precondition").setAutoWidth(true);
+        newCommandChainGrid.addColumn(this::firstActionLabel).setHeader("First Action").setAutoWidth(true);
+        newCommandChainGrid.addColumn(this::firstPreconditionLabel).setHeader("First Precondition").setAutoWidth(true);
 
         newCommandChainGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
         newCommandChainGrid.setMaxHeight("300px"); // Limit height so it doesn't dominate the UI
@@ -134,6 +123,26 @@ public class CommandEditorView extends VerticalLayout
             });
         });
         return newCommandChainGrid;
+    }
+
+    /** Label for the command-chain grid's "First Action" column: friendly text, never a class name. */
+    String firstActionLabel(CommandData cmd) {
+        if (cmd.getActions().isEmpty()) {
+            return "none";
+        }
+        return chainFormatter.formatAction(cmd.getActions().getFirst());
+    }
+
+    /** Label for the command-chain grid's "First Precondition" column: friendly text, never a class name. */
+    String firstPreconditionLabel(CommandData cmd) {
+        if (cmd.getPreConditions() != null && !cmd.getPreConditions().isEmpty()) {
+            try {
+                return chainFormatter.formatCondition(cmd.getPreConditions().getFirst());
+            } catch (UnsupportedOperationException _) {
+                return "none";
+            }
+        }
+        return "none";
     }
 
     private void setUpBinding() {
@@ -325,6 +334,7 @@ public class CommandEditorView extends VerticalLayout
     public void setData(AdventureData anAdventureData, LocationData aLocationData) {
         adventureData = anAdventureData;
         locationData = aLocationData;
+        chainFormatter = new PreconditionActionFormatter(adventureData);
 
         commandProviderData = locationData.getCommandProviderData();
 
