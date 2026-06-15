@@ -97,7 +97,7 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
                 DirectionDescriptionAdapter.class);
         gridProvider.getGrid().getColumns().get(1).setHeader("Command");
         gridProvider.addColumn(DirectionDescriptionAdapter::getDestinationDescription, "Destination");
-        gridProvider.addColumn(DirectionDescriptionAdapter::getDestinationId, "DestinationId");
+        gridProvider.hideIdColumn();
 
         gridProvider.addItemDoubleClickListener(
                 e -> UI.getCurrent().navigate(DirectionEditorView.class,

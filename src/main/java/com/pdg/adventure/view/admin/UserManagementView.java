@@ -40,7 +40,6 @@ public class UserManagementView extends VerticalLayout {
     }
 
     private void configureGrid() {
-        grid.addColumn(UserData::getId).setHeader("ID");
         grid.addColumn(UserData::getUsername).setHeader("Username");
 
         // Custom column to display roles nicely

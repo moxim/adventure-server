@@ -98,8 +98,6 @@ public class ItemViewSupporter {
     private Grid<ItemData> getItemsGrid(List<ItemData> items) {
         Grid<ItemData> grid = new Grid<>(ItemData.class, false);
 
-        grid.addColumn(ItemData::getId).setHeader(VocabularyData.ID_TEXT).setSortable(true).setAutoWidth(true)
-            .setFlexGrow(0);
         grid.addColumn(item -> item.getDescriptionData().getSafeAdjective()).setHeader(VocabularyData.ADJECTIVE_TEXT);
         grid.addColumn(item -> item.getDescriptionData().getSafeNoun()).setHeader(VocabularyData.NOUN_TEXT)
             .setSortable(true);

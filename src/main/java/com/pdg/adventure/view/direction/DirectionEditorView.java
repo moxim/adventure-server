@@ -86,7 +86,6 @@ public class DirectionEditorView extends VerticalLayout
 
         destinationGrid = new Grid<>();
         destinationGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        destinationGrid.addColumn(ViewSupporter::formatId).setHeader("Id").setAutoWidth(true).setFlexGrow(0);
         destinationGrid.addColumn(ViewSupporter::formatDescription).setHeader("Short Description").setSortable(true)
                        .setAutoWidth(true);
         destinationGrid.addSelectionListener(selectionEvent -> {

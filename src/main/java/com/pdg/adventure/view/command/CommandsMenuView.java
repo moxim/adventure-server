@@ -106,7 +106,6 @@ public class CommandsMenuView extends VerticalLayout
 
     private Grid<CommandData> buildGrid() {
         Grid<CommandData> aGrid = new Grid<>(CommandData.class, false);
-        aGrid.addColumn(ViewSupporter::formatId).setHeader("ID").setAutoWidth(true).setFlexGrow(0);
         aGrid.addColumn(cmd -> ViewSupporter.getWordText(cmd.getCommandDescription().getVerb()))
              .setHeader("Verb").setAutoWidth(true);
         aGrid.addColumn(cmd -> ViewSupporter.getWordText(cmd.getCommandDescription().getAdjective()))

@@ -191,6 +191,7 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
                 .toList();
 
         GridProvider<ItemLocationPairAdapter> gridProvider = new GridProvider<>(ItemLocationPairAdapter.class);
+        gridProvider.hideIdColumn();
         gridProvider.addColumn(ItemLocationPairAdapter::getAdjective, VocabularyData.ADJECTIVE_TEXT);
         gridProvider.addColumn(ItemLocationPairAdapter::getNoun, VocabularyData.NOUN_TEXT);
         gridProvider.addColumn(ItemLocationPairAdapter::getLocationDescription, "Location");

@@ -133,6 +133,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
 
     private Grid<LocationDescriptionAdapter> getLocationsGrid(List<LocationData> locations) {
         GridProvider<LocationDescriptionAdapter> gridProvider = new GridProvider<>(LocationDescriptionAdapter.class);
+        gridProvider.hideIdColumn();
         gridProvider.addColumn(LocationDescriptionAdapter::getLumen, "Lumen");
         gridProvider.addColumn(LocationDescriptionAdapter::getUsageCount, "Used");
 

@@ -59,7 +59,6 @@ public class AdventuresMenuView extends VerticalLayout {
 
     private Div getGridContainer(List<AdventureData> adventures) {
         Grid<AdventureData> grid = new Grid<>(AdventureData.class, false);
-        grid.addColumn(ViewSupporter::formatId).setHeader("Id").setAutoWidth(true).setFlexGrow(0);
         grid.addColumn(AdventureData::getTitle).setHeader("Title").setSortable(true).setAutoWidth(true);
         grid.addSelectionListener(selection -> {
             Optional<AdventureData> optionalAdventure = selection.getFirstSelectedItem();
