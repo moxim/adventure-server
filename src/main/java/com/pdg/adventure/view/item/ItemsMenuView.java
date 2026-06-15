@@ -19,6 +19,7 @@ import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.location.LocationEditorView;
 import com.pdg.adventure.view.support.RouteIds;
+import com.pdg.adventure.view.support.ViewSupporter;
 
 @Route(value = "author/adventures/:adventureId/locations/:locationId/items", layout = ItemsMainLayout.class)
 @PageTitle("Items")
@@ -75,7 +76,7 @@ public class ItemsMenuView extends VerticalLayout implements BeforeEnterObserver
         gridContainer = new Div();
         gridContainer.setSizeFull();
 
-        VerticalLayout rightSide = new VerticalLayout(gridContainer);
+        VerticalLayout rightSide = new VerticalLayout(ViewSupporter.doubleClickEditHint(), gridContainer);
         rightSide.setSizeFull();
 
         HorizontalLayout jumpRow = new HorizontalLayout(leftSide, rightSide);

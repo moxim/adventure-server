@@ -18,6 +18,7 @@ import com.pdg.adventure.security.model.Role;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.UserService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
+import com.pdg.adventure.view.support.ViewSupporter;
 
 @Route(value = "admin/users", layout = AdventuresMainLayout.class)
 @RolesAllowed("ROLE_ADMIN") // Only Admins can access this
@@ -36,7 +37,7 @@ public class UserManagementView extends VerticalLayout {
 
         Button addUserBtn = new Button("Add New User", e -> openUserForm(new UserData()));
 
-        add(new HorizontalLayout(addUserBtn), grid);
+        add(new HorizontalLayout(addUserBtn), ViewSupporter.doubleClickEditHint(), grid);
     }
 
     private void configureGrid() {
@@ -47,12 +48,8 @@ public class UserManagementView extends VerticalLayout {
 
         grid.addColumn(UserData::isEnabled).setHeader("Enabled?");
 
-        // Click listener to edit existing users
-        grid.asSingleSelect().addValueChangeListener(event -> {
-            if (event.getValue() != null) {
-                openUserForm(event.getValue());
-            }
-        });
+        // Double-click a row to edit (consistent with every other grid: single-click selects, double-click opens).
+        grid.addItemDoubleClickListener(event -> openUserForm(event.getItem()));
     }
 
     private void updateList() {

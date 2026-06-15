@@ -49,7 +49,7 @@ public class AdventuresMenuView extends VerticalLayout {
 
         List<AdventureData> adventures = accessService.getAdventuresForUser(ViewSupporter.getCurrentUser());
         Div gridContainer = getGridContainer(adventures);
-        VerticalLayout rightSide = new VerticalLayout(gridContainer);
+        VerticalLayout rightSide = new VerticalLayout(ViewSupporter.doubleClickEditHint(), gridContainer);
         rightSide.setSizeFull();
 
         HorizontalLayout jumpRow = new HorizontalLayout(leftSide, rightSide);

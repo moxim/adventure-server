@@ -81,7 +81,7 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
 
 //        gridContainer.add(grid);
 
-        VerticalLayout rightSide = new VerticalLayout(searchField, grid);
+        VerticalLayout rightSide = new VerticalLayout(searchField, ViewSupporter.doubleClickEditHint(), grid);
         rightSide.setSizeFull();
 
         HorizontalLayout jumpRow = new HorizontalLayout(leftSide, rightSide);

@@ -61,7 +61,7 @@ public class CommandsMenuView extends VerticalLayout
         binder = new BeanValidationBinder<>(CommandProviderData.class);
 
         setSizeFull();
-        gridContainer = new Div("Commands");
+        gridContainer = new Div();
         gridContainer.setSizeFull();
 
         createButton = new Button("Create", _ -> {
@@ -97,7 +97,7 @@ public class CommandsMenuView extends VerticalLayout
         vll.setMaxWidth("10%");
         vll.setMinWidth("10%");
         vll.setWidth("10%");
-        VerticalLayout vlr = new VerticalLayout(gridContainer);
+        VerticalLayout vlr = new VerticalLayout(ViewSupporter.doubleClickEditHint(), gridContainer);
 
         HorizontalLayout hl = new HorizontalLayout(vll, vlr);
         hl.setSizeFull();

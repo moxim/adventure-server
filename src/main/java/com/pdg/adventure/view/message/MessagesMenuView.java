@@ -78,7 +78,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
 
         grid = createGrid();
 
-        VerticalLayout rightSide = new VerticalLayout(searchField, grid);
+        VerticalLayout rightSide = new VerticalLayout(searchField, ViewSupporter.doubleClickEditHint(), grid);
         rightSide.setSizeFull();
 
         HorizontalLayout mainLayout = new HorizontalLayout(leftSide, rightSide);

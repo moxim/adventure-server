@@ -77,7 +77,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
 
         gridContainer = new Div();
         gridContainer.setSizeFull();
-        VerticalLayout rightSide = new VerticalLayout(searchField, gridContainer);
+        VerticalLayout rightSide = new VerticalLayout(searchField, ViewSupporter.doubleClickEditHint(), gridContainer);
         rightSide.setSizeFull();
 
         return rightSide;

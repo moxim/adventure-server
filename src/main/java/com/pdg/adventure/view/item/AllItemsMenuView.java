@@ -8,11 +8,11 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
@@ -22,10 +22,7 @@ import jakarta.annotation.security.RolesAllowed;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.ItemData;
-import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.model.*;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
@@ -46,7 +43,7 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
     private final Div gridContainer;
     private final Button createButton;
     private final ComboBox<LocationData> locationSelector;
-    private final IntegerField numberOfItems;
+    private final Span numberOfItems;
     private transient ItemViewSupporter itemViewSupporter;
     private transient AdventureData adventureData;
     private ListDataProvider<ItemLocationPairAdapter> dataProvider;
@@ -56,9 +53,7 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
 
         adventureService = anAdventureService;
 
-        numberOfItems = new IntegerField("Total Items:");
-        numberOfItems.setReadOnly(true);
-        numberOfItems.setTooltipText("Total number of items across all locations");
+        numberOfItems = new Span();
 
         // Location selector for creating new items
         locationSelector = new ComboBox<>("Create in Location");
@@ -103,7 +98,7 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
         searchFieldContainer.setWidthFull();
         searchFieldContainer.add(searchField);
 
-        VerticalLayout rightSide = new VerticalLayout(searchFieldContainer, gridContainer);
+        VerticalLayout rightSide = new VerticalLayout(searchFieldContainer, ViewSupporter.doubleClickEditHint(), gridContainer);
         rightSide.setSizeFull();
 
         HorizontalLayout mainRow = new HorizontalLayout(leftSide, rightSide);
@@ -163,24 +158,8 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
     }
 
     private void fillGUI() {
-        // Collect all items from all locations
-        List<ItemLocationPair> itemPairs = new ArrayList<>();
-
-        for (LocationData location : adventureData.getLocationData().values()) {
-            if (location.getItemContainerData() != null) {
-                List<ItemData> items = location.getItemContainerData().getItems();
-                if (items != null) {
-                    for (ItemData item : items) {
-                        // Filter out null items (can occur if @DBRef fails to resolve)
-                        if (item != null) {
-                            itemPairs.add(new ItemLocationPair(item, location));
-                        }
-                    }
-                }
-            }
-        }
-
-        numberOfItems.setValue(itemPairs.size());
+        final var itemPairs = ViewSupporter.getItemLocationPairs(adventureData.getLocationData().values());
+        numberOfItems.setText("Total Items: " + itemPairs.size());
         gridContainer.removeAll();
         gridContainer.add(getItemLocationPairGrid(itemPairs));
     }
