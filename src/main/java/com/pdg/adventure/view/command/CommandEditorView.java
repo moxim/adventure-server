@@ -103,8 +103,8 @@ public class CommandEditorView extends VerticalLayout
     private Grid<CommandData> createCommandChainGrid() {
         final Grid<CommandData> newCommandChainGrid = new Grid<>(CommandData.class, false);
 
-        newCommandChainGrid.addColumn(this::firstActionLabel).setHeader("First Action").setAutoWidth(true);
         newCommandChainGrid.addColumn(this::firstPreconditionLabel).setHeader("First Precondition").setAutoWidth(true);
+        newCommandChainGrid.addColumn(this::firstActionLabel).setHeader("First Action").setAutoWidth(true);
 
         newCommandChainGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
         newCommandChainGrid.setMaxHeight("300px"); // Limit height so it doesn't dominate the UI
