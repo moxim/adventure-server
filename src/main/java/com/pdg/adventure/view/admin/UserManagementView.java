@@ -18,6 +18,7 @@ import com.pdg.adventure.security.model.Role;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.UserService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
+import com.pdg.adventure.view.support.ViewSupporter;
 
 @Route(value = "admin/users", layout = AdventuresMainLayout.class)
 @RolesAllowed("ROLE_ADMIN") // Only Admins can access this
@@ -29,18 +30,17 @@ public class UserManagementView extends VerticalLayout {
     public UserManagementView(UserService userService) {
         this.userService = userService;
 
-        add(new H2("UserData Management"));
+        add(new H2("User Management"));
 
         configureGrid();
         updateList();
 
-        Button addUserBtn = new Button("Add New UserData", e -> openUserForm(new UserData()));
+        Button addUserBtn = new Button("Add New User", e -> openUserForm(new UserData()));
 
-        add(new HorizontalLayout(addUserBtn), grid);
+        add(new HorizontalLayout(addUserBtn), ViewSupporter.doubleClickEditHint(), grid);
     }
 
     private void configureGrid() {
-        grid.addColumn(UserData::getId).setHeader("ID");
         grid.addColumn(UserData::getUsername).setHeader("Username");
 
         // Custom column to display roles nicely
@@ -48,12 +48,8 @@ public class UserManagementView extends VerticalLayout {
 
         grid.addColumn(UserData::isEnabled).setHeader("Enabled?");
 
-        // Click listener to edit existing users
-        grid.asSingleSelect().addValueChangeListener(event -> {
-            if (event.getValue() != null) {
-                openUserForm(event.getValue());
-            }
-        });
+        // Double-click a row to edit (consistent with every other grid: single-click selects, double-click opens).
+        grid.addItemDoubleClickListener(event -> openUserForm(event.getItem()));
     }
 
     private void updateList() {
@@ -62,7 +58,7 @@ public class UserManagementView extends VerticalLayout {
 
     private void openUserForm(UserData user) {
         Dialog dialog = new Dialog();
-        dialog.setHeaderTitle(user.getId() == null ? "Create UserData" : "Edit UserData");
+        dialog.setHeaderTitle(user.getId() == null ? "Create User" : "Edit User");
 
         TextField usernameField = new TextField("Username");
         PasswordField passwordField = new PasswordField("Password");
@@ -92,13 +88,13 @@ public class UserManagementView extends VerticalLayout {
                         return;
                     }
                     userService.createUser(usernameField.getValue(), password, rolesBox.getValue());
-                    Notification.show("UserData created successfully!");
+                    Notification.show("User created successfully!");
                 } else {
                     // Update Existing UserData Logic
                     user.setRoles(rolesBox.getValue());
                     user.setEnabled(enabledBox.getValue());
                     userService.save(user);
-                    Notification.show("UserData updated!");
+                    Notification.show("User updated!");
                 }
                 updateList();
                 dialog.close();
@@ -112,7 +108,7 @@ public class UserManagementView extends VerticalLayout {
                 userService.delete(user.getId());
                 updateList();
                 dialog.close();
-                Notification.show("UserData deleted.");
+                Notification.show("User deleted.");
             }
         });
 

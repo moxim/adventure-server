@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.condition;
 
+import lombok.Getter;
 import lombok.EqualsAndHashCode;
 
 import com.pdg.adventure.api.ExecutionResult;
@@ -9,7 +10,10 @@ import com.pdg.adventure.server.tangible.Item;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class ItemAtCondition extends AbstractCondition {
+
+    @Getter
     private final Location location;
+    @Getter
     private final Item thing;
 
     public ItemAtCondition(Item aThing, Location aLocation) {

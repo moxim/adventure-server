@@ -12,9 +12,21 @@ import java.util.function.Supplier;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.action.ActionData;
+import com.pdg.adventure.model.action.CreateActionData;
+import com.pdg.adventure.model.action.DecrementVariableActionData;
+import com.pdg.adventure.model.action.DescribeActionData;
+import com.pdg.adventure.model.action.DestroyActionData;
+import com.pdg.adventure.model.action.IncrementVariableActionData;
+import com.pdg.adventure.model.action.InventoryActionData;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
+import com.pdg.adventure.model.action.DropActionData;
+import com.pdg.adventure.model.action.RemoveActionData;
+import com.pdg.adventure.model.action.TakeActionData;
+import com.pdg.adventure.model.action.QuitActionData;
+import com.pdg.adventure.model.action.SetVariableActionData;
+import com.pdg.adventure.model.action.WearActionData;
 
 /**
  * Component for selecting an action type and creating its corresponding editor.
@@ -23,7 +35,7 @@ import com.pdg.adventure.model.action.MovePlayerActionData;
 public class ActionSelector extends HorizontalLayout {
     private final AdventureData adventureData;
     private final ComboBox<ActionTypeDescriptor> actionTypeSelector;
-    private final Button useButton;
+    private final Button addButton;
     @Setter
     private transient ActionEditorSelectedListener editorSelectedListener;
 
@@ -38,15 +50,15 @@ public class ActionSelector extends HorizontalLayout {
         actionTypeSelector.setWidthFull();
 
         // Create the Use button
-        useButton = new Button("Use");
-        useButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        useButton.setEnabled(false);
+        addButton = new Button("Add");
+        addButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        addButton.setEnabled(false);
 
         // Enable the button only when an action is selected
-        actionTypeSelector.addValueChangeListener(e -> useButton.setEnabled(e.getValue() != null));
+        actionTypeSelector.addValueChangeListener(e -> addButton.setEnabled(e.getValue() != null));
 
         // Handle the Use button click
-        useButton.addClickListener(_ -> {
+        addButton.addClickListener(_ -> {
             ActionTypeDescriptor selectedType = actionTypeSelector.getValue();
             if (selectedType != null) {
                 ActionEditorComponent editor = createEditor(selectedType);
@@ -59,7 +71,7 @@ public class ActionSelector extends HorizontalLayout {
         // Layout setup
         setWidthFull();
         setAlignItems(Alignment.END);
-        add(actionTypeSelector, useButton);
+        add(actionTypeSelector, addButton);
         expand(actionTypeSelector);
     }
 
@@ -77,8 +89,25 @@ public class ActionSelector extends HorizontalLayout {
 
         types.add(new ActionTypeDescriptor("Message", "Display a message to the player", MessageActionData::new));
 
-        // TODO: Add more action types as editors are implemented
-        // types.add(new ActionTypeDescriptor("Set Variable", "Set a variable value", SetVariableActionData::new));
+        types.add(new ActionTypeDescriptor("Destroy", "Remove an item from the game permanently",
+                                           DestroyActionData::new));
+        types.add(new ActionTypeDescriptor("Remove (Un-wear)", "Remove a wearable item from the player",
+                                           RemoveActionData::new));
+        types.add(new ActionTypeDescriptor("Increment Variable", "Increment a named variable by an amount",
+                                           IncrementVariableActionData::new));
+        types.add(new ActionTypeDescriptor("Decrement Variable", "Decrement a named variable by an amount",
+                                           DecrementVariableActionData::new));
+        types.add(new ActionTypeDescriptor("Describe", "Show the description of an item or location",
+                                           DescribeActionData::new));
+        types.add(new ActionTypeDescriptor("Create Item", "Place an item into a container or location",
+                                           CreateActionData::new));
+        types.add(new ActionTypeDescriptor("Inventory", "Show the player's inventory", InventoryActionData::new));
+        types.add(new ActionTypeDescriptor("Take", "Player picks up an item", TakeActionData::new));
+        types.add(new ActionTypeDescriptor("Drop", "Player drops an item", DropActionData::new));
+        types.add(new ActionTypeDescriptor("Wear", "Player wears a wearable item", WearActionData::new));
+        types.add(new ActionTypeDescriptor("Set Variable", "Set a named variable to a specific value",
+                                           () -> new SetVariableActionData(null, null)));
+        types.add(new ActionTypeDescriptor("Quit", "Terminate the game", QuitActionData::new));
 
         return types;
     }

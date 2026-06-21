@@ -77,7 +77,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
 
         gridContainer = new Div();
         gridContainer.setSizeFull();
-        VerticalLayout rightSide = new VerticalLayout(searchField, gridContainer);
+        VerticalLayout rightSide = new VerticalLayout(searchField, ViewSupporter.doubleClickEditHint(), gridContainer);
         rightSide.setSizeFull();
 
         return rightSide;
@@ -125,6 +125,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     private Grid<DescribableWordAdapter> getVocabularyGrid(VocabularyData aVocabularyData, TextField aSearchField,
                                                            SerializablePredicate<DescribableWordAdapter> aFilter) {
         GridProvider<DescribableWordAdapter> gridProvider = new GridProvider<>(DescribableWordAdapter.class);
+        gridProvider.hideIdColumn();
         gridProvider.addColumn(DescribableWordAdapter::getType, "Type");
         gridProvider.addColumn(DescribableWordAdapter::getSynonym, "Synonym");
         Grid<DescribableWordAdapter> grid = gridProvider.getGrid();

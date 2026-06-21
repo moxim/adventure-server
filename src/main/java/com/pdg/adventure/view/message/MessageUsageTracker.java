@@ -87,21 +87,11 @@ public class MessageUsageTracker {
                                             final String commandSpec,
                                             final List<MessageUsage> usages) {
         for (CommandData command : chain.getCommands()) {
-            // Check primary action
-            if (command.getAction() != null) {
-                checkAction(command.getAction(), locationEntry.getKey(), locationDesc,
-                            commandSpec, "Primary Action", messageId, usages);
-            }
-
-            // Check follow-up actions
-            if (command.getFollowUpActions() != null) {
-                int followUpIndex = 1;
-                for (ActionData followUpAction : command.getFollowUpActions()) {
-                    checkAction(followUpAction, locationEntry.getKey(), locationDesc,
-                                commandSpec, "Follow-up Action #" + followUpIndex,
-                                messageId, usages);
-                    followUpIndex++;
-                }
+            int actionIndex = 1;
+            for (ActionData action : command.getActions()) {
+                checkAction(action, locationEntry.getKey(), locationDesc,
+                            commandSpec, "Action #" + actionIndex, messageId, usages);
+                actionIndex++;
             }
         }
     }

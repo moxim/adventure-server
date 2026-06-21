@@ -20,7 +20,6 @@
         <vaadin.version>25.1.1</vaadin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <org.mockito.mockito-core>2.23.4</org.mockito.mockito-core>
-        <!---->
     </properties>
 
     <parent>
@@ -413,6 +412,7 @@
                     <trimStackTrace>false</trimStackTrace>
                     <enableAssertions>true</enableAssertions>
                 </configuration>
+                <version>3.5.6</version>
             </plugin>
 
             <plugin>
@@ -465,6 +465,18 @@
             </plugin>
         </plugins>
     </build>
+    <reporting>
+        <plugins>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-surefire-report-plugin</artifactId>
+                <configuration>
+                    <outputFormat>html</outputFormat>
+                </configuration>
+                <version>3.5.6</version>
+            </plugin>
+        </plugins>
+    </reporting>
 
     <profiles>
         <profile>

@@ -16,10 +16,11 @@ import com.pdg.adventure.api.Describable;
 
 public class GridProvider<T extends Describable> {
     Grid<T> grid;
+    private final Grid.Column<T> idColumn;
 
     public GridProvider(Class<T> clazz) {
         grid = new Grid<>(clazz, false);
-        grid.addColumn(ViewSupporter::formatId).setHeader("Id").setAutoWidth(true).setFlexGrow(0);
+        idColumn = grid.addColumn(ViewSupporter::formatId).setHeader("Id").setAutoWidth(true).setFlexGrow(0);
         grid.addColumn(ViewSupporter::formatDescription).setHeader("Short Description").setSortable(true);
 //                .setAutoWidth(true);
         grid.getColumns().forEach(column -> column.setAutoWidth(true));
@@ -31,6 +32,16 @@ public class GridProvider<T extends Describable> {
 
     public Grid<T> getGrid() {
         return grid;
+    }
+
+    /**
+     * Hide the opaque internal-id column. Views whose entity id is a raw ULID call this to drop the
+     * noise; views whose id is a human-readable slug (e.g. messages) keep it. Hiding (rather than
+     * removing) keeps the column in {@code getGrid().getColumns()}, so callers' index-based header
+     * tweaks stay valid.
+     */
+    public void hideIdColumn() {
+        idColumn.setVisible(false);
     }
 
     public void addColumn(ValueProvider<T, ?> valueProvider, String aName) {

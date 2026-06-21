@@ -65,9 +65,6 @@ public class AdventureClient implements CommandLineRunner {
     }
 
     static void main(String[] args) {
-        //        LaunchUtil.launchBrowserInDevelopmentMode(
-        SpringApplication.run(AdventureClient.class, args)
-        //        )
-        ;
+        SpringApplication.run(AdventureClient.class, args);
     }
 }

@@ -125,9 +125,9 @@ class MessageViewModelTest {
         String preview = viewModel.getPreview(20);
 
         // Then
-        assertThat(preview).hasSize(23). // 20 chars + "..."
+        assertThat(preview).hasSize(21). // 20 chars + "…"
                                                  startsWith("This is a very long").
-                                         endsWith("...");
+                                         endsWith("…");
     }
 
     @Test

@@ -2,9 +2,21 @@ package com.pdg.adventure.view.command.action;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.action.ActionData;
+import com.pdg.adventure.model.action.CreateActionData;
+import com.pdg.adventure.model.action.DecrementVariableActionData;
+import com.pdg.adventure.model.action.DescribeActionData;
+import com.pdg.adventure.model.action.DestroyActionData;
+import com.pdg.adventure.model.action.IncrementVariableActionData;
+import com.pdg.adventure.model.action.InventoryActionData;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
+import com.pdg.adventure.model.action.DropActionData;
+import com.pdg.adventure.model.action.RemoveActionData;
+import com.pdg.adventure.model.action.TakeActionData;
+import com.pdg.adventure.model.action.QuitActionData;
+import com.pdg.adventure.model.action.SetVariableActionData;
+import com.pdg.adventure.model.action.WearActionData;
 
 /**
  * Factory for creating action editor components.
@@ -28,11 +40,20 @@ public class ActionEditorFactory {
                     new MovePlayerActionEditor(movePlayerActionData, adventureData);
             case MoveItemActionData moveItemActionData -> new MoveItemActionEditor(moveItemActionData, adventureData);
             case MessageActionData messageActionData -> new MessageActionEditor(messageActionData, adventureData);
-            // TODO: Add more action types as they are implemented
-            // else if (actionData instanceof SetVariableActionData) {
-            //     editor = new SetVariableActionEditor((SetVariableActionData) actionData);
-            // }
-            // ... more action types
+            case DestroyActionData destroyActionData -> new DestroyActionEditor(destroyActionData, adventureData);
+            case RemoveActionData removeActionData -> new RemoveActionEditor(removeActionData, adventureData);
+            case IncrementVariableActionData incrementActionData ->
+                    new IncrementVariableActionEditor(incrementActionData);
+            case DecrementVariableActionData decrementActionData ->
+                    new DecrementVariableActionEditor(decrementActionData);
+            case DescribeActionData describeActionData -> new DescribeActionEditor(describeActionData, adventureData);
+            case CreateActionData createActionData -> new CreateActionEditor(createActionData, adventureData);
+            case InventoryActionData inventoryActionData -> new InventoryActionEditor(inventoryActionData);
+            case TakeActionData takeActionData -> new TakeActionEditor(takeActionData, adventureData);
+            case DropActionData dropActionData -> new DropActionEditor(dropActionData, adventureData);
+            case WearActionData wearActionData -> new WearActionEditor(wearActionData, adventureData);
+            case SetVariableActionData setVariableActionData -> new SetVariableActionEditor(setVariableActionData);
+            case QuitActionData quitActionData -> new QuitActionEditor(quitActionData);
             default -> throw new UnsupportedOperationException(
                     "No editor available for action type: " + actionData.getClass().getSimpleName()
             );

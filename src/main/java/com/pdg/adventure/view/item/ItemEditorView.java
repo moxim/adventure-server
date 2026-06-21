@@ -16,6 +16,7 @@ import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -250,7 +251,7 @@ public class ItemEditorView extends VerticalLayout
 
             // Remove commands with TakeActionData or DropActionData
             commandChain.getCommands().removeIf(command -> {
-                if (command.getAction() == null) {
+                if (command.getActions().isEmpty()) {
                     return false;
                 }
                 final CommandData rawTakeCommandData = getRawCommandData(
@@ -293,7 +294,7 @@ public class ItemEditorView extends VerticalLayout
         takeCommandFailed_allreadyCarried.getPreConditions().add(carriedCondition);
         MessageActionData messageData_alreadyCarried = new MessageActionData();
         messageData_alreadyCarried.setMessageId("You already carry the %s.".formatted(itemDescription));
-        takeCommandFailed_allreadyCarried.setAction(messageData_alreadyCarried);
+        takeCommandFailed_allreadyCarried.setActions(new ArrayList<>(List.of(messageData_alreadyCarried)));
         anItemData.getCommandProviderData().add(takeCommandFailed_allreadyCarried);
 
         final CommandData takeCommandData = createTakeCommandData(aTakeVerb, anItemData);
@@ -304,7 +305,7 @@ public class ItemEditorView extends VerticalLayout
         dropCommandFailed_notCarried.getPreConditions().add(notCarriedCondition);
         MessageActionData messageData_notCarried = new MessageActionData();
         messageData_notCarried.setMessageId("You are not carrying the %s.".formatted(itemDescription));
-        dropCommandFailed_notCarried.setAction(messageData_notCarried);
+        dropCommandFailed_notCarried.setActions(new ArrayList<>(List.of(messageData_notCarried)));
         anItemData.getCommandProviderData().add(dropCommandFailed_notCarried);
 
         final CommandData dropCommandData = createDropCommandData(aDropVerb, anItemData);
@@ -315,7 +316,7 @@ public class ItemEditorView extends VerticalLayout
         final var takeCommandData = getRawCommandData(aVerb, anItem);
         final var takeActionData = new TakeActionData();
         takeActionData.setThingId(anItem.getId());
-        takeCommandData.setAction(takeActionData);
+        takeCommandData.setActions(new ArrayList<>(List.of(takeActionData)));
         return takeCommandData;
     }
 
@@ -323,7 +324,7 @@ public class ItemEditorView extends VerticalLayout
         final var dropCommandData = getRawCommandData(aVerb, anItem);
         DropActionData dropActionData = new DropActionData();
         dropActionData.setThingId(anItem.getId());
-        dropCommandData.setAction(dropActionData);
+        dropCommandData.setActions(new ArrayList<>(List.of(dropActionData)));
         return dropCommandData;
     }
 

@@ -69,8 +69,8 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
 
         TextField searchField = new TextField();
         searchField.setWidth("50%");
-        searchField.setPlaceholder("Find direction");
-        searchField.setTooltipText("Find direction by ID, noun or any text in its short description");
+        searchField.setPlaceholder("Find exit");
+        searchField.setTooltipText("Find exit by ID, noun or any text in its short description");
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         searchField.setValueChangeMode(ValueChangeMode.EAGER);
 
@@ -81,7 +81,7 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
 
 //        gridContainer.add(grid);
 
-        VerticalLayout rightSide = new VerticalLayout(searchField, grid);
+        VerticalLayout rightSide = new VerticalLayout(searchField, ViewSupporter.doubleClickEditHint(), grid);
         rightSide.setSizeFull();
 
         HorizontalLayout jumpRow = new HorizontalLayout(leftSide, rightSide);
@@ -97,7 +97,7 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
                 DirectionDescriptionAdapter.class);
         gridProvider.getGrid().getColumns().get(1).setHeader("Command");
         gridProvider.addColumn(DirectionDescriptionAdapter::getDestinationDescription, "Destination");
-        gridProvider.addColumn(DirectionDescriptionAdapter::getDestinationId, "DestinationId");
+        gridProvider.hideIdColumn();
 
         gridProvider.addItemDoubleClickListener(
                 e -> UI.getCurrent().navigate(DirectionEditorView.class,
@@ -125,9 +125,9 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
         Optional<String> locId = event.getRouteParameters().get(RouteIds.LOCATION_ID.getValue());
         if (locId.isPresent()) {
             final String locationId = locId.get();
-            pageTitle = "Directions for location #" + locationId;
+            pageTitle = "Exits for location #" + locationId;
         } else {
-            pageTitle = "Directions";
+            pageTitle = "Exits";
         }
     }
 

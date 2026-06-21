@@ -11,6 +11,6 @@ import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 @RolesAllowed("ROLE_PLAYER")
 public class PlayerLibraryView extends VerticalLayout {
     public PlayerLibraryView() {
-        add(new H1("Game Library - Play your purchased games"));
+        add(new H1("Game Library - Play your assigned games"));
     }
 }

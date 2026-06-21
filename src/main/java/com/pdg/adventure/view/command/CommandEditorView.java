@@ -3,11 +3,9 @@ package com.pdg.adventure.view.command;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
-import com.vaadin.flow.component.grid.dataview.GridListDataView;
-import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -16,6 +14,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.*;
 import jakarta.annotation.security.RolesAllowed;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,13 +24,9 @@ import java.util.Optional;
 import static com.pdg.adventure.model.Word.Type.*;
 
 import com.pdg.adventure.model.*;
-import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
-import com.pdg.adventure.view.command.action.ActionEditorComponent;
-import com.pdg.adventure.view.command.action.ActionEditorFactory;
-import com.pdg.adventure.view.command.action.ActionSelector;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPicker;
 import com.pdg.adventure.view.component.VocabularyPickerField;
@@ -51,21 +46,20 @@ public class CommandEditorView extends VerticalLayout
     private final VocabularyPicker nounSelector;
     private final VocabularyPicker adjectiveSelector;
     private final VocabularyPicker verbSelector;
-    private final VerticalLayout actionEditorContainer;
+    private final Span preconditionAndActionHolder;
+    private PreconditionActionEditor preconditionActionEditor;
     private transient String commandId;
     private String pageTitle;
     private Button saveButton;
     private Button resetButton;
     private LocationData locationData;
-    private GridListDataView<CommandDescriptionAdapter> gridListDataView;
     private AdventureData adventureData;
     private CommandProviderData commandProviderData;
     private transient CommandViewModel cvm;
-    private transient ActionEditorComponent actionEditor;
     private transient CommandData commandData;
-    private transient ActionData originalActionData; // Store original action for reset
-    private boolean actionEditorHasChanges = false; // Track if action editor has been modified
+    private boolean editorHasChanges = false; // Track if the precondition/action editor has been modified
     private final Grid<CommandData> commandChainGrid; // Grid to display all commands in the chain
+    private transient PreconditionActionFormatter chainFormatter; // Renders chain rows as friendly text
     private transient CommandChainData currentCommandChain; // The command chain being edited
     private int selectedCommandIndex = 0; // Which command in the chain we're currently editing
 
@@ -93,48 +87,24 @@ public class CommandEditorView extends VerticalLayout
             event.getItem().ifPresent(this::deleteCommandFromChain);
         });
 
-        // Create action editor container
-        actionEditorContainer = new VerticalLayout();
-        actionEditorContainer.setPadding(false);
-        actionEditorContainer.setSpacing(true);
-
         VerticalLayout vl1 = new VerticalLayout();
         vl1.add(new Span("Command Chain"));
         vl1.add(commandChainGrid);
-        vl1.add(new Span("Selected Command Action"));
-        vl1.add(actionEditorContainer);
-        Details details = new Details("Preconditions & Actions", vl1);
 
-        add(commandLayout, details, resetBackSaveView);
+        preconditionAndActionHolder = new Span();
+        VerticalLayout details = new VerticalLayout(new NativeLabel("Preconditions & Actions"), preconditionAndActionHolder);
+        HorizontalLayout hl1 = new HorizontalLayout(vl1, details);
+
+        // The precondition/action editor is built lazily in setData(), once adventureData is
+        // available (its action/condition leaf editors dereference adventureData when populated).
+        add(commandLayout, hl1, resetBackSaveView);
     }
 
     private Grid<CommandData> createCommandChainGrid() {
         final Grid<CommandData> newCommandChainGrid = new Grid<>(CommandData.class, false);
 
-        newCommandChainGrid.addColumn(cmd -> {
-            if (cmd.getAction() != null) {
-                return cmd.getAction().getActionName();
-            }
-            return "none";
-        }).setHeader("Primary Action").setAutoWidth(true);
-
-        newCommandChainGrid.addColumn(cmd -> {
-            if (cmd.getPreConditions() != null && !cmd.getPreConditions().isEmpty()) {
-                try {
-                    return cmd.getPreConditions().getFirst().getPreconditionName();
-                } catch (UnsupportedOperationException _) {
-                    return "none";
-                }
-            }
-            return "none";
-        }).setHeader("First Precondition").setAutoWidth(true);
-
-        newCommandChainGrid.addColumn(cmd -> {
-            if (cmd.getFollowUpActions() != null && !cmd.getFollowUpActions().isEmpty()) {
-                return cmd.getFollowUpActions().getFirst().getActionName();
-            }
-            return "none";
-        }).setHeader("First Followup Action").setAutoWidth(true);
+        newCommandChainGrid.addColumn(this::firstPreconditionLabel).setHeader("First Precondition").setAutoWidth(true);
+        newCommandChainGrid.addColumn(this::firstActionLabel).setHeader("First Action").setAutoWidth(true);
 
         newCommandChainGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
         newCommandChainGrid.setMaxHeight("300px"); // Limit height so it doesn't dominate the UI
@@ -146,13 +116,33 @@ public class CommandEditorView extends VerticalLayout
                     selectedCommandIndex = currentCommandChain.getCommands().indexOf(selectedCommand);
                     if (selectedCommandIndex >= 0) {
                         commandData = selectedCommand;
-                        // Show the action editor for this command
-                        showActionEditorForCommand(commandData.getAction());
+                        // Show the precondition/action editor for this command
+                        preconditionActionEditor.setCommand(commandData);
                     }
                 }
             });
         });
         return newCommandChainGrid;
+    }
+
+    /** Label for the command-chain grid's "First Action" column: friendly text, never a class name. */
+    String firstActionLabel(CommandData cmd) {
+        if (cmd.getActions().isEmpty()) {
+            return "none";
+        }
+        return chainFormatter.formatAction(cmd.getActions().getFirst());
+    }
+
+    /** Label for the command-chain grid's "First Precondition" column: friendly text, never a class name. */
+    String firstPreconditionLabel(CommandData cmd) {
+        if (cmd.getPreConditions() != null && !cmd.getPreConditions().isEmpty()) {
+            try {
+                return chainFormatter.formatCondition(cmd.getPreConditions().getFirst());
+            } catch (UnsupportedOperationException _) {
+                return "none";
+            }
+        }
+        return "none";
     }
 
     private void setUpBinding() {
@@ -164,7 +154,7 @@ public class CommandEditorView extends VerticalLayout
 
         binder.addStatusChangeListener(event -> {
             updateSaveButtonState();
-            resetButton.setEnabled(event.getBinder().hasChanges() || actionEditorHasChanges);
+            resetButton.setEnabled(event.getBinder().hasChanges() || editorHasChanges);
         });
     }
 
@@ -172,6 +162,7 @@ public class CommandEditorView extends VerticalLayout
         final ResetBackSaveView resetBackSaveView = new ResetBackSaveView();
 
         Button backButton = resetBackSaveView.getBack();
+        backButton.addClickShortcut(Key.ESCAPE);
         saveButton = resetBackSaveView.getSave();
         saveButton.setEnabled(false);
         resetButton = resetBackSaveView.getReset();
@@ -183,8 +174,8 @@ public class CommandEditorView extends VerticalLayout
         saveButton.addClickListener(_ -> validateSave(commandProviderData));
         resetButton.addClickListener(_ -> {
             binder.readBean(cvm);
-            resetActionEditor();
-            actionEditorHasChanges = false;
+            preconditionActionEditor.setCommand(commandData != null ? commandData : new CommandData());
+            editorHasChanges = false;
             resetButton.setEnabled(false);
         });
         resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
@@ -205,60 +196,28 @@ public class CommandEditorView extends VerticalLayout
     private void updateSaveButtonState() {
         boolean binderValid = binder.isValid();
         boolean binderHasChanges = binder.hasChanges();
-        boolean actionEditorValid = actionEditor == null || actionEditor.validate();
 
         // Save button should be enabled only if:
-        // 1. (Binder has changes OR action editor has changes) AND binder is valid
-        // 2. Action editor is valid (if present)
-        saveButton.setEnabled((binderHasChanges || actionEditorHasChanges) && binderValid && actionEditorValid);
-    }
-
-    /**
-     * Attach validation listeners to the action editor's input components.
-     * This ensures the save button state updates when action editor fields change.
-     */
-    private void attachActionEditorListeners(ActionEditorComponent editor) {
-        if (editor == null) {
-            return;
-        }
-
-        // Add a value change listener to all input components in the editor
-        editor.getChildren().forEach(component -> {
-            if (component instanceof com.vaadin.flow.component.HasValue<?, ?> value) {
-                value.addValueChangeListener(e -> {
-                    // Mark that the action editor has changes
-                    if (!e.isFromClient()) {
-                        // This is a programmatic change (initial value setting), don't mark as changed
-                        return;
-                    }
-                    actionEditorHasChanges = true;
-                    updateSaveButtonState();
-                    resetButton.setEnabled(true);
-                });
-            }
-        });
+        // 1. (Binder has changes OR the precondition/action editor has changes) AND binder is valid
+        // 2. The precondition/action editor is valid
+        saveButton.setEnabled((binderHasChanges || editorHasChanges) && binderValid && preconditionActionEditor.validate());
     }
 
     private void validateSave(CommandProviderData aCommandProviderData) {
         try {
-            // Validate action editor if present
-            if (actionEditor != null && !actionEditor.validate()) {
+            // Validate the precondition/action editor
+            if (!preconditionActionEditor.validate()) {
                 // Validation failed, don't save
                 return;
             }
 
             if (binder.validate().isOk()) {
                 binder.writeBean(cvm);
-                commandData = swivelTheSaveButton(gridListDataView);
+                commandData = swivelTheSaveButton();
                 adventureService.saveLocationData(locationData);
 
                 // Update commandId to the new specification (in case it changed)
                 commandId = cvm.getData().getCommandSpecification();
-
-                // Update the original action data to reflect what was just saved
-                if (actionEditor != null) {
-                    originalActionData = actionEditor.getActionData();
-                }
 
                 // Reload the command chain from the saved data
                 currentCommandChain = commandProviderData.getAvailableCommands().get(commandId);
@@ -277,7 +236,7 @@ public class CommandEditorView extends VerticalLayout
                 }
 
                 // Reset change tracking flags after successful save
-                actionEditorHasChanges = false;
+                editorHasChanges = false;
 
                 navigateBack();
             }
@@ -286,7 +245,7 @@ public class CommandEditorView extends VerticalLayout
         }
     }
 
-    private CommandData swivelTheSaveButton(GridListDataView<CommandDescriptionAdapter> aGridListDataView) {
+    private CommandData swivelTheSaveButton() {
         // Use the commandDescriptionData that was updated via the binder
         final CommandDescriptionData updatedCommandDescription = cvm.getData();
         final String newSpecification = updatedCommandDescription.getCommandSpecification();
@@ -296,15 +255,37 @@ public class CommandEditorView extends VerticalLayout
         // If editing an existing command and the specification has changed, remove the old entry
         if (commandId != null && !commandId.isEmpty() && !commandId.equals(newSpecification)) {
             availableCommandsHelper.remove(commandId);
-            // Remove old item from grid
-            aGridListDataView.getItems().filter(item -> item.getShortDescription().equals(commandId)).findFirst()
-                             .ifPresent(aGridListDataView::removeItem);
         }
 
         // Determine if we're editing an existing command or creating a new one
         boolean isEditingExistingCommand = commandId != null && !commandId.isEmpty() &&
                                            commandId.equals(newSpecification);
 
+        final CommandData command = getEditingCommandData(isEditingExistingCommand, updatedCommandDescription);
+
+        // Persist the preconditions and actions from the editor
+        preconditionActionEditor.saveToCommand(command);
+
+        final CommandChainData commandChainData = availableCommandsHelper.get(newSpecification);
+        if (commandChainData == null) {
+            // New command - create new chain
+            final CommandChainData chainData = new CommandChainData();
+            chainData.getCommands().add(command);
+            availableCommandsHelper.put(newSpecification, chainData);
+        } else if (!isEditingExistingCommand) {
+            // Command specification already exists and we're adding a new variant (not editing existing).
+            // Commands with the same description are chained together; the chain executes until one
+            // with met preconditions succeeds.
+            commandChainData.getCommands().add(command);
+        }
+        // If isEditingExistingCommand is true, the command is already in the chain and updated in place.
+        // The menu grid reflects all of the above on return: navigateBack() re-runs CommandsMenuView.setData().
+
+        return command;
+    }
+
+    private @NonNull CommandData getEditingCommandData(final boolean isEditingExistingCommand,
+                                                final CommandDescriptionData updatedCommandDescription) {
         CommandData command;
         if (isEditingExistingCommand && commandData != null) {
             // We're editing an existing command with the same specification - update it in place
@@ -316,37 +297,21 @@ public class CommandEditorView extends VerticalLayout
 //            command.setId(UUID.randomUUID().toString()); // Ensure unique ID for grid
             command.setCommandDescription(updatedCommandDescription);
         }
-
-        // Use the action from the action editor if present
-        if (actionEditor != null) {
-            ActionData action = actionEditor.getActionData();
-            command.setAction(action);
-        }
-
-        final CommandChainData commandChainData = availableCommandsHelper.get(newSpecification);
-        if (commandChainData == null) {
-            // New command - create new chain
-            final CommandChainData chainData = new CommandChainData();
-            chainData.getCommands().add(command);
-            availableCommandsHelper.put(newSpecification, chainData);
-            // Add to grid only if it's truly new
-            aGridListDataView.addItem(new CommandDescriptionAdapter(newSpecification));
-        } else if (!isEditingExistingCommand) {
-            // Command specification already exists and we're adding a new variant (not editing existing)
-            // Commands with the same description are chained together
-            // The chain will execute commands until one with met preconditions succeeds
-            commandChainData.getCommands().add(command);
-            // Refresh grid to show updated data
-            aGridListDataView.refreshAll();
-        }
-        // If isEditingExistingCommand is true, the command is already in the chain and has been updated in place
-
         return command;
     }
 
     @Override
     public String getPageTitle() {
         return pageTitle;
+    }
+
+    /**
+     * Test/loader seam: set the id (command specification) of the command chain to edit.
+     * Mirrors {@code DirectionEditorView.setUpLoading(String)}; normally {@link #beforeEnter}
+     * derives this from the route parameters.
+     */
+    protected void setUpLoading(String aCommandId) {
+        commandId = aCommandId;
     }
 
     @Override
@@ -363,16 +328,27 @@ public class CommandEditorView extends VerticalLayout
 
     @Override
     public void beforeLeave(BeforeLeaveEvent event) {
-        AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges() || actionEditorHasChanges);
+        AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges() || editorHasChanges);
     }
 
-    public void setData(AdventureData anAdventureData, LocationData aLocationData,
-                        GridListDataView<CommandDescriptionAdapter> aGridListDataView) {
+    public void setData(AdventureData anAdventureData, LocationData aLocationData) {
         adventureData = anAdventureData;
         locationData = aLocationData;
-        gridListDataView = aGridListDataView;
+        chainFormatter = new PreconditionActionFormatter(adventureData);
 
         commandProviderData = locationData.getCommandProviderData();
+
+        // Build the precondition/action editor now that adventureData is available (its
+        // action/condition leaf editors dereference adventureData when a command is loaded).
+        if (preconditionActionEditor == null) {
+            preconditionActionEditor = new PreconditionActionEditor(adventureData);
+            preconditionActionEditor.setOnChange(() -> {
+                editorHasChanges = true;
+                updateSaveButtonState();
+                resetButton.setEnabled(true);
+            });
+            preconditionAndActionHolder.add(preconditionActionEditor);
+        }
 
         // Find existing command or create new one
         CommandDescriptionData commandDescriptionData;
@@ -403,19 +379,19 @@ public class CommandEditorView extends VerticalLayout
         cvm = new CommandViewModel(commandDescriptionData);
         binder.readBean(cvm);
 
-        // Reset action editor change tracking
-        actionEditorHasChanges = false;
+        // Reset editor change tracking
+        editorHasChanges = false;
 
-        // Set up action editor
-        setupActionEditor();
+        // Populate the command chain grid and load the selected command into the editor
+        populateCommandChain();
     }
 
-    private void setupActionEditor() {
-        actionEditorContainer.removeAll();
-
+    /**
+     * Populate the command chain grid and load the selected command into the precondition/action editor.
+     */
+    private void populateCommandChain() {
         // Get the command chain and populate the grid
         currentCommandChain = null;
-        ActionData action = null;
 
         if (commandId != null && !commandId.isEmpty()) {
             currentCommandChain = commandProviderData.getAvailableCommands().get(commandId);
@@ -431,8 +407,6 @@ public class CommandEditorView extends VerticalLayout
                 }
                 commandData = currentCommandChain.getCommands().get(selectedCommandIndex);
                 commandChainGrid.select(commandData);
-
-                action = commandData.getAction();
             } else {
                 // No commands in the chain yet
                 commandChainGrid.setDataProvider(new ListDataProvider<>(java.util.Collections.emptyList()));
@@ -442,94 +416,8 @@ public class CommandEditorView extends VerticalLayout
             commandChainGrid.setDataProvider(new ListDataProvider<>(java.util.Collections.emptyList()));
         }
 
-        // Store the original action data for reset functionality
-        originalActionData = action;
-
-        // Show the action editor for the selected command
-        showActionEditorForCommand(action);
-    }
-
-    /**
-     * Show the action editor for a specific action.
-     * Used when selecting a command from the grid.
-     */
-    private void showActionEditorForCommand(ActionData action) {
-        actionEditorContainer.removeAll();
-
-        // If there's an action, show its editor
-        if (action != null) {
-            createActionEditor(action);
-        } else {
-            // No action yet, show the action selector
-            showActionSelector();
-        }
-    }
-
-    /**
-     * Reset the action editor to its original state.
-     * This is called when the reset button is clicked.
-     */
-    private void resetActionEditor() {
-        actionEditorContainer.removeAll();
-
-        // If there was an original action, recreate its editor
-        if (originalActionData != null) {
-            createActionEditor(originalActionData);
-        } else {
-            // No original action, show the action selector
-            actionEditor = null;
-            showActionSelector();
-        }
-    }
-
-    private void createActionEditor(final ActionData anOriginalActionData) {
-        try {
-            actionEditor = ActionEditorFactory.createEditor(anOriginalActionData, adventureData);
-
-            // Add a "Change Action" button above the editor
-            Button changeActionButton = new Button("Change Action");
-            changeActionButton.addClickListener(_ -> showActionSelector());
-
-            actionEditorContainer.add(changeActionButton, actionEditor);
-
-            // Attach listeners to update save button state when action editor fields change
-            attachActionEditorListeners(actionEditor);
-        } catch (UnsupportedOperationException _) {
-            // Action type not supported yet, show a message and the selector
-            Div message = new Div();
-            message.setText("Action editor not available for: " + anOriginalActionData.getActionName());
-            message.getStyle().set("color", "var(--lumo-error-text-color)");
-            actionEditorContainer.add(message);
-            showActionSelector();
-        }
-    }
-
-    private void showActionSelector() {
-        actionEditorContainer.removeAll();
-
-        ActionSelector actionSelector = new ActionSelector(adventureData);
-        actionSelector.setEditorSelectedListener(editor -> {
-            // Replace the selector with the selected editor
-            actionEditorContainer.removeAll();
-            actionEditor = editor;
-
-            // Add a "Change Action" button above the new editor
-            Button changeActionButton = new Button("Change Action");
-            changeActionButton.addClickListener(_ -> showActionSelector());
-
-            actionEditorContainer.add(changeActionButton, actionEditor);
-
-            // Attach listeners to update save button state when action editor fields change
-            attachActionEditorListeners(actionEditor);
-
-            // Mark that the action has changed since a new action type was selected
-            actionEditorHasChanges = true;
-
-            // Update save and reset button states
-            updateSaveButtonState();
-            resetButton.setEnabled(true);
-        });
-        actionEditorContainer.add(actionSelector);
+        // Show the precondition/action editor for the selected command (or an empty command for the new-command path)
+        preconditionActionEditor.setCommand(commandData != null ? commandData : new CommandData());
     }
 
     /**
@@ -550,9 +438,8 @@ public class CommandEditorView extends VerticalLayout
             commandChainGrid.setDataProvider(new ListDataProvider<>(java.util.Collections.emptyList()));
             commandData = null;
             selectedCommandIndex = -1;
-            // Clear the action editor
-            actionEditorContainer.removeAll();
-            showActionSelector();
+            // Clear the editor by loading an empty command
+            preconditionActionEditor.setCommand(new CommandData());
         } else {
             // Refresh the grid with remaining commands
             ListDataProvider<CommandData> dataProvider = new ListDataProvider<>(currentCommandChain.getCommands());
@@ -570,12 +457,12 @@ public class CommandEditorView extends VerticalLayout
             commandData = currentCommandChain.getCommands().get(selectedCommandIndex);
             commandChainGrid.select(commandData);
 
-            // Show the action editor for the newly selected command
-            showActionEditorForCommand(commandData.getAction());
+            // Show the precondition/action editor for the newly selected command
+            preconditionActionEditor.setCommand(commandData);
         }
 
         // Mark as having changes so save button enables
-        actionEditorHasChanges = true;
+        editorHasChanges = true;
         updateSaveButtonState();
         resetButton.setEnabled(true);
     }

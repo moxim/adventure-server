@@ -334,7 +334,7 @@ Plus a runtime-only `LoadAdventureAction` (no DO; engine-managed).
 |------------------|---------|
 | `CarriedConditionData`, `WornConditionData`, `HereConditionData`, `ItemAtConditionData`, `PlayerAtConditionData` | item / location predicates |
 | `EqualsConditionData`, `GreaterThanConditionData`, `LowerThanConditionData`, `SameConditionData` | variable comparisons |
-| `AndConditionData`, `OrConditionData`, `NotConditionData` | composites |
+| `NotConditionData` | composites |
 
 ## Security / access control entities
 

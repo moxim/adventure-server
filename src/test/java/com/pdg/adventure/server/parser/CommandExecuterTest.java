@@ -5,11 +5,16 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.api.Action;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.api.PreCondition;
+import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.location.Location;
+import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
@@ -215,6 +220,41 @@ class CommandExecutorTest {
         // then
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
         assertThat(result.getResultMessage()).isEqualTo("Which tree do you want to climb?");
+    }
+
+    @Test
+    void jumpSea_noSuit_runsAllApplicableCommandsThroughExecutor() {
+        // End-to-end through CommandExecutor: a single "jump sea" chain with three commands.
+        // No suit worn → the WORN command is skipped; the NOT_WORN command and the
+        // no-precondition command both apply → two accumulated messages.
+        MessagesHolder messages = new MessagesHolder();
+
+        GenericCommand worn = new GenericCommand(new GenericCommandDescription("jump", "sea"),
+                new MessageAction("jump_sea_ok", messages));
+        worn.addPreCondition(precondition(ExecutionResult.State.FAILURE));        // suit not worn → skipped
+
+        GenericCommand notWorn = new GenericCommand(new GenericCommandDescription("jump", "sea"),
+                new MessageAction("jetty_jump_sea_no_suit", messages));
+        notWorn.addPreCondition(precondition(ExecutionResult.State.SUCCESS));     // not worn → applies
+
+        GenericCommand always = new GenericCommand(new GenericCommandDescription("jump", "sea"),
+                new MessageAction("jump_sea_also_here", messages));               // no precondition
+
+        location.addCommand(worn);
+        location.addCommand(notWorn);
+        location.addCommand(always);
+
+        ExecutionResult result = sut.execute(new GenericCommandDescription("jump", "sea"));
+
+        assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
+        assertThat(result.getResultMessage())
+                .isEqualTo("jetty_jump_sea_no_suit" + System.lineSeparator() + "jump_sea_also_here");
+    }
+
+    private static PreCondition precondition(ExecutionResult.State state) {
+        PreCondition p = mock(PreCondition.class);
+        when(p.check()).thenReturn(new CommandExecutionResult(state));
+        return p;
     }
 
 }

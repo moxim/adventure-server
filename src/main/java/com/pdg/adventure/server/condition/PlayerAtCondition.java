@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.condition;
 
+import lombok.Getter;
 import lombok.EqualsAndHashCode;
 
 import com.pdg.adventure.api.ExecutionResult;
@@ -9,6 +10,8 @@ import com.pdg.adventure.server.parser.CommandExecutionResult;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class PlayerAtCondition extends AbstractCondition {
+
+    @Getter
     private final Location location;
     private final transient GameContext gameContext;
 

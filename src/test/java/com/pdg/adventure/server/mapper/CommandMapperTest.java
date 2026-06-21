@@ -26,20 +26,16 @@ import com.pdg.adventure.server.support.MapperSupporter;
 
 /**
  * Comprehensive unit tests for CommandMapper covering all major code paths:
- * 1. Basic command mapping (BO ↔ DO)
- * 2. Commands with main actions
- * 3. Commands with follow-up actions
+ * 1. Basic command mapping (BO ↔ DO) with a single action
+ * 2. Commands with no actions
+ * 3. Commands with multiple actions (former primary + follow-ups, now one ordered list)
  * 4. Commands with preconditions
- * 5. Commands with null actions
- * 6. Dynamic action mapper resolution
- * 7. Multiple follow-up actions
- * 8. Complex command scenarios
+ * 5. Complex command scenarios
  * <p>
- * These tests maximize code coverage by testing:
- * - mapToBO: lines 29-50 (all branches)
- * - mapToDO: lines 53-63 (all branches)
+ * These tests exercise:
+ * - mapToBO: description, ordered action list, preconditions (all branches)
+ * - mapToDO: id preservation and action mapping
  * - Action mapper resolution via MapperSupporter
- * - List processing for follow-up actions and preconditions
  */
 @ExtendWith(MockitoExtension.class)
 class CommandMapperTest {
@@ -88,13 +84,13 @@ class CommandMapperTest {
     }
 
     @Test
-    @DisplayName("Test 1: mapToBO - converts basic CommandData with main action to Command")
+    @DisplayName("Test 1: mapToBO - converts basic CommandData with a single action to Command")
     @SuppressWarnings("unchecked")
-    void mapToBO_shouldConvertBasicCommandDataWithMainAction() {
-        // Given: CommandData with main action only
+    void mapToBO_shouldConvertBasicCommandDataWithSingleAction() {
+        // Given: CommandData with one action only
         CommandData commandData = new CommandData(commandDescriptionData);
         commandData.setId("take-sword-cmd");
-        commandData.setAction(mainActionData);
+        commandData.addAction(mainActionData);
 
         when(commandDescriptionMapper.mapToBO(commandDescriptionData)).thenReturn(commandDescription);
         when(mapperSupporter.getMapper(mainActionData.getClass())).thenReturn((Mapper) actionMapper);
@@ -107,8 +103,7 @@ class CommandMapperTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("take-sword-cmd");
         assertThat(result.getDescription()).isEqualTo(commandDescription);
-        assertThat(result.getAction()).isEqualTo(mainAction);
-        assertThat(result.getFollowUpActions()).isEmpty();
+        assertThat(result.getActions()).containsExactly(mainAction);
         assertThat(result.getPreconditions()).isEmpty();
 
         verify(commandDescriptionMapper).mapToBO(commandDescriptionData);
@@ -116,22 +111,21 @@ class CommandMapperTest {
     }
 
     @Test
-    @DisplayName("Test 2: mapToBO - handles null main action correctly")
-    void mapToBO_shouldHandleNullMainAction() {
-        // Given: CommandData with null main action
+    @DisplayName("Test 2: mapToBO - handles a command with no actions")
+    void mapToBO_shouldHandleCommandWithNoActions() {
+        // Given: CommandData with no actions
         CommandData commandData = new CommandData(commandDescriptionData);
         commandData.setId("look-cmd");
-        // action is null
 
         when(commandDescriptionMapper.mapToBO(commandDescriptionData)).thenReturn(commandDescription);
 
         // When: mapping to business object
         Command result = commandMapper.mapToBO(commandData);
 
-        // Then: command should be created with null action
+        // Then: command should be created with an empty action list
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("look-cmd");
-        assertThat(result.getAction()).isNull();
+        assertThat(result.getActions()).isEmpty();
 
         verify(commandDescriptionMapper).mapToBO(commandDescriptionData);
         verify(mapperSupporter, never()).getMapper(any());
@@ -139,23 +133,20 @@ class CommandMapperTest {
     }
 
     @Test
-    @DisplayName("Test 3: mapToBO - maps command with follow-up actions")
+    @DisplayName("Test 3: mapToBO - maps command with multiple actions in order")
     @SuppressWarnings("unchecked")
-    void mapToBO_shouldMapCommandWithFollowUpActions() {
-        // Given: CommandData with main action and follow-up actions
+    void mapToBO_shouldMapCommandWithMultipleActions() {
+        // Given: CommandData with a first action and two further actions
         ActionData followUpAction1Data = mock(ActionData.class);
         ActionData followUpAction2Data = mock(ActionData.class);
         Action followUpAction1 = mock(Action.class);
         Action followUpAction2 = mock(Action.class);
 
-        List<ActionData> followUpActions = new ArrayList<>();
-        followUpActions.add(followUpAction1Data);
-        followUpActions.add(followUpAction2Data);
-
         CommandData commandData = new CommandData(commandDescriptionData);
         commandData.setId("open-door-cmd");
-        commandData.setAction(mainActionData);
-        commandData.setFollowUpActions(followUpActions);
+        commandData.addAction(mainActionData);
+        commandData.addAction(followUpAction1Data);
+        commandData.addAction(followUpAction2Data);
 
         when(commandDescriptionMapper.mapToBO(commandDescriptionData)).thenReturn(commandDescription);
         when(mapperSupporter.getMapper(any())).thenReturn((Mapper) actionMapper);
@@ -165,30 +156,27 @@ class CommandMapperTest {
         // When: mapping to business object
         Command result = commandMapper.mapToBO(commandData);
 
-        // Then: all follow-up actions should be added
+        // Then: all actions should be added in order
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("open-door-cmd");
-        assertThat(result.getFollowUpActions()).hasSize(2);
-        assertThat(result.getFollowUpActions()).containsExactly(followUpAction1, followUpAction2);
+        assertThat(result.getActions()).hasSize(3);
+        assertThat(result.getActions()).containsExactly(mainAction, followUpAction1, followUpAction2);
     }
 
-//    There must not be a null value in the follow-up actions list as per CommandData#setFollowUpActions contract
-//    @DisplayName("Test 4: mapToBO - handles null follow-up actions in list")
-
     @Test
-    @DisplayName("Test 5: mapToBO - maps command with preconditions")
+    @DisplayName("Test 4: mapToBO - maps command with preconditions")
     @SuppressWarnings("unchecked")
     void mapToBO_shouldMapCommandWithPreconditions() {
         // Given: CommandData with preconditions
-        // Note: In the actual code, PreConditions in CommandData are of type PreConditionData
-        // which is different from PreCondition used in Command (line 46-48 of CommandMapper)
+        // Note: PreConditions in CommandData are of type PreConditionData, which is mapped to
+        // PreCondition used in Command.
         List<PreConditionData> preconditionsData = new ArrayList<>();
         preconditionsData.add(preConditionData1);
         preconditionsData.add(preConditionData2);
 
         CommandData commandData = new CommandData(commandDescriptionData);
         commandData.setId("take-hidden-item-cmd");
-        commandData.setAction(mainActionData);
+        commandData.addAction(mainActionData);
         commandData.setPreConditions(preconditionsData);
 
         when(commandDescriptionMapper.mapToBO(commandDescriptionData)).thenReturn(commandDescription);
@@ -209,23 +197,20 @@ class CommandMapperTest {
     }
 
     @Test
-    @DisplayName("Test 6: mapToBO - maps complex command with all features")
+    @DisplayName("Test 5: mapToBO - maps complex command with all features")
     @SuppressWarnings("unchecked")
     void mapToBO_shouldMapComplexCommandWithAllFeatures() {
-        // Given: CommandData with main action, follow-up actions, and preconditions
+        // Given: CommandData with multiple actions and preconditions
         ActionData followUpActionData = mock(ActionData.class);
         Action followUpAction = mock(Action.class);
-
-        List<ActionData> followUpActions = new ArrayList<>();
-        followUpActions.add(followUpActionData);
 
         List<PreConditionData> preconditionsData = new ArrayList<>();
         preconditionsData.add(preConditionData1);
 
         CommandData commandData = new CommandData(commandDescriptionData);
         commandData.setId("full-featured-cmd");
-        commandData.setAction(mainActionData);
-        commandData.setFollowUpActions(followUpActions);
+        commandData.addAction(mainActionData);
+        commandData.addAction(followUpActionData);
         commandData.setPreConditions(preconditionsData);
 
         when(commandDescriptionMapper.mapToBO(commandDescriptionData)).thenReturn(commandDescription);
@@ -239,16 +224,16 @@ class CommandMapperTest {
         // Then: all features should be present
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("full-featured-cmd");
-        assertThat(result.getAction()).isEqualTo(mainAction);
-        assertThat(result.getFollowUpActions()).hasSize(1);
+        assertThat(result.getActions()).hasSize(2);
+        assertThat(result.getActions()).containsExactly(mainAction, followUpAction);
         assertThat(result.getPreconditions()).hasSize(1);
     }
 
     @Test
-    @DisplayName("Test 7: mapToDO - converts Command to CommandData")
+    @DisplayName("Test 6: mapToDO - converts Command to CommandData")
     @SuppressWarnings("unchecked")
     void mapToDO_shouldConvertCommandToCommandData() {
-        // Given: Command business object
+        // Given: Command business object with a single action
         Command command = new GenericCommand(commandDescription, mainAction);
         command.setId("drop-item-cmd");
 
@@ -263,16 +248,15 @@ class CommandMapperTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("drop-item-cmd");
         assertThat(result.getCommandDescription()).isEqualTo(commandDescriptionData);
-        assertThat(result.getAction()).isEqualTo(mainActionData);
-        // Note: mapToDO sets preconditions and followUpActions to null (TODO in production code)
+        assertThat(result.getActions()).containsExactly(mainActionData);
+        // Note: mapToDO leaves preconditions null (TODO in production code)
         assertThat(result.getPreConditions()).isNull();
-        assertThat(result.getFollowUpActions()).isNull();
 
         verify(commandDescriptionMapper).mapToDO(commandDescription);
     }
 
     @Test
-    @DisplayName("Test 8: mapToDO - preserves command ID during conversion")
+    @DisplayName("Test 7: mapToDO - preserves command ID during conversion")
     @SuppressWarnings("unchecked")
     void mapToDO_shouldPreserveCommandIdDuringConversion() {
         // Given: Multiple commands with different IDs

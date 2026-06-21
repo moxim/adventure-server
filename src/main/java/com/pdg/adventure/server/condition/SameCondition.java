@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.condition;
 
+import lombok.Getter;
 import lombok.EqualsAndHashCode;
 
 import com.pdg.adventure.api.ExecutionResult;
@@ -9,7 +10,9 @@ import com.pdg.adventure.server.support.VariableProvider;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SameCondition extends AbstractVariableCondition {
 
+    @Getter
     private final String variableNameOne;
+    @Getter
     private final String variableNameTwo;
 
     public SameCondition(String aVariableNameOne, String aVariableNameTwo, VariableProvider aVariableProvider) {

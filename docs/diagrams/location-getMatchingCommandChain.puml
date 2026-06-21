@@ -1,0 +1,158 @@
+@startuml location-getMatchingCommandChain
+title Location.getMatchingCommandChain(CommandDescription) — call trace (depth <= 7)
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 220
+
+actor Caller
+participant "loc:Location" as Loc
+participant "thing:Thing\n(super)" as Thing
+participant "itemContainer:\nGenericContainer" as ItemCnt
+participant "directions:\nGenericContainer" as DirCnt
+participant "ItemIdentifier" as II
+participant "CommandMatcher" as CM
+participant "ch:CommandHandler" as CH
+participant "gcp:GenericCommandProvider" as GCP
+participant "item:Containable" as Item
+participant "dir:GenericDirection" as Dir
+
+Caller -> Loc : getMatchingCommandChain(cmd)
+activate Loc
+
+' ---- Branch A : super (Thing) ----
+Loc -> Thing : super.getMatchingCommandChain(cmd)
+activate Thing
+Thing -> CH : commandHandler.getMatchingCommandChain(cmd)
+activate CH
+CH -> GCP : commandProvider.getMatchingCommandChain(cmd)
+activate GCP
+GCP -> GCP : getWordOrEmptyStringIfNull(verb)
+GCP -> GCP : getWordOrEmptyStringIfNull(adjective)
+GCP --> CH : List<CommandChain>
+deactivate GCP
+note right of CH
+  If no matches and examine-fallback
+  is set, build GenericCommandChain
+  wrapping ExamineFallbackAction.
+end note
+CH --> Thing : List<CommandChain>
+deactivate CH
+Thing --> Loc : List<CommandChain> (own commands)
+deactivate Thing
+
+' ---- Branch B : itemContainer ----
+Loc -> ItemCnt : itemContainer.getMatchingCommandChain(cmd)
+activate ItemCnt
+
+ItemCnt -> II : ItemIdentifier.findItems(this, cmd)
+activate II
+II -> ItemCnt : getContents()
+ItemCnt --> II : List<Containable>
+alt cmd has verb (no noun)
+  II -> II : addItemsByVerb(items, verb)
+  loop for each item
+    II -> Item : hasVerb(verb)
+    activate Item
+    Item -> CH : commandHandler.hasVerb(verb)
+    activate CH
+    CH -> GCP : commandProvider.hasVerb(verb)
+    activate GCP
+    GCP --> CH : boolean (leaf, depth 7)
+    deactivate GCP
+    CH --> Item : boolean
+    deactivate CH
+    Item --> II : boolean
+    deactivate Item
+  end
+else cmd has noun/adjective
+  II -> II : addItemsByName(items, noun, adjective)
+  loop for each item
+    II -> Item : getNoun() / getAdjective()
+    Item --> II : String
+  end
+end
+II --> ItemCnt : List<Containable> matchingItems
+deactivate II
+
+ItemCnt -> CM : CommandMatcher.getMatchingCommands(matchingItems, cmd)
+activate CM
+loop for each matchingItem
+  CM -> Item : getMatchingCommandChain(cmd)
+  activate Item
+  Item -> CH : commandHandler.getMatchingCommandChain(cmd)
+  activate CH
+  CH -> GCP : commandProvider.getMatchingCommandChain(cmd)
+  activate GCP
+  GCP --> CH : List<CommandChain>
+  deactivate GCP
+  CH --> Item : List<CommandChain>
+  deactivate CH
+  Item --> CM : List<CommandChain>
+  deactivate Item
+end
+CM --> ItemCnt : Collection<CommandChain>
+deactivate CM
+
+ItemCnt -> Thing : super.getMatchingCommandChain(cmd)
+activate Thing
+note right of Thing : (Item inherits from Thing —\nsame delegate chain as Branch A)
+Thing --> ItemCnt : List<CommandChain> (container's own)
+deactivate Thing
+
+ItemCnt --> Loc : List<CommandChain>
+deactivate ItemCnt
+
+' ---- Branch C : directions ----
+Loc -> DirCnt : directions.getMatchingCommandChain(cmd)
+activate DirCnt
+
+DirCnt -> II : ItemIdentifier.findItems(this, cmd)
+activate II
+II --> DirCnt : List<Containable> matchingDirections
+deactivate II
+
+DirCnt -> CM : CommandMatcher.getMatchingCommands(matchingDirections, cmd)
+activate CM
+loop for each direction
+  CM -> Dir : getMatchingCommandChain(cmd)
+  activate Dir
+  Dir -> CH : commandHandler.getMatchingCommandChain(cmd)
+  activate CH
+  CH -> GCP : commandProvider.getMatchingCommandChain(cmd)
+  activate GCP
+  GCP --> CH : List<CommandChain>
+  deactivate GCP
+  CH --> Dir : List<CommandChain>
+  deactivate CH
+  Dir --> CM : List<CommandChain>
+  deactivate Dir
+end
+CM --> DirCnt : Collection<CommandChain>
+deactivate CM
+
+DirCnt --> Loc : List<CommandChain>
+deactivate DirCnt
+
+Loc --> Caller : List<CommandChain> (aggregated)
+deactivate Loc
+
+legend right
+  Depth budget (root = level 1):
+    1  Location.getMatchingCommandChain
+    2  Thing / GenericContainer.getMatchingCommandChain
+    3  CommandHandler.getMatchingCommandChain
+       ItemIdentifier.findItems
+       CommandMatcher.getMatchingCommands
+    4  GenericCommandProvider.getMatchingCommandChain
+       Container.getContents
+       ItemIdentifier.addItemsByVerb / addItemsByName
+       Containable.getMatchingCommandChain (per item)
+    5  GenericCommandProvider.getWordOrEmptyStringIfNull
+       Thing.hasVerb / Containable.getNoun / getAdjective
+       CommandHandler.getMatchingCommandChain (re-entry)
+    6  CommandHandler.hasVerb
+    7  GenericCommandProvider.hasVerb  (leaf)
+end legend
+
+@enduml

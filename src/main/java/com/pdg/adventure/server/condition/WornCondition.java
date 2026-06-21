@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.condition;
 
+import lombok.Getter;
 import lombok.EqualsAndHashCode;
 
 import com.pdg.adventure.api.ExecutionResult;
@@ -8,6 +9,8 @@ import com.pdg.adventure.server.parser.CommandExecutionResult;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class WornCondition extends AbstractCondition {
+
+    @Getter
     private final Wearable thing;
 
     public WornCondition(Wearable aThing) {

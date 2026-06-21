@@ -49,7 +49,7 @@ public class AdventuresMenuView extends VerticalLayout {
 
         List<AdventureData> adventures = accessService.getAdventuresForUser(ViewSupporter.getCurrentUser());
         Div gridContainer = getGridContainer(adventures);
-        VerticalLayout rightSide = new VerticalLayout(gridContainer);
+        VerticalLayout rightSide = new VerticalLayout(ViewSupporter.doubleClickEditHint(), gridContainer);
         rightSide.setSizeFull();
 
         HorizontalLayout jumpRow = new HorizontalLayout(leftSide, rightSide);
@@ -59,7 +59,6 @@ public class AdventuresMenuView extends VerticalLayout {
 
     private Div getGridContainer(List<AdventureData> adventures) {
         Grid<AdventureData> grid = new Grid<>(AdventureData.class, false);
-        grid.addColumn(ViewSupporter::formatId).setHeader("Id").setAutoWidth(true).setFlexGrow(0);
         grid.addColumn(AdventureData::getTitle).setHeader("Title").setSortable(true).setAutoWidth(true);
         grid.addSelectionListener(selection -> {
             Optional<AdventureData> optionalAdventure = selection.getFirstSelectedItem();

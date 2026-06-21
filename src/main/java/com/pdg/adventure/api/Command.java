@@ -10,11 +10,9 @@ public interface Command extends Ided {
 
     void addPreCondition(PreCondition aCondition);
 
-    void addFollowUpAction(Action anAction);
-
-    Action getAction();
+    void addAction(Action anAction);
 
     List<PreCondition> getPreconditions();
 
-    List<Action> getFollowUpActions();
+    List<Action> getActions();
 }

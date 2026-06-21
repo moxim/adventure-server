@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.condition;
 
+import lombok.Getter;
 import lombok.EqualsAndHashCode;
 
 import com.pdg.adventure.api.ExecutionResult;
@@ -11,7 +12,9 @@ import com.pdg.adventure.server.support.VariableProvider;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class GreaterThanCondition extends AbstractVariableCondition {
 
+    @Getter
     private final String variableName;
+    @Getter
     private final Number value;
 
     public GreaterThanCondition(String aVariableName, Number aValue, VariableProvider aVariableProvider) {

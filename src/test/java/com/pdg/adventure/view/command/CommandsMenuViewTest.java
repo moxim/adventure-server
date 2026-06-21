@@ -12,6 +12,9 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.*;
+import com.pdg.adventure.model.action.MessageActionData;
+import com.pdg.adventure.model.action.QuitActionData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.command.CommandsMenuView;
@@ -108,5 +111,34 @@ class CommandsMenuViewTest {
 
         // then
         assertThat(locationData.getCommandProviderData().getAvailableCommands()).isEmpty();
+    }
+
+    @Test
+    void setData_withChainOfMultipleCommands_buildsWithoutThrowing() {
+        // given: one spec ("open||cage") mapped to a chain of two distinct CommandData (cf. the
+        // mockup's "123"/"xyz" rows). Each row is a CommandData, so the chain must not collapse.
+        view = new CommandsMenuView(adventureService);
+
+        CommandDescriptionData openCage = new CommandDescriptionData("open||cage");
+
+        CommandData first = new CommandData();
+        first.setCommandDescription(openCage);
+        MessageActionData firstMsg = new MessageActionData();
+        firstMsg.setMessageId("cage_opened");
+        first.addAction(firstMsg);
+
+        CommandData second = new CommandData();
+        second.setCommandDescription(openCage);
+        second.addAction(new QuitActionData());
+
+        CommandChainData chain = new CommandChainData();
+        chain.getCommands().add(first);
+        chain.getCommands().add(second);
+        commandProviderData.getAvailableCommands().put("open||cage", chain);
+
+        // when / then
+        org.assertj.core.api.Assertions.assertThatCode(() -> view.setData(adventureData, locationData))
+                .doesNotThrowAnyException();
+        assertThat(chain.getCommands()).hasSize(2);
     }
 }

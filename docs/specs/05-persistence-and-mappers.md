@@ -446,7 +446,7 @@ AdventureAccessService deletes AdventureAuthor + AdventurePlayer rows
 - **Cross-store atomicity.** `AdventureAccessService.createAdventure` writes
   Mongo before MySQL; on MySQL failure the document leaks. Either compensate
   on rollback or document the trade-off.
-- **Pre/post-process hooks empty.** `AdventureService.preProcess` and
+- **Pre-/post-process hooks empty.** `AdventureService.preProcess` and
   `postProcess` have their bodies commented out. They are placeholders for
   vocabulary normalisation that needs re-implementing once `CommandMapper`
   is finished.

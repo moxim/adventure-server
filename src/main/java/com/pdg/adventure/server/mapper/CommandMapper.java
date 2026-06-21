@@ -2,6 +2,7 @@ package com.pdg.adventure.server.mapper;
 
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.pdg.adventure.api.*;
@@ -29,18 +30,11 @@ public class CommandMapper implements Mapper<CommandData, Command> {
 
     public Command mapToBO(CommandData aCommandData) {
         CommandDescription description = commandDescriptionMapper.mapToBO(aCommandData.getCommandDescription());
-        final ActionData mainActionData = aCommandData.getAction();
-        Action actionBO = null;
-        Mapper<ActionData, Action> actionMapper = null;
-        if (mainActionData != null) {
-            actionMapper = mapperSupporter.getMapper(mainActionData.getClass());
-            actionBO = actionMapper.mapToBO(mainActionData);
-        }
-        Command result = new GenericCommand(description, actionBO);
+        Command result = new GenericCommand(description);
         result.setId(aCommandData.getId());
-        for (ActionData subActionData : aCommandData.getFollowUpActions()) {
-            actionMapper = mapperSupporter.getMapper(subActionData.getClass());
-            result.addFollowUpAction(actionMapper.mapToBO(subActionData));
+        for (ActionData actionData : aCommandData.getActions()) {
+            Mapper<ActionData, Action> actionMapper = mapperSupporter.getMapper(actionData.getClass());
+            result.addAction(actionMapper.mapToBO(actionData));
         }
         for (PreConditionData condition : aCommandData.getPreConditions()) {
             Mapper<PreConditionData, PreCondition> conditionMapper = mapperSupporter.getMapper(condition.getClass());
@@ -49,16 +43,18 @@ public class CommandMapper implements Mapper<CommandData, Command> {
         return result;
     }
 
-    // TODO: Implement this method
+    // TODO: round-trip preconditions/actions fully. Currently maps actions only (compile-safe analog of the old getAction mapping).
     public CommandData mapToDO(Command aCommand) {
         CommandData result = new CommandData();
         result.setId(aCommand.getId());
         result.setCommandDescription(commandDescriptionMapper.mapToDO(aCommand.getDescription()));
-        final List<PreCondition> preconditions = aCommand.getPreconditions();
         result.setPreConditions(null);
-        result.setFollowUpActions(null);
-        Mapper<ActionData, Action> actionMapper = mapperSupporter.getMapper(aCommand.getAction().getClass());
-        result.setAction(actionMapper.mapToDO(aCommand.getAction()));
+        List<ActionData> actions = new ArrayList<>();
+        for (Action action : aCommand.getActions()) {
+            Mapper<ActionData, Action> actionMapper = mapperSupporter.getMapper(action.getClass());
+            actions.add(actionMapper.mapToDO(action));
+        }
+        result.setActions(actions);
         return result;
     }
 }
