@@ -24,13 +24,13 @@ public class VocabularyData extends DatedData {
     public static final String NO_TEXT = "no";
 
     public static final String ID_TEXT = "Id";
-    public static final String VERB_TEXT = "verb";
-    public static final String ADJECTIVE_TEXT = "adjective";
-    public static final String NOUN_TEXT = "noun";
+    public static final String VERB_TEXT = "Verb";
+    public static final String ADJECTIVE_TEXT = "Adjective";
+    public static final String NOUN_TEXT = "Noun";
 
-    public static final String CONTAINABLE_TEXT = "containable";
-    public static final String WEARABLE_TEXT = "wearable";
-    public static final String WORN_TEXT = "worn";
+    public static final String CONTAINABLE_TEXT = "Containable";
+    public static final String WEARABLE_TEXT = "Wearable";
+    public static final String WORN_TEXT = "Worn";
 
     public static final String SHORT_TEXT = "Short Description";
     public static final String LONG_TEXT = "Long Description";
