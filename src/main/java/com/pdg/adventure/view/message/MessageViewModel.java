@@ -92,7 +92,7 @@ public class MessageViewModel {
         if (messageText.length() <= maxLength) {
             return messageText;
         }
-        return messageText.substring(0, maxLength) + "...";
+        return messageText.substring(0, maxLength) + "…";
     }
 
     /**

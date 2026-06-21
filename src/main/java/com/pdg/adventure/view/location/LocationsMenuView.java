@@ -147,10 +147,16 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
     private Grid<LocationDescriptionAdapter> getLocationsGrid(List<LocationData> locations) {
         GridProvider<LocationDescriptionAdapter> gridProvider = new GridProvider<>(LocationDescriptionAdapter.class);
         gridProvider.hideIdColumn();
-        gridProvider.addColumn(LocationDescriptionAdapter::getLumen, "Lumen");
-        gridProvider.addColumn(LocationDescriptionAdapter::getUsageCount, "Used");
 
         Grid<LocationDescriptionAdapter> grid = gridProvider.getGrid();
+
+        Span lumenHeader = new Span("Lumen");
+        lumenHeader.getElement().setAttribute("title", "Whether the location is lit (1 = lit, 0 = dark)");
+        grid.addColumn(LocationDescriptionAdapter::getLumen).setHeader(lumenHeader).setAutoWidth(true);
+
+        Span usedHeader = new Span("Used");
+        usedHeader.getElement().setAttribute("title", "How many exits lead to this location");
+        grid.addColumn(LocationDescriptionAdapter::getUsageCount).setHeader(usedHeader).setAutoWidth(true);
 
         List<LocationDescriptionAdapter> locationDescriptions = new ArrayList<>(locations.size());
         for (LocationData location : locations) {

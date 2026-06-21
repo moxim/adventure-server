@@ -101,7 +101,10 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         gridProvider.getGrid().getColumns().get(0).setHeader("Message ID").setFlexGrow(1);
         gridProvider.getGrid().getColumns().get(1).setHeader("Message Text").setFlexGrow(3).setSortable(true);
         gridProvider.addColumn(MessageDescriptionAdapter::getLength, "Length");
-        gridProvider.addColumn(MessageDescriptionAdapter::getUsageCount, "Used");
+
+        Span usedHeader = new Span("Used");
+        usedHeader.getElement().setAttribute("title", "How many commands reference this message");
+        gridProvider.getGrid().addColumn(MessageDescriptionAdapter::getUsageCount).setHeader(usedHeader).setAutoWidth(true);
 
         gridProvider.addItemDoubleClickListener(e ->
                 UI.getCurrent().navigate(MessageEditorView.class,
