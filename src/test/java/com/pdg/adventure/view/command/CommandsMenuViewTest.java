@@ -17,6 +17,7 @@ import com.pdg.adventure.model.action.QuitActionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.command.CommandsMenuView;
 
 /**
@@ -29,6 +30,8 @@ class CommandsMenuViewTest {
 
     @Mock
     private AdventureService adventureService;
+    @Mock
+    private ItemService itemService;
 
     private CommandsMenuView view;
     private AdventureData adventureData;
@@ -73,7 +76,7 @@ class CommandsMenuViewTest {
     @Test
     void constructor_shouldCreateViewWithAllComponents() {
         // when
-        view = new CommandsMenuView(adventureService);
+        view = new CommandsMenuView(adventureService, itemService);
 
         // then
         assertThat(view).isNotNull();
@@ -82,7 +85,7 @@ class CommandsMenuViewTest {
     @Test
     void setData_shouldPopulateGridWithCommands() {
         // given
-        view = new CommandsMenuView(adventureService);
+        view = new CommandsMenuView(adventureService, itemService);
 
         CommandChainData goNorthChain = new CommandChainData();
         CommandChainData takeSwordChain = new CommandChainData();
@@ -102,7 +105,7 @@ class CommandsMenuViewTest {
     @Test
     void setData_withEmptyCommands_shouldHandleEmptyState() {
         // given
-        view = new CommandsMenuView(adventureService);
+        view = new CommandsMenuView(adventureService, itemService);
 
         // Command provider has empty commands map (created in setUp)
 
@@ -117,7 +120,7 @@ class CommandsMenuViewTest {
     void setData_withChainOfMultipleCommands_buildsWithoutThrowing() {
         // given: one spec ("open||cage") mapped to a chain of two distinct CommandData (cf. the
         // mockup's "123"/"xyz" rows). Each row is a CommandData, so the chain must not collapse.
-        view = new CommandsMenuView(adventureService);
+        view = new CommandsMenuView(adventureService, itemService);
 
         CommandDescriptionData openCage = new CommandDescriptionData("open||cage");
 

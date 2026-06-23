@@ -30,18 +30,23 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.CommandChainData;
 import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.CommandProviderData;
+import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
+import com.pdg.adventure.view.item.ItemEditorView;
 import com.pdg.adventure.view.location.LocationEditorView;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 @Route(value = "author/adventures/:adventureId/locations/:locationId/commands", layout = AdventuresMainLayout.class)
+@RouteAlias(value = "author/adventures/:adventureId/locations/:locationId/items/:itemId/commands", layout = AdventuresMainLayout.class)
 @RolesAllowed("ROLE_AUTHOR")
 public class CommandsMenuView extends VerticalLayout
         implements HasDynamicTitle, BeforeEnterObserver {
     private final transient AdventureService adventureService;
+    private final transient ItemService itemService;
     private final Binder<CommandProviderData> binder;
     private final Div gridContainer;
     private final Button saveButton;
@@ -52,12 +57,14 @@ public class CommandsMenuView extends VerticalLayout
     private String pageTitle;
     private LocationData locationData;
     private AdventureData adventureData;
+    private ItemData itemData;
     private CommandProviderData commandProviderData;
     private GridListDataView<CommandData> gridListDataView;
     private transient PreconditionActionFormatter formatter;
 
-    public CommandsMenuView(AdventureService anAdventureService) {
+    public CommandsMenuView(AdventureService anAdventureService, ItemService anItemService) {
         adventureService = anAdventureService;
+        itemService = anItemService;
         binder = new BeanValidationBinder<>(CommandProviderData.class);
 
         setSizeFull();
@@ -65,28 +72,44 @@ public class CommandsMenuView extends VerticalLayout
         gridContainer.setSizeFull();
 
         createButton = new Button("Create", _ -> {
-            UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
-                      new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-              .ifPresent(editor -> editor.setData(adventureData, locationData));
-
-//            showCreateDialog(availableCommands);
+            if (itemData != null) {
+                UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
+                          new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                          new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                          new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())))
+                  .ifPresent(editor -> editor.setData(adventureData, locationData, itemData));
+            } else {
+                UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
+                          new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                          new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+                  .ifPresent(editor -> editor.setData(adventureData, locationData));
+            }
         });
 
         saveButton = new Button("Save");
         saveButton.addClickListener(_ -> {
-            adventureService.saveLocationData(locationData);
+            if (itemData != null) {
+                itemService.saveItem(itemData);
+            } else {
+                adventureService.saveLocationData(locationData);
+            }
             saveButton.setEnabled(false);
         });
 
-        backButton = new Button("Back", _ -> UI.getCurrent().navigate(LocationEditorView.class,
-                                                                          new RouteParameters(
-                                                                                  new RouteParam(LOCATION_ID.getValue(),
-                                                                                                 locationData.getId()),
-                                                                                  new RouteParam(
-                                                                                          ADVENTURE_ID.getValue(),
-                                                                                          adventureData.getId()))
-        ).ifPresent(e -> e.setData(adventureData)));
+        backButton = new Button("Back", _ -> {
+            if (itemData != null) {
+                UI.getCurrent().navigate(ItemEditorView.class, new RouteParameters(
+                        new RouteParam(ADVENTURE_ID.getValue(), adventureData.getId()),
+                        new RouteParam(LOCATION_ID.getValue(), locationData.getId()),
+                        new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())))
+                  .ifPresent(e -> e.setData(adventureData, locationData));
+            } else {
+                UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(
+                        new RouteParam(LOCATION_ID.getValue(), locationData.getId()),
+                        new RouteParam(ADVENTURE_ID.getValue(), adventureData.getId())))
+                  .ifPresent(e -> e.setData(adventureData));
+            }
+        });
         backButton.addClickShortcut(Key.ESCAPE);
 
         resetButton = new Button("Reset", _ -> {
@@ -136,13 +159,13 @@ public class CommandsMenuView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        String locationId = "666";
-        final Optional<String> optionalLocationId = event.getRouteParameters().get("locationId");
-        if (optionalLocationId.isPresent()) {
-            locationId = optionalLocationId.get();
+        final Optional<String> optionalItemId = event.getRouteParameters().get(RouteIds.ITEM_ID.getValue());
+        if (optionalItemId.isPresent()) {
+            pageTitle = "Commands for item #" + optionalItemId.get();
+        } else {
+            String locationId = event.getRouteParameters().get(LOCATION_ID.getValue()).orElse("666");
+            pageTitle = "Commands for location #" + locationId;
         }
-        //  must be set in here
-        pageTitle = "Commands for location #" + locationId;
     }
 
     private GridListDataView<CommandData> fillGrid(CommandProviderData aCommandProviderData) {
@@ -153,11 +176,23 @@ public class CommandsMenuView extends VerticalLayout
         return grid.setItems(rows);
     }
 
+    public void setData(AdventureData anAdventureData, LocationData aLocationData, ItemData anItemData) {
+        itemData = anItemData;
+        populate(anAdventureData, aLocationData);
+    }
+
     public void setData(AdventureData anAdventureData, LocationData aLocationData) {
+        itemData = null;
+        populate(anAdventureData, aLocationData);
+    }
+
+    private void populate(AdventureData anAdventureData, LocationData aLocationData) {
         adventureData = anAdventureData;
         locationData = aLocationData;
 
-        commandProviderData = locationData.getCommandProviderData();
+        commandProviderData = itemData != null
+                ? itemData.getCommandProviderData()
+                : locationData.getCommandProviderData();
         binder.setBean(commandProviderData);
 
         formatter = new PreconditionActionFormatter(adventureData);
@@ -169,7 +204,7 @@ public class CommandsMenuView extends VerticalLayout
         grid.addItemDoubleClickListener(e ->
                 navigateToCommandEditor(e.getItem().getCommandDescription().getCommandSpecification()));
 
-        gridListDataView = fillGrid(locationData.getCommandProviderData());
+        gridListDataView = fillGrid(commandProviderData);
 
         // Add context menu
         new CommandContextMenu(grid);
@@ -181,11 +216,20 @@ public class CommandsMenuView extends VerticalLayout
     }
 
     private void navigateToCommandEditor(String aCommandId) {
-        UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
-                  new RouteParam(RouteIds.COMMAND_ID.getValue(), aCommandId),
-                  new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-          .ifPresent(editor -> editor.setData(adventureData, locationData));
+        if (itemData != null) {
+            UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
+                      new RouteParam(RouteIds.COMMAND_ID.getValue(), aCommandId),
+                      new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                      new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())))
+              .ifPresent(editor -> editor.setData(adventureData, locationData, itemData));
+        } else {
+            UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
+                      new RouteParam(RouteIds.COMMAND_ID.getValue(), aCommandId),
+                      new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+              .ifPresent(editor -> editor.setData(adventureData, locationData));
+        }
     }
 
     private class CommandContextMenu extends GridContextMenu<CommandData> {
@@ -208,7 +252,11 @@ public class CommandsMenuView extends VerticalLayout
                     }
                 }
                 gridListDataView.removeItem(command);
-                adventureService.saveLocationData(locationData);
+                if (itemData != null) {
+                    itemService.saveItem(itemData);
+                } else {
+                    adventureService.saveLocationData(locationData);
+                }
                 gridListDataView.refreshAll();
             }));
         }

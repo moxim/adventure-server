@@ -19,6 +19,7 @@ import com.pdg.adventure.model.condition.WornConditionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.storage.service.ItemService;
 
 /**
  * Unit tests for CommandEditorView business logic.
@@ -30,6 +31,8 @@ class CommandEditorViewTest {
 
     @Mock
     private AdventureService adventureService;
+    @Mock
+    private ItemService itemService;
 
     private CommandEditorView view;
     private AdventureData adventureData;
@@ -82,7 +85,7 @@ class CommandEditorViewTest {
     @Test
     void constructor_shouldCreateViewWithAllComponents() {
         // when
-        view = new CommandEditorView(adventureService);
+        view = new CommandEditorView(adventureService, itemService);
 
         // then
         assertThat(view).isNotNull();
@@ -91,7 +94,7 @@ class CommandEditorViewTest {
     @Test
     void setData_shouldPopulateAdventureAndLocationData() {
         // given
-        view = new CommandEditorView(adventureService);
+        view = new CommandEditorView(adventureService, itemService);
 
         // when
         view.setData(adventureData, locationData);
@@ -105,7 +108,7 @@ class CommandEditorViewTest {
     @Test
     void getPageTitle_shouldReturnNullBeforeRouteEnter() {
         // given
-        view = new CommandEditorView(adventureService);
+        view = new CommandEditorView(adventureService, itemService);
 
         // when
         String title = view.getPageTitle();
@@ -139,7 +142,7 @@ class CommandEditorViewTest {
 
         String spec = commandDescription.getCommandSpecification();
 
-        view = new CommandEditorView(adventureService);
+        view = new CommandEditorView(adventureService, itemService);
         view.setUpLoading(spec);
 
         assertThatCode(() -> view.setData(adventureData, locationData))
@@ -170,7 +173,7 @@ class CommandEditorViewTest {
         command.getPreConditions().add(worn);
         commandProviderData.add(command);
 
-        view = new CommandEditorView(adventureService);
+        view = new CommandEditorView(adventureService, itemService);
         view.setUpLoading(description.getCommandSpecification());
         view.setData(adventureData, locationData);
 
