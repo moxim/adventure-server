@@ -26,6 +26,7 @@ import static com.pdg.adventure.model.Word.Type.*;
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPicker;
@@ -35,6 +36,8 @@ import com.pdg.adventure.view.support.RouteIds;
 
 @Route(value = "author/adventures/:adventureId/locations/:locationId/commands/:commandId/edit", layout = LocationsMainLayout.class)
 @RouteAlias(value = "author/adventures/:adventureId/locations/:locationId/commands/new", layout = LocationsMainLayout.class)
+@RouteAlias(value = "author/adventures/:adventureId/locations/:locationId/items/:itemId/commands/:commandId/edit", layout = LocationsMainLayout.class)
+@RouteAlias(value = "author/adventures/:adventureId/locations/:locationId/items/:itemId/commands/new", layout = LocationsMainLayout.class)
 @RolesAllowed("ROLE_AUTHOR")
 public class CommandEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
@@ -42,6 +45,7 @@ public class CommandEditorView extends VerticalLayout
     private static final Logger LOG = LoggerFactory.getLogger(CommandEditorView.class);
 
     private final transient AdventureService adventureService;
+    private final transient ItemService itemService;
     private final Binder<CommandViewModel> binder;
     private final VocabularyPicker nounSelector;
     private final VocabularyPicker adjectiveSelector;
@@ -54,6 +58,7 @@ public class CommandEditorView extends VerticalLayout
     private Button resetButton;
     private LocationData locationData;
     private AdventureData adventureData;
+    private ItemData itemData;
     private CommandProviderData commandProviderData;
     private transient CommandViewModel cvm;
     private transient CommandData commandData;
@@ -63,8 +68,9 @@ public class CommandEditorView extends VerticalLayout
     private transient CommandChainData currentCommandChain; // The command chain being edited
     private int selectedCommandIndex = 0; // Which command in the chain we're currently editing
 
-    public CommandEditorView(AdventureService anAdventureService) {
+    public CommandEditorView(AdventureService anAdventureService, ItemService anItemService) {
         adventureService = anAdventureService;
+        itemService = anItemService;
         binder = new Binder<>(CommandViewModel.class);
 
         verbSelector = new VocabularyPickerField("Verb", "You may filter on verbs.");
@@ -184,10 +190,18 @@ public class CommandEditorView extends VerticalLayout
     }
 
     private void navigateBack() {
-        UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
-                  new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-          .ifPresent(e -> e.setData(adventureData, locationData));
+        if (itemData != null) {
+            UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
+                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                      new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                      new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())))
+              .ifPresent(e -> e.setData(adventureData, locationData, itemData));
+        } else {
+            UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
+                      new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
+              .ifPresent(e -> e.setData(adventureData, locationData));
+        }
     }
 
     /**
@@ -214,7 +228,11 @@ public class CommandEditorView extends VerticalLayout
             if (binder.validate().isOk()) {
                 binder.writeBean(cvm);
                 commandData = swivelTheSaveButton();
-                adventureService.saveLocationData(locationData);
+                if (itemData != null) {
+                    itemService.saveItem(itemData);
+                } else {
+                    adventureService.saveLocationData(locationData);
+                }
 
                 // Update commandId to the new specification (in case it changed)
                 commandId = cvm.getData().getCommandSpecification();
@@ -331,12 +349,24 @@ public class CommandEditorView extends VerticalLayout
         AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges() || editorHasChanges);
     }
 
+    public void setData(AdventureData anAdventureData, LocationData aLocationData, ItemData anItemData) {
+        itemData = anItemData;
+        populate(anAdventureData, aLocationData);
+    }
+
     public void setData(AdventureData anAdventureData, LocationData aLocationData) {
+        itemData = null;
+        populate(anAdventureData, aLocationData);
+    }
+
+    private void populate(AdventureData anAdventureData, LocationData aLocationData) {
         adventureData = anAdventureData;
         locationData = aLocationData;
         chainFormatter = new PreconditionActionFormatter(adventureData);
 
-        commandProviderData = locationData.getCommandProviderData();
+        commandProviderData = itemData != null
+                ? itemData.getCommandProviderData()
+                : locationData.getCommandProviderData();
 
         // Build the precondition/action editor now that adventureData is available (its
         // action/condition leaf editors dereference adventureData when a command is loaded).

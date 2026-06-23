@@ -35,6 +35,7 @@ import com.pdg.adventure.model.condition.NotConditionData;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
+import com.pdg.adventure.view.command.CommandsMenuView;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.support.RouteIds;
@@ -57,6 +58,7 @@ public class ItemEditorView extends VerticalLayout
 
     private Button saveButton;
     private Button resetButton;
+    private Button commandsButton;
     private String pageTitle;
 
     private transient String itemId;
@@ -95,6 +97,15 @@ public class ItemEditorView extends VerticalLayout
         Checkbox isWornCheckbox = new Checkbox("Is worn");
         isWornCheckbox.setTooltipText("If checked, this item starts out being worn.");
 
+        commandsButton = new Button("Commands", _ ->
+                UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
+                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                        new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                        new RouteParam(RouteIds.ITEM_ID.getValue(), itemId)))
+                  .ifPresent(view -> view.setData(adventureData, locationData, itemData))
+        );
+        commandsButton.setEnabled(false);
+
         final ResetBackSaveView resetBackSaveView = setUpNavigationButtons();
 
         // Bind fields
@@ -120,8 +131,10 @@ public class ItemEditorView extends VerticalLayout
         });
 
         HorizontalLayout h1 = new HorizontalLayout(adjectiveSelector, nounSelector);
-        HorizontalLayout checkboxRow = new HorizontalLayout(isContainableCheckbox, isWearableCheckbox, isWornCheckbox);
+        HorizontalLayout checkboxRow = new HorizontalLayout(isContainableCheckbox, isWearableCheckbox, isWornCheckbox,
+                                                            commandsButton);
         checkboxRow.setSpacing(true);
+        checkboxRow.setAlignItems(Alignment.CENTER);
 
         setMargin(true);
         setPadding(true);
@@ -405,14 +418,14 @@ public class ItemEditorView extends VerticalLayout
         adventureData = anAdventureData;
         locationData = aLocationData;
 
-        // Load item from in-memory container or create new
-        if (itemId != null && !itemId.isEmpty()) {
-            itemData = locationData.getItemContainerData().getItems().stream()
-                                   .filter(item -> item.getId().equals(itemId)).findFirst()
-                                   .orElseGet(ItemData::new);
-        } else {
-            itemData = new ItemData();
-        }
+        // Load item from in-memory container or create new. A new ItemData already carries a
+        // (ULID) id, so "is this an existing item?" must be answered by container membership,
+        // not by whether the id is non-empty.
+        Optional<ItemData> existingItem = (itemId != null && !itemId.isEmpty())
+                ? locationData.getItemContainerData().getItems().stream()
+                              .filter(item -> item.getId().equals(itemId)).findFirst()
+                : Optional.empty();
+        itemData = existingItem.orElseGet(ItemData::new);
         itemId = itemData.getId();
         itemData.setAdventureId(adventureData.getId());
         itemData.setLocationId(locationData.getId());
@@ -422,6 +435,9 @@ public class ItemEditorView extends VerticalLayout
         nounSelector.populate(vocabularyData.getWords(NOUN));
 
         saveButton.setEnabled(false);
+        // Commands live on the persisted item; only offer them for an item already in the container.
+        // Saving commands for an unsaved item would create a dangling document.
+        commandsButton.setEnabled(existingItem.isPresent());
         ivm = new ItemViewModel(itemData);
 
         binder.readBean(ivm);
