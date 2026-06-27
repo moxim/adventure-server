@@ -86,4 +86,18 @@ class ViewSupporterTest {
         List<ItemContainerData> result = ViewSupporter.collectAllContainers(adventureData);
         assertThat(result).contains(container);
     }
+
+    @Test
+    void collectAllLocations_shouldReturnAllLocations() {
+        List<LocationData> result = ViewSupporter.collectAllLocations(adventureData);
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo("loc-1");
+    }
+
+    @Test
+    void collectAllLocations_withNoLocations_shouldReturnEmpty() {
+        adventureData.setLocationData(new HashMap<>());
+        List<LocationData> result = ViewSupporter.collectAllLocations(adventureData);
+        assertThat(result).isEmpty();
+    }
 }

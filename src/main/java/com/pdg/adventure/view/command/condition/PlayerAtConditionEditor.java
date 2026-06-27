@@ -22,7 +22,7 @@ public class PlayerAtConditionEditor extends ConditionEditorComponent {
 
     @Override
     protected void buildUI() {
-        List<LocationData> locations = ConditionEditorSupport.allLocations(adventureData);
+        List<LocationData> locations = ViewSupporter.collectAllLocations(adventureData);
         locationSelector = new ComboBox<>("Location");
         locationSelector.setItems(locations);
         locationSelector.setItemLabelGenerator(ViewSupporter::formatDescription);
