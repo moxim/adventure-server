@@ -107,6 +107,10 @@ public class ViewSupporter {
         return allContainers;
     }
 
+    public static List<LocationData> collectAllLocations(AdventureData adventureData) {
+        return new ArrayList<>(adventureData.getLocationData().values());
+    }
+
     /**
      * A small, muted hint telling authors that grid rows are opened for editing by double-clicking.
      * Placed near each menu grid so the (otherwise hidden) double-click gesture is discoverable.

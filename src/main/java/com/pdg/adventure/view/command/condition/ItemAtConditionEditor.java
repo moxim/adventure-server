@@ -24,7 +24,7 @@ public class ItemAtConditionEditor extends ConditionEditorComponent {
 
     @Override
     protected void buildUI() {
-        List<ItemData> items = ConditionEditorSupport.allItems(adventureData);
+        List<ItemData> items = ViewSupporter.collectAllItems(adventureData);
         itemSelector = new ComboBox<>("Item");
         itemSelector.setItems(items);
         itemSelector.setItemLabelGenerator(ViewSupporter::formatDescription);
@@ -32,7 +32,7 @@ public class ItemAtConditionEditor extends ConditionEditorComponent {
         itemSelector.setWidthFull();
         itemSelector.setRequired(true);
 
-        List<LocationData> locations = ConditionEditorSupport.allLocations(adventureData);
+        List<LocationData> locations = ViewSupporter.collectAllLocations(adventureData);
         locationSelector = new ComboBox<>("Location");
         locationSelector.setItems(locations);
         locationSelector.setItemLabelGenerator(ViewSupporter::formatDescription);
