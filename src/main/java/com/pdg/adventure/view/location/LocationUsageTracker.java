@@ -26,6 +26,16 @@ public class LocationUsageTracker {
         private final String context;
         private final String commandSpecification;
 
+        private LocationUsage() {
+            // this c'tor can never be called, so it can never be instantiated, so we can assign any crap to
+            // those attributes and keep the compiler happy
+            this.usageType = "";
+            this.sourceLocationId = "";
+            this.sourceLocationDescription = "";
+            this.context = "";
+            this.commandSpecification = "";
+        }
+
         public LocationUsage(String usageType, String sourceLocationId, String sourceLocationDescription,
                              String context, String commandSpecification) {
             this.usageType = usageType;
