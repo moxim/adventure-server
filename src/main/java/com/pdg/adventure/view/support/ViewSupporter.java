@@ -80,14 +80,15 @@ public class ViewSupporter {
             if (location.getItemContainerData() != null) {
                 List<ItemData> items = location.getItemContainerData().getItems();
                 if (items != null) {
-                    allItems.addAll(items);
+                    // Filter out null elements (can occur if @DBRef fails to resolve)
+                    items.stream().filter(item -> item != null).forEach(allItems::add);
                 }
             }
         }
         if (adventureData.getPlayerPocket() != null) {
             List<ItemData> pocketItems = adventureData.getPlayerPocket().getItems();
             if (pocketItems != null) {
-                allItems.addAll(pocketItems);
+                pocketItems.stream().filter(item -> item != null).forEach(allItems::add);
             }
         }
         return allItems;
