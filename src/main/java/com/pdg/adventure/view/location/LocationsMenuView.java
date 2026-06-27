@@ -12,6 +12,7 @@ import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -304,10 +305,12 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         int usageCount = LocationUsageTracker.countLocationUsages(adventureData, locationId);
 
         if (usageCount > 0) {
-            Notification.show("Cannot delete location '" + locationId +
-                              "' because it is still referenced " + usageCount +
-                              " time(s). Please remove those references first.",
-                              5000, Notification.Position.MIDDLE);
+            Notification notification = Notification.show(
+                    "Cannot delete location '" + locationId +
+                    "' because it is still referenced " + usageCount +
+                    " time(s). Please remove those references first.",
+                    5000, Notification.Position.MIDDLE);
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         } else {
             final var dialog = getConfirmDialog(aLlocation);
             dialog.addConfirmListener(_ -> {

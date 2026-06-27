@@ -5,6 +5,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -236,14 +237,17 @@ public class ItemEditorView extends VerticalLayout
         Word takeVerb = aVocabularyData.getTakeWord();
         Word dropVerb = aVocabularyData.getDropWord();
         if (dropVerb == null || takeVerb == null) {
-            Notification.show("Please select verbs to allow a player to handle this item in the vocabulary section.",
-                              3000, Notification.Position.MIDDLE);
+            Notification notification = Notification.show(
+                    "Please select verbs to allow a player to handle this item in the vocabulary section.",
+                    5000, Notification.Position.MIDDLE);
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
             return false;
         } else {
             LOG.info("Selected verbs: {} and {} for item: {}", takeVerb.getText(), dropVerb.getText(),
                      anItemData.getId());
             createPickupCommands(takeVerb, dropVerb, anItemData);
-            Notification.show("Take and drop commands added", 2000, Notification.Position.BOTTOM_START);
+            Notification notification = Notification.show("Take and drop commands added", 2000, Notification.Position.BOTTOM_START);
+            notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         }
         return true;
     }
@@ -284,7 +288,8 @@ public class ItemEditorView extends VerticalLayout
 
         LOG.info("Removed take/drop commands from item: {}", anItemData.getId());
         if (aRequestForNotification.equals(ShowNotification.SHOW_NOTIFICATION)) {
-            Notification.show("Take and drop commands removed", 2000, Notification.Position.BOTTOM_START);
+            Notification notification = Notification.show("Take and drop commands removed", 2000, Notification.Position.BOTTOM_START);
+            notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         }
     }
 

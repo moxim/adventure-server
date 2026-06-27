@@ -464,7 +464,7 @@ public class WordEditorDialogue {
      * Shows a success notification to the user.
      */
     private void showSuccessNotification(String message) {
-        Notification notification = Notification.show(message, 3000, Notification.Position.BOTTOM_START);
+        Notification notification = Notification.show(message, 2000, Notification.Position.BOTTOM_START);
         notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
     }
 
@@ -472,7 +472,7 @@ public class WordEditorDialogue {
      * Shows an error notification to the user.
      */
     private void showErrorNotification(String message) {
-        Notification notification = Notification.show(message, 5000, Notification.Position.BOTTOM_START);
+        Notification notification = Notification.show(message, 5000, Notification.Position.MIDDLE);
         notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
     }
 

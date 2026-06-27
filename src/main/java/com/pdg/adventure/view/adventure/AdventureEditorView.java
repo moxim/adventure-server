@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -224,8 +225,10 @@ public class AdventureEditorView extends VerticalLayout
         Optional<AdventureData> loadedAdventure =
                 accessService.findAdventureById(aAdventureId, ViewSupporter.getCurrentUser());
         if (loadedAdventure.isEmpty()) {
-            Notification.show("Adventure not found or access denied: %s".formatted(aAdventureId),
-                              5000, Notification.Position.MIDDLE);
+            Notification notification = Notification.show(
+                    "Adventure not found or access denied: %s".formatted(aAdventureId),
+                    5000, Notification.Position.MIDDLE);
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
             return false;
         }
         adventureData = loadedAdventure.get();
