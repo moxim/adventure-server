@@ -9,6 +9,8 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -20,6 +22,8 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
+
+import java.util.List;
 
 import java.util.*;
 
@@ -317,6 +321,7 @@ public class WordEditorDialogue {
 
         Word editedWord = wordToEdit.get();
         Word desiredSynonym = synonyms.getValue();
+        Word newRoot = null;
 
         if (desiredSynonym == null) {
             // No synonym, use type
@@ -331,18 +336,103 @@ public class WordEditorDialogue {
                 return;
             }
 
-            // Set synonym (and get root if needed)
+            // Set synonym (always point to root, never to an intermediate)
             Word rootSynonym = desiredSynonym.getSynonym();
-            editedWord.setSynonym(Objects.requireNonNullElse(rootSynonym, desiredSynonym));
+            newRoot = Objects.requireNonNullElse(rootSynonym, desiredSynonym);
+            editedWord.setSynonym(newRoot);
             editedWord.setType(desiredSynonym.getType());
         }
 
         editedWord.setText(newWordText);
         vocabularyData.addWord(editedWord);
 
+        // When editedWord is now a synonym, other words pointing to it become stale (two-level chain).
+        // Offer to repoint them directly to the new root.
+        if (newRoot != null) {
+            List<Word> affectedWords = vocabularyData.findWordsBySynonym(editedWord);
+            if (!affectedWords.isEmpty()) {
+                showSynonymCascadeDialog(dialog, editedWord, newRoot, affectedWords);
+                return;
+            }
+        }
+
         dialog.close();
         notifyListeners(true);
         showSuccessNotification("Word updated successfully");
+    }
+
+    private void showSynonymCascadeDialog(Dialog parentDialog, Word editedWord, Word newRoot,
+                                           List<Word> affectedWords) {
+        Dialog cascadeDialog = new Dialog();
+        cascadeDialog.setModality(ModalityMode.VISUAL);
+        cascadeDialog.setDraggable(true);
+        cascadeDialog.setCloseOnEsc(false);
+        cascadeDialog.setCloseOnOutsideClick(false);
+        cascadeDialog.setMinWidth("40%");
+
+        H2 header = new H2("Update Synonym References");
+        header.addClassName("draggable");
+        header.getStyle().set("margin", "0").set("font-size", "1.5em")
+              .set("font-weight", "bold").set("cursor", "move")
+              .set("padding", "var(--lumo-space-m) 0").set("flex", "1");
+        cascadeDialog.getHeader().add(header);
+
+        VerticalLayout content = new VerticalLayout();
+        content.setPadding(false);
+        content.setSpacing(true);
+
+        content.add(new Paragraph(affectedWords.size() + " word(s) used '"
+                + editedWord.getText() + "' as their synonym. Since '"
+                + editedWord.getText() + "' is now a synonym of '"
+                + newRoot.getText() + "', they should point directly to '"
+                + newRoot.getText() + "':"));
+
+        VerticalLayout wordList = new VerticalLayout();
+        wordList.getStyle().set("margin-left", "var(--lumo-space-m)");
+        wordList.setPadding(false);
+        wordList.setSpacing(false);
+        for (Word w : affectedWords) {
+            wordList.add(new Span("• " + w.getText() + " (" + w.getType() + ")"));
+        }
+        content.add(wordList);
+
+        Span warning = new Span("⚠ Warning: Synonyms inherit the type of their root word."
+                + " Updating will assign these words the type of '"
+                + newRoot.getText() + "' (" + newRoot.getType() + ").");
+        warning.getStyle()
+               .set("color", "var(--lumo-warning-text-color)")
+               .set("font-weight", "bold")
+               .set("display", "block");
+        content.add(warning);
+
+        content.add(new Paragraph("Update these words to point directly to '"
+                + newRoot.getText() + "'?"));
+
+        cascadeDialog.add(content);
+
+        Button updateButton = new Button("Update All", _ -> {
+            for (Word w : affectedWords) {
+                w.setSynonym(newRoot);
+                w.setType(newRoot.getType());
+            }
+            cascadeDialog.close();
+            parentDialog.close();
+            notifyListeners(true);
+            showSuccessNotification("Word and " + affectedWords.size()
+                    + " synonym reference(s) updated successfully");
+        });
+        updateButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        Button skipButton = new Button("Skip", _ -> {
+            cascadeDialog.close();
+            parentDialog.close();
+            notifyListeners(true);
+            showSuccessNotification("Word updated successfully");
+        });
+
+        cascadeDialog.getFooter().add(new HorizontalLayout(skipButton, updateButton));
+
+        cascadeDialog.open();
     }
 
     /**

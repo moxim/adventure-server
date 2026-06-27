@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -154,6 +155,12 @@ public class VocabularyData extends DatedData {
         String lowerText = aWordText.toLowerCase();
         Word word = words.get(lowerText);
         return Optional.ofNullable(word);
+    }
+
+    public List<Word> findWordsBySynonym(Word aTarget) {
+        return words.values().stream()
+                    .filter(w -> !w.equals(aTarget) && aTarget.equals(w.getSynonym()))
+                    .toList();
     }
 
     public void setWords(Collection<Word> aBagOfWords) {
