@@ -13,10 +13,6 @@ import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.action.CreateActionData;
 import com.pdg.adventure.view.support.ViewSupporter;
 
-/**
- * Editor component for CreateActionData.
- * Allows selecting an item to create and a location that will contain it.
- */
 public class CreateActionEditor extends ActionEditorComponent {
     private final AdventureData adventureData;
     private final CreateActionData createActionData;
@@ -27,7 +23,6 @@ public class CreateActionEditor extends ActionEditorComponent {
         super(actionData);
         this.createActionData = actionData;
         this.adventureData = adventureData;
-        // UI will be built when initialize() is called
     }
 
     @Override
@@ -36,8 +31,7 @@ public class CreateActionEditor extends ActionEditorComponent {
         Span description = new Span("Create an item at a specific location");
         description.getStyle().set("color", "var(--lumo-secondary-text-color)");
 
-        // Collect all items from all locations and player pocket
-        List<ItemData> allItems = collectAllItems();
+        List<ItemData> allItems = ViewSupporter.collectAllItems(adventureData);
 
         itemSelector = new ComboBox<>("Item to Create");
         itemSelector.setItems(allItems);
@@ -46,15 +40,13 @@ public class CreateActionEditor extends ActionEditorComponent {
         itemSelector.setWidthFull();
         itemSelector.setRequired(true);
 
-        // Pre-select if action already has an item
         if (createActionData.getThingId() != null) {
-            ItemData item = findItemById(allItems, createActionData.getThingId());
-            if (item != null) {
-                itemSelector.setValue(item);
-            }
+            allItems.stream()
+                    .filter(item -> item.getId().equals(createActionData.getThingId()))
+                    .findFirst()
+                    .ifPresent(itemSelector::setValue);
         }
 
-        // Update action data when item changes
         itemSelector.addValueChangeListener(e -> {
             if (e.getValue() != null) {
                 createActionData.setThingId(e.getValue().getId());
@@ -63,7 +55,6 @@ public class CreateActionEditor extends ActionEditorComponent {
             }
         });
 
-        // Collect all locations
         List<LocationData> allLocations = new ArrayList<>(adventureData.getLocationData().values());
 
         containerSelector = new ComboBox<>("Container / Location");
@@ -73,15 +64,13 @@ public class CreateActionEditor extends ActionEditorComponent {
         containerSelector.setWidthFull();
         containerSelector.setRequired(true);
 
-        // Pre-select if action already has a container provider
         if (createActionData.getContainerProviderId() != null) {
-            LocationData location = findLocationById(allLocations, createActionData.getContainerProviderId());
-            if (location != null) {
-                containerSelector.setValue(location);
-            }
+            allLocations.stream()
+                        .filter(loc -> loc.getId().equals(createActionData.getContainerProviderId()))
+                        .findFirst()
+                        .ifPresent(containerSelector::setValue);
         }
 
-        // Update action data when location changes
         containerSelector.addValueChangeListener(e -> {
             if (e.getValue() != null) {
                 createActionData.setContainerProviderId(e.getValue().getId());
@@ -122,52 +111,5 @@ public class CreateActionEditor extends ActionEditorComponent {
         String container = (containerSelector != null && containerSelector.getValue() != null)
                 ? ViewSupporter.formatDescription(containerSelector.getValue()) : "?";
         return item + " @ " + container;
-    }
-
-    /**
-     * Collects all items from all locations in the adventure and from player's pocket.
-     */
-    private List<ItemData> collectAllItems() {
-        List<ItemData> allItems = new ArrayList<>();
-
-        // Collect items from all locations
-        for (LocationData location : adventureData.getLocationData().values()) {
-            if (location.getItemContainerData() != null) {
-                List<ItemData> items = location.getItemContainerData().getItems();
-                if (items != null) {
-                    allItems.addAll(items);
-                }
-            }
-        }
-
-        // Collect items from player's pocket
-        if (adventureData.getPlayerPocket() != null) {
-            List<ItemData> pocketItems = adventureData.getPlayerPocket().getItems();
-            if (pocketItems != null) {
-                allItems.addAll(pocketItems);
-            }
-        }
-
-        return allItems;
-    }
-
-    /**
-     * Finds an item by its ID from a list of items.
-     */
-    private ItemData findItemById(List<ItemData> items, String itemId) {
-        return items.stream()
-                    .filter(item -> item.getId().equals(itemId))
-                    .findFirst()
-                    .orElse(null);
-    }
-
-    /**
-     * Finds a location by its ID from a list of locations.
-     */
-    private LocationData findLocationById(List<LocationData> locations, String locationId) {
-        return locations.stream()
-                        .filter(location -> location.getId().equals(locationId))
-                        .findFirst()
-                        .orElse(null);
     }
 }

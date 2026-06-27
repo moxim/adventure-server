@@ -74,6 +74,39 @@ public class ViewSupporter {
         return itemPairs;
     }
 
+    public static List<ItemData> collectAllItems(AdventureData adventureData) {
+        List<ItemData> allItems = new ArrayList<>();
+        for (LocationData location : adventureData.getLocationData().values()) {
+            if (location.getItemContainerData() != null) {
+                List<ItemData> items = location.getItemContainerData().getItems();
+                if (items != null) {
+                    // Filter out null elements (can occur if @DBRef fails to resolve)
+                    items.stream().filter(item -> item != null).forEach(allItems::add);
+                }
+            }
+        }
+        if (adventureData.getPlayerPocket() != null) {
+            List<ItemData> pocketItems = adventureData.getPlayerPocket().getItems();
+            if (pocketItems != null) {
+                pocketItems.stream().filter(item -> item != null).forEach(allItems::add);
+            }
+        }
+        return allItems;
+    }
+
+    public static List<ItemContainerData> collectAllContainers(AdventureData adventureData) {
+        List<ItemContainerData> allContainers = new ArrayList<>();
+        if (adventureData.getPlayerPocket() != null) {
+            allContainers.add(adventureData.getPlayerPocket());
+        }
+        for (LocationData location : adventureData.getLocationData().values()) {
+            if (location.getItemContainerData() != null) {
+                allContainers.add(location.getItemContainerData());
+            }
+        }
+        return allContainers;
+    }
+
     /**
      * A small, muted hint telling authors that grid rows are opened for editing by double-clicking.
      * Placed near each menu grid so the (otherwise hidden) double-click gesture is discoverable.
