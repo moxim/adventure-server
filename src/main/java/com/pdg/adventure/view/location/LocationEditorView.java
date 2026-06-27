@@ -163,7 +163,6 @@ public class LocationEditorView extends VerticalLayout
         field.setMaxHeight("350px");
         field.setTooltipText("If left empty, this will be derived from the short description.");
         field.setValueChangeMode(ValueChangeMode.EAGER);
-//        binder.bind(field, LocationViewModel::getLongDescription, LocationViewModel::setLongDescription);
         return field;
     }
 
@@ -209,13 +208,13 @@ public class LocationEditorView extends VerticalLayout
         try {
             if (binder.validate().isOk()) {
                 binder.writeBean(aLocationViewModel);
-                final LocationData locationData = aLocationViewModel.getData();
-                final DescriptionData locationDescriptionData = locationData.getDescriptionData();
-                final DescriptionData containerDescriptionData = locationData.getItemContainerData()
+                final LocationData data = aLocationViewModel.getData();
+                final DescriptionData locationDescriptionData = data.getDescriptionData();
+                final DescriptionData containerDescriptionData = data.getItemContainerData()
                                                                              .getDescriptionData();
                 containerDescriptionData.setAdjective(locationDescriptionData.getAdjective());
                 containerDescriptionData.setNoun(locationDescriptionData.getNoun());
-                adventureData.getLocationData().put(aLocationViewModel.getId(), locationData);
+                adventureData.getLocationData().put(aLocationViewModel.getId(), data);
                 adventureService.saveAdventureData(adventureData);
                 saveButton.setEnabled(false);
             }

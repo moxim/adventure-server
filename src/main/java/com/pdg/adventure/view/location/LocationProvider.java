@@ -7,6 +7,10 @@ public class LocationProvider {
 
     private static AdventureService adventureService;
 
+    private LocationProvider() {
+        // do not instantiate
+    }
+
     public static LocationData getLocation(AdventureService anAdventureService, String aLocationId) {
         adventureService = anAdventureService;
         LocationData locationData;
@@ -19,12 +23,10 @@ public class LocationProvider {
     }
 
     private static LocationData setUpNewEdit() {
-        LocationData locationData = new LocationData();
-        return locationData;
+        return new LocationData();
     }
 
     private static LocationData setUpLoading(String aLocationId) {
-        LocationData locationData = adventureService.findLocationById(aLocationId);
-        return locationData;
+        return adventureService.findLocationById(aLocationId);
     }
 }

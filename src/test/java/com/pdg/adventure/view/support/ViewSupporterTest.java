@@ -72,13 +72,13 @@ class ViewSupporterTest {
     void collectAllItems_withNullItemList_shouldNotThrow() {
         container.setItems(null);
         List<ItemData> result = ViewSupporter.collectAllItems(adventureData);
-        assertThat(result).doesNotContain(locationItem);
+        assertThat(result).containsExactly(pocketItem);
     }
 
     @Test
     void collectAllContainers_shouldReturnPocketFirst() {
         List<ItemContainerData> result = ViewSupporter.collectAllContainers(adventureData);
-        assertThat(result.get(0)).isSameAs(playerPocket);
+        assertThat(result.getFirst()).isSameAs(playerPocket);
     }
 
     @Test
@@ -91,7 +91,7 @@ class ViewSupporterTest {
     void collectAllLocations_shouldReturnAllLocations() {
         List<LocationData> result = ViewSupporter.collectAllLocations(adventureData);
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getId()).isEqualTo("loc-1");
+        assertThat(result.getFirst().getId()).isEqualTo("loc-1");
     }
 
     @Test

@@ -79,14 +79,12 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         numberOfLocations = new Span();
 
         edit = new Button("Edit Location", _ -> {
-            if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(LocationEditorView.class,
                                          new RouteParameters(
                                                  new RouteParam(RouteIds.LOCATION_ID.getValue(), targetLocationId),
                                                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                                 adventureData.getId())))
                   .ifPresent(editor -> editor.setData(adventureData));
-            }
         });
         edit.setEnabled(false);
 
@@ -249,13 +247,10 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
     }
 
     private void navigateToLocationEditor(String aLocationId) {
-        // TODO: do I need to check if the bean is valid?
-//        if (binder.writeBeanIfValid(adventureData)) {
         UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(new RouteParam(LOCATION_ID, aLocationId),
                                                                                new RouteParam(ADVENTURE_ID,
                                                                                               adventureData.getId())))
           .ifPresent(e -> e.setData(adventureData));
-//        }
     }
 
     private class LocationDataContextMenu extends GridContextMenu<LocationDescriptionAdapter> {

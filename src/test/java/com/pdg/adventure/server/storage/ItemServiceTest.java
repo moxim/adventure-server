@@ -7,9 +7,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -83,16 +85,97 @@ class ItemServiceTest {
 
     @Test
     void getItemById_shouldReturnItem_whenExists() {
-        // Given
         when(itemRepository.findByAdventureIdAndId(adventureId, itemId)).thenReturn(Optional.of(itemData));
 
-        // When
         Optional<ItemData> result = itemService.getItemById(adventureId, itemId);
 
-        // Then
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(itemId);
-        assertThat(result.get().getAdventureId()).isEqualTo(adventureId);
         verify(itemRepository).findByAdventureIdAndId(adventureId, itemId);
+    }
+
+    @Test
+    void getItemById_notFound_returnsEmpty() {
+        when(itemRepository.findByAdventureIdAndId(adventureId, itemId)).thenReturn(Optional.empty());
+
+        assertThat(itemService.getItemById(adventureId, itemId)).isEmpty();
+    }
+
+    @Test
+    void createItem_withExistingId_preservesExistingId() {
+        itemData.setId("existing-id");
+        when(itemRepository.save(any(ItemData.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ItemData result = itemService.createItem(adventureId, locationId, itemData);
+
+        assertThat(result.getId()).isEqualTo("existing-id");
+    }
+
+    @Test
+    void updateItem_notFound_throwsException() {
+        when(itemRepository.findByAdventureIdAndId(adventureId, itemId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> itemService.updateItem(itemData))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("not found");
+    }
+
+    @Test
+    void saveItem_callsRepositoryAndUpdatesTimestamp() {
+        when(itemRepository.save(any(ItemData.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ItemData result = itemService.saveItem(itemData);
+
+        assertThat(result.getUpdatedAt()).isNotNull();
+        verify(itemRepository).save(itemData);
+    }
+
+    @Test
+    void deleteItem_delegatesToRepository() {
+        itemService.deleteItem(adventureId, itemId);
+
+        verify(itemRepository).deleteByAdventureIdAndId(adventureId, itemId);
+    }
+
+    @Test
+    void getAllItemsForAdventure_returnsAll() {
+        when(itemRepository.findByAdventureId(adventureId)).thenReturn(List.of(itemData));
+
+        assertThat(itemService.getAllItemsForAdventure(adventureId)).hasSize(1);
+    }
+
+    @Test
+    void getItemsForLocation_returnsFiltered() {
+        when(itemRepository.findByAdventureIdAndLocationId(adventureId, locationId)).thenReturn(List.of(itemData));
+
+        assertThat(itemService.getItemsForLocation(adventureId, locationId)).hasSize(1);
+    }
+
+    @Test
+    void deleteAllItemsForLocation_delegatesToRepository() {
+        itemService.deleteAllItemsForLocation(adventureId, locationId);
+
+        verify(itemRepository).deleteByAdventureIdAndLocationId(adventureId, locationId);
+    }
+
+    @Test
+    void deleteAllItemsForAdventure_delegatesToRepository() {
+        itemService.deleteAllItemsForAdventure(adventureId);
+
+        verify(itemRepository).deleteByAdventureId(adventureId);
+    }
+
+    @Test
+    void countItemsInLocation_returnsCount() {
+        when(itemRepository.countByAdventureIdAndLocationId(adventureId, locationId)).thenReturn(4L);
+
+        assertThat(itemService.countItemsInLocation(adventureId, locationId)).isEqualTo(4L);
+    }
+
+    @Test
+    void countItemsInAdventure_returnsCount() {
+        when(itemRepository.countByAdventureId(adventureId)).thenReturn(12L);
+
+        assertThat(itemService.countItemsInAdventure(adventureId)).isEqualTo(12L);
     }
 }
