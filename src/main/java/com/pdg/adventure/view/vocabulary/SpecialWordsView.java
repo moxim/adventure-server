@@ -5,6 +5,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
@@ -69,7 +70,8 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
 
         save = new Button("Save", _ -> {
             persistData();
-            Notification.show("Special words saved", 2000, Notification.Position.BOTTOM_START);
+            Notification notification = Notification.show("Special words saved", 2000, Notification.Position.BOTTOM_START);
+            notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         });
 
         HorizontalLayout buttonLayout = new HorizontalLayout(back, save);
@@ -151,7 +153,8 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
                                   " because it is used in a command for one or more items" +
                                   wordUsageTracker.createUsagesText(aUsageList, 5);
 
-        Notification.show(notificationText, 4000, Notification.Position.MIDDLE);
+        Notification notification = Notification.show(notificationText, 5000, Notification.Position.MIDDLE);
+        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
     }
 
     public void setAdventureData(AdventureData anAdventureData) {

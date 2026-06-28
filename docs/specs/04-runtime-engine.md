@@ -5,7 +5,7 @@
 This chapter explains how the system *plays* an adventure: how typed input becomes
 a parsed command, how that command is dispatched, and how `Action` and
 `PreCondition` co-operate through the engine's data model. It also catalogs every
-concrete `Action` (16) and `PreCondition` (12) so a rebuild reproduces the
+concrete `Action` (16) and `PreCondition` (10) so a rebuild reproduces the
 behaviour faithfully.
 
 The data shapes that back this chapter are documented in

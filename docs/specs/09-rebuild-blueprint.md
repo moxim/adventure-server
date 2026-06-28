@@ -317,7 +317,7 @@ table with severity and pointer:
 | **Medium** | No per-game save state (variables not persisted) | [`03-domain-model.md` § Known gaps](03-domain-model.md#known-gaps). |
 | **Medium** | `CreateAction` / `DestroyAction` skeletons | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps). |
 | **Medium** | `AmbiguousCommandException` declared but unused | Same. |
-| **Medium** | `ActionEditorFactory` covers only Message / MoveItem / MovePlayer | [`07-ui-and-navigation.md` § Known gaps](07-ui-and-navigation.md#known-gaps). |
+| **Low** | `NotConditionData` has no editor in `ConditionEditorFactory` | [`07-ui-and-navigation.md` § Known gaps](07-ui-and-navigation.md#known-gaps). |
 | **Medium** | `UserService.delete` does not block on referencing rows | [`06-security-and-access-control.md` § Known gaps](06-security-and-access-control.md#known-gaps). |
 | **Medium** | Cross-store atomicity gap on adventure create | [`05-persistence-and-mappers.md` § Cross-store consistency](05-persistence-and-mappers.md#cross-store-consistency). |
 | **Medium** | No password change view | [`06-security-and-access-control.md` § Known gaps](06-security-and-access-control.md#known-gaps). |

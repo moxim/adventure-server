@@ -208,12 +208,16 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
   - The editor lets the author build a command from:
     - A `CommandDescription` (verb + optional adjective + optional noun, all
       drawn from the adventure's vocabulary).
-    - A list of PreConditions (And/Or/Not composites available).
+    - A list of PreConditions (`NotCondition` composite available; no And/Or
+      composites exist in the current data model).
     - One primary Action.
     - Zero or more follow-up Actions.
   - Action sub-editors are pluggable via `ActionEditorFactory` /
-    `ActionSelector`; today they cover `MessageAction`, `MoveItemAction`,
-    `MovePlayerAction` and the `*VariableAction` family.
+    `ActionSelector`; all 15 authorable action types have editors (see
+    [`07-ui-and-navigation.md` § Action editor factory](07-ui-and-navigation.md#action-editor-factory)).
+  - Condition sub-editors are pluggable via `ConditionEditorFactory` /
+    `ConditionSelector`; 9 of the 10 condition types have editors
+    (`NotConditionData` is the remaining gap).
 
 ### B8. Manage messages
 
@@ -231,6 +235,10 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     ADJECTIVE / VERB).
   - A word can be made a synonym of another word; synonyms resolve to the
     canonical form during parsing.
+  - When a word is saved with a new synonym, `WordEditorDialogue` detects
+    any other words that still point to the old synonym and offers a
+    confirmation dialog ("Update All" / "Skip"). The dialog warns when
+    synonym adoption would mutate `Word.Type` for the affected words.
   - `/author/adventures/:adventureId/vocabulary/special` is the dedicated editor
     for special-word slots (take, drop, look, examine, inventory, go, help,
     quit, save, load).

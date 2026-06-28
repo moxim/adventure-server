@@ -13,6 +13,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -106,7 +107,8 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         back.addClickShortcut(Key.ESCAPE);
         save = new Button("Save", _ -> {
             persistData();
-            Notification.show("Vocabulary saved", 2000, Notification.Position.BOTTOM_START);
+            Notification notification = Notification.show("Vocabulary saved", 2000, Notification.Position.BOTTOM_START);
+            notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         });
 
         VerticalLayout vl = new VerticalLayout(create, edit, editSpecialWords, back, save);
@@ -286,7 +288,8 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
 
             message.append("\nPlease remove these references first or use \"Show Usages\" to see details.");
 
-            Notification.show(message.toString(), 5000, Notification.Position.MIDDLE);
+            Notification notification = Notification.show(message.toString(), 5000, Notification.Position.MIDDLE);
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
         }
 
@@ -317,8 +320,9 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
             // Refresh the grid
             dataView.removeItem(wordAdapter);
 
-            Notification.show("Word '" + word.getText() + "' deleted successfully.",
-                              3000, Notification.Position.BOTTOM_START);
+            Notification notification = Notification.show("Word '" + word.getText() + "' deleted successfully.",
+                                                         2000, Notification.Position.BOTTOM_START);
+            notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         });
         return dialog;
     }

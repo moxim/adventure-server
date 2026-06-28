@@ -7,6 +7,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
@@ -84,22 +85,26 @@ public class UserManagementView extends VerticalLayout {
                     // Create New UserData Logic
                     String password = passwordField.getValue();
                     if (password.isEmpty()) {
-                        Notification.show("Password cannot be empty");
+                        Notification notification = Notification.show("Password cannot be empty", 5000, Notification.Position.MIDDLE);
+                        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
                         return;
                     }
                     userService.createUser(usernameField.getValue(), password, rolesBox.getValue());
-                    Notification.show("User created successfully!");
+                    Notification notification = Notification.show("User created successfully!", 2000, Notification.Position.BOTTOM_START);
+                    notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 } else {
                     // Update Existing UserData Logic
                     user.setRoles(rolesBox.getValue());
                     user.setEnabled(enabledBox.getValue());
                     userService.save(user);
-                    Notification.show("User updated!");
+                    Notification notification = Notification.show("User updated!", 2000, Notification.Position.BOTTOM_START);
+                    notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 }
                 updateList();
                 dialog.close();
             } catch (Exception ex) {
-                Notification.show("Error: " + ex.getMessage());
+                Notification notification = Notification.show("Error: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
         });
 
@@ -108,7 +113,8 @@ public class UserManagementView extends VerticalLayout {
                 userService.delete(user.getId());
                 updateList();
                 dialog.close();
-                Notification.show("User deleted.");
+                Notification notification = Notification.show("User deleted.", 2000, Notification.Position.BOTTOM_START);
+                notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
             }
         });
 

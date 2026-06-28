@@ -7,6 +7,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -226,7 +227,8 @@ public class MessageEditorView extends VerticalLayout
             }
         } catch (ValidationException | IllegalArgumentException e) {
             LOG.error(e.getMessage());
-            Notification.show("Error saving message: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
+            Notification notification = Notification.show("Error saving message: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
     }
 
