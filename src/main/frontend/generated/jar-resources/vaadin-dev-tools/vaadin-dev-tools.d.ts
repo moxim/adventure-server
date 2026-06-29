@@ -1,5 +1,5 @@
 import { LitElement } from 'lit';
-import { Product } from './License';
+import { DownloadLicenseOptions, Product } from './License';
 import { ConnectionStatus } from './connection';
 /**
  * Plugin API for the dev tools window.
@@ -78,12 +78,9 @@ export declare class VaadinDevTools extends LitElement {
     static get isActive(): boolean;
     frontendStatus: ConnectionStatus;
     javaStatus: ConnectionStatus;
-    private root;
     componentPickActive: boolean;
     private javaConnection?;
     private frontendConnection?;
-    private nextMessageId;
-    private transitionDuration;
     elementTelemetry(): void;
     openWebSocketConnection(): void;
     removeOldLinks(path: string): void;
@@ -97,7 +94,7 @@ export declare class VaadinDevTools extends LitElement {
     format(o: any): string;
     checkLicense(productInfo: Product): void;
     startPreTrial(): void;
-    downloadLicense(productInfo: Product): void;
+    downloadLicense(productInfo: Product, options?: DownloadLicenseOptions): void;
     setActive(yes: boolean): void;
     render(): import("lit-html").TemplateResult<1>;
     setJavaLiveReloadActive(active: boolean): void;

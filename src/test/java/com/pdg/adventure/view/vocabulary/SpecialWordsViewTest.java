@@ -56,7 +56,7 @@ class SpecialWordsViewTest extends BrowserlessTest {
     void afterSetAdventureData_fourPickerFieldsAreDisplayed() {
         view.setAdventureData(adventureData);
 
-        assertThat($(VocabularyPickerField.class, view).all()).hasSize(4);
+        assertThat(find(VocabularyPickerField.class, view).all()).hasSize(4);
     }
 
     @Test
@@ -76,7 +76,7 @@ class SpecialWordsViewTest extends BrowserlessTest {
     void afterSetAdventureData_examinePickerIsEmpty_whenNoExamineWordSet() {
         view.setAdventureData(adventureData);
 
-        VocabularyPickerField examineSelector = $(VocabularyPickerField.class, view).atIndex(3);
+        VocabularyPickerField examineSelector = find(VocabularyPickerField.class, view).atIndex(3);
         assertThat(examineSelector.getValue()).isNull();
     }
 
@@ -85,7 +85,7 @@ class SpecialWordsViewTest extends BrowserlessTest {
     void clickingSave_callsAdventureServiceSave() {
         view.setAdventureData(adventureData);
 
-        Button saveButton = $(Button.class, view).withText("Save").single();
+        Button saveButton = find(Button.class, view).withText("Save").single();
         test(saveButton).click();
 
         verify(adventureService).saveAdventureData(adventureData);

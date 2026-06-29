@@ -34,7 +34,7 @@ import com.pdg.adventure.view.support.RouteIds;
 
 /**
  * Browserless (UI-unit) tests for {@link ItemEditorView}, exercising the rendered component tree
- * with Vaadin's browserless test framework ({@code $()} queries and {@code test()} testers).
+ * with Vaadin's browserless test framework ({@code find()} queries and {@code test()} testers).
  *
  * <p>Focus is the "Commands" button added next to the "Is worn" checkbox: its presence, its
  * placement, and — crucially — that it is only enabled for an item that already exists in the
@@ -103,11 +103,11 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
     }
 
     private Button commandsButton() {
-        return $(Button.class, view).withText("Commands").single();
+        return find(Button.class, view).withText("Commands").single();
     }
 
     private Checkbox checkboxLabelled(String label) {
-        return $(Checkbox.class, view).all().stream()
+        return find(Checkbox.class, view).all().stream()
                                       .filter(cb -> label.equals(cb.getLabel()))
                                       .findFirst()
                                       .orElseThrow(() -> new AssertionError("No checkbox labelled: " + label));
@@ -161,7 +161,7 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
     void view_rendersThreePropertyCheckboxes() {
         view.setData(adventureData, locationData);
 
-        assertThat($(Checkbox.class, view).all())
+        assertThat(find(Checkbox.class, view).all())
                 .extracting(Checkbox::getLabel)
                 .contains("Can be picked up / Is containable", "Is wearable", "Is worn");
     }
@@ -171,7 +171,7 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
     void saveButton_isDisabled_afterSetData() {
         view.setData(adventureData, locationData);
 
-        assertThat($(Button.class, view).withText("Save").single().isEnabled()).isFalse();
+        assertThat(find(Button.class, view).withText("Save").single().isEnabled()).isFalse();
     }
 
     @Test
@@ -179,7 +179,7 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
     void togglingCheckbox_enablesResetButton() {
         view.setData(adventureData, locationData);
 
-        Button reset = $(Button.class, view).withText("Reset").single();
+        Button reset = find(Button.class, view).withText("Reset").single();
         assertThat(reset.isEnabled()).isFalse();
 
         test(checkboxLabelled("Is wearable")).click();

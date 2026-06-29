@@ -77,6 +77,8 @@ export declare const CopilotPanelTags: {
     readonly UI_SERVICES: "copilot-ui-services-panel";
     readonly UI_TEST_GENERATOR: "copilot-ui-test-generator-panel";
     readonly VAADIN_VERSIONS: "copilot-vaadin-versions";
+    readonly COMMENTS: "copilot-comments-panel";
+    readonly NEW_COMMENT: "copilot-new-comment";
     readonly TEST_FOO_PANEL: "foo-panel";
     readonly TEST_LOG_PANEL: "test-log-panel";
     readonly TEST_PLUGIN_PANEL: "test-plugin-panel";

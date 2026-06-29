@@ -78,31 +78,31 @@ class LocationEditorViewBrowserlessTest extends BrowserlessTest {
     @Test
     void view_hasManageCommandsButton() {
         view.setData(adventureData);
-        assertThat($(Button.class, view).withText("Manage Commands").single()).isNotNull();
+        assertThat(find(Button.class, view).withText("Manage Commands").single()).isNotNull();
     }
 
     @Test
     void view_hasManageItemsButton() {
         view.setData(adventureData);
-        assertThat($(Button.class, view).withText("Manage Items").single()).isNotNull();
+        assertThat(find(Button.class, view).withText("Manage Items").single()).isNotNull();
     }
 
     @Test
     void view_hasManageExitsButton() {
         view.setData(adventureData);
-        assertThat($(Button.class, view).withText("Manage Exits").single()).isNotNull();
+        assertThat(find(Button.class, view).withText("Manage Exits").single()).isNotNull();
     }
 
     @Test
     void saveButton_isDisabled_afterSetData() {
         view.setData(adventureData);
-        assertThat($(Button.class, view).withText("Save").single().isEnabled()).isFalse();
+        assertThat(find(Button.class, view).withText("Save").single().isEnabled()).isFalse();
     }
 
     @Test
     void resetButton_isDisabled_afterSetData() {
         view.setData(adventureData);
-        assertThat($(Button.class, view).withText("Reset").single().isEnabled()).isFalse();
+        assertThat(find(Button.class, view).withText("Reset").single().isEnabled()).isFalse();
     }
 
     @Test
@@ -123,7 +123,7 @@ class LocationEditorViewBrowserlessTest extends BrowserlessTest {
         view.setData(adventureData);
 
         // save should still be disabled (no changes yet)
-        assertThat($(Button.class, view).withText("Save").single().isEnabled()).isFalse();
+        assertThat(find(Button.class, view).withText("Save").single().isEnabled()).isFalse();
     }
 
     @Test
@@ -131,10 +131,10 @@ class LocationEditorViewBrowserlessTest extends BrowserlessTest {
         enterWithLocationId("loc-1");
         view.setData(adventureData);
 
-        Button reset = $(Button.class, view).withText("Reset").single();
+        Button reset = find(Button.class, view).withText("Reset").single();
         assertThat(reset.isEnabled()).isFalse();
 
-        TextArea shortDesc = $(TextArea.class, view).all().getFirst();
+        TextArea shortDesc = find(TextArea.class, view).all().getFirst();
         test(shortDesc).setValue("Updated short description");
 
         assertThat(reset.isEnabled()).isTrue();
