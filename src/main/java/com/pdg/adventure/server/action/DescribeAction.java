@@ -38,11 +38,11 @@ public class DescribeAction extends AbstractAction {
 
         OllamaChatModel ollamaChatModel = OllamaChatModel.builder()
                                                          .ollamaApi(ollamaApi)
-                                                         .defaultOptions(
-                                                                 OllamaChatOptions.builder()
-                                                                                  .model(OllamaModel.LLAMA3_2_1B)
-                                                                                  .temperature(0.4)
-                                                                                  .build())
+                                                         .options(
+                                                            OllamaChatOptions.builder()
+                                                                                     .model(OllamaModel.LLAMA3_2_1B)
+                                                                                     .temperature(0.4)
+                                                                                     .build())
                                                          .build();
         ChatResponse response = ollamaChatModel.call(
                 new Prompt(aRequest).augmentSystemMessage(

@@ -1,3 +1,8 @@
+import './Clipboard';
+import './Download';
+import './ElementResize';
+import './Geolocation';
+import './WakeLock';
 export interface FlowConfig {
     imports?: () => Promise<any>;
 }

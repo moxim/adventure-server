@@ -1,4 +1,13 @@
 import { ConnectionIndicator, ConnectionState } from '@vaadin/common-frontend';
+import './Clipboard';
+import { currentFullscreenState } from './Fullscreen';
+import './Download';
+import './ElementResize';
+import './Geolocation';
+import { currentVisibility } from './PageVisibility';
+import { currentScreenOrientationAngle, currentScreenOrientationType } from './ScreenOrientation';
+import './WakeLock';
+import { isShareSupported } from './WebShare';
 class FlowUiInitializationError extends Error {
 }
 // flow uses body for keeping references
@@ -317,16 +326,23 @@ export class Flow {
             $wnd.Vaadin.TypeScript.initial = undefined;
             return Promise.resolve(initial);
         }
+        const browserDetails = await this.collectBrowserDetails();
         // send a request to the `JavaScriptBootstrapHandler`
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             const httpRequest = xhr;
-            // Collect browser details to send with init request as JSON
-            const browserDetails = this.collectBrowserDetails();
-            const browserDetailsParam = browserDetails
-                ? `&v-browserDetails=${encodeURIComponent(JSON.stringify(browserDetails))}`
+            // Browser details are appended as individual query parameters rather
+            // than as a single JSON-encoded value. A JSON payload in the URL
+            // produces many percent-encoded escape sequences (%7B, %22, %3A, ...)
+            // that some firewalls/WAFs (e.g. Sophos) flag and block, which would
+            // fail the bootstrap on the very first page load. Plain key=value pairs
+            // avoid that pattern entirely.
+            const browserDetailsParams = browserDetails
+                ? Object.entries(browserDetails)
+                    .map(([key, value]) => `&${key}=${encodeURIComponent(value)}`)
+                    .join('')
                 : '';
-            const requestPath = `?v-r=init&location=${this.getFlowRoutePath(location)}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParam}`;
+            const requestPath = `?v-r=init&location=${encodeURIComponent(this.getFlowRoutePath(location))}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParams}`;
             httpRequest.open('GET', requestPath);
             httpRequest.onerror = () => reject(new FlowUiInitializationError(`Invalid server response when initializing Flow UI.
         ${httpRequest.status}
@@ -344,7 +360,7 @@ export class Flow {
         });
     }
     // Collects browser details parameters
-    collectBrowserDetails() {
+    async collectBrowserDetails() {
         const params = {};
         /* Screen height and width */
         params['v-sh'] = $wnd.screen.height;
@@ -413,6 +429,14 @@ export class Flow {
         const colorScheme = getComputedStyle(document.documentElement).colorScheme.trim();
         // "normal" is the default value and means no color scheme is set
         params['v-cs'] = colorScheme && colorScheme !== 'normal' ? colorScheme : '';
+        /* Page visibility — initial state of document.hidden / document.hasFocus() */
+        params['v-pv'] = currentVisibility();
+        /* Fullscreen state — initial state of document.fullscreenEnabled / .fullscreenElement */
+        params['v-fs'] = currentFullscreenState();
+        /* Screen orientation — initial state of screen.orientation, empty
+           when the Screen Orientation API is unavailable. */
+        params['v-so'] = currentScreenOrientationType();
+        params['v-soa'] = currentScreenOrientationAngle();
         /* Theme name - detect which theme is in use */
         const computedStyle = getComputedStyle(document.documentElement);
         let themeName = '';
@@ -423,6 +447,20 @@ export class Flow {
             themeName = 'aura';
         }
         params['v-tn'] = themeName;
+        /* Geolocation availability — guarded because tests may reset
+           window.Vaadin between runs, removing the namespace that
+           Geolocation.ts installs at import time. */
+        const geolocation = $wnd.Vaadin.Flow?.geolocation;
+        if (geolocation) {
+            params['v-ga'] = await geolocation.queryAvailability();
+        }
+        /* Wake-lock availability — same guard rationale as geolocation. */
+        const wakeLock = $wnd.Vaadin.Flow?.wakeLock;
+        if (wakeLock) {
+            params['v-wla'] = wakeLock.queryAvailability();
+        }
+        /* Web Share API support */
+        params['v-ws'] = isShareSupported();
         /* Stringify each value (they are parsed on the server side) */
         const stringParams = {};
         Object.keys(params).forEach((key) => {

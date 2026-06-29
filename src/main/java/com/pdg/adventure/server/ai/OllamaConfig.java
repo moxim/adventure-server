@@ -17,7 +17,7 @@ public class OllamaConfig {
 
         return OllamaChatModel.builder()
                               .ollamaApi(ollamaApi)
-                              .defaultOptions(
+                              .options(
                                       OllamaChatOptions.builder()
                                                        .model(OllamaModel.LLAMA3_2_1B)
                                                        .temperature(0.9)
