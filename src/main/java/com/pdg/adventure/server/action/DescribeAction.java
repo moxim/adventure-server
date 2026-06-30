@@ -1,6 +1,7 @@
 package com.pdg.adventure.server.action;
 
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaApi;
@@ -57,6 +58,7 @@ public class DescribeAction extends AbstractAction {
 
         IO.println("Request: " + aRequest);
 
-        return response.getResult().getOutput().getText();
+        Generation responseResult = response.getResult();
+        return responseResult == null ? aRequest : responseResult.getOutput().getText();
     }
 }
