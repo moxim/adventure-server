@@ -41,7 +41,6 @@ public class LocationMapper implements Mapper<LocationData, Location> {
         itemContainerMapper = aItemContainerMapper;
         directionMapper = aDirectionMapper;
         commandProviderMapper = aCommandProviderMapper;
-        mapperSupporter.registerMapper(LocationData.class, Location.class, this);
     }
 
     public Location mapToBO(LocationData aLocationData) {

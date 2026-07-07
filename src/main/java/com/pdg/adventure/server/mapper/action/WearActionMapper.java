@@ -17,7 +17,6 @@ public class WearActionMapper extends ActionMapper<WearActionData, WearAction> {
     public WearActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig) {
         super(aMapperSupporter);
         this.adventureConfig = anAdventureConfig;
-        aMapperSupporter.registerMapper(WearActionData.class, WearAction.class, this);
     }
 
     @Override

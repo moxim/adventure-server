@@ -17,7 +17,6 @@ public class MessageActionMapper extends ActionMapper<MessageActionData, Message
     public MessageActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig) {
         super(aMapperSupporter);
         this.adventureConfig = anAdventureConfig;
-        aMapperSupporter.registerMapper(MessageActionData.class, MessageAction.class, this);
     }
 
     @Override

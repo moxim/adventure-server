@@ -18,7 +18,6 @@ public class RemoveActionMapper extends ActionMapper<RemoveActionData, RemoveAct
     public RemoveActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig) {
         super(aMapperSupporter);
         adventureConfig = anAdventureConfig;
-        aMapperSupporter.registerMapper(RemoveActionData.class, RemoveAction.class, this);
     }
 
     @Override

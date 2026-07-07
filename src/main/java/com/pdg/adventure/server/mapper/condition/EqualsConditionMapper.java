@@ -13,7 +13,6 @@ public class EqualsConditionMapper extends PreConditionMapper<EqualsConditionDat
 
     public EqualsConditionMapper(MapperSupporter aMapperSupporter) {
         super(aMapperSupporter);
-        aMapperSupporter.registerMapper(EqualsConditionData.class, EqualsCondition.class, this);
     }
 
     @Override

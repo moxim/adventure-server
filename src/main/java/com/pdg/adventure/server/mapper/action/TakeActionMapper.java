@@ -23,7 +23,6 @@ public class TakeActionMapper extends ActionMapper<TakeActionData, TakeAction> {
         super(aMapperSupporter);
         this.adventureConfig = anAdventureConfig;
         this.gameContext = aGameContext;
-        aMapperSupporter.registerMapper(TakeActionData.class, TakeAction.class, this);
     }
 
     @Override

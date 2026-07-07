@@ -26,7 +26,6 @@ public class ThingMapper implements Mapper<ThingData, Thing> {
         mapperSupporter = aMapperSupporter;
         descriptionMapper = aDescriptionMapper;
         commandProviderMapper = aCommandProviderMapper;
-        mapperSupporter.registerMapper(ThingData.class, Thing.class, this);
     }
 
     public Thing mapToBO(ThingData aThingData) {

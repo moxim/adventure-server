@@ -18,7 +18,6 @@ public class CommandDescriptionMapper implements Mapper<CommandDescriptionData, 
 
     public CommandDescriptionMapper(MapperSupporter aMapperSupporter) {
         mapperSupporter = aMapperSupporter;
-        mapperSupporter.registerMapper(CommandDescriptionData.class, CommandDescription.class, this);
     }
 
     @Override

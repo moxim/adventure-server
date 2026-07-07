@@ -22,7 +22,6 @@ public class DecrementVariableActionMapper extends ActionMapper<DecrementVariabl
         super(aMapperSupporter);
         variableProvider = aVariableProvider;
         messagesHolder = aMessagesHolder;
-        aMapperSupporter.registerMapper(DecrementVariableActionData.class, DecrementVariableAction.class, this);
     }
 
     @Override

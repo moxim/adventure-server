@@ -28,7 +28,6 @@ public class CommandProviderMapper implements Mapper<CommandProviderData, Generi
         mapperSupporter = aMapperSupporter;
         commandChainMapper = aCommandChainMapper;
         commandDescriptionMapper = aCommandDescriptionMapper;
-        mapperSupporter.registerMapper(CommandProviderData.class, GenericCommandProvider.class, this);
     }
 
     @Override

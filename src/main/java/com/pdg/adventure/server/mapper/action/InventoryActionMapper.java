@@ -23,7 +23,6 @@ public class InventoryActionMapper extends ActionMapper<InventoryActionData, Inv
         super(aMapperSupporter);
         adventureConfig = anAdventureConfig;
         gameContext = aGameContext;
-        aMapperSupporter.registerMapper(InventoryActionData.class, InventoryAction.class, this);
     }
 
     @Override
