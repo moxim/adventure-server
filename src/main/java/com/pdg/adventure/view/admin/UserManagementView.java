@@ -3,6 +3,7 @@ package com.pdg.adventure.view.admin;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
@@ -109,13 +110,15 @@ public class UserManagementView extends VerticalLayout {
         });
 
         Button deleteBtn = new Button("Delete", e -> {
-            if (user.getId() != null) {
+            ConfirmDialog confirm = ViewSupporter.getConfirmDialog("Delete User", "user", user.getUsername());
+            confirm.addConfirmListener(_ -> {
                 userService.delete(user.getId());
                 updateList();
                 dialog.close();
                 Notification notification = Notification.show("User deleted.", 2000, Notification.Position.BOTTOM_START);
                 notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-            }
+            });
+            confirm.open();
         });
 
         deleteBtn.setVisible(user.getId() != null);

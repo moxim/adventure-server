@@ -3,7 +3,9 @@ package com.pdg.adventure.view.admin;
 import com.vaadin.browserless.BrowserlessTest;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,8 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.pdg.adventure.security.model.Role;
 import com.pdg.adventure.security.model.UserData;
@@ -68,5 +69,41 @@ class UserManagementViewTest extends BrowserlessTest {
         List<Button> deleteButtons = find(Button.class, dialog).withText("Delete").all();
         boolean anyVisible = deleteButtons.stream().anyMatch(Button::isVisible);
         assertThat(anyVisible).as("Delete button visible in CREATE dialog").isFalse();
+    }
+
+    @Test
+    @DisplayName("Delete in the edit dialog only deletes after the ConfirmDialog is confirmed")
+    void deleteUser_asksForConfirmation_deletesOnConfirm() {
+        test(find(Grid.class, view).single()).doubleClickRow(1); // row 1 = paul
+
+        Dialog editDialog = find(Dialog.class).single();
+        test(find(Button.class, editDialog).withText("Delete").single()).click();
+
+        verify(userService, never()).delete(anyString());
+
+        ConfirmDialog confirm = find(ConfirmDialog.class).single();
+        assertThat(test(confirm).getHeader()).isEqualTo("Delete User");
+        assertThat(test(confirm).getText()).contains("paul");
+
+        test(confirm).confirm();
+
+        verify(userService).delete("paul-id");
+        assertThat(find(Dialog.class).all()).as("edit dialog closed after delete").isEmpty();
+        verify(userService, times(2)).findAll(); // initial + refresh
+    }
+
+    @Test
+    @DisplayName("Cancelling the delete confirmation keeps the user")
+    void deleteUser_cancelKeepsUser() {
+        test(find(Grid.class, view).single()).doubleClickRow(1);
+
+        Dialog editDialog = find(Dialog.class).single();
+        test(find(Button.class, editDialog).withText("Delete").single()).click();
+
+        ConfirmDialog confirm = find(ConfirmDialog.class).single();
+        test(confirm).cancel();
+
+        verify(userService, never()).delete(anyString());
+        assertThat(find(Dialog.class).all()).as("edit dialog still open").hasSize(1);
     }
 }
