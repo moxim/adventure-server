@@ -171,15 +171,28 @@ public class AdventureAssignmentView extends VerticalLayout {
     }
 
     private void confirmRemoveAuthor(UserData author) {
+        confirmRemoval("Remove Author",
+                "Remove " + author.getUsername() + " as author of \""
+                        + selectedAdventure.getTitle() + "\"?",
+                this::doRemoveAuthor);
+    }
+
+    private void confirmRemovePlayer(UserData player) {
+        confirmRemoval("Remove Player",
+                "Remove " + player.getUsername() + " as player of \""
+                        + selectedAdventure.getTitle() + "\"?",
+                () -> doRemovePlayer(player));
+    }
+
+    private void confirmRemoval(final String aHeader, final String aText, final Runnable anOnConfirm) {
         ConfirmDialog dialog = new ConfirmDialog();
-        dialog.setHeader("Remove Author");
-        dialog.setText("Remove " + author.getUsername() + " as author of \""
-                + selectedAdventure.getTitle() + "\"?");
+        dialog.setHeader(aHeader);
+        dialog.setText(aText);
         dialog.setConfirmText("Remove");
         dialog.setConfirmButtonTheme("error primary");
         dialog.setCancelable(true);
         dialog.setCancelText("Cancel");
-        dialog.addConfirmListener(_ -> doRemoveAuthor());
+        dialog.addConfirmListener(_ -> anOnConfirm.run());
         dialog.open();
     }
 
@@ -241,7 +254,7 @@ public class AdventureAssignmentView extends VerticalLayout {
         playersGrid.addComponentColumn(player -> {
             Button remove = new Button("Remove");
             remove.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
-            remove.addClickListener(_ -> doRemovePlayer(player));
+            remove.addClickListener(_ -> confirmRemovePlayer(player));
             return remove;
         }).setAutoWidth(true).setFlexGrow(0);
 
