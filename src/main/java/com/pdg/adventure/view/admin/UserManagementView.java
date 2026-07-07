@@ -118,6 +118,8 @@ public class UserManagementView extends VerticalLayout {
             }
         });
 
+        deleteBtn.setVisible(user.getId() != null);
+
         // If editing, you might want to disable the delete button for the current admin user
         // to prevent them from deleting themselves.
 
