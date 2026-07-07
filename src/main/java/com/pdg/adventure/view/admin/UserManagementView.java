@@ -122,9 +122,11 @@ public class UserManagementView extends VerticalLayout {
         });
 
         deleteBtn.setVisible(user.getId() != null);
-
-        // If editing, you might want to disable the delete button for the current admin user
-        // to prevent them from deleting themselves.
+        if (user.getId() != null
+                && user.getUsername().equals(ViewSupporter.getCurrentUser().getUsername())) {
+            deleteBtn.setEnabled(false);
+            deleteBtn.setTooltipText("You cannot delete your own account.");
+        }
 
         dialog.add(new VerticalLayout(usernameField, passwordField, rolesBox, enabledBox, new HorizontalLayout(saveBtn, deleteBtn)));
         dialog.open();

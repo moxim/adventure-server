@@ -106,4 +106,27 @@ class UserManagementViewTest extends BrowserlessTest {
         verify(userService, never()).delete(anyString());
         assertThat(find(Dialog.class).all()).as("edit dialog still open").hasSize(1);
     }
+
+    @Test
+    @DisplayName("Editing your own account disables Delete with an explanatory tooltip")
+    void editOwnAccount_deleteIsDisabled() {
+        test(find(Grid.class, view).single()).doubleClickRow(0); // row 0 = admin = current user
+
+        Dialog editDialog = find(Dialog.class).single();
+        Button deleteBtn = find(Button.class, editDialog).withText("Delete").single();
+
+        assertThat(deleteBtn.isEnabled()).as("Delete enabled on own account").isFalse();
+        assertThat(deleteBtn.getTooltip().getText()).isEqualTo("You cannot delete your own account.");
+    }
+
+    @Test
+    @DisplayName("Editing another user keeps Delete enabled")
+    void editOtherUser_deleteIsEnabled() {
+        test(find(Grid.class, view).single()).doubleClickRow(1); // row 1 = paul
+
+        Dialog editDialog = find(Dialog.class).single();
+        Button deleteBtn = find(Button.class, editDialog).withText("Delete").single();
+
+        assertThat(deleteBtn.isEnabled()).isTrue();
+    }
 }
