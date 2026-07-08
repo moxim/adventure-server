@@ -1,6 +1,7 @@
 package com.pdg.adventure.view.error;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -82,5 +83,13 @@ class RouteNotFoundViewTest {
                 .filter(Button.class::isInstance).map(Button.class::cast)
                 .findFirst().orElseThrow();
         assertThat(button.getText()).isEqualTo("Back to safety");
+    }
+
+    @Test
+    void view_containsPuzzledDragonHeading() {
+        H2 heading = view.getChildren()
+                .filter(H2.class::isInstance).map(H2.class::cast)
+                .findFirst().orElseThrow();
+        assertThat(heading.getText()).isEqualTo("Even the dragon is puzzled.");
     }
 }

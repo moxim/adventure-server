@@ -10,6 +10,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -20,6 +21,7 @@ import com.pdg.adventure.view.RootView;
  * visitors alike — AdventuresMainLayout is @PermitAll and would otherwise
  * re-block anonymous access at the layout level.
  */
+@PageTitle("Page Not Found")
 @AnonymousAllowed
 public class RouteNotFoundView extends VerticalLayout implements HasErrorParameter<NotFoundException> {
 
