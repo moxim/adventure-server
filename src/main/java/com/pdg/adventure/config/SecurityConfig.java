@@ -9,6 +9,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizedUrl;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -81,7 +82,8 @@ public class SecurityConfig {
         });
 
         http.with(VaadinSecurityConfigurer.vaadin(), configurer -> {
-            configurer.loginView(LoginView.class);
+            configurer.loginView(LoginView.class)
+                    .anyRequest(AuthorizedUrl::permitAll);
 //                    , "/logged-out.html");
         });
 
