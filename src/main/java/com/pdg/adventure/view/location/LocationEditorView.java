@@ -24,13 +24,16 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
+import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.command.CommandsMenuView;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.direction.DirectionsMenuView;
 import com.pdg.adventure.view.item.ItemsMenuView;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
 
 @Route(value = "author/adventures/:adventureId/locations/:locationId/edit", layout = LocationsMainLayout.class)
@@ -46,6 +49,7 @@ public class LocationEditorView extends VerticalLayout
     private static final int LUMEN_STEP = 1;
 
     private final transient AdventureService adventureService;
+    private final transient AdventureAccessService accessService;
     private final Binder<LocationViewModel> binder;
     private final VocabularyPickerField adjectiveSelector;
     private final VocabularyPickerField nounSelector;
@@ -59,11 +63,12 @@ public class LocationEditorView extends VerticalLayout
     private transient LocationViewModel lvm;
     private transient AdventureData adventureData;
 
-    public LocationEditorView(AdventureService anAdventureService) {
+    public LocationEditorView(AdventureService anAdventureService, AdventureAccessService anAccessService) {
 
         setSizeFull();
 
         adventureService = anAdventureService;
+        accessService = anAccessService;
         binder = new Binder<>(LocationViewModel.class);
 
         locationData = new LocationData();
@@ -225,6 +230,11 @@ public class LocationEditorView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        if (resolvedAdventure.isEmpty()) {
+            event.forwardTo(AdventuresMenuView.class);
+            return;
+        }
         final Optional<String> optionalLocationId = event.getRouteParameters().get(RouteIds.LOCATION_ID.getValue());
         if (optionalLocationId.isPresent()) {
             locationId = optionalLocationId.get();
@@ -232,6 +242,7 @@ public class LocationEditorView extends VerticalLayout
         } else {
             pageTitle = "New Location";
         }
+        setData(resolvedAdventure.get());
     }
 
     @Override
