@@ -25,7 +25,7 @@ No session-scoped or UI-scoped holder for "the current adventure" exists anywher
 
 ### 1. `beforeEnter` becomes the sole population path — no caching
 
-Every affected view's `beforeEnter` resolves everything it needs from route parameters, on every navigation, and populates itself directly — matching `AdventureEditorView` exactly. `setData()`/`setAdventureData()` are deleted, and their callers simplify to plain `navigate(TargetView.class, new RouteParameters(...))` with no `.ifPresent(...)`.
+Every affected view's `beforeEnter` resolves everything it needs from route parameters, on every navigation, and calls the view's existing `setData()`/`setAdventureData()` method directly with the resolved data — matching `AdventureEditorView`'s existing pattern. That method's body is untouched (several do more than a trivial field-set — e.g. `LocationEditorView.setData` derives nested state and populates vocabulary selectors — duplicating that logic into `beforeEnter` would violate DRY for no benefit). Once every caller's `.ifPresent(editor -> editor.setXxx(...))` handoff is removed and callers simplify to plain `navigate(TargetView.class, new RouteParameters(...))`, each population method is only ever called by its own `beforeEnter` — at that point it's downgraded from `public` to `private`, since nothing outside the class calls it anymore.
 
 This was a deliberate choice over caching/reusing the in-memory object a caller already holds. The refetch is a MongoDB `findById` on a ULID primary key — an indexed point lookup, negligible at this app's current scale. Always-refetch is correct by construction (fresh load, bookmark, and in-app navigation all behave identically; no staleness is possible), needs no new infrastructure, and is exactly what the audit itself asked for ("restore context from URL params; make ID-full URLs canonical"). **Deferred cost, not a nonexistent one:** `AdventureData`'s location/item/direction/command graph is loaded via eager `@DBRef(lazy = false)`, so if an adventure ever grows large (many locations, each with items/commands), each navigation's refetch cost grows with it. If that's ever measured to matter, a caching layer is a follow-up project, not a prerequisite — YAGNI applies today.
 
@@ -62,7 +62,7 @@ Each view forwards to the **nearest still-valid parent view** on failure, not un
 
 ### 4. Cleanup that falls out of this naturally
 
-- Delete `setData()`/`setAdventureData()` from all 13 views (no longer called by anyone) and the `.ifPresent(editor -> editor.setXxx(...))` half of every caller's navigation call site, across `AdventureEditorView` and within the menu/editor views' own row-selection and Back-button navigation.
+- Remove the `.ifPresent(editor -> editor.setXxx(...))` half of every caller's navigation call site, across `AdventureEditorView` and within the menu/editor views' own row-selection and Back-button navigation, and downgrade each of the 13 views' `setData()`/`setAdventureData()` from `public` to `private` (see §1 — the method itself stays, called only by its own `beforeEnter`).
 - Remove `LocationsMenuView`'s parameter-free `@RouteAlias("author/adventures/locations")`; fix its two `navigate(LocationsMenuView.class)` call sites to pass `RouteParameters` like every other "Manage X" button already does.
 - Remove genuinely dead code found during investigation: `LocationsMenuView`'s commented-out `beforeEnter` body and unused `loadAdventure(String)` method; `VocabularyMenuView`'s commented-out `@RouteAlias`.
 
