@@ -23,8 +23,12 @@ import java.util.Set;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.DirectionData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.location.LocationEditorView;
+import com.pdg.adventure.view.location.LocationsMenuView;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
@@ -33,14 +37,16 @@ import com.pdg.adventure.view.support.ViewSupporter;
 @RolesAllowed("ROLE_AUTHOR")
 public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitle, BeforeEnterObserver {
     private final transient AdventureService adventureService;
+    private final transient AdventureAccessService accessService;
     private final Grid<DirectionDescriptionAdapter> grid;
     private GridListDataView<DirectionDescriptionAdapter> directionsDataView;
     private transient AdventureData adventureData;
     private transient LocationData locationData;
     private String pageTitle;
 
-    public DirectionsMenuView(AdventureService anAdventureService) {
+    public DirectionsMenuView(AdventureService anAdventureService, AdventureAccessService anAccessService) {
         adventureService = anAdventureService;
+        accessService = anAccessService;
         setSizeFull();
 
         Button backButton = new Button("Back", _ -> UI.getCurrent().navigate(LocationEditorView.class,
@@ -122,13 +128,24 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        if (resolvedAdventure.isEmpty()) {
+            event.forwardTo(AdventuresMenuView.class);
+            return;
+        }
+        Optional<LocationData> resolvedLocation = AdventureRouteResolver.resolveLocation(resolvedAdventure.get(), event);
+        if (resolvedLocation.isEmpty()) {
+            event.forwardTo(LocationsMenuView.class, new RouteParameters(
+                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), resolvedAdventure.get().getId())));
+            return;
+        }
         Optional<String> locId = event.getRouteParameters().get(RouteIds.LOCATION_ID.getValue());
         if (locId.isPresent()) {
-            final String locationId = locId.get();
-            pageTitle = "Exits for location #" + locationId;
+            pageTitle = "Exits for location #" + locId.get();
         } else {
             pageTitle = "Exits";
         }
+        setData(resolvedAdventure.get(), resolvedLocation.get());
     }
 
     private void fillGrid(Set<DirectionData> directionData) {
