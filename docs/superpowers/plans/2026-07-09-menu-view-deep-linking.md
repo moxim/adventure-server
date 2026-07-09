@@ -22,7 +22,7 @@ These apply to every task below; task text does not repeat them.
 8. **Not-found notification wording matches the existing precedent exactly**, from `AdventureEditorView.loadAdventure`: `Notification.show("<Kind> not found or access denied: " + id, 5000, Notification.Position.MIDDLE)` then `notification.addThemeVariants(NotificationVariant.LUMO_ERROR)`.
 9. **`DirectionEditorView.setData(LocationData, AdventureData)` takes reversed argument order** vs. `DirectionsMenuView.setData(AdventureData, LocationData)`. The new `beforeEnter` code in both files uses named fields, not positional arguments, so this trap doesn't matter for the rewrite — but don't copy one file's parameter order into the other's population helper call by habit.
 10. **Preserve all existing UI-population logic byte-for-byte** — grid setup, counters, context menus, lazy editor construction. Only change WHAT populates it (resolver instead of caller-handed object) and WHEN (`beforeEnter` instead of `setData`), by calling the view's existing `setData(...)`/`setAdventureData(...)` method directly from the new `beforeEnter` with the resolver's result. Do not duplicate, inline, or restructure that method's body, even when it's more than a trivial field-set (e.g. `LocationEditorView.setData` derives `locationData`, populates vocabulary selectors, and builds a view model — all of that stays exactly as it is; `beforeEnter` just becomes a second caller of the same method, alongside the not-yet-removed external one).
-11. **Every per-view test needs `SecurityContextHolder` set up**, even views whose old `beforeEnter` never needed it — because the resolver's `ViewSupporter.getCurrentUser()` call is now transitively reached by every one of the 13 views. In `@BeforeEach`: construct a minimal `UserData` (no need for ID reflection tricks — `AdventureAccessService` is always mocked in these tests, so the user object's contents are never actually inspected) and call `SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()))`. Add an `@AfterEach` that calls `SecurityContextHolder.clearContext()`.
+11. **Every per-view test needs `SecurityContextHolder` set up**, even views whose old `beforeEnter` never needed it — because the resolver's `ViewSupporter.getCurrentUser()` call is now transitively reached by every one of the 13 views. In `@BeforeEach`: construct a minimal `UserData` (no need for ID reflection tricks — `AdventureAccessService` is always mocked in these tests, so the user object's contents are never actually inspected) and call `SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()))`. **`testUser.setRoles(Set.of())` must be called before `.getAuthorities()`** — `UserData.roles` (a hand-written `@Entity`, no Lombok default) is `null` on a bare `new UserData()`, and `getAuthorities()` unconditionally streams it, so omitting this NPEs every single one of these tests (confirmed empirically in Task 1; requires `import java.util.Set;`). Add an `@AfterEach` that calls `SecurityContextHolder.clearContext()`.
 12. **Model tier for every implementer dispatch in this plan: sonnet** (or the session's equivalent standard-tier model), not a cheap/fast tier. Every task touches Spring's access-control wiring (`AdventureAccessService`) — correctness here is security-relevant, not purely mechanical.
 13. **Every constructor-signature change ripples to that view's existing test file(s).** Adding `AdventureAccessService` as a new constructor parameter means any pre-existing test that directly does `new SomeView(mockAdventureService)` fails to compile. After making the production change, run the full test module (not just the new `RoutingTest`) and fix any resulting compile error in an existing test by adding a mock `AdventureAccessService` argument to its `new SomeView(...)` calls — this is an expected, in-scope, mechanical consequence of the signature change, not a sign of a mistake. Include the fixed existing test file in the task's commit.
 
@@ -100,6 +100,7 @@ class AdventureRouteResolverTest extends BrowserlessTest {
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
     }
@@ -187,7 +188,7 @@ class AdventureRouteResolverTest extends BrowserlessTest {
     void resolveItem_validId_returnsItem() {
         ItemData item = new ItemData();
         item.setId("item-1");
-        ItemContainerData container = new ItemContainerData();
+        ItemContainerData container = new ItemContainerData("loc-1");
         container.setItems(List.of(item));
         LocationData location = new LocationData();
         location.setItemContainerData(container);
@@ -200,7 +201,7 @@ class AdventureRouteResolverTest extends BrowserlessTest {
 
     @Test
     void resolveItem_unknownId_returnsEmptyAndShowsNotification() {
-        ItemContainerData container = new ItemContainerData();
+        ItemContainerData container = new ItemContainerData("loc-1");
         container.setItems(List.of());
         LocationData location = new LocationData();
         location.setItemContainerData(container);
@@ -478,6 +479,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -506,6 +508,7 @@ class LocationsMenuViewTest extends BrowserlessTest {
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
         view = new LocationsMenuView(adventureService, accessService);
@@ -695,6 +698,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -723,6 +727,7 @@ class LocationEditorViewRoutingTest extends BrowserlessTest {
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
         view = new LocationEditorView(adventureService, accessService);
@@ -946,6 +951,7 @@ class DirectionsMenuViewTest extends BrowserlessTest {
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
         view = new DirectionsMenuView(adventureService, accessService);
@@ -1162,6 +1168,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -1191,6 +1198,7 @@ class DirectionEditorViewRoutingTest extends BrowserlessTest {
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
         view = new DirectionEditorView(adventureService, accessService);
@@ -1410,6 +1418,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -1444,6 +1453,7 @@ class ItemsMenuViewRoutingTest extends BrowserlessTest {
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
         view = new ItemsMenuView(adventureService, itemService, accessService);
@@ -1465,7 +1475,7 @@ class ItemsMenuViewRoutingTest extends BrowserlessTest {
     void beforeEnter_validIds_populatesItemsGrid() {
         ItemData item = new ItemData();
         item.setId("item-1");
-        ItemContainerData container = new ItemContainerData();
+        ItemContainerData container = new ItemContainerData("loc-1");
         container.setItems(List.of(item));
         LocationData location = new LocationData();
         location.setId("loc-1");
@@ -1664,6 +1674,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -1697,6 +1708,7 @@ class AllItemsMenuViewRoutingTest extends BrowserlessTest {
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
         view = new AllItemsMenuView(adventureService, itemService, accessService);
@@ -1719,7 +1731,7 @@ class AllItemsMenuViewRoutingTest extends BrowserlessTest {
     void beforeEnter_validAdventureId_populatesAllItemsGrid() {
         ItemData item = new ItemData();
         item.setId("item-1");
-        ItemContainerData container = new ItemContainerData();
+        ItemContainerData container = new ItemContainerData("loc-1");
         container.setItems(List.of(item));
         LocationData location = new LocationData();
         location.setId("loc-1");
@@ -1874,6 +1886,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -1908,6 +1921,7 @@ class ItemEditorViewRoutingTest extends BrowserlessTest {
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
         view = new ItemEditorView(adventureService, itemService, accessService);
@@ -1929,7 +1943,7 @@ class ItemEditorViewRoutingTest extends BrowserlessTest {
     void beforeEnter_validIds_populatesFormFromResolvedItem() {
         ItemData item = new ItemData();
         item.setId("item-1");
-        ItemContainerData container = new ItemContainerData();
+        ItemContainerData container = new ItemContainerData("loc-1");
         container.setItems(List.of(item));
         LocationData location = new LocationData();
         location.setId("loc-1");
@@ -2134,6 +2148,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -2173,6 +2188,7 @@ class CommandsMenuViewRoutingTest extends BrowserlessTest {
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
         view = new CommandsMenuView(adventureService, itemService, accessService);
@@ -2225,7 +2241,7 @@ class CommandsMenuViewRoutingTest extends BrowserlessTest {
         ItemData item = new ItemData();
         item.setId("item-1");
         item.setCommandProviderData(providerWithOneCommand());
-        ItemContainerData container = new ItemContainerData();
+        ItemContainerData container = new ItemContainerData("loc-1");
         container.setItems(List.of(item));
         LocationData location = new LocationData();
         location.setId("loc-1");
@@ -2280,7 +2296,7 @@ class CommandsMenuViewRoutingTest extends BrowserlessTest {
     void beforeEnter_unknownItemId_forwardsToItemsMenuViewForThatLocation() {
         LocationData location = new LocationData();
         location.setId("loc-1");
-        location.setItemContainerData(new ItemContainerData());
+        location.setItemContainerData(new ItemContainerData("loc-1"));
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
         adventure.setLocationData(Map.of("loc-1", location));
@@ -2454,6 +2470,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -2493,6 +2510,7 @@ class CommandEditorViewRoutingTest extends BrowserlessTest {
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
         view = new CommandEditorView(adventureService, itemService, accessService);
@@ -2546,7 +2564,7 @@ class CommandEditorViewRoutingTest extends BrowserlessTest {
         ItemData item = new ItemData();
         item.setId("item-1");
         item.setCommandProviderData(providerWithOneCommand());
-        ItemContainerData container = new ItemContainerData();
+        ItemContainerData container = new ItemContainerData("loc-1");
         container.setItems(List.of(item));
         LocationData location = new LocationData();
         location.setId("loc-1");
@@ -2601,7 +2619,7 @@ class CommandEditorViewRoutingTest extends BrowserlessTest {
     void beforeEnter_unknownItemId_forwardsToItemsMenuViewForThatLocation() {
         LocationData location = new LocationData();
         location.setId("loc-1");
-        location.setItemContainerData(new ItemContainerData());
+        location.setItemContainerData(new ItemContainerData("loc-1"));
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
         adventure.setLocationData(Map.of("loc-1", location));
@@ -2779,6 +2797,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -2808,6 +2827,7 @@ class VocabularyMenuViewRoutingTest extends BrowserlessTest {
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
         view = new VocabularyMenuView(adventureService, accessService);
@@ -2987,6 +3007,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -3015,6 +3036,7 @@ class SpecialWordsViewRoutingTest extends BrowserlessTest {
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
         view = new SpecialWordsView(adventureService, accessService);
@@ -3203,6 +3225,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -3234,6 +3257,7 @@ class MessagesMenuViewRoutingTest extends BrowserlessTest {
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
         view = new MessagesMenuView(messageService, adventureService, accessService);
@@ -3417,6 +3441,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -3448,6 +3473,7 @@ class MessageEditorViewRoutingTest extends BrowserlessTest {
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
         view = new MessageEditorView(adventureService, messageService, accessService);
