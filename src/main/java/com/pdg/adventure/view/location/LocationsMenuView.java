@@ -29,8 +29,11 @@ import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
+import com.pdg.adventure.view.adventure.AdventuresMenuView;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
@@ -45,6 +48,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
     private static final String ADVENTURE_ID = "adventureId";
 
     private final transient AdventureService adventureService;
+    private final transient AdventureAccessService accessService;
     private final Binder<AdventureData> binder;
 
     private final Div gridContainer;
@@ -59,11 +63,12 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
     private final Button backButton;
     private final Span numberOfLocations;
 
-    public LocationsMenuView(AdventureService anAdventureService) {
+    public LocationsMenuView(AdventureService anAdventureService, AdventureAccessService anAccessService) {
 
         setSizeFull();
 
         adventureService = anAdventureService;
+        accessService = anAccessService;
 
         binder = new Binder<>(AdventureData.class);
 
@@ -209,15 +214,12 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-//        Optional<String> adventureId = event.getRouteParameters().get("adventureId");
-//        Objects.requireNonNull(adventureId);
-//
-//        if (adventureId.isPresent()) {
-//            setUpLoading(adventureId.get());
-//        } else {
-//            setUpNewEdit();
-//        }
-//        fillGUI();
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        if (resolvedAdventure.isEmpty()) {
+            event.forwardTo(AdventuresMenuView.class);
+            return;
+        }
+        setAdventureData(resolvedAdventure.get());
     }
 
     public void setAdventureData(AdventureData anAdventureData) {
@@ -231,14 +233,6 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         entryLocationSelector.setItems(locations);
         entryLocationSelector.setValue(adventureData.getLocationData().get(adventureData.getCurrentLocationId()));
         gridContainer.add(getLocationsGrid(locations));
-    }
-
-    public void loadAdventure(String anAdventureId) {
-        Optional<AdventureData> loadedAdventure = adventureService.findAdventureById(anAdventureId);
-        if (loadedAdventure.isPresent()) {
-            adventureData = loadedAdventure.get();
-            binder.setBean(adventureData);
-        }
     }
 
     @Override
