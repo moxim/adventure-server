@@ -31,10 +31,14 @@ import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
+import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPickerField;
+import com.pdg.adventure.view.location.LocationsMenuView;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -46,6 +50,7 @@ public class DirectionEditorView extends VerticalLayout
     private static final Logger LOG = LoggerFactory.getLogger(DirectionEditorView.class);
 
     private final transient AdventureService adventureService;
+    private final transient AdventureAccessService accessService;
     private final Binder<DirectionViewModel> binder;
     private final VocabularyPickerField verbSelector;
     private final VocabularyPickerField nounSelector;
@@ -63,11 +68,12 @@ public class DirectionEditorView extends VerticalLayout
     private transient AdventureData adventureData;
     private transient LocationData locationData;
 
-    public DirectionEditorView(AdventureService anAdventureService) {
+    public DirectionEditorView(AdventureService anAdventureService, AdventureAccessService anAccessService) {
 
         setSizeFull();
 
         adventureService = anAdventureService;
+        accessService = anAccessService;
         binder = new Binder<>(DirectionViewModel.class);
 
         directionData = new DirectionData();
@@ -259,6 +265,17 @@ public class DirectionEditorView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        if (resolvedAdventure.isEmpty()) {
+            event.forwardTo(AdventuresMenuView.class);
+            return;
+        }
+        Optional<LocationData> resolvedLocation = AdventureRouteResolver.resolveLocation(resolvedAdventure.get(), event);
+        if (resolvedLocation.isEmpty()) {
+            event.forwardTo(LocationsMenuView.class, new RouteParameters(
+                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), resolvedAdventure.get().getId())));
+            return;
+        }
         final Optional<String> optionalDirectionId = event.getRouteParameters().get(RouteIds.DIRECTION_ID.getValue());
         if (optionalDirectionId.isPresent()) {
             directionId = optionalDirectionId.get();
@@ -266,6 +283,7 @@ public class DirectionEditorView extends VerticalLayout
         } else {
             pageTitle = "New Direction";
         }
+        setData(resolvedLocation.get(), resolvedAdventure.get());
     }
 
     @Override

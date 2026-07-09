@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 
 /**
@@ -28,6 +29,9 @@ class DirectionEditorViewTest {
 
     @Mock
     private AdventureService adventureService;
+
+    @Mock
+    private AdventureAccessService accessService;
 
     private DirectionEditorView view;
     private AdventureData adventureData;
@@ -79,7 +83,7 @@ class DirectionEditorViewTest {
     @Test
     void constructor_shouldCreateViewWithAllComponents() {
         // when
-        view = new DirectionEditorView(adventureService);
+        view = new DirectionEditorView(adventureService, accessService);
 
         // then
         assertThat(view).isNotNull();
@@ -88,7 +92,7 @@ class DirectionEditorViewTest {
     @Test
     void getPageTitle_shouldReturnInitialTitle() {
         // given
-        view = new DirectionEditorView(adventureService);
+        view = new DirectionEditorView(adventureService, accessService);
 
         // when
         String title = view.getPageTitle();
@@ -100,7 +104,7 @@ class DirectionEditorViewTest {
     @Test
     void setData_shouldPopulateAdventureAndLocationData() {
         // given
-        view = new DirectionEditorView(adventureService);
+        view = new DirectionEditorView(adventureService, accessService);
         locationData.getDirectionsData().add(directionData);
 
         view.setUpLoading("direction-1");
@@ -118,7 +122,7 @@ class DirectionEditorViewTest {
     @Test
     void setData_withMultipleLocations_shouldExcludeCurrentLocationFromGrid() {
         // given
-        view = new DirectionEditorView(adventureService);
+        view = new DirectionEditorView(adventureService, accessService);
         locationData.getDirectionsData().add(directionData);
 
         LocationData thirdLocation = new LocationData();

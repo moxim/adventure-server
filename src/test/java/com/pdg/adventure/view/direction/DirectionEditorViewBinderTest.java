@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 
 /**
@@ -30,6 +31,9 @@ class DirectionEditorViewBinderTest {
 
     @Mock
     private AdventureService adventureService;
+
+    @Mock
+    private AdventureAccessService accessService;
 
     private DirectionEditorView view;
     private AdventureData adventureData;
@@ -78,7 +82,7 @@ class DirectionEditorViewBinderTest {
         commandData.setCommandDescription(commandDescription);
         directionData.setCommandData(commandData);
 
-        view = new DirectionEditorView(adventureService);
+        view = new DirectionEditorView(adventureService, accessService);
         locationData.getDirectionsData().add(directionData);
 
         // Access private binder field using reflection
