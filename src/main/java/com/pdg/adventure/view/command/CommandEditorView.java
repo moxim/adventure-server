@@ -25,13 +25,18 @@ import static com.pdg.adventure.model.Word.Type.*;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
+import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPicker;
 import com.pdg.adventure.view.component.VocabularyPickerField;
+import com.pdg.adventure.view.item.ItemsMenuView;
 import com.pdg.adventure.view.location.LocationsMainLayout;
+import com.pdg.adventure.view.location.LocationsMenuView;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
 
 @Route(value = "author/adventures/:adventureId/locations/:locationId/commands/:commandId/edit", layout = LocationsMainLayout.class)
@@ -46,6 +51,7 @@ public class CommandEditorView extends VerticalLayout
 
     private final transient AdventureService adventureService;
     private final transient ItemService itemService;
+    private final transient AdventureAccessService accessService;
     private final Binder<CommandViewModel> binder;
     private final VocabularyPicker nounSelector;
     private final VocabularyPicker adjectiveSelector;
@@ -68,9 +74,11 @@ public class CommandEditorView extends VerticalLayout
     private transient CommandChainData currentCommandChain; // The command chain being edited
     private int selectedCommandIndex = 0; // Which command in the chain we're currently editing
 
-    public CommandEditorView(AdventureService anAdventureService, ItemService anItemService) {
+    public CommandEditorView(AdventureService anAdventureService, ItemService anItemService,
+                             AdventureAccessService anAccessService) {
         adventureService = anAdventureService;
         itemService = anItemService;
+        accessService = anAccessService;
         binder = new Binder<>(CommandViewModel.class);
 
         verbSelector = new VocabularyPickerField("Verb", "You may filter on verbs.");
@@ -334,6 +342,28 @@ public class CommandEditorView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        if (resolvedAdventure.isEmpty()) {
+            event.forwardTo(AdventuresMenuView.class);
+            return;
+        }
+        Optional<LocationData> resolvedLocation = AdventureRouteResolver.resolveLocation(resolvedAdventure.get(), event);
+        if (resolvedLocation.isEmpty()) {
+            event.forwardTo(LocationsMenuView.class, new RouteParameters(
+                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), resolvedAdventure.get().getId())));
+            return;
+        }
+        final Optional<String> optionalItemId = event.getRouteParameters().get(RouteIds.ITEM_ID.getValue());
+        Optional<ItemData> resolvedItem = Optional.empty();
+        if (optionalItemId.isPresent()) {
+            resolvedItem = AdventureRouteResolver.resolveItem(resolvedLocation.get(), event);
+            if (resolvedItem.isEmpty()) {
+                event.forwardTo(ItemsMenuView.class, new RouteParameters(
+                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), resolvedAdventure.get().getId()),
+                        new RouteParam(RouteIds.LOCATION_ID.getValue(), resolvedLocation.get().getId())));
+                return;
+            }
+        }
         final Optional<String> optionalCommandId = event.getRouteParameters().get(RouteIds.COMMAND_ID.getValue());
         if (optionalCommandId.isPresent()) {
             commandId = optionalCommandId.get();
@@ -341,7 +371,11 @@ public class CommandEditorView extends VerticalLayout
         } else {
             pageTitle = "New Command";
         }
-
+        if (resolvedItem.isPresent()) {
+            setData(resolvedAdventure.get(), resolvedLocation.get(), resolvedItem.get());
+        } else {
+            setData(resolvedAdventure.get(), resolvedLocation.get());
+        }
     }
 
     @Override
