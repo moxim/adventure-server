@@ -13,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 
 /**
@@ -25,6 +26,9 @@ class VocabularyMenuViewTest {
 
     @Mock
     private AdventureService adventureService;
+
+    @Mock
+    private AdventureAccessService accessService;
 
     private VocabularyMenuView view;
     private AdventureData adventureData;
@@ -43,7 +47,7 @@ class VocabularyMenuViewTest {
     @Test
     void constructor_shouldCreateViewWithAllComponents() {
         // when
-        view = new VocabularyMenuView(adventureService);
+        view = new VocabularyMenuView(adventureService, accessService);
 
         // then
         assertThat(view).isNotNull();
@@ -52,7 +56,7 @@ class VocabularyMenuViewTest {
     @Test
     void setAdventureData_shouldPopulateGridWithWords() {
         // given
-        view = new VocabularyMenuView(adventureService);
+        view = new VocabularyMenuView(adventureService, accessService);
 
         Word sword = createTestWord("sword", Word.Type.NOUN);
         Word golden = createTestWord("golden", Word.Type.ADJECTIVE);
@@ -72,7 +76,7 @@ class VocabularyMenuViewTest {
     @Test
     void setAdventureData_withMultipleWords_shouldPreserveAllWords() {
         // given
-        view = new VocabularyMenuView(adventureService);
+        view = new VocabularyMenuView(adventureService, accessService);
 
         Word sword = createTestWord("sword", Word.Type.NOUN);
         Word shield = createTestWord("shield", Word.Type.NOUN);
@@ -114,7 +118,7 @@ class VocabularyMenuViewTest {
     @Test
     void setAdventureData_withEmptyVocabulary_shouldHandleEmptyState() {
         // given
-        view = new VocabularyMenuView(adventureService);
+        view = new VocabularyMenuView(adventureService, accessService);
 
         // Vocabulary has no words added (empty by default)
 

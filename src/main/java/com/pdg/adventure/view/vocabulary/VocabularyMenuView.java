@@ -24,12 +24,16 @@ import jakarta.annotation.security.RolesAllowed;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
+import com.pdg.adventure.view.adventure.AdventuresMenuView;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
@@ -38,9 +42,10 @@ import com.pdg.adventure.view.support.ViewSupporter;
 //@RouteAlias(value = "adventures/vocabulary", layout = VocabularyMainLayout.class)
 @PageTitle("Vocabulary")
 @RolesAllowed("ROLE_AUTHOR")
-public class VocabularyMenuView extends VerticalLayout implements SaveListener, GuiListener {
+public class VocabularyMenuView extends VerticalLayout implements SaveListener, GuiListener, BeforeEnterObserver {
 
     private final transient AdventureService adventureService;
+    private final transient AdventureAccessService accessService;
     private AdventureData adventureData;
     private VocabularyData vocabularyData;
 
@@ -54,10 +59,21 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     private DescribableWordAdapter currentWordAdapter;
     private transient WordUsageTracker wordUsageTracker;
 
-    public VocabularyMenuView(AdventureService anAdventureService) {
+    public VocabularyMenuView(AdventureService anAdventureService, AdventureAccessService anAccessService) {
         adventureService = anAdventureService;
+        accessService = anAccessService;
         setSizeFull();
         createGUI();
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        if (resolvedAdventure.isEmpty()) {
+            event.forwardTo(AdventuresMenuView.class);
+            return;
+        }
+        setAdventureData(resolvedAdventure.get());
     }
 
     private void createGUI() {
