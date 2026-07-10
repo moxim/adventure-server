@@ -21,11 +21,15 @@ import jakarta.annotation.security.RolesAllowed;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.pdg.adventure.model.*;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
+import com.pdg.adventure.view.adventure.AdventuresMenuView;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
@@ -40,6 +44,7 @@ import com.pdg.adventure.view.support.ViewSupporter;
 public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObserver {
 
     private final transient AdventureService adventureService;
+    private final transient AdventureAccessService accessService;
     private final Div gridContainer;
     private final Button createButton;
     private final ComboBox<LocationData> locationSelector;
@@ -48,10 +53,12 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
     private transient AdventureData adventureData;
     private ListDataProvider<ItemLocationPairAdapter> dataProvider;
 
-    public AllItemsMenuView(AdventureService anAdventureService, ItemService anItemService) {
+    public AllItemsMenuView(AdventureService anAdventureService, ItemService anItemService,
+                            AdventureAccessService anAccessService) {
         setSizeFull();
 
         adventureService = anAdventureService;
+        accessService = anAccessService;
 
         numberOfItems = new Span();
 
@@ -140,7 +147,12 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        // The setData method will be called from navigation
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        if (resolvedAdventure.isEmpty()) {
+            event.forwardTo(AdventuresMenuView.class);
+            return;
+        }
+        setData(resolvedAdventure.get());
     }
 
     public void setData(AdventureData anAdventureData) {

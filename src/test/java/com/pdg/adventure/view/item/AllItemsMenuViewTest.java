@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 
@@ -28,6 +29,9 @@ class AllItemsMenuViewTest {
 
     @Mock
     private ItemService itemService;
+
+    @Mock
+    private AdventureAccessService accessService;
 
     private AllItemsMenuView view;
     private AdventureData adventureData;
@@ -69,7 +73,7 @@ class AllItemsMenuViewTest {
     @Test
     void constructor_shouldCreateViewWithAllComponents() {
         // when
-        view = new AllItemsMenuView(adventureService, itemService);
+        view = new AllItemsMenuView(adventureService, itemService, accessService);
 
         // then
         assertThat(view).isNotNull();
@@ -78,7 +82,7 @@ class AllItemsMenuViewTest {
     @Test
     void setData_shouldPopulateGridWithItemsFromMultipleLocations() {
         // given
-        view = new AllItemsMenuView(adventureService, itemService);
+        view = new AllItemsMenuView(adventureService, itemService, accessService);
 
         // Add items to location 1
         ItemContainerData container1 = new ItemContainerData("19");
@@ -115,7 +119,7 @@ class AllItemsMenuViewTest {
     @Test
     void setData_shouldFilterOutNullItemsFromAllLocations() {
         // given
-        view = new AllItemsMenuView(adventureService, itemService);
+        view = new AllItemsMenuView(adventureService, itemService, accessService);
 
         // Add items with nulls to location 1
         ItemContainerData container1 = new ItemContainerData("19");
@@ -153,7 +157,7 @@ class AllItemsMenuViewTest {
     @Test
     void setData_withEmptyAdventure_shouldHandleEmptyState() {
         // given
-        view = new AllItemsMenuView(adventureService, itemService);
+        view = new AllItemsMenuView(adventureService, itemService, accessService);
 
         // Both locations have empty item containers
         ItemContainerData container1 = new ItemContainerData("19");
