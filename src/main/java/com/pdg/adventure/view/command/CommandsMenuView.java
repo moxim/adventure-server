@@ -32,11 +32,16 @@ import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.CommandProviderData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
+import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.item.ItemEditorView;
+import com.pdg.adventure.view.item.ItemsMenuView;
 import com.pdg.adventure.view.location.LocationEditorView;
+import com.pdg.adventure.view.location.LocationsMenuView;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -47,6 +52,7 @@ public class CommandsMenuView extends VerticalLayout
         implements HasDynamicTitle, BeforeEnterObserver {
     private final transient AdventureService adventureService;
     private final transient ItemService itemService;
+    private final transient AdventureAccessService accessService;
     private final Binder<CommandProviderData> binder;
     private final Div gridContainer;
     private final Button saveButton;
@@ -62,9 +68,11 @@ public class CommandsMenuView extends VerticalLayout
     private GridListDataView<CommandData> gridListDataView;
     private transient PreconditionActionFormatter formatter;
 
-    public CommandsMenuView(AdventureService anAdventureService, ItemService anItemService) {
+    public CommandsMenuView(AdventureService anAdventureService, ItemService anItemService,
+                            AdventureAccessService anAccessService) {
         adventureService = anAdventureService;
         itemService = anItemService;
+        accessService = anAccessService;
         binder = new BeanValidationBinder<>(CommandProviderData.class);
 
         setSizeFull();
@@ -159,12 +167,32 @@ public class CommandsMenuView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        if (resolvedAdventure.isEmpty()) {
+            event.forwardTo(AdventuresMenuView.class);
+            return;
+        }
+        Optional<LocationData> resolvedLocation = AdventureRouteResolver.resolveLocation(resolvedAdventure.get(), event);
+        if (resolvedLocation.isEmpty()) {
+            event.forwardTo(LocationsMenuView.class, new RouteParameters(
+                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), resolvedAdventure.get().getId())));
+            return;
+        }
         final Optional<String> optionalItemId = event.getRouteParameters().get(RouteIds.ITEM_ID.getValue());
         if (optionalItemId.isPresent()) {
             pageTitle = "Commands for item #" + optionalItemId.get();
+            Optional<ItemData> resolvedItem = AdventureRouteResolver.resolveItem(resolvedLocation.get(), event);
+            if (resolvedItem.isEmpty()) {
+                event.forwardTo(ItemsMenuView.class, new RouteParameters(
+                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), resolvedAdventure.get().getId()),
+                        new RouteParam(RouteIds.LOCATION_ID.getValue(), resolvedLocation.get().getId())));
+                return;
+            }
+            setData(resolvedAdventure.get(), resolvedLocation.get(), resolvedItem.get());
         } else {
             String locationId = event.getRouteParameters().get(LOCATION_ID.getValue()).orElse("666");
             pageTitle = "Commands for location #" + locationId;
+            setData(resolvedAdventure.get(), resolvedLocation.get());
         }
     }
 
