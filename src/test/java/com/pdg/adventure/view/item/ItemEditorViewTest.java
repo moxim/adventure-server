@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 
@@ -31,6 +32,9 @@ class ItemEditorViewTest {
 
     @Mock
     private ItemService itemService;
+
+    @Mock
+    private AdventureAccessService accessService;
 
     private ItemEditorView view;
     private AdventureData adventureData;
@@ -84,7 +88,7 @@ class ItemEditorViewTest {
     @Test
     void constructor_shouldCreateViewWithAllComponents() {
         // when
-        view = new ItemEditorView(adventureService, itemService);
+        view = new ItemEditorView(adventureService, itemService, accessService);
 
         // then
         assertThat(view).isNotNull();
@@ -93,7 +97,7 @@ class ItemEditorViewTest {
     @Test
     void setData_shouldPopulateAdventureAndLocationData() {
         // given
-        view = new ItemEditorView(adventureService, itemService);
+        view = new ItemEditorView(adventureService, itemService, accessService);
 
         // when
         view.setData(adventureData, locationData);
@@ -107,7 +111,7 @@ class ItemEditorViewTest {
     @Test
     void setData_withExistingItem_shouldLoadItemFromContainer() {
         // given
-        view = new ItemEditorView(adventureService, itemService);
+        view = new ItemEditorView(adventureService, itemService, accessService);
         locationData.getItemContainerData().getItems().add(itemData);
 
         // when
@@ -123,7 +127,7 @@ class ItemEditorViewTest {
     @Test
     void getPageTitle_shouldReturnNullBeforeRouteEnter() {
         // given
-        view = new ItemEditorView(adventureService, itemService);
+        view = new ItemEditorView(adventureService, itemService, accessService);
 
         // when
         String title = view.getPageTitle();

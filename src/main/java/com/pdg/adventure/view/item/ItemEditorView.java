@@ -33,12 +33,16 @@ import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.model.condition.CarriedConditionData;
 import com.pdg.adventure.model.condition.HereConditionData;
 import com.pdg.adventure.model.condition.NotConditionData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
+import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.command.CommandsMenuView;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPickerField;
+import com.pdg.adventure.view.location.LocationsMenuView;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ShowNotification;
 import com.pdg.adventure.view.support.ViewSupporter;
@@ -53,6 +57,7 @@ public class ItemEditorView extends VerticalLayout
 
     private final transient AdventureService adventureService;
     private final transient ItemService itemService;
+    private final transient AdventureAccessService accessService;
     private final Binder<ItemViewModel> binder;
     private final VocabularyPickerField adjectiveSelector;
     private final VocabularyPickerField nounSelector;
@@ -68,12 +73,14 @@ public class ItemEditorView extends VerticalLayout
     private transient AdventureData adventureData;
     private transient LocationData locationData;
 
-    public ItemEditorView(AdventureService anAdventureService, ItemService anItemService) {
+    public ItemEditorView(AdventureService anAdventureService, ItemService anItemService,
+                          AdventureAccessService anAccessService) {
 
         setSizeFull();
 
         adventureService = anAdventureService;
         itemService = anItemService;
+        accessService = anAccessService;
         binder = new Binder<>(ItemViewModel.class);
 
         itemData = new ItemData();
@@ -399,14 +406,25 @@ public class ItemEditorView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        if (resolvedAdventure.isEmpty()) {
+            event.forwardTo(AdventuresMenuView.class);
+            return;
+        }
+        Optional<LocationData> resolvedLocation = AdventureRouteResolver.resolveLocation(resolvedAdventure.get(), event);
+        if (resolvedLocation.isEmpty()) {
+            event.forwardTo(LocationsMenuView.class, new RouteParameters(
+                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), resolvedAdventure.get().getId())));
+            return;
+        }
         final Optional<String> optionalItemId = event.getRouteParameters().get(RouteIds.ITEM_ID.getValue());
-
         if (optionalItemId.isPresent()) {
             itemId = optionalItemId.get();
             pageTitle = "Edit Item #" + itemId;
         } else {
             pageTitle = "New Item";
         }
+        setData(resolvedAdventure.get(), resolvedLocation.get());
     }
 
     @Override

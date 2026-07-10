@@ -7,17 +7,23 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.RouteParameters;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -28,6 +34,8 @@ import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.security.model.UserData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.support.RouteIds;
@@ -47,6 +55,7 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
 
     private AdventureService adventureService;
     private ItemService itemService;
+    private AdventureAccessService accessService;
 
     private AdventureData adventureData;
     private LocationData locationData;
@@ -57,6 +66,7 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
     void setUp() {
         adventureService = mock(AdventureService.class);
         itemService = mock(ItemService.class);
+        accessService = mock(AdventureAccessService.class);
 
         adventureData = new AdventureData();
         adventureData.setId("adventure-1");
@@ -89,8 +99,19 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
         descData.setLongDescription("A magnificent golden sword");
         existingItem.setDescriptionData(descData);
 
-        view = new ItemEditorView(adventureService, itemService);
+        UserData testUser = new UserData();
+        testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
+
+        view = new ItemEditorView(adventureService, itemService, accessService);
         UI.getCurrent().add(view);
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
     }
 
     /** Simulate router navigation carrying (or omitting) an itemId, as the real app does. */
@@ -98,6 +119,10 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
         BeforeEnterEvent event = mock(BeforeEnterEvent.class);
         RouteParameters params = mock(RouteParameters.class);
         when(event.getRouteParameters()).thenReturn(params);
+        when(params.get(RouteIds.ADVENTURE_ID.getValue())).thenReturn(Optional.of(adventureData.getId()));
+        when(params.get(RouteIds.LOCATION_ID.getValue())).thenReturn(Optional.of(locationData.getId()));
+        when(accessService.findAdventureById(eq(adventureData.getId()), any(UserData.class)))
+                .thenReturn(Optional.of(adventureData));
         when(params.get(RouteIds.ITEM_ID.getValue())).thenReturn(Optional.ofNullable(itemId));
         view.beforeEnter(event);
     }
