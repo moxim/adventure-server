@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 
@@ -31,6 +32,9 @@ class ItemsMenuViewTest {
 
     @Mock
     private ItemService itemService;
+
+    @Mock
+    private AdventureAccessService accessService;
 
     private ItemsMenuView view;
     private AdventureData adventureData;
@@ -62,7 +66,7 @@ class ItemsMenuViewTest {
     @Test
     void constructor_shouldCreateViewWithAllComponents() {
         // when
-        view = new ItemsMenuView(adventureService, itemService);
+        view = new ItemsMenuView(adventureService, itemService, accessService);
 
         // then
         assertThat(view).isNotNull();
@@ -71,7 +75,7 @@ class ItemsMenuViewTest {
     @Test
     void setData_shouldPopulateGridWithItems() {
         // given
-        view = new ItemsMenuView(adventureService, itemService);
+        view = new ItemsMenuView(adventureService, itemService, accessService);
 
         ItemContainerData itemContainer = new ItemContainerData("19");
         List<ItemData> items = new ArrayList<>();
@@ -96,7 +100,7 @@ class ItemsMenuViewTest {
     @Test
     void setData_shouldFilterOutNullItems() {
         // given
-        view = new ItemsMenuView(adventureService, itemService);
+        view = new ItemsMenuView(adventureService, itemService, accessService);
 
         ItemContainerData itemContainer = new ItemContainerData("19");
         List<ItemData> items = new ArrayList<>();
@@ -126,7 +130,7 @@ class ItemsMenuViewTest {
     @Test
     void setData_withEmptyLocation_shouldHandleEmptyState() {
         // given
-        view = new ItemsMenuView(adventureService, itemService);
+        view = new ItemsMenuView(adventureService, itemService, accessService);
 
         ItemContainerData itemContainer = new ItemContainerData("19");
         itemContainer.setItems(new ArrayList<>());
