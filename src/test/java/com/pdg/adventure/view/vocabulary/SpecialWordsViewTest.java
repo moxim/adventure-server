@@ -20,12 +20,14 @@ import static org.mockito.Mockito.verify;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 
 class SpecialWordsViewTest extends BrowserlessTest {
 
     private AdventureService adventureService;
+    private AdventureAccessService accessService;
     private SpecialWordsView view;
     private AdventureData adventureData;
     private VocabularyData vocabularyData;
@@ -34,6 +36,7 @@ class SpecialWordsViewTest extends BrowserlessTest {
     @BeforeEach
     void setUp() {
         adventureService = mock(AdventureService.class);
+        accessService = mock(AdventureAccessService.class);
 
         vocabularyData = new VocabularyData();
         vocabularyData.createWord("take", Word.Type.VERB);
@@ -47,7 +50,7 @@ class SpecialWordsViewTest extends BrowserlessTest {
         adventureData.setVocabularyData(vocabularyData);
         adventureData.setLocationData(new HashMap<>());
 
-        view = new SpecialWordsView(adventureService);
+        view = new SpecialWordsView(adventureService, accessService);
         UI.getCurrent().add(view);
     }
 
