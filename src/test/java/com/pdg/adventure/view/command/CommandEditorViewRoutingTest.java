@@ -106,6 +106,37 @@ class CommandEditorViewRoutingTest extends BrowserlessTest {
     }
 
     @Test
+    void beforeEnter_percentEncodedCommandId_decodesAndPopulates() {
+        // Simulates cold-load browser navigation: Vaadin hands beforeEnter the route
+        // parameter still percent-encoded (jump%7C%7Csea) instead of the raw pipe-delimited
+        // command id (jump||sea) that in-app navigation preserves.
+        CommandData command = new CommandData();
+        command.setCommandDescription(new CommandDescriptionData("jump||sea"));
+        CommandChainData chain = new CommandChainData();
+        chain.setCommands(List.of(command));
+        CommandProviderData provider = new CommandProviderData();
+        provider.setAvailableCommands(Map.of("jump||sea", chain));
+
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        location.setCommandProviderData(provider);
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of("loc-1", location));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"),
+                new RouteParam(RouteIds.COMMAND_ID.getValue(), "jump%7C%7Csea")));
+
+        assertThat(view.getPageTitle()).isEqualTo("Edit Command #jump||sea");
+        Grid<?> grid = find(Grid.class, view).single();
+        assertThat(test(grid).size()).isEqualTo(1);
+    }
+
+    @Test
     void beforeEnter_itemScoped_validIds_populatesChainGridFromItemCommands() {
         ItemData item = new ItemData();
         item.setId("item-1");
