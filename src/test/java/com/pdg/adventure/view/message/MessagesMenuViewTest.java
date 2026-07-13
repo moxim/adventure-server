@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.MessageService;
 
@@ -29,6 +30,9 @@ class MessagesMenuViewTest {
     @Mock
     private MessageService messageService;
 
+    @Mock
+    private AdventureAccessService accessService;
+
     private MessagesMenuView view;
     private AdventureData adventureData;
 
@@ -43,7 +47,7 @@ class MessagesMenuViewTest {
     @Test
     void constructor_shouldCreateViewWithAllComponents() {
         // when
-        view = new MessagesMenuView(messageService, adventureService);
+        view = new MessagesMenuView(messageService, adventureService, accessService);
 
         // then
         assertThat(view).isNotNull();
@@ -52,7 +56,7 @@ class MessagesMenuViewTest {
     @Test
     void setData_shouldPopulateGridWithMessages() {
         // given
-        view = new MessagesMenuView(messageService, adventureService);
+        view = new MessagesMenuView(messageService, adventureService, accessService);
 
         MessageData welcomeMessage = createTestMessage("welcome_message", "Welcome to the adventure!");
         MessageData farewellMessage = createTestMessage("farewell_message", "Goodbye, brave adventurer!");
@@ -74,7 +78,7 @@ class MessagesMenuViewTest {
     @Test
     void setData_withMultipleMessages_shouldPreserveAllMessages() {
         // given
-        view = new MessagesMenuView(messageService, adventureService);
+        view = new MessagesMenuView(messageService, adventureService, accessService);
 
         MessageData message1 = createTestMessage("intro_message", "Welcome to the adventure!");
         MessageData message2 = createTestMessage("help_message", "Type 'help' for assistance");
@@ -96,7 +100,7 @@ class MessagesMenuViewTest {
     @Test
     void setData_withEmptyAdventure_shouldHandleEmptyState() {
         // given
-        view = new MessagesMenuView(messageService, adventureService);
+        view = new MessagesMenuView(messageService, adventureService, accessService);
 
         // Adventure has empty messages map
         adventureData.setMessages(new HashMap<>());
