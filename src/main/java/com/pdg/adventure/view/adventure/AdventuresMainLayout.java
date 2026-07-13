@@ -16,7 +16,7 @@ public class AdventuresMainLayout extends AdventureAppLayout {
     public AdventuresMainLayout() {
         String title = "Adventure Builder";
 
-        createHeader(title);
+        // Header is created once by the AdventureAppLayout constructor; only the drawer is view-specific.
         createDrawer(title);
 
         setPrimarySection(Section.NAVBAR);

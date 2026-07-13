@@ -81,7 +81,7 @@ public class CommandFactory {
                                                                                                         allMessages));
         PreCondition wornCondition = new WornCondition(anItem);
         dropAndRemoveCommand.addPreCondition(wornCondition);
-        dropAndRemoveCommand.addFollowUpAction(new RemoveAction(anItem, allMessages));
+        dropAndRemoveCommand.addAction(new RemoveAction(anItem, allMessages));
         anItem.addCommand(dropAndRemoveCommand);
 
         GenericCommand dropCommand = new GenericCommand(dropCommandDescription, new DropAction(anItem,

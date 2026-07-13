@@ -133,4 +133,10 @@ public class MessageActionEditor extends ActionEditorComponent {
         }
         return isValid;
     }
+
+    @Override
+    public String getActionSummary() {
+        String id = messageIdComboBox == null ? null : messageIdComboBox.getValue();
+        return (id == null || id.isBlank()) ? "(none)" : id;
+    }
 }

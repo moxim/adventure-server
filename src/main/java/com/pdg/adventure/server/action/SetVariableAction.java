@@ -1,6 +1,7 @@
 package com.pdg.adventure.server.action;
 
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
@@ -8,11 +9,12 @@ import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
-@Getter
+@Data
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SetVariableAction extends AbstractVariableAction {
 
-    private final String variableName;
-    private final String variableValue;
+    private String variableName;
+    private String variableValue;
 
     public SetVariableAction(String aName, String aValue, VariableProvider aVariableProvider,
                              MessagesHolder aMessagesHolder) {

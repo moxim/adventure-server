@@ -6,5 +6,5 @@ import com.pdg.adventure.model.LocationData;
 /**
  * Helper class to pair an item with its location for display purposes.
  */
-record ItemLocationPair(ItemData item, LocationData location) {
+public record ItemLocationPair(ItemData item, LocationData location) {
 }

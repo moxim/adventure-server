@@ -26,6 +26,16 @@ public class LocationUsageTracker {
         private final String context;
         private final String commandSpecification;
 
+        private LocationUsage() {
+            // this c'tor can never be called, so it can never be instantiated, so we can assign any crap to
+            // those attributes and keep the compiler happy
+            this.usageType = "";
+            this.sourceLocationId = "";
+            this.sourceLocationDescription = "";
+            this.context = "";
+            this.commandSpecification = "";
+        }
+
         public LocationUsage(String usageType, String sourceLocationId, String sourceLocationDescription,
                              String context, String commandSpecification) {
             this.usageType = usageType;
@@ -209,21 +219,11 @@ public class LocationUsageTracker {
     private static void checkCommand(final String sourceLocationId, final String sourceLocationDesc,
                                      final String targetLocationId, final List<LocationUsage> usages,
                                      final CommandData command, final String commandSpec) {
-        // Check primary action
-        if (command.getAction() != null) {
-            checkMoveAction(command.getAction(), sourceLocationId, sourceLocationDesc,
-                            commandSpec, "Primary Action", targetLocationId, usages);
-        }
-
-        // Check follow-up actions
-        if (command.getFollowUpActions() != null) {
-            int followUpIndex = 1;
-            for (ActionData followUpAction : command.getFollowUpActions()) {
-                checkMoveAction(followUpAction, sourceLocationId, sourceLocationDesc,
-                                commandSpec, "Follow-up Action #" + followUpIndex,
-                                targetLocationId, usages);
-                followUpIndex++;
-            }
+        int actionIndex = 1;
+        for (ActionData action : command.getActions()) {
+            checkMoveAction(action, sourceLocationId, sourceLocationDesc,
+                            commandSpec, "Action #" + actionIndex, targetLocationId, usages);
+            actionIndex++;
         }
     }
 

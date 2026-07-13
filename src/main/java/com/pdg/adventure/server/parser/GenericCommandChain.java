@@ -39,16 +39,26 @@ public class GenericCommandChain implements CommandChain {
 
     @Override
     public ExecutionResult execute() {
-        ExecutionResult result = new CommandExecutionResult();
+        List<String> messages = new ArrayList<>();
+        boolean anyApplied = false;
+        ExecutionResult last = new CommandExecutionResult();   // FAILURE / empty default
         for (Command command : commands) {
-            if (result.getExecutionState() != ExecutionResult.State.SUCCESS) {
-                ExecutionResult fromAction = command.execute();
-                result.setResultMessage(fromAction.getResultMessage());
-                if (fromAction.getExecutionState() == ExecutionResult.State.SUCCESS) {
-                    result.setExecutionState(ExecutionResult.State.SUCCESS);
-                    break;
+            ExecutionResult fromCommand = command.execute();
+            last = fromCommand;
+            if (fromCommand.getExecutionState() == ExecutionResult.State.SUCCESS) {
+                anyApplied = true;
+                String msg = fromCommand.getResultMessage();
+                if (msg != null && !msg.isBlank()) {
+                    messages.add(msg);
                 }
             }
+        }
+        ExecutionResult result = new CommandExecutionResult();
+        if (anyApplied) {
+            result.setExecutionState(ExecutionResult.State.SUCCESS);
+            result.setResultMessage(String.join(System.lineSeparator(), messages));
+        } else {
+            result.setResultMessage(last.getResultMessage());  // surface last failure; empty → "You can't do that."
         }
         return result;
     }

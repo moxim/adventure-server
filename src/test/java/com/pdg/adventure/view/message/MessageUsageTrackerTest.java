@@ -64,7 +64,7 @@ class MessageUsageTrackerTest {
         assertThat(usage.locationDescription()).isEqualTo("Hall");
         assertThat(usage.commandSpecification()).isEqualTo("get key");
         assertThat(usage.actionType()).isEqualTo("Message Action");
-        assertThat(usage.context()).isEqualTo("Primary Action");
+        assertThat(usage.context()).isEqualTo("Action #1");
     }
 
     @Test
@@ -236,7 +236,7 @@ class MessageUsageTrackerTest {
 
         MessageActionData messageAction = new MessageActionData();
         messageAction.setMessageId(messageId);
-        command.setAction(messageAction);
+        command.addAction(messageAction);
 
         commandChain.getCommands().add(command);
         commands.put(commandSpec, commandChain);
@@ -260,21 +260,18 @@ class MessageUsageTrackerTest {
         CommandChainData commandChain = new CommandChainData();
         CommandData command = new CommandData();
 
-        // Primary action
+        // Action #1: primary action
         MessageActionData primaryAction = new MessageActionData();
         primaryAction.setMessageId(messageId);
-        command.setAction(primaryAction);
+        command.addAction(primaryAction);
 
-        // Follow-up actions
+        // Action #2 and #3: follow-up actions
         MessageActionData followUp1 = new MessageActionData();
         followUp1.setMessageId(messageId);
         MessageActionData followUp2 = new MessageActionData();
         followUp2.setMessageId(messageId);
-
-        List<MessageActionData> followUpActions = new java.util.ArrayList<>();
-        followUpActions.add(followUp1);
-        followUpActions.add(followUp2);
-        command.setFollowUpActions(followUpActions);
+        command.addAction(followUp1);
+        command.addAction(followUp2);
 
         commandChain.getCommands().add(command);
         commands.put("test_command", commandChain);

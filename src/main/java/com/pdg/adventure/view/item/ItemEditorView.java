@@ -5,6 +5,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -16,6 +17,7 @@ import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +36,7 @@ import com.pdg.adventure.model.condition.NotConditionData;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
+import com.pdg.adventure.view.command.CommandsMenuView;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.support.RouteIds;
@@ -56,6 +59,7 @@ public class ItemEditorView extends VerticalLayout
 
     private Button saveButton;
     private Button resetButton;
+    private Button commandsButton;
     private String pageTitle;
 
     private transient String itemId;
@@ -94,6 +98,15 @@ public class ItemEditorView extends VerticalLayout
         Checkbox isWornCheckbox = new Checkbox("Is worn");
         isWornCheckbox.setTooltipText("If checked, this item starts out being worn.");
 
+        commandsButton = new Button("Commands", _ ->
+                UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
+                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                        new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                        new RouteParam(RouteIds.ITEM_ID.getValue(), itemId)))
+                  .ifPresent(view -> view.setData(adventureData, locationData, itemData))
+        );
+        commandsButton.setEnabled(false);
+
         final ResetBackSaveView resetBackSaveView = setUpNavigationButtons();
 
         // Bind fields
@@ -119,8 +132,10 @@ public class ItemEditorView extends VerticalLayout
         });
 
         HorizontalLayout h1 = new HorizontalLayout(adjectiveSelector, nounSelector);
-        HorizontalLayout checkboxRow = new HorizontalLayout(isContainableCheckbox, isWearableCheckbox, isWornCheckbox);
+        HorizontalLayout checkboxRow = new HorizontalLayout(isContainableCheckbox, isWearableCheckbox, isWornCheckbox,
+                                                            commandsButton);
         checkboxRow.setSpacing(true);
+        checkboxRow.setAlignItems(Alignment.CENTER);
 
         setMargin(true);
         setPadding(true);
@@ -222,14 +237,17 @@ public class ItemEditorView extends VerticalLayout
         Word takeVerb = aVocabularyData.getTakeWord();
         Word dropVerb = aVocabularyData.getDropWord();
         if (dropVerb == null || takeVerb == null) {
-            Notification.show("Please select verbs to allow a player to handle this item in the vocabulary section.",
-                              3000, Notification.Position.MIDDLE);
+            Notification notification = Notification.show(
+                    "Please select verbs to allow a player to handle this item in the vocabulary section.",
+                    5000, Notification.Position.MIDDLE);
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
             return false;
         } else {
             LOG.info("Selected verbs: {} and {} for item: {}", takeVerb.getText(), dropVerb.getText(),
                      anItemData.getId());
             createPickupCommands(takeVerb, dropVerb, anItemData);
-            Notification.show("Take and drop commands added", 2000, Notification.Position.BOTTOM_START);
+            Notification notification = Notification.show("Take and drop commands added", 2000, Notification.Position.BOTTOM_START);
+            notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         }
         return true;
     }
@@ -250,7 +268,7 @@ public class ItemEditorView extends VerticalLayout
 
             // Remove commands with TakeActionData or DropActionData
             commandChain.getCommands().removeIf(command -> {
-                if (command.getAction() == null) {
+                if (command.getActions().isEmpty()) {
                     return false;
                 }
                 final CommandData rawTakeCommandData = getRawCommandData(
@@ -270,7 +288,8 @@ public class ItemEditorView extends VerticalLayout
 
         LOG.info("Removed take/drop commands from item: {}", anItemData.getId());
         if (aRequestForNotification.equals(ShowNotification.SHOW_NOTIFICATION)) {
-            Notification.show("Take and drop commands removed", 2000, Notification.Position.BOTTOM_START);
+            Notification notification = Notification.show("Take and drop commands removed", 2000, Notification.Position.BOTTOM_START);
+            notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         }
     }
 
@@ -293,7 +312,7 @@ public class ItemEditorView extends VerticalLayout
         takeCommandFailed_allreadyCarried.getPreConditions().add(carriedCondition);
         MessageActionData messageData_alreadyCarried = new MessageActionData();
         messageData_alreadyCarried.setMessageId("You already carry the %s.".formatted(itemDescription));
-        takeCommandFailed_allreadyCarried.setAction(messageData_alreadyCarried);
+        takeCommandFailed_allreadyCarried.setActions(new ArrayList<>(List.of(messageData_alreadyCarried)));
         anItemData.getCommandProviderData().add(takeCommandFailed_allreadyCarried);
 
         final CommandData takeCommandData = createTakeCommandData(aTakeVerb, anItemData);
@@ -304,7 +323,7 @@ public class ItemEditorView extends VerticalLayout
         dropCommandFailed_notCarried.getPreConditions().add(notCarriedCondition);
         MessageActionData messageData_notCarried = new MessageActionData();
         messageData_notCarried.setMessageId("You are not carrying the %s.".formatted(itemDescription));
-        dropCommandFailed_notCarried.setAction(messageData_notCarried);
+        dropCommandFailed_notCarried.setActions(new ArrayList<>(List.of(messageData_notCarried)));
         anItemData.getCommandProviderData().add(dropCommandFailed_notCarried);
 
         final CommandData dropCommandData = createDropCommandData(aDropVerb, anItemData);
@@ -315,7 +334,7 @@ public class ItemEditorView extends VerticalLayout
         final var takeCommandData = getRawCommandData(aVerb, anItem);
         final var takeActionData = new TakeActionData();
         takeActionData.setThingId(anItem.getId());
-        takeCommandData.setAction(takeActionData);
+        takeCommandData.setActions(new ArrayList<>(List.of(takeActionData)));
         return takeCommandData;
     }
 
@@ -323,7 +342,7 @@ public class ItemEditorView extends VerticalLayout
         final var dropCommandData = getRawCommandData(aVerb, anItem);
         DropActionData dropActionData = new DropActionData();
         dropActionData.setThingId(anItem.getId());
-        dropCommandData.setAction(dropActionData);
+        dropCommandData.setActions(new ArrayList<>(List.of(dropActionData)));
         return dropCommandData;
     }
 
@@ -404,14 +423,14 @@ public class ItemEditorView extends VerticalLayout
         adventureData = anAdventureData;
         locationData = aLocationData;
 
-        // Load item from in-memory container or create new
-        if (itemId != null && !itemId.isEmpty()) {
-            itemData = locationData.getItemContainerData().getItems().stream()
-                                   .filter(item -> item.getId().equals(itemId)).findFirst()
-                                   .orElseGet(ItemData::new);
-        } else {
-            itemData = new ItemData();
-        }
+        // Load item from in-memory container or create new. A new ItemData already carries a
+        // (ULID) id, so "is this an existing item?" must be answered by container membership,
+        // not by whether the id is non-empty.
+        Optional<ItemData> existingItem = (itemId != null && !itemId.isEmpty())
+                ? locationData.getItemContainerData().getItems().stream()
+                              .filter(item -> item.getId().equals(itemId)).findFirst()
+                : Optional.empty();
+        itemData = existingItem.orElseGet(ItemData::new);
         itemId = itemData.getId();
         itemData.setAdventureId(adventureData.getId());
         itemData.setLocationId(locationData.getId());
@@ -421,6 +440,9 @@ public class ItemEditorView extends VerticalLayout
         nounSelector.populate(vocabularyData.getWords(NOUN));
 
         saveButton.setEnabled(false);
+        // Commands live on the persisted item; only offer them for an item already in the container.
+        // Saving commands for an unsaved item would create a dangling document.
+        commandsButton.setEnabled(existingItem.isPresent());
         ivm = new ItemViewModel(itemData);
 
         binder.readBean(ivm);

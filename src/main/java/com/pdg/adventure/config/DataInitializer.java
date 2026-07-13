@@ -5,6 +5,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
+import java.util.UUID;
 
 import com.pdg.adventure.security.model.Role;
 import com.pdg.adventure.security.model.UserData;
@@ -27,12 +28,13 @@ public class DataInitializer implements CommandLineRunner {
         if (userRepository.findByUsername("admin").isEmpty()) {
             UserData admin = new UserData();
             admin.setUsername("admin");
-            admin.setPassword(passwordEncoder.encode("admin123")); // TODO: CHANGE THIS IN PRODUCTION!
+            String adminPassword = UUID.randomUUID().toString();
+            admin.setPassword(passwordEncoder.encode(adminPassword));
             admin.setRoles(Set.of(Role.ADMIN, Role.AUTHOR, Role.PLAYER));
             admin.setEnabled(true);
 
             userRepository.save(admin);
-            System.out.println(">>> Default Admin user created: admin / admin123");
+            System.out.println(">>> Default Admin user created: admin / " + adminPassword);
         } else {
             System.out.println(">>> Admin user already exists. Skipping creation.");
         }

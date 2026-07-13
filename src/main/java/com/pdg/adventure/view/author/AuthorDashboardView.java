@@ -12,7 +12,7 @@ import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 @RolesAllowed("ROLE_AUTHOR") // Only Authors (and Admins via hierarchy) can access
 public class AuthorDashboardView extends VerticalLayout {
     public AuthorDashboardView() {
-        Button gameManagementBtn = new Button("Game Management", e -> getUI().ifPresent(ui -> ui.navigate("author/adventures")));
+        Button gameManagementBtn = new Button("Adventures", e -> getUI().ifPresent(ui -> ui.navigate("author/adventures")));
         add(new H1("Author Dashboard - Create your stories here"), gameManagementBtn);
     }
 }

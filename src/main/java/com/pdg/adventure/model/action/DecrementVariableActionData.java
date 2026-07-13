@@ -5,13 +5,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import com.pdg.adventure.model.basic.BasicData;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class DecrementVariableActionData extends BasicData {
+public class DecrementVariableActionData extends ActionData {
     private String name;
     private String value;
 }

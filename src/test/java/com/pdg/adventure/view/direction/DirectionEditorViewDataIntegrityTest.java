@@ -132,11 +132,11 @@ class DirectionEditorViewDataIntegrityTest {
         action.setLocationId("location-2");
 
         // when
-        commandData.setAction(action);
+        commandData.addAction(action);
 
         // then
-        assertThat(commandData.getAction()).isNotNull();
-        assertThat(((MovePlayerActionData) commandData.getAction()).getLocationId()).isEqualTo("location-2");
+        assertThat(commandData.getActions()).isNotEmpty();
+        assertThat(((MovePlayerActionData) commandData.getActions().getFirst()).getLocationId()).isEqualTo("location-2");
     }
 
     @Test
@@ -145,7 +145,7 @@ class DirectionEditorViewDataIntegrityTest {
         CommandData commandData = new CommandData();
 
         // when/then
-        assertThatThrownBy(() -> commandData.setAction(null))
+        assertThatThrownBy(() -> commandData.addAction(null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Action cannot be null");
     }

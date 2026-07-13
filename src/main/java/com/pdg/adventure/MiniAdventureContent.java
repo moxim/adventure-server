@@ -279,9 +279,9 @@ public class MiniAdventureContent {
                                                             new MessageAction(allMessages.getMessage("2"),
                                                                               allMessages));
         cutSuccessfully.addPreCondition(knifeCarried);
-        cutSuccessfully.addFollowUpAction(new CreateAction(pelt, rabbit::getParentContainer, allMessages));
-        cutSuccessfully.addFollowUpAction(new CreateAction(skinnedRabbit, location::getItemContainer, allMessages));
-        cutSuccessfully.addFollowUpAction(new DestroyAction(rabbit, allMessages));
+        cutSuccessfully.addAction(new CreateAction(pelt, rabbit::getParentContainer, allMessages));
+        cutSuccessfully.addAction(new CreateAction(skinnedRabbit, location::getItemContainer, allMessages));
+        cutSuccessfully.addAction(new DestroyAction(rabbit, allMessages));
         rabbit.addCommand(cutSuccessfully);
         commandFactory.setUpLookCommands(rabbit);
         commandFactory.setUpTakeCommands(rabbit, new MessageAction(allMessages.getMessage("22"), allMessages));

@@ -156,9 +156,13 @@ Layout is mirrored from `src/main/java`:
 ```
 src/test/java/com/pdg/adventure/
 ├── MiniAdventureTest.java           ← end-to-end (full Spring context)
-├── model/                           ← DO unit tests (Word, MessageData, …)
+├── model/                           ← DO unit tests
 │   ├── basic/
-│   ├── …
+│   │   └── CommandDescriptionDataTest.java
+│   ├── WordTest.java
+│   ├── MessageDataTest.java
+│   ├── GenericCommandProviderDataTest.java
+│   └── VocabularyDataTest.java      ← tests for VocabularyData.findWordsBySynonym
 ├── server/
 │   ├── action/                      ← Action unit tests
 │   ├── condition/

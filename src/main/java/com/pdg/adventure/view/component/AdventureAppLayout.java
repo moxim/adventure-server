@@ -33,12 +33,13 @@ import com.pdg.adventure.view.support.ViewSupporter;
 @PermitAll
 public class AdventureAppLayout extends AppLayout implements AfterNavigationObserver {
 
+    static final String APP_NAME = "Adventure Builder";
+
     private H2 viewTitle;
     private VerticalLayout drawer;
 
     public AdventureAppLayout() {
-        String title = "Adventure Builder";
-        createHeader(title);
+        createHeader(APP_NAME);
     }
 
     public void createHeader(String aTitle) {
@@ -134,7 +135,12 @@ public class AdventureAppLayout extends AppLayout implements AfterNavigationObse
 
     @Override
     public void afterNavigation(final AfterNavigationEvent aAfterNavigationEvent) {
-        viewTitle.setText(getCurrentPageTitle());
+        viewTitle.setText(navbarTitleOrDefault(getCurrentPageTitle()));
+    }
+
+    /** The navbar title for the current view, falling back to the app name when a view declares none. */
+    static String navbarTitleOrDefault(String pageTitle) {
+        return (pageTitle == null || pageTitle.isBlank()) ? APP_NAME : pageTitle;
     }
 
     private String getCurrentPageTitle() {

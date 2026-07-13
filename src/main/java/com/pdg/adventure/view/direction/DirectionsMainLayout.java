@@ -7,7 +7,7 @@ import com.pdg.adventure.view.component.AdventureAppLayout;
 public class DirectionsMainLayout extends AdventureAppLayout {
 
     public DirectionsMainLayout() {
-        String appName = "Directions";
+        String appName = "Exits";
         Image appImage = new Image("icons/path.gif", appName);
         appImage.setMaxWidth("100px");
         createDrawer(appName, appImage);

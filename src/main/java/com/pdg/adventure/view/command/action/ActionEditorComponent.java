@@ -59,4 +59,14 @@ public abstract class ActionEditorComponent extends VerticalLayout {
     public String getActionTypeName() {
         return actionData.getActionName();
     }
+
+    /**
+     * Get a short, human-readable summary of this action's target (e.g. the item, location,
+     * or variable it operates on). Mirrors {@code ConditionEditorComponent.getConditionSummary()}.
+     * Return {@code "(none)"} when a target is expected but not yet set, or an empty string for
+     * actions that have no configurable target (e.g. Inventory, Quit).
+     *
+     * @return the target summary, never {@code null}
+     */
+    public abstract String getActionSummary();
 }

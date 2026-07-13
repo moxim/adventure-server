@@ -7,9 +7,12 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +23,7 @@ import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.view.component.VocabularyPicker;
+import com.pdg.adventure.view.item.ItemLocationPair;
 import com.pdg.adventure.view.location.LocationDescriptionAdapter;
 import com.pdg.adventure.view.location.LocationViewModel;
 
@@ -49,6 +53,72 @@ public class ViewSupporter {
 
     public static String formatId(String anIdedData) {
         return anIdedData.substring(0, Math.min(MAX_ID_LENGTH, anIdedData.length()));
+    }
+
+    public static List<ItemLocationPair> getItemLocationPairs(final Collection<LocationData> aLocationDataCollection) {
+        // Collect all items from all locations
+        List<ItemLocationPair> itemPairs = new ArrayList<>();
+        for (LocationData location : aLocationDataCollection) {
+            if (location.getItemContainerData() != null) {
+                List<ItemData> items = location.getItemContainerData().getItems();
+                if (items != null) {
+                    for (ItemData item : items) {
+                        // Filter out null items (can occur if @DBRef fails to resolve)
+                        if (item != null) {
+                            itemPairs.add(new ItemLocationPair(item, location));
+                        }
+                    }
+                }
+            }
+        }
+        return itemPairs;
+    }
+
+    public static List<ItemData> collectAllItems(AdventureData adventureData) {
+        List<ItemData> allItems = new ArrayList<>();
+        for (LocationData location : adventureData.getLocationData().values()) {
+            if (location.getItemContainerData() != null) {
+                List<ItemData> items = location.getItemContainerData().getItems();
+                if (items != null) {
+                    // Filter out null elements (can occur if @DBRef fails to resolve)
+                    items.stream().filter(item -> item != null).forEach(allItems::add);
+                }
+            }
+        }
+        if (adventureData.getPlayerPocket() != null) {
+            List<ItemData> pocketItems = adventureData.getPlayerPocket().getItems();
+            if (pocketItems != null) {
+                pocketItems.stream().filter(item -> item != null).forEach(allItems::add);
+            }
+        }
+        return allItems;
+    }
+
+    public static List<ItemContainerData> collectAllContainers(AdventureData adventureData) {
+        List<ItemContainerData> allContainers = new ArrayList<>();
+        if (adventureData.getPlayerPocket() != null) {
+            allContainers.add(adventureData.getPlayerPocket());
+        }
+        for (LocationData location : adventureData.getLocationData().values()) {
+            if (location.getItemContainerData() != null) {
+                allContainers.add(location.getItemContainerData());
+            }
+        }
+        return allContainers;
+    }
+
+    public static List<LocationData> collectAllLocations(AdventureData adventureData) {
+        return new ArrayList<>(adventureData.getLocationData().values());
+    }
+
+    /**
+     * A small, muted hint telling authors that grid rows are opened for editing by double-clicking.
+     * Placed near each menu grid so the (otherwise hidden) double-click gesture is discoverable.
+     */
+    public static Span doubleClickEditHint() {
+        Span hint = new Span("Double-click a row to edit");
+        hint.addClassNames(LumoUtility.TextColor.SECONDARY, LumoUtility.FontSize.SMALL);
+        return hint;
     }
 
     public static void populateStartLocation(AdventureData anAdventureData, TextField aStartLocation) {
@@ -303,8 +373,8 @@ public class ViewSupporter {
 
     public static void setSize(Grid<?> aGrid) {
         aGrid.setSizeFull();
-        aGrid.setMaxWidth("1024px");
-        aGrid.setMinWidth("480px");
+//        aGrid.setMaxWidth("1024px");
+        aGrid.setMinWidth("640px");
         aGrid.setMaxHeight("640px");
         aGrid.setMinHeight("500px");
     }

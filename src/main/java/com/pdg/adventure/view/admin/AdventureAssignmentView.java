@@ -9,6 +9,7 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
@@ -200,9 +201,11 @@ public class AdventureAssignmentView extends VerticalLayout {
             authorNames.put(selectedAdventure.getId(), author.getUsername());
             adventureGrid.getDataProvider().refreshAll();
             refreshDetailPanel();
-            Notification.show("Author assigned.");
+            Notification notification = Notification.show("Author assigned.", 2000, Notification.Position.BOTTOM_START);
+            notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         } catch (IllegalStateException | AccessDeniedException e) {
-            Notification.show("Could not assign author: " + e.getMessage());
+            Notification notification = Notification.show("Could not assign author: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
     }
 
@@ -211,7 +214,8 @@ public class AdventureAssignmentView extends VerticalLayout {
         authorNames.put(selectedAdventure.getId(), newAuthor.getUsername());
         adventureGrid.getDataProvider().refreshAll();
         refreshDetailPanel();
-        Notification.show("Author reassigned.");
+        Notification notification = Notification.show("Author reassigned.", 2000, Notification.Position.BOTTOM_START);
+        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
     }
 
     private void doRemoveAuthor() {
@@ -219,7 +223,8 @@ public class AdventureAssignmentView extends VerticalLayout {
         authorNames.remove(selectedAdventure.getId());
         adventureGrid.getDataProvider().refreshAll();
         refreshDetailPanel();
-        Notification.show("Author removed.");
+        Notification notification = Notification.show("Author removed.", 2000, Notification.Position.BOTTOM_START);
+        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
     }
 
     // -------------------------------------------------------------------------
@@ -269,12 +274,14 @@ public class AdventureAssignmentView extends VerticalLayout {
     private void doAddPlayer(UserData player) {
         accessService.assignPlayer(selectedAdventure.getId(), player);
         refreshDetailPanel();
-        Notification.show("Player assigned.");
+        Notification notification = Notification.show("Player assigned.", 2000, Notification.Position.BOTTOM_START);
+        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
     }
 
     private void doRemovePlayer(UserData player) {
         accessService.removePlayer(selectedAdventure.getId(), player);
         refreshDetailPanel();
-        Notification.show("Player removed.");
+        Notification notification = Notification.show("Player removed.", 2000, Notification.Position.BOTTOM_START);
+        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
     }
 }

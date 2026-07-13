@@ -8,6 +8,7 @@ import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
 import lombok.Getter;
@@ -57,8 +58,10 @@ public class ItemViewSupporter {
         int usageCount = blockingUsages.size();
 
         if (usageCount > 0) {
-            Notification.show("Cannot delete item '" + itemId + "' because it is referenced in " + usageCount +
-                              " command(s). Please remove those references first.", 5000, Notification.Position.MIDDLE);
+            Notification notification = Notification.show(
+                    "Cannot delete item '" + itemId + "' because it is referenced in " + usageCount +
+                    " command(s). Please remove those references first.", 5000, Notification.Position.MIDDLE);
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         } else {
             final var dialog = getConfirmDialog(anItem);
 
@@ -98,8 +101,6 @@ public class ItemViewSupporter {
     private Grid<ItemData> getItemsGrid(List<ItemData> items) {
         Grid<ItemData> grid = new Grid<>(ItemData.class, false);
 
-        grid.addColumn(ItemData::getId).setHeader(VocabularyData.ID_TEXT).setSortable(true).setAutoWidth(true)
-            .setFlexGrow(0);
         grid.addColumn(item -> item.getDescriptionData().getSafeAdjective()).setHeader(VocabularyData.ADJECTIVE_TEXT);
         grid.addColumn(item -> item.getDescriptionData().getSafeNoun()).setHeader(VocabularyData.NOUN_TEXT)
             .setSortable(true);

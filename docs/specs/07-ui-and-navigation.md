@@ -185,7 +185,7 @@ unsaved-change dialog only fires once.
 
 | Class | Role |
 |-------|------|
-| `ViewSupporter` | Cross-cutting helpers: current user lookup (`getCurrentUser` — throws if no security context), id formatter (truncates ULIDs to 26 chars), location/description/word formatters used by grids, two-way `Binder` wiring helpers for vocabulary pickers, the standard `getConfirmDialog()`, and `setSize(grid)` defaults (`1024 px` max width, `640 px` max height). Constants: `MAX_TEXT_IN_GRID = 32`, `MAX_ID_LENGTH = 26`. |
+| `ViewSupporter` | Cross-cutting helpers: current user lookup (`getCurrentUser` — throws if no security context), id formatter (truncates ULIDs to 26 chars), location/description/word formatters used by grids, two-way `Binder` wiring helpers for vocabulary pickers, the standard `getConfirmDialog()`, and `setSize(grid)` defaults (`1024 px` max width, `640 px` max height). Aggregate collection helpers: `collectAllItems(AdventureData)`, `collectAllContainers(AdventureData)`, `collectAllLocations(AdventureData)` — gather items / containers / locations across all locations for multi-location pickers. Constants: `MAX_TEXT_IN_GRID = 32`, `MAX_ID_LENGTH = 26`. |
 | `RouteIds` | Enum mapping logical route parameter names → string keys: `ADVENTURE_ID`, `LOCATION_ID`, `COMMAND_ID`, `DIRECTION_ID`, `MESSAGE_ID`, `ITEM_ID`. |
 | `GridProvider` | Lazy-loading data-provider helpers for grids. |
 | `TrackedUsage` | Interface for usage trackers (see below). |
@@ -246,7 +246,8 @@ The contract from [`02-functional-requirements.md` § Validation feedback](02-fu
 | Severity | Mechanism | Implementation pointer |
 |----------|-----------|-------------------------|
 | Field-level constraint (required, format, length) | `Binder` inline error | `BeanValidationBinder<T>` + `jakarta.validation` annotations on the view model |
-| Operation success / failure | `Notification` toast | `Notification.show("Saved.")` / `.show(error, ...)` |
+| Operation success (save, assign, delete) | `Notification` toast | `NotificationVariant.LUMO_SUCCESS`, 2000 ms, `BOTTOM_START` |
+| Operation failure (error, conflict) | `Notification` toast | `NotificationVariant.LUMO_ERROR`, 5000 ms, `MIDDLE` |
 | Destructive or blocking action | `ConfirmDialog` | `ViewSupporter.getConfirmDialog()` |
 | In-use deletion refused | `Dialog` listing usages | `*UsageTracker.show(...)` |
 
@@ -270,6 +271,22 @@ This pattern is documented because it appears in test code and tripped up
 the browserless-test setup; see
 [`08-build-test-and-ops.md`](08-build-test-and-ops.md#known-limitations-combobox-in-browserless).
 
+### `WordEditorDialogue` synonym cascade
+
+`WordEditorDialogue` (`view/vocabulary/`) opens as a `Dialog` when creating or
+editing a word. When the author picks a new synonym for the word and saves,
+the dialogue:
+
+1. Calls `VocabularyData.findWordsBySynonym(oldSynonym)` to find every word
+   that still points to the old synonym.
+2. If any such words exist, opens a confirmation `Dialog` listing them and
+   offering **Update All** (reroute all to the new synonym) or **Skip**
+   (leave them pointing to the old one).
+3. Emits a type-mutation warning when synonym adoption would change a word's
+   `Word.Type` (because a word's type is inherited from its synonym).
+
+This cascade is `VocabularyData.findWordsBySynonym`'s primary call site.
+
 ### Grid inline editing (`GridUnbufferedInlineEditor`)
 
 Used by `CommandsMenuView` to edit a command-description row in place
@@ -282,9 +299,46 @@ editing many commands at once.
 
 | Class | Role |
 |-------|------|
-| `ActionEditorComponent` | Common base for per-action sub-editors. |
+| `ActionEditorComponent` | Abstract base for all per-action sub-editors. |
+| `AbstractSingleItemActionEditor<T extends ActionData>` | Generic abstract mid-layer for the 8 editors that need one `ItemData` selector (title, description, label, placeholder, error text customised per subclass). |
 | `ActionSelector` | A combo-box of supported `Action` kinds. Picking one swaps in the matching editor. |
-| `ActionEditorFactory` | Maps `Action` kind → `ActionEditorComponent` subclass. Today: `MessageActionEditor`, `MoveItemActionEditor`, `MovePlayerActionEditor`. **Author surface for the variable / wear / take / drop / describe actions is not yet exposed here.** |
+| `ActionEditorFactory` | Java `switch` pattern-match over `ActionData`; covers all 15 authorable action types. |
+| `MessageActionEditor` | Inline text field for the message body. |
+| `MoveItemActionEditor` | Item selector (uses `ViewSupporter.collectAllItems`). |
+| `MovePlayerActionEditor` | Location selector (uses `ViewSupporter.collectAllLocations`). |
+| `WearActionEditor` | Item selector (wearable items only, via `AbstractSingleItemActionEditor`). |
+| `TakeActionEditor` | Item selector (via `AbstractSingleItemActionEditor`). |
+| `DropActionEditor` | Item selector (via `AbstractSingleItemActionEditor`). |
+| `RemoveActionEditor` | Item selector (via `AbstractSingleItemActionEditor`). |
+| `DestroyActionEditor` | Item selector (via `AbstractSingleItemActionEditor`). |
+| `CreateActionEditor` | Container selector (via `AbstractSingleItemActionEditor`, uses `collectAllContainers`). |
+| `DescribeActionEditor` | No extra input (describe current location). |
+| `InventoryActionEditor` | No extra input (list pocket). |
+| `QuitActionEditor` | No extra input. |
+| `IncrementVariableActionEditor` | Variable name text field. |
+| `DecrementVariableActionEditor` | Variable name text field. |
+| `SetVariableActionEditor` | Variable name + value text fields. |
+
+### Condition editor factory
+
+`view/command/condition/` contains:
+
+| Class | Role |
+|-------|------|
+| `ConditionEditorComponent` | Abstract base for all per-condition sub-editors. |
+| `AbstractSingleItemConditionEditor` | Abstract mid-layer for the 3 item-presence conditions (Carried / Here / Worn) that share one `ItemData` selector. |
+| `AbstractNumericComparisonConditionEditor` | Abstract mid-layer for the 2 numeric-comparison conditions (GreaterThan / LowerThan) that share a variable-name field and a numeric value field. |
+| `ConditionSelector` | A combo-box of supported `PreCondition` kinds. |
+| `ConditionEditorFactory` | Java `switch` pattern-match over `PreConditionData`; covers 9 of the 10 condition types (see Known gaps). |
+| `CarriedConditionEditor` | Item selector (via `AbstractSingleItemConditionEditor`). |
+| `HereConditionEditor` | Item selector (via `AbstractSingleItemConditionEditor`). |
+| `WornConditionEditor` | Item selector (via `AbstractSingleItemConditionEditor`). |
+| `EqualsConditionEditor` | Variable name + value text fields. |
+| `GreaterThanConditionEditor` | Variable name + numeric threshold (via `AbstractNumericComparisonConditionEditor`). |
+| `LowerThanConditionEditor` | Variable name + numeric threshold (via `AbstractNumericComparisonConditionEditor`). |
+| `SameConditionEditor` | Two variable name text fields. |
+| `PlayerAtConditionEditor` | Location selector. |
+| `ItemAtConditionEditor` | Item selector + location selector. |
 
 ## PWA configuration
 
@@ -337,9 +391,10 @@ swapping the brand image per layout and using `LumoUtility` classes.
 - **Player play surface missing.** `PlayerLibraryView` is a stub heading;
   there is no `*PlayView` driving `GameLoop`. See
   [`02-functional-requirements.md` § C2](02-functional-requirements.md#c2-play-an-adventure-target-state).
-- **`ActionEditorFactory` covers only Message / MoveItem / MovePlayer.**
-  A complete authoring UI requires editors for every Action kind in the
-  catalog ([`04-runtime-engine.md` § Action catalog](04-runtime-engine.md#action-catalog)).
+- **`NotConditionData` has no condition editor.** `ConditionEditorFactory`
+  covers 9 of the 10 condition types; `NotConditionData` is not yet surfaced
+  in the authoring UI. A rebuild should add `NotConditionEditor` and wire it
+  into `ConditionEditorFactory`.
 - **`SpecialWordsView` browserless test workarounds.** Two ComboBox quirks
   (silent `setValue`, wrong scope on `$()` queries) are documented in the
   testing strategy; until the upstream fix lands, browserless tests for

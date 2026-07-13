@@ -17,6 +17,7 @@ import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -85,7 +86,6 @@ public class DirectionEditorView extends VerticalLayout
 
         destinationGrid = new Grid<>();
         destinationGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        destinationGrid.addColumn(ViewSupporter::formatId).setHeader("Id").setAutoWidth(true).setFlexGrow(0);
         destinationGrid.addColumn(ViewSupporter::formatDescription).setHeader("Short Description").setSortable(true)
                        .setAutoWidth(true);
         destinationGrid.addSelectionListener(selectionEvent -> {
@@ -244,7 +244,7 @@ public class DirectionEditorView extends VerticalLayout
 
             final MovePlayerActionData movePlayerActionData = new MovePlayerActionData();
             movePlayerActionData.setLocationId(aDirectionViewModel.getDestinationId());
-            directionData.getCommandData().setAction(movePlayerActionData);
+            directionData.getCommandData().setActions(new ArrayList<>(List.of(movePlayerActionData)));
 
             final Set<DirectionData> directionsData = locationData.getDirectionsData();
             directionsData.add(directionData);

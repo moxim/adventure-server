@@ -1,5 +1,10 @@
-import { NodeType, StackAlign, StackCounterAlign, StackJustify, StackMode, StackSize } from 'fig-kiwi/fig-kiwi';
 import { ComponentDefinition } from '../shared/flow-utils';
+type NodeType = string;
+type StackMode = string;
+type StackJustify = string;
+type StackAlign = string;
+type StackCounterAlign = string;
+type StackSize = string;
 export type SwappedInstance = {
     name: string | undefined;
     symbolDescription: string | undefined;
@@ -100,3 +105,4 @@ export declare function findChild(node: FigmaNode, matcher: (node: FigmaNode) =>
 export declare function findFirstChild(node: FigmaNode, name: string): FigmaNode | undefined;
 export declare function findAllChildren(node: FigmaNode, matcher: (node: FigmaNode) => boolean): FigmaNode[];
 export declare function createChildrenDefinitions(node: FigmaNode, metadata: ImportMetadata, matcher: (n: FigmaNode) => boolean): ComponentDefinition[];
+export {};

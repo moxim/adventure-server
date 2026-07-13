@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -39,6 +40,8 @@ public class AdventureEditorView extends VerticalLayout
     private final Button saveButton = new Button("Save");
     private final Button testButton = new Button("Test");
     private final TextField startLocation;
+    private final TextField numberOfLocations;
+    private final TextField numberOfItems;
     private final Binder<AdventureData> binder;
     private final transient AdventureAccessService accessService;
     AdventureData adventureData;
@@ -95,8 +98,13 @@ public class AdventureEditorView extends VerticalLayout
 
         TextField adventureIdTF = getAdventureIdTF();
         TextField title = getTitleField();
-        startLocation = getStartLocationField();
-        HorizontalLayout titleStartRow = new HorizontalLayout(adventureIdTF, title, startLocation);
+        startLocation = getReadOnlyTextField("Start Location");
+        numberOfLocations = getReadOnlyTextField("Total Locations");
+        numberOfItems = getReadOnlyTextField("Total Items");
+        HorizontalLayout titleStartRow = new HorizontalLayout(adventureIdTF, title,
+                                                              startLocation,
+                                                              numberOfLocations,
+                                                              numberOfItems);
         TextArea longDescription = getNotesArea();
 
         setMargin(true);
@@ -158,8 +166,8 @@ public class AdventureEditorView extends VerticalLayout
         return field;
     }
 
-    private TextField getStartLocationField() {
-        TextField field = new TextField("Start Location");
+    private TextField getReadOnlyTextField(String aTitle) {
+        TextField field = new TextField(aTitle);
         field.setReadOnly(true);
         return field;
     }
@@ -217,13 +225,17 @@ public class AdventureEditorView extends VerticalLayout
         Optional<AdventureData> loadedAdventure =
                 accessService.findAdventureById(aAdventureId, ViewSupporter.getCurrentUser());
         if (loadedAdventure.isEmpty()) {
-            Notification.show("Adventure not found or access denied: %s".formatted(aAdventureId),
-                              5000, Notification.Position.MIDDLE);
+            Notification notification = Notification.show(
+                    "Adventure not found or access denied: %s".formatted(aAdventureId),
+                    5000, Notification.Position.MIDDLE);
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
             return false;
         }
         adventureData = loadedAdventure.get();
         startLocation.setValue(ViewSupporter.getLocationsShortedDescription(
                 adventureData.getLocationData().get(adventureData.getCurrentLocationId())));
+        numberOfLocations.setValue(adventureData.getLocationData().size() + "");
+        numberOfItems.setValue(ViewSupporter.getItemLocationPairs(adventureData.getLocationData().values()).size() + "");
         binder.setBean(adventureData);
         return true;
     }

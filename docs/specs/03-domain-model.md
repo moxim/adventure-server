@@ -250,6 +250,12 @@ The class also exposes a comprehensive list of **string constants** for UI
 labels (e.g. `BACK_TEXT`, `SAVE_TEXT`, `UNKNOWN_WORD_TEXT`). Centralising these
 makes the domain text translatable in one place.
 
+Key query method:
+
+| Method | Returns |
+|--------|---------|
+| `findWordsBySynonym(Word aTarget)` | `List<Word>` of all words whose `synonym` field points to `aTarget` (excludes `aTarget` itself). Used by `WordEditorDialogue` to detect cascade-affected words when a synonym is reassigned. |
+
 ### CommandDescriptionData
 
 `model/basic/CommandDescriptionData.java` extends `BasicDescriptionData`
@@ -334,7 +340,7 @@ Plus a runtime-only `LoadAdventureAction` (no DO; engine-managed).
 |------------------|---------|
 | `CarriedConditionData`, `WornConditionData`, `HereConditionData`, `ItemAtConditionData`, `PlayerAtConditionData` | item / location predicates |
 | `EqualsConditionData`, `GreaterThanConditionData`, `LowerThanConditionData`, `SameConditionData` | variable comparisons |
-| `AndConditionData`, `OrConditionData`, `NotConditionData` | composites |
+| `NotConditionData` | composites |
 
 ## Security / access control entities
 

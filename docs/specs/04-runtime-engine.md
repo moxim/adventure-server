@@ -5,7 +5,7 @@
 This chapter explains how the system *plays* an adventure: how typed input becomes
 a parsed command, how that command is dispatched, and how `Action` and
 `PreCondition` co-operate through the engine's data model. It also catalogs every
-concrete `Action` (16) and `PreCondition` (12) so a rebuild reproduces the
+concrete `Action` (16) and `PreCondition` (10) so a rebuild reproduces the
 behaviour faithfully.
 
 The data shapes that back this chapter are documented in
@@ -293,8 +293,6 @@ when the variable is not defined.
 
 | Condition | Semantics |
 |-----------|-----------|
-| `AndCondition(a, b)` | Run `a`; if FAILURE return it. Else run `b`; if FAILURE return it. Else SUCCESS. (Short-circuits on the first failure.) |
-| `OrCondition(a, b)` | SUCCESS if either passes. |
 | `NotCondition(inner)` | Inverts the inner result; clears the inner's message. |
 
 `Command.execute()` runs the condition list **in order** and stops at the first

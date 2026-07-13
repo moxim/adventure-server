@@ -1,39 +1,45 @@
 package com.pdg.adventure.view.command;
 
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.details.Details;
-import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-import java.util.List;
-
-import com.pdg.adventure.model.action.ActionData;
-import com.pdg.adventure.model.condition.PreConditionData;
-import com.pdg.adventure.view.component.GridFactory;
+import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.CommandData;
+import com.pdg.adventure.view.command.action.ActionListEditor;
+import com.pdg.adventure.view.command.condition.ConditionListEditor;
 
 public class PreconditionActionEditor extends VerticalLayout {
-    private final Grid<PreConditionData> preconditionGrid;
-    private final Grid<ActionData> actionGrid;
+    private final ConditionListEditor conditionListEditor;
+    private final ActionListEditor actionListEditor;
 
-    public PreconditionActionEditor() {
-        preconditionGrid = GridFactory.createGrid(PreConditionData.class, List.of(
-                new GridFactory.ColumnConfig<>(p -> p.getId(), "ID", false)
-        ));
-        actionGrid = GridFactory.createGrid(ActionData.class, List.of(
-                new GridFactory.ColumnConfig<>(a -> a.getId(), "ID", false)
-        ));
-        Button addPrecondition = new Button("Add Precondition", _ -> addPrecondition());
-        Button addAction = new Button("Add Action", _ -> addAction());
-        Details details = new Details("Preconditions & Actions", new VerticalLayout(
-                addPrecondition, preconditionGrid, addAction, actionGrid));
-        add(details);
+    public PreconditionActionEditor(AdventureData adventureData) {
+        conditionListEditor = new ConditionListEditor(adventureData);
+        actionListEditor = new ActionListEditor(adventureData);
+
+        VerticalLayout preconditionsSection = new VerticalLayout(new NativeLabel("Preconditions"), conditionListEditor);
+        VerticalLayout actionsSection = new VerticalLayout(new NativeLabel("Actions"), actionListEditor);
+
+        setPadding(false);
+        add(preconditionsSection, actionsSection);
     }
 
-    private void addPrecondition() {
-        // Implement based on PreConditionData structure
+    public void setCommand(CommandData commandData) {
+        conditionListEditor.setConditions(commandData.getPreConditions());
+        actionListEditor.setActions(commandData.getActions());
     }
 
-    private void addAction() {
-        // Implement based on ActionData structure
+    public void saveToCommand(CommandData commandData) {
+        commandData.setPreConditions(conditionListEditor.getConditions());
+        commandData.setActions(actionListEditor.getActions());
+    }
+
+    public boolean validate() {
+        return actionListEditor.validate();
+    }
+
+    /** Wire a single change callback to both editors so the host view can track dirtiness. */
+    public void setOnChange(Runnable onChange) {
+        conditionListEditor.setOnChange(onChange);
+        actionListEditor.setOnChange(onChange);
     }
 }

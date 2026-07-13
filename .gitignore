@@ -22,3 +22,4 @@ node_modules/
 /src/main/dev-bundle/
 /frontend/generated/
 /vite.generated.ts
+.superpowers/

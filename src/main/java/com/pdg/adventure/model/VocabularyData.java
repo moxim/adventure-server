@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -24,13 +25,13 @@ public class VocabularyData extends DatedData {
     public static final String NO_TEXT = "no";
 
     public static final String ID_TEXT = "Id";
-    public static final String VERB_TEXT = "verb";
-    public static final String ADJECTIVE_TEXT = "adjective";
-    public static final String NOUN_TEXT = "noun";
+    public static final String VERB_TEXT = "Verb";
+    public static final String ADJECTIVE_TEXT = "Adjective";
+    public static final String NOUN_TEXT = "Noun";
 
-    public static final String CONTAINABLE_TEXT = "containable";
-    public static final String WEARABLE_TEXT = "wearable";
-    public static final String WORN_TEXT = "worn";
+    public static final String CONTAINABLE_TEXT = "Containable";
+    public static final String WEARABLE_TEXT = "Wearable";
+    public static final String WORN_TEXT = "Worn";
 
     public static final String SHORT_TEXT = "Short Description";
     public static final String LONG_TEXT = "Long Description";
@@ -154,6 +155,12 @@ public class VocabularyData extends DatedData {
         String lowerText = aWordText.toLowerCase();
         Word word = words.get(lowerText);
         return Optional.ofNullable(word);
+    }
+
+    public List<Word> findWordsBySynonym(Word aTarget) {
+        return words.values().stream()
+                    .filter(w -> !w.equals(aTarget) && aTarget.equals(w.getSynonym()))
+                    .toList();
     }
 
     public void setWords(Collection<Word> aBagOfWords) {
