@@ -25,7 +25,6 @@ public class CommandChainMapper implements Mapper<CommandChainData, CommandChain
                               CommandMapper aCommandMapper) {
         mapperSupporter = aMapperSupporter;
         commandMapper = aCommandMapper;
-        mapperSupporter.registerMapper(CommandChainData.class, CommandChain.class, this);
     }
 
     public CommandChain mapToBO(CommandChainData aData) {

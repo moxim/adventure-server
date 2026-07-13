@@ -1,22 +1,35 @@
 package com.pdg.adventure.view.direction;
 
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.RouteParam;
+import com.vaadin.flow.router.RouteParameters;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.security.model.UserData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.view.support.RouteIds;
 
 /**
  * Data integrity and persistence tests for DirectionEditorView.
@@ -27,6 +40,9 @@ class DirectionEditorViewDataIntegrityTest {
 
     @Mock
     private AdventureService adventureService;
+
+    @Mock
+    private AdventureAccessService accessService;
 
     private DirectionEditorView view;
     private AdventureData adventureData;
@@ -75,15 +91,35 @@ class DirectionEditorViewDataIntegrityTest {
         directionData.setCommandData(commandData);
 
         locationData.getDirectionsData().add(directionData);
-        view = new DirectionEditorView(adventureService);
-        view.setUpLoading("direction-1");
+        view = new DirectionEditorView(adventureService, accessService);
+
+        UserData testUser = new UserData();
+        testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private void enterWithDirectionId(String aDirectionId) {
+        BeforeEnterEvent event = mock(BeforeEnterEvent.class);
+        when(event.getRouteParameters()).thenReturn(new RouteParameters(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                new RouteParam(RouteIds.DIRECTION_ID.getValue(), aDirectionId)));
+        when(accessService.findAdventureById(eq(adventureData.getId()), any(UserData.class)))
+                .thenReturn(Optional.of(adventureData));
+        view.beforeEnter(event);
     }
 
     @Test
     void validateSave_withValidData_shouldCallAdventureService() {
         // given
-        view.setUpLoading("direction-1");
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // Create a valid direction view model
         DirectionViewModel directionViewModel = new DirectionViewModel(directionData);
@@ -102,10 +138,8 @@ class DirectionEditorViewDataIntegrityTest {
     @Test
     void directionData_shouldHaveCommandData() {
         //given
-        view.setUpLoading("direction-1");
-
         // when
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // then
         assertThat(directionData.getCommandData()).isNotNull();
@@ -115,10 +149,8 @@ class DirectionEditorViewDataIntegrityTest {
     @Test
     void directionData_shouldHaveDestinationId() {
         //given
-        view.setUpLoading("direction-1");
-
         // when
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // then
         assertThat(directionData.getDestinationId()).isEqualTo("location-2");
@@ -153,7 +185,7 @@ class DirectionEditorViewDataIntegrityTest {
     @Test
     void directionData_shouldHaveDescriptionData() {
         // when
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // then
         assertThat(directionData.getDescriptionData()).isNotNull();
@@ -164,7 +196,7 @@ class DirectionEditorViewDataIntegrityTest {
     @Test
     void commandDescription_shouldHaveVerb() {
         // when
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // then
         CommandDescriptionData desc = directionData.getCommandData().getCommandDescription();
@@ -176,10 +208,8 @@ class DirectionEditorViewDataIntegrityTest {
     @Test
     void commandDescription_canHaveNoun() {
         //given
-        view.setUpLoading("direction-1");
-
         // when
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // then
         CommandDescriptionData desc = directionData.getCommandData().getCommandDescription();
@@ -191,10 +221,8 @@ class DirectionEditorViewDataIntegrityTest {
     @Test
     void locationData_shouldContainDirection() {
         //given
-        view.setUpLoading("direction-1");
-
         // when
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // then
         assertThat(locationData.getDirectionsData()).contains(directionData);
@@ -204,10 +232,8 @@ class DirectionEditorViewDataIntegrityTest {
     @Test
     void adventureData_shouldContainBothLocations() {
         //given
-        view.setUpLoading("direction-1");
-
         // when
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // then
         assertThat(adventureData.getLocationData()).hasSize(2);
@@ -218,10 +244,8 @@ class DirectionEditorViewDataIntegrityTest {
     @Test
     void vocabulary_shouldContainRequiredWords() {
         //given
-        view.setUpLoading("direction-1");
-
         // when
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // then
         Collection<Word> words = vocabularyData.getWords();

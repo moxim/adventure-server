@@ -23,7 +23,6 @@ public class CarriedConditionMapper extends PreConditionMapper<CarriedConditionD
         super(aMapperSupporter);
         adventureConfig = anAdventureConfig;
         gameContext = aGameContext;
-        aMapperSupporter.registerMapper(CarriedConditionData.class, CarriedCondition.class, this);
     }
 
     @Override

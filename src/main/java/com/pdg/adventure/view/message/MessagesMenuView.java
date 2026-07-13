@@ -25,9 +25,12 @@ import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
+import com.pdg.adventure.view.adventure.AdventuresMenuView;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
@@ -37,14 +40,17 @@ import com.pdg.adventure.view.support.ViewSupporter;
 public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle, BeforeEnterObserver {
     private final transient MessageService messageService;
     private final transient AdventureService adventureService;
+    private final transient AdventureAccessService accessService;
     private final Grid<MessageDescriptionAdapter> grid;
     private transient AdventureData adventureData;
     private String pageTitle;
     private transient ListDataProvider<MessageDescriptionAdapter> dataProvider;
 
-    public MessagesMenuView(MessageService aMessageService, AdventureService anAdventureService) {
+    public MessagesMenuView(MessageService aMessageService, AdventureService anAdventureService,
+                            AdventureAccessService anAccessService) {
         messageService = aMessageService;
         adventureService = anAdventureService;
+        accessService = anAccessService;
         setSizeFull();
 
         Button backButton = new Button("Back", _ ->
@@ -58,7 +64,6 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
                 UI.getCurrent().navigate(MessageEditorView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                                             adventureData.getId())))
-                  .ifPresent(editor -> editor.setData(adventureData))
         );
         createButton.setIcon(new Icon(VaadinIcon.PLUS));
 
@@ -114,7 +119,6 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
                                                                 adventureData.getId()),
                                                  new RouteParam(RouteIds.MESSAGE_ID.getValue(),
                                                                 e.getItem().getId())))
-                  .ifPresent(editor -> editor.setData(adventureData))
         );
 
         Grid<MessageDescriptionAdapter> messageGrid = gridProvider.getGrid();
@@ -155,7 +159,6 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
                                                                     adventureData.getId()),
                                                      new RouteParam(RouteIds.MESSAGE_ID.getValue(),
                                                                     adapter.getId())))
-                      .ifPresent(editor -> editor.setData(adventureData))
             );
         });
 
@@ -189,8 +192,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         UI.getCurrent().navigate(MessageEditorView.class,
                                  new RouteParameters(
                                          new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
-                                         new RouteParam(RouteIds.MESSAGE_ID.getValue(), newId)))
-          .ifPresent(editor -> editor.setData(adventureData));
+                                         new RouteParam(RouteIds.MESSAGE_ID.getValue(), newId)));
     }
 
     private void showMessageUsage(MessageDescriptionAdapter adapter) {
@@ -260,15 +262,21 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        if (resolvedAdventure.isEmpty()) {
+            event.forwardTo(AdventuresMenuView.class);
+            return;
+        }
         Optional<String> adventureId = event.getRouteParameters().get(RouteIds.ADVENTURE_ID.getValue());
         if (adventureId.isPresent()) {
             pageTitle = "Messages for Adventure #" + adventureId.get();
         } else {
             pageTitle = "Messages";
         }
+        setData(resolvedAdventure.get());
     }
 
-    public void setData(AdventureData anAdventureData) {
+    private void setData(AdventureData anAdventureData) {
         adventureData = anAdventureData;
         refreshGrid();
     }

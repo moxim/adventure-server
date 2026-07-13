@@ -21,7 +21,6 @@ public class CreateActionMapper extends ActionMapper<CreateActionData, CreateAct
     public CreateActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig) {
         super(aMapperSupporter);
         adventureConfig = anAdventureConfig;
-        aMapperSupporter.registerMapper(CreateActionData.class, CreateAction.class, this);
     }
 
     @Override

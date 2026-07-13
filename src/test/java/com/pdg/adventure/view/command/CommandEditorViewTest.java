@@ -1,16 +1,28 @@
 package com.pdg.adventure.view.command;
 
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.RouteParam;
+import com.vaadin.flow.router.RouteParameters;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.action.MessageActionData;
@@ -18,8 +30,11 @@ import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.model.condition.WornConditionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.security.model.UserData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
+import com.pdg.adventure.view.support.RouteIds;
 
 /**
  * Unit tests for CommandEditorView business logic.
@@ -33,6 +48,8 @@ class CommandEditorViewTest {
     private AdventureService adventureService;
     @Mock
     private ItemService itemService;
+    @Mock
+    private AdventureAccessService accessService;
 
     private CommandEditorView view;
     private AdventureData adventureData;
@@ -80,12 +97,40 @@ class CommandEditorViewTest {
         Map<String, LocationData> locations = new HashMap<>();
         locations.put(locationData.getId(), locationData);
         adventureData.setLocationData(locations);
+
+        UserData testUser = new UserData();
+        testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
+
+    /** Location-scoped beforeEnter: no ITEM_ID, optional COMMAND_ID. */
+    private void enterWithCommandId(String aCommandId) {
+        RouteParam[] params = aCommandId == null
+                ? new RouteParam[] {
+                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                        new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId())}
+                : new RouteParam[] {
+                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                        new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                        new RouteParam(RouteIds.COMMAND_ID.getValue(), aCommandId)};
+        BeforeEnterEvent event = mock(BeforeEnterEvent.class);
+        when(event.getRouteParameters()).thenReturn(new RouteParameters(params));
+        when(accessService.findAdventureById(eq(adventureData.getId()), any(UserData.class)))
+                .thenReturn(Optional.of(adventureData));
+        view.beforeEnter(event);
     }
 
     @Test
     void constructor_shouldCreateViewWithAllComponents() {
         // when
-        view = new CommandEditorView(adventureService, itemService);
+        view = new CommandEditorView(adventureService, itemService, accessService);
 
         // then
         assertThat(view).isNotNull();
@@ -94,10 +139,10 @@ class CommandEditorViewTest {
     @Test
     void setData_shouldPopulateAdventureAndLocationData() {
         // given
-        view = new CommandEditorView(adventureService, itemService);
+        view = new CommandEditorView(adventureService, itemService, accessService);
 
         // when
-        view.setData(adventureData, locationData);
+        enterWithCommandId(null);
 
         // then
         // View should be populated with data
@@ -108,7 +153,7 @@ class CommandEditorViewTest {
     @Test
     void getPageTitle_shouldReturnNullBeforeRouteEnter() {
         // given
-        view = new CommandEditorView(adventureService, itemService);
+        view = new CommandEditorView(adventureService, itemService, accessService);
 
         // when
         String title = view.getPageTitle();
@@ -142,10 +187,9 @@ class CommandEditorViewTest {
 
         String spec = commandDescription.getCommandSpecification();
 
-        view = new CommandEditorView(adventureService, itemService);
-        view.setUpLoading(spec);
+        view = new CommandEditorView(adventureService, itemService, accessService);
 
-        assertThatCode(() -> view.setData(adventureData, locationData))
+        assertThatCode(() -> enterWithCommandId(spec))
                 .doesNotThrowAnyException();
     }
 
@@ -173,9 +217,8 @@ class CommandEditorViewTest {
         command.getPreConditions().add(worn);
         commandProviderData.add(command);
 
-        view = new CommandEditorView(adventureService, itemService);
-        view.setUpLoading(description.getCommandSpecification());
-        view.setData(adventureData, locationData);
+        view = new CommandEditorView(adventureService, itemService, accessService);
+        enterWithCommandId(description.getCommandSpecification());
 
         // when
         String actionLabel = view.firstActionLabel(command);

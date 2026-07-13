@@ -23,7 +23,6 @@ public class HereConditionMapper extends PreConditionMapper<HereConditionData, H
         super(aMapperSupporter);
         adventureConfig = anAdventureConfig;
         gameContext = aGameContext;
-        aMapperSupporter.registerMapper(HereConditionData.class, HereCondition.class, this);
     }
 
     @Override

@@ -36,7 +36,6 @@ public class AdventureMapper implements Mapper<AdventureData, Adventure> {
         vocabularyMapper = aVocabularyMapper;
         locationMapper = aLocationMapper;
         containerMapper = aContainerMapper;
-        mapperSupporter.registerMapper(AdventureData.class, Adventure.class, this);
     }
 
     public Adventure mapToBO(AdventureData anAdventureData) {

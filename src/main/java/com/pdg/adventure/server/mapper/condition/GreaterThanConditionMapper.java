@@ -13,7 +13,6 @@ public class GreaterThanConditionMapper extends PreConditionMapper<GreaterThanCo
 
     public GreaterThanConditionMapper(MapperSupporter aMapperSupporter) {
         super(aMapperSupporter);
-        aMapperSupporter.registerMapper(GreaterThanConditionData.class, GreaterThanCondition.class, this);
     }
 
     @Override

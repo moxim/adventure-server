@@ -17,7 +17,6 @@ public class QuitActionMapper extends ActionMapper<QuitActionData, QuitAction> {
     public QuitActionMapper(MapperSupporter aMapperSupporter, MessagesHolder aMessagesHolder) {
         super(aMapperSupporter);
         messagesHolder = aMessagesHolder;
-        aMapperSupporter.registerMapper(QuitActionData.class, QuitAction.class, this);
     }
 
     @Override

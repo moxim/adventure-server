@@ -13,7 +13,6 @@ public class SameConditionMapper extends PreConditionMapper<SameConditionData, S
 
     public SameConditionMapper(MapperSupporter aMapperSupporter) {
         super(aMapperSupporter);
-        aMapperSupporter.registerMapper(SameConditionData.class, SameCondition.class, this);
     }
 
     @Override

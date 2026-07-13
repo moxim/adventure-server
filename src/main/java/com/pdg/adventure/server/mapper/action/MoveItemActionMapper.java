@@ -19,7 +19,6 @@ public class MoveItemActionMapper extends ActionMapper<MoveItemActionData, MoveI
     public MoveItemActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig) {
         super(aMapperSupporter);
         this.adventureConfig = anAdventureConfig;
-        aMapperSupporter.registerMapper(MoveItemActionData.class, MoveItemAction.class, this);
     }
 
     @Override

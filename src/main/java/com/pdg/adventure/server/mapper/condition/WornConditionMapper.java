@@ -19,7 +19,6 @@ public class WornConditionMapper extends PreConditionMapper<WornConditionData, W
     public WornConditionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig) {
         super(aMapperSupporter);
         adventureConfig = anAdventureConfig;
-        aMapperSupporter.registerMapper(WornConditionData.class, WornCondition.class, this);
     }
 
     @Override
@@ -33,7 +32,7 @@ public class WornConditionMapper extends PreConditionMapper<WornConditionData, W
     @Override
     public WornConditionData mapToDO(WornCondition condition) {
         WornConditionData result = new WornConditionData();
-        result.setThingId(((Item) condition.getThing()).getId());
+        result.setThingId(condition.getThing().getId());
         result.setId(condition.getId());
         return result;
     }

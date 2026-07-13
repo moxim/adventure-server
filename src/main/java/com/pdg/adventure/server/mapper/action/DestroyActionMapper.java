@@ -18,7 +18,6 @@ public class DestroyActionMapper extends ActionMapper<DestroyActionData, Destroy
     public DestroyActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig) {
         super(aMapperSupporter);
         adventureConfig = anAdventureConfig;
-        aMapperSupporter.registerMapper(DestroyActionData.class, DestroyAction.class, this);
     }
 
     @Override

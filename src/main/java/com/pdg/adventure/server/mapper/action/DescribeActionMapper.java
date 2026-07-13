@@ -23,7 +23,6 @@ public class DescribeActionMapper extends ActionMapper<DescribeActionData, Descr
     public DescribeActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig) {
         super(aMapperSupporter);
         adventureConfig = anAdventureConfig;
-        aMapperSupporter.registerMapper(DescribeActionData.class, DescribeAction.class, this);
     }
 
     @Override

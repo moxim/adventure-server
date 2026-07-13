@@ -1,0 +1,280 @@
+package com.pdg.adventure.view.command;
+
+import com.vaadin.browserless.BrowserlessTest;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.RouteParam;
+import com.vaadin.flow.router.RouteParameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.CommandChainData;
+import com.pdg.adventure.model.CommandData;
+import com.pdg.adventure.model.CommandProviderData;
+import com.pdg.adventure.model.ItemContainerData;
+import com.pdg.adventure.model.ItemData;
+import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
+import com.pdg.adventure.security.model.UserData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
+import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.storage.service.ItemService;
+import com.pdg.adventure.view.adventure.AdventuresMenuView;
+import com.pdg.adventure.view.item.ItemsMenuView;
+import com.pdg.adventure.view.location.LocationsMenuView;
+import com.pdg.adventure.view.support.RouteIds;
+
+class CommandEditorViewRoutingTest extends BrowserlessTest {
+
+    private AdventureService adventureService;
+    private ItemService itemService;
+    private AdventureAccessService accessService;
+    private CommandEditorView view;
+
+    @BeforeEach
+    void setUp() {
+        adventureService = mock(AdventureService.class);
+        itemService = mock(ItemService.class);
+        accessService = mock(AdventureAccessService.class);
+        UserData testUser = new UserData();
+        testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
+        view = new CommandEditorView(adventureService, itemService, accessService);
+        UI.getCurrent().add(view);
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private static BeforeEnterEvent eventWithParams(RouteParam... params) {
+        BeforeEnterEvent event = mock(BeforeEnterEvent.class);
+        when(event.getRouteParameters()).thenReturn(new RouteParameters(params));
+        return event;
+    }
+
+    private static CommandProviderData providerWithOneCommand() {
+        CommandData command = new CommandData();
+        command.setCommandDescription(new CommandDescriptionData("go|north|"));
+        CommandChainData chain = new CommandChainData();
+        chain.setCommands(List.of(command));
+        CommandProviderData provider = new CommandProviderData();
+        provider.setAvailableCommands(Map.of("go|north|", chain));
+        return provider;
+    }
+
+    @Test
+    void beforeEnter_locationScoped_validIds_populatesChainGridFromLocationCommands() {
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        location.setCommandProviderData(providerWithOneCommand());
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of("loc-1", location));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"),
+                new RouteParam(RouteIds.COMMAND_ID.getValue(), "go|north|")));
+
+        assertThat(view.getPageTitle()).isEqualTo("Edit Command #go|north|");
+        Grid<?> grid = find(Grid.class, view).single();
+        assertThat(test(grid).size()).isEqualTo(1);
+    }
+
+    @Test
+    void beforeEnter_percentEncodedCommandId_decodesAndPopulates() {
+        // Simulates cold-load browser navigation: Vaadin hands beforeEnter the route
+        // parameter still percent-encoded (jump%7C%7Csea) instead of the raw pipe-delimited
+        // command id (jump||sea) that in-app navigation preserves.
+        CommandData command = new CommandData();
+        command.setCommandDescription(new CommandDescriptionData("jump||sea"));
+        CommandChainData chain = new CommandChainData();
+        chain.setCommands(List.of(command));
+        CommandProviderData provider = new CommandProviderData();
+        provider.setAvailableCommands(Map.of("jump||sea", chain));
+
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        location.setCommandProviderData(provider);
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of("loc-1", location));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"),
+                new RouteParam(RouteIds.COMMAND_ID.getValue(), "jump%7C%7Csea")));
+
+        assertThat(view.getPageTitle()).isEqualTo("Edit Command #jump||sea");
+        Grid<?> grid = find(Grid.class, view).single();
+        assertThat(test(grid).size()).isEqualTo(1);
+    }
+
+    @Test
+    void beforeEnter_bareLiteralPercentInCommandId_decodesRawValueWithoutThrowing() {
+        // In-app navigation delivers the raw (never percent-encoded) command id. A vocabulary
+        // word may legitimately contain a literal '%' (e.g. "100%"), which is not followed by
+        // two hex digits and must NOT be treated as a malformed percent-escape.
+        CommandData command = new CommandData();
+        command.setCommandDescription(new CommandDescriptionData("jump|100%|sea"));
+        CommandChainData chain = new CommandChainData();
+        chain.setCommands(List.of(command));
+        CommandProviderData provider = new CommandProviderData();
+        provider.setAvailableCommands(Map.of("jump|100%|sea", chain));
+
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        location.setCommandProviderData(provider);
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of("loc-1", location));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"),
+                new RouteParam(RouteIds.COMMAND_ID.getValue(), "jump|100%|sea")));
+
+        assertThat(view.getPageTitle()).isEqualTo("Edit Command #jump|100%|sea");
+        Grid<?> grid = find(Grid.class, view).single();
+        assertThat(test(grid).size()).isEqualTo(1);
+    }
+
+    @Test
+    void beforeEnter_plusInCommandId_isPreservedNotConvertedToSpace() {
+        // In-app navigation delivers the raw command id. A literal '+' in a vocabulary word
+        // must survive decoding unchanged -- URLDecoder (form decoding) would turn it into a
+        // space, silently morphing the id and missing the existing command chain.
+        CommandData command = new CommandData();
+        command.setCommandDescription(new CommandDescriptionData("a+b||sea"));
+        CommandChainData chain = new CommandChainData();
+        chain.setCommands(List.of(command));
+        CommandProviderData provider = new CommandProviderData();
+        provider.setAvailableCommands(Map.of("a+b||sea", chain));
+
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        location.setCommandProviderData(provider);
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of("loc-1", location));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"),
+                new RouteParam(RouteIds.COMMAND_ID.getValue(), "a+b||sea")));
+
+        assertThat(view.getPageTitle()).isEqualTo("Edit Command #a+b||sea");
+        Grid<?> grid = find(Grid.class, view).single();
+        assertThat(test(grid).size()).isEqualTo(1);
+    }
+
+    @Test
+    void beforeEnter_itemScoped_validIds_populatesChainGridFromItemCommands() {
+        ItemData item = new ItemData();
+        item.setId("item-1");
+        item.setCommandProviderData(providerWithOneCommand());
+        ItemContainerData container = new ItemContainerData("loc-1");
+        container.setItems(List.of(item));
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        location.setItemContainerData(container);
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of("loc-1", location));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"),
+                new RouteParam(RouteIds.ITEM_ID.getValue(), "item-1"),
+                new RouteParam(RouteIds.COMMAND_ID.getValue(), "go|north|")));
+
+        Grid<?> grid = find(Grid.class, view).single();
+        assertThat(test(grid).size()).isEqualTo(1);
+    }
+
+    @Test
+    void beforeEnter_unknownAdventureId_forwardsToAdventuresMenuView() {
+        when(accessService.findAdventureById(eq("missing"), any(UserData.class)))
+                .thenReturn(Optional.empty());
+        BeforeEnterEvent event = eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "missing"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"));
+
+        view.beforeEnter(event);
+
+        verify(event).forwardTo(AdventuresMenuView.class);
+    }
+
+    @Test
+    void beforeEnter_unknownLocationId_forwardsToLocationsMenuViewForThatAdventure() {
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of());
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+        BeforeEnterEvent event = eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "missing"));
+
+        view.beforeEnter(event);
+
+        verify(event).forwardTo(LocationsMenuView.class,
+                new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1")));
+    }
+
+    @Test
+    void beforeEnter_unknownItemId_forwardsToItemsMenuViewForThatLocation() {
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        location.setItemContainerData(new ItemContainerData("loc-1"));
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of("loc-1", location));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+        BeforeEnterEvent event = eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"),
+                new RouteParam(RouteIds.ITEM_ID.getValue(), "missing"));
+
+        view.beforeEnter(event);
+
+        verify(event).forwardTo(ItemsMenuView.class, new RouteParameters(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1")));
+        Notification notification = find(Notification.class).single();
+        assertThat(test(notification).getText()).isEqualTo("Item not found or access denied: missing");
+    }
+}

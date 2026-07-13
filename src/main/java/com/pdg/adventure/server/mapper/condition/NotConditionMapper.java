@@ -15,7 +15,6 @@ public class NotConditionMapper extends PreConditionMapper<NotConditionData, Not
 
     public NotConditionMapper(MapperSupporter aMapperSupporter) {
         super(aMapperSupporter);
-        aMapperSupporter.registerMapper(NotConditionData.class, NotCondition.class, this);
     }
 
     @Override

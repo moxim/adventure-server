@@ -15,12 +15,11 @@ import com.pdg.adventure.server.vocabulary.Vocabulary;
 public class DescriptionMapper implements Mapper<DescriptionData, DescriptionProvider> {
 
     private final MapperSupporter mapperSupporter;
-    private Vocabulary vocabulary;
+    private final Vocabulary vocabulary;
 
     public DescriptionMapper(Vocabulary aVocabulary, MapperSupporter aMapperSupporter) {
         vocabulary = aVocabulary;
         mapperSupporter = aMapperSupporter;
-        mapperSupporter.registerMapper(DescriptionData.class, DescriptionProvider.class, this);
     }
 
     @Override
