@@ -3,7 +3,9 @@ package com.pdg.adventure.view.support;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.router.BeforeEnterEvent;
+import org.springframework.web.util.UriUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
@@ -104,6 +106,29 @@ public final class AdventureRouteResolver {
             return Optional.empty();
         }
         return Optional.of(chain);
+    }
+
+    /**
+     * Decodes a route parameter that may or may not be percent-encoded.
+     *
+     * <p>Cold-load (bookmark/refresh) navigation delivers route parameters still
+     * percent-encoded by the browser; in-app {@code navigate()} calls preserve the raw value
+     * as originally constructed. Free-text ids (e.g. vocabulary-derived command specifications)
+     * may legitimately contain {@code %} or {@code +} characters that were never encoded, so
+     * this performs percent-only decoding (never form/{@code +}-to-space decoding) and falls
+     * back to the raw value on malformed input (a bare {@code %} not followed by two hex
+     * digits means the value was never encoded in the first place).
+     *
+     * @param raw the raw route parameter value
+     * @return the percent-decoded value, or {@code raw} unchanged if it is not validly
+     *         percent-encoded
+     */
+    public static String decodeRouteParam(String raw) {
+        try {
+            return UriUtils.decode(raw, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            return raw;
+        }
     }
 
     private static void showNotFound(String kind, String id) {

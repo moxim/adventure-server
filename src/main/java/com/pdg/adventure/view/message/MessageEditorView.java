@@ -318,7 +318,10 @@ public class MessageEditorView extends VerticalLayout
         }
         final Optional<String> optionalMessageId = event.getRouteParameters().get(RouteIds.MESSAGE_ID.getValue());
         if (optionalMessageId.isPresent()) {
-            messageId = optionalMessageId.get();
+            // Message ids are constrained to [a-zA-Z0-9_]+ by the UI binder, so decoding is a
+            // no-op for UI-created ids; legacy/imported data has no such guarantee, and cold-load
+            // navigation may deliver this route parameter percent-encoded.
+            messageId = AdventureRouteResolver.decodeRouteParam(optionalMessageId.get());
             pageTitle = "Edit Message: " + messageId;
         } else {
             messageId = null;

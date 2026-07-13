@@ -137,6 +137,68 @@ class CommandEditorViewRoutingTest extends BrowserlessTest {
     }
 
     @Test
+    void beforeEnter_bareLiteralPercentInCommandId_decodesRawValueWithoutThrowing() {
+        // In-app navigation delivers the raw (never percent-encoded) command id. A vocabulary
+        // word may legitimately contain a literal '%' (e.g. "100%"), which is not followed by
+        // two hex digits and must NOT be treated as a malformed percent-escape.
+        CommandData command = new CommandData();
+        command.setCommandDescription(new CommandDescriptionData("jump|100%|sea"));
+        CommandChainData chain = new CommandChainData();
+        chain.setCommands(List.of(command));
+        CommandProviderData provider = new CommandProviderData();
+        provider.setAvailableCommands(Map.of("jump|100%|sea", chain));
+
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        location.setCommandProviderData(provider);
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of("loc-1", location));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"),
+                new RouteParam(RouteIds.COMMAND_ID.getValue(), "jump|100%|sea")));
+
+        assertThat(view.getPageTitle()).isEqualTo("Edit Command #jump|100%|sea");
+        Grid<?> grid = find(Grid.class, view).single();
+        assertThat(test(grid).size()).isEqualTo(1);
+    }
+
+    @Test
+    void beforeEnter_plusInCommandId_isPreservedNotConvertedToSpace() {
+        // In-app navigation delivers the raw command id. A literal '+' in a vocabulary word
+        // must survive decoding unchanged -- URLDecoder (form decoding) would turn it into a
+        // space, silently morphing the id and missing the existing command chain.
+        CommandData command = new CommandData();
+        command.setCommandDescription(new CommandDescriptionData("a+b||sea"));
+        CommandChainData chain = new CommandChainData();
+        chain.setCommands(List.of(command));
+        CommandProviderData provider = new CommandProviderData();
+        provider.setAvailableCommands(Map.of("a+b||sea", chain));
+
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        location.setCommandProviderData(provider);
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of("loc-1", location));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"),
+                new RouteParam(RouteIds.COMMAND_ID.getValue(), "a+b||sea")));
+
+        assertThat(view.getPageTitle()).isEqualTo("Edit Command #a+b||sea");
+        Grid<?> grid = find(Grid.class, view).single();
+        assertThat(test(grid).size()).isEqualTo(1);
+    }
+
+    @Test
     void beforeEnter_itemScoped_validIds_populatesChainGridFromItemCommands() {
         ItemData item = new ItemData();
         item.setId("item-1");

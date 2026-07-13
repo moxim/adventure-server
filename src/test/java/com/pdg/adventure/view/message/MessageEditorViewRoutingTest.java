@@ -84,6 +84,28 @@ class MessageEditorViewRoutingTest extends BrowserlessTest {
     }
 
     @Test
+    void beforeEnter_percentEncodedMessageId_decodesAndPopulates() {
+        // Simulates cold-load browser navigation: Vaadin hands beforeEnter the route
+        // parameter still percent-encoded (my%5Fmessage) instead of the raw messageId
+        // (my_message) that in-app navigate() preserves. Message ids are constrained to
+        // [a-zA-Z0-9_]+ by the UI binder, but legacy/imported data has no such guarantee.
+        MessageData message = new MessageData();
+        message.setText("Welcome!");
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setMessages(Map.of("my_message", message));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.MESSAGE_ID.getValue(), "my%5Fmessage")));
+
+        TextArea messageText = find(TextArea.class, view).single();
+        assertThat(messageText.getValue()).isEqualTo("Welcome!");
+    }
+
+    @Test
     void beforeEnter_unknownAdventureId_forwardsToAdventuresMenuView() {
         when(accessService.findAdventureById(eq("missing"), any(UserData.class)))
                 .thenReturn(Optional.empty());

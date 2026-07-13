@@ -366,9 +366,10 @@ public class CommandEditorView extends VerticalLayout
         if (optionalCommandId.isPresent()) {
             // Cold-load (bookmark/refresh) navigation delivers this route parameter still
             // percent-encoded (e.g. "jump%7C%7Csea"); in-app navigate() preserves the raw
-            // pipe-delimited value (e.g. "jump||sea"). Decoding here is idempotent for the
-            // in-app case (no '%' present) and fixes the cold-load case.
-            commandId = java.net.URLDecoder.decode(optionalCommandId.get(), java.nio.charset.StandardCharsets.UTF_8);
+            // pipe-delimited value (e.g. "jump||sea"), which may itself contain '%' or '+'
+            // characters from vocabulary text. AdventureRouteResolver.decodeRouteParam performs
+            // percent-only decoding with graceful fallback for both cases.
+            commandId = AdventureRouteResolver.decodeRouteParam(optionalCommandId.get());
             pageTitle = "Edit Command #" + commandId;
         } else {
             pageTitle = "New Command";
