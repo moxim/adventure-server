@@ -205,8 +205,7 @@ public class DirectionEditorView extends VerticalLayout
         if (ui != null && adventureData != null && locationData != null) {
             ui.navigate(DirectionsMenuView.class, new RouteParameters(
                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
-                      new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId())))
-                   .ifPresent(editor -> editor.setData(adventureData, locationData));
+                      new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId())));
         }
     }
 
@@ -296,7 +295,7 @@ public class DirectionEditorView extends VerticalLayout
         AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges());
     }
 
-    public void setData(LocationData aLocationData, AdventureData anAdventureData) {
+    private void setData(LocationData aLocationData, AdventureData anAdventureData) {
         adventureData = anAdventureData;
         locationData = aLocationData;
 

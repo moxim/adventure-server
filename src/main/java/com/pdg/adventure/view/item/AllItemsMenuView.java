@@ -139,10 +139,7 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
         UI.getCurrent().navigate(ItemEditorView.class,
                                  new RouteParameters(new RouteParam(RouteIds.LOCATION_ID.getValue(), locationId),
                                                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                    adventureData.getId()))).ifPresent(e -> {
-            LocationData location = adventureData.getLocationData().get(locationId);
-            e.setData(adventureData, location);
-        });
+                                                                    adventureData.getId())));
     }
 
     @Override
@@ -155,7 +152,7 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
         setData(resolvedAdventure.get());
     }
 
-    public void setData(AdventureData anAdventureData) {
+    private void setData(AdventureData anAdventureData) {
         adventureData = anAdventureData;
 
         // Populate location selector with all locations
@@ -211,10 +208,7 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
                                  new RouteParameters(new RouteParam(RouteIds.ITEM_ID.getValue(), itemId),
                                                      new RouteParam(RouteIds.LOCATION_ID.getValue(), locationId),
                                                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                    adventureData.getId()))).ifPresent(e -> {
-            LocationData location = adventureData.getLocationData().get(locationId);
-            e.setData(adventureData, location);
-        });
+                                                                    adventureData.getId())));
     }
 
     private void createContextMenu(Grid<ItemLocationPairAdapter> grid) {

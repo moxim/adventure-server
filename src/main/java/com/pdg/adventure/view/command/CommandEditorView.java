@@ -202,13 +202,11 @@ public class CommandEditorView extends VerticalLayout
             UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                      new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())))
-              .ifPresent(e -> e.setData(adventureData, locationData, itemData));
+                      new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())));
         } else {
             UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-              .ifPresent(e -> e.setData(adventureData, locationData));
+                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
         }
     }
 
@@ -383,12 +381,12 @@ public class CommandEditorView extends VerticalLayout
         AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges() || editorHasChanges);
     }
 
-    public void setData(AdventureData anAdventureData, LocationData aLocationData, ItemData anItemData) {
+    private void setData(AdventureData anAdventureData, LocationData aLocationData, ItemData anItemData) {
         itemData = anItemData;
         populate(anAdventureData, aLocationData);
     }
 
-    public void setData(AdventureData anAdventureData, LocationData aLocationData) {
+    private void setData(AdventureData anAdventureData, LocationData aLocationData) {
         itemData = null;
         populate(anAdventureData, aLocationData);
     }

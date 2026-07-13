@@ -84,13 +84,11 @@ public class CommandsMenuView extends VerticalLayout
                 UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
                           new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
                           new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
-                          new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())))
-                  .ifPresent(editor -> editor.setData(adventureData, locationData, itemData));
+                          new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())));
             } else {
                 UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
                           new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                          new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                  .ifPresent(editor -> editor.setData(adventureData, locationData));
+                          new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
             }
         });
 
@@ -109,13 +107,11 @@ public class CommandsMenuView extends VerticalLayout
                 UI.getCurrent().navigate(ItemEditorView.class, new RouteParameters(
                         new RouteParam(ADVENTURE_ID.getValue(), adventureData.getId()),
                         new RouteParam(LOCATION_ID.getValue(), locationData.getId()),
-                        new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())))
-                  .ifPresent(e -> e.setData(adventureData, locationData));
+                        new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())));
             } else {
                 UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(
                         new RouteParam(LOCATION_ID.getValue(), locationData.getId()),
-                        new RouteParam(ADVENTURE_ID.getValue(), adventureData.getId())))
-                  .ifPresent(e -> e.setData(adventureData));
+                        new RouteParam(ADVENTURE_ID.getValue(), adventureData.getId())));
             }
         });
         backButton.addClickShortcut(Key.ESCAPE);
@@ -204,12 +200,12 @@ public class CommandsMenuView extends VerticalLayout
         return grid.setItems(rows);
     }
 
-    public void setData(AdventureData anAdventureData, LocationData aLocationData, ItemData anItemData) {
+    private void setData(AdventureData anAdventureData, LocationData aLocationData, ItemData anItemData) {
         itemData = anItemData;
         populate(anAdventureData, aLocationData);
     }
 
-    public void setData(AdventureData anAdventureData, LocationData aLocationData) {
+    private void setData(AdventureData anAdventureData, LocationData aLocationData) {
         itemData = null;
         populate(anAdventureData, aLocationData);
     }
@@ -249,14 +245,12 @@ public class CommandsMenuView extends VerticalLayout
                       new RouteParam(RouteIds.COMMAND_ID.getValue(), aCommandId),
                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
-                      new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())))
-              .ifPresent(editor -> editor.setData(adventureData, locationData, itemData));
+                      new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())));
         } else {
             UI.getCurrent().navigate(CommandEditorView.class, new RouteParameters(
                       new RouteParam(RouteIds.COMMAND_ID.getValue(), aCommandId),
                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-              .ifPresent(editor -> editor.setData(adventureData, locationData));
+                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
         }
     }
 

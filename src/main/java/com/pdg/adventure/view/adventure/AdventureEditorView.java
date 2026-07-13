@@ -56,8 +56,9 @@ public class AdventureEditorView extends VerticalLayout
         Button editLocationsButton = new Button("Manage Locations");
         editLocationsButton.addClickListener(_ -> {
             if (binder.writeBeanIfValid(adventureData)) {
-                UI.getCurrent().navigate(LocationsMenuView.class)
-                  .ifPresent(editor -> editor.setAdventureData(adventureData));
+                UI.getCurrent().navigate(LocationsMenuView.class,
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                            adventureData.getId())));
             }
         });
 
@@ -65,8 +66,7 @@ public class AdventureEditorView extends VerticalLayout
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(VocabularyMenuView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                            adventureData.getId())))
-                  .ifPresent(editor -> editor.setAdventureData(adventureData));
+                                                                            adventureData.getId())));
             }
         });
 
@@ -74,8 +74,7 @@ public class AdventureEditorView extends VerticalLayout
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(MessagesMenuView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                            adventureData.getId())))
-                  .ifPresent(editor -> editor.setData(adventureData));
+                                                                            adventureData.getId())));
             }
         });
 
@@ -83,8 +82,7 @@ public class AdventureEditorView extends VerticalLayout
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(AllItemsMenuView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                            adventureData.getId())))
-                  .ifPresent(editor -> editor.setData(adventureData));
+                                                                            adventureData.getId())));
             }
         });
 

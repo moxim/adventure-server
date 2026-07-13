@@ -56,24 +56,21 @@ public class ItemsMenuView extends VerticalLayout implements BeforeEnterObserver
                                                          new RouteParam(RouteIds.LOCATION_ID.getValue(),
                                                                         locationData.getId()),
                                                          new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                        adventureData.getId())))
-              .ifPresent(editor -> editor.setData(adventureData, locationData));
+                                                                        adventureData.getId())));
         });
         edit.setEnabled(false);
 
         create = new Button("Create Item", _ -> {
             UI.getCurrent().navigate(ItemEditorView.class, new RouteParameters(
                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-              .ifPresent(editor -> editor.setData(adventureData, locationData));
+                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
         });
 
         backButton = new Button("Back to Location", _ -> {
             UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(
 //                                  new RouteParam(RouteIds.ITEM_ID.getValue(), selectedItemId),
                                   new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))
-            ).ifPresent(view -> view.setData(adventureData));
+                                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
         });
         backButton.addClickShortcut(Key.ESCAPE);
 
@@ -117,7 +114,7 @@ public class ItemsMenuView extends VerticalLayout implements BeforeEnterObserver
         setData(resolvedAdventure.get(), resolvedLocation.get());
     }
 
-    public void setData(AdventureData anAdventureData, LocationData aLocationData) {
+    private void setData(AdventureData anAdventureData, LocationData aLocationData) {
         adventureData = anAdventureData;
         locationData = aLocationData;
         itemViewSupporter = new ItemViewSupporter(adventureService, adventureData, locationData, gridContainer, edit);

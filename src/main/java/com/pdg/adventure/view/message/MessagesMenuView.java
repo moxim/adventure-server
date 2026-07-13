@@ -64,7 +64,6 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
                 UI.getCurrent().navigate(MessageEditorView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                                             adventureData.getId())))
-                  .ifPresent(editor -> editor.setData(adventureData))
         );
         createButton.setIcon(new Icon(VaadinIcon.PLUS));
 
@@ -120,7 +119,6 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
                                                                 adventureData.getId()),
                                                  new RouteParam(RouteIds.MESSAGE_ID.getValue(),
                                                                 e.getItem().getId())))
-                  .ifPresent(editor -> editor.setData(adventureData))
         );
 
         Grid<MessageDescriptionAdapter> messageGrid = gridProvider.getGrid();
@@ -161,7 +159,6 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
                                                                     adventureData.getId()),
                                                      new RouteParam(RouteIds.MESSAGE_ID.getValue(),
                                                                     adapter.getId())))
-                      .ifPresent(editor -> editor.setData(adventureData))
             );
         });
 
@@ -195,8 +192,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         UI.getCurrent().navigate(MessageEditorView.class,
                                  new RouteParameters(
                                          new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
-                                         new RouteParam(RouteIds.MESSAGE_ID.getValue(), newId)))
-          .ifPresent(editor -> editor.setData(adventureData));
+                                         new RouteParam(RouteIds.MESSAGE_ID.getValue(), newId)));
     }
 
     private void showMessageUsage(MessageDescriptionAdapter adapter) {
@@ -280,7 +276,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         setData(resolvedAdventure.get());
     }
 
-    public void setData(AdventureData anAdventureData) {
+    private void setData(AdventureData anAdventureData) {
         adventureData = anAdventureData;
         refreshGrid();
     }

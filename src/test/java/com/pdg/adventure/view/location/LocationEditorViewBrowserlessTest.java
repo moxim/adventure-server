@@ -100,31 +100,31 @@ class LocationEditorViewBrowserlessTest extends BrowserlessTest {
 
     @Test
     void view_hasManageCommandsButton() {
-        view.setData(adventureData);
+        enterWithLocationId(null);
         assertThat(find(Button.class, view).withText("Manage Commands").single()).isNotNull();
     }
 
     @Test
     void view_hasManageItemsButton() {
-        view.setData(adventureData);
+        enterWithLocationId(null);
         assertThat(find(Button.class, view).withText("Manage Items").single()).isNotNull();
     }
 
     @Test
     void view_hasManageExitsButton() {
-        view.setData(adventureData);
+        enterWithLocationId(null);
         assertThat(find(Button.class, view).withText("Manage Exits").single()).isNotNull();
     }
 
     @Test
     void saveButton_isDisabled_afterSetData() {
-        view.setData(adventureData);
+        enterWithLocationId(null);
         assertThat(find(Button.class, view).withText("Save").single().isEnabled()).isFalse();
     }
 
     @Test
     void resetButton_isDisabled_afterSetData() {
-        view.setData(adventureData);
+        enterWithLocationId(null);
         assertThat(find(Button.class, view).withText("Reset").single().isEnabled()).isFalse();
     }
 
@@ -143,7 +143,6 @@ class LocationEditorViewBrowserlessTest extends BrowserlessTest {
     @Test
     void setData_withMatchingLocationId_populatesView() {
         enterWithLocationId("loc-1");
-        view.setData(adventureData);
 
         // save should still be disabled (no changes yet)
         assertThat(find(Button.class, view).withText("Save").single().isEnabled()).isFalse();
@@ -152,7 +151,6 @@ class LocationEditorViewBrowserlessTest extends BrowserlessTest {
     @Test
     void shortDescriptionChange_enablesResetButton() {
         enterWithLocationId("loc-1");
-        view.setData(adventureData);
 
         Button reset = find(Button.class, view).withText("Reset").single();
         assertThat(reset.isEnabled()).isFalse();

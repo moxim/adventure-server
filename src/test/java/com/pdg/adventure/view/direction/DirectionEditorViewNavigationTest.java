@@ -194,10 +194,14 @@ class DirectionEditorViewNavigationTest {
     @Test
     void setData_shouldPopulateLocationAndAdventureIds() {
         // when
+        when(beforeEnterEvent.getRouteParameters()).thenReturn(routeParameters);
+        when(routeParameters.get(RouteIds.ADVENTURE_ID.getValue())).thenReturn(Optional.of("adventure-1"));
+        when(routeParameters.get(RouteIds.LOCATION_ID.getValue())).thenReturn(Optional.of("location-1"));
+        when(accessService.findAdventureById(eq("adventure-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventureData));
+        when(routeParameters.get("directionId")).thenReturn(Optional.of("direction-123"));
 
-        view.setUpLoading("direction-123");
-
-        view.setData(locationData, adventureData);
+        view.beforeEnter(beforeEnterEvent);
 
         // then
         // Verify view is properly initialized (no exceptions thrown)

@@ -1,20 +1,34 @@
 package com.pdg.adventure.view.message;
 
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.RouteParam;
+import com.vaadin.flow.router.RouteParameters;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.HashMap;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
+import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.MessageService;
+import com.pdg.adventure.view.support.RouteIds;
 
 /**
  * Unit tests for MessageEditorView business logic.
@@ -49,6 +63,29 @@ class MessageEditorViewTest {
         messageData.setAdventureId("adventure-1");
         messageData.setMessageId("welcome_message");
         messageData.setText("Welcome to the adventure!");
+
+        UserData testUser = new UserData();
+        testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private void enterWithMessageId(String aMessageId) {
+        RouteParam[] params = aMessageId == null
+                ? new RouteParam[] {new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())}
+                : new RouteParam[] {new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                        new RouteParam(RouteIds.MESSAGE_ID.getValue(), aMessageId)};
+        BeforeEnterEvent event = mock(BeforeEnterEvent.class);
+        when(event.getRouteParameters()).thenReturn(new RouteParameters(params));
+        when(accessService.findAdventureById(eq(adventureData.getId()), any(UserData.class)))
+                .thenReturn(Optional.of(adventureData));
+        view.beforeEnter(event);
     }
 
     @Test
@@ -66,7 +103,7 @@ class MessageEditorViewTest {
         view = new MessageEditorView(adventureService, messageService, accessService);
 
         // when
-        view.setData(adventureData);
+        enterWithMessageId(null);
 
         // then
         // View should be populated with data
@@ -81,7 +118,7 @@ class MessageEditorViewTest {
         adventureData.getMessages().put("welcome_message", messageData);
 
         // when
-        view.setData(adventureData);
+        enterWithMessageId("welcome_message");
 
         // then
         // View should load the existing message

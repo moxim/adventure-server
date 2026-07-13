@@ -1,25 +1,39 @@
 package com.pdg.adventure.view.command;
 
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.RouteParam;
+import com.vaadin.flow.router.RouteParameters;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.QuitActionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.command.CommandsMenuView;
+import com.pdg.adventure.view.support.RouteIds;
 
 /**
  * Unit tests for CommandsMenuView business logic.
@@ -74,6 +88,28 @@ class CommandsMenuViewTest {
         Map<String, LocationData> locations = new HashMap<>();
         locations.put(locationData.getId(), locationData);
         adventureData.setLocationData(locations);
+
+        UserData testUser = new UserData();
+        testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
+
+    /** Location-scoped beforeEnter: no ITEM_ID. */
+    private void enterLocationScoped() {
+        BeforeEnterEvent event = mock(BeforeEnterEvent.class);
+        when(event.getRouteParameters()).thenReturn(new RouteParameters(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId())));
+        when(accessService.findAdventureById(eq(adventureData.getId()), any(UserData.class)))
+                .thenReturn(Optional.of(adventureData));
+        view.beforeEnter(event);
     }
 
     @Test
@@ -97,7 +133,7 @@ class CommandsMenuViewTest {
         commandProviderData.getAvailableCommands().put("take|golden|sword", takeSwordChain);
 
         // when
-        view.setData(adventureData, locationData);
+        enterLocationScoped();
 
         // then
         assertThat(locationData.getCommandProviderData().getAvailableCommands())
@@ -113,7 +149,7 @@ class CommandsMenuViewTest {
         // Command provider has empty commands map (created in setUp)
 
         // when
-        view.setData(adventureData, locationData);
+        enterLocationScoped();
 
         // then
         assertThat(locationData.getCommandProviderData().getAvailableCommands()).isEmpty();
@@ -143,7 +179,7 @@ class CommandsMenuViewTest {
         commandProviderData.getAvailableCommands().put("open||cage", chain);
 
         // when / then
-        org.assertj.core.api.Assertions.assertThatCode(() -> view.setData(adventureData, locationData))
+        org.assertj.core.api.Assertions.assertThatCode(this::enterLocationScoped)
                 .doesNotThrowAnyException();
         assertThat(chain.getCommands()).hasSize(2);
     }

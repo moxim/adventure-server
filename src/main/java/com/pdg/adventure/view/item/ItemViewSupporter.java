@@ -148,8 +148,7 @@ public class ItemViewSupporter {
                                                      new RouteParam(RouteIds.LOCATION_ID.getValue(),
                                                                     locationData.getId()),
                                                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                    adventureData.getId())))
-          .ifPresent(e -> e.setData(adventureData, locationData));
+                                                                    adventureData.getId())));
     }
 
     private void showItemUsage(ItemData item) {

@@ -2,25 +2,39 @@ package com.pdg.adventure.view.direction;
 
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.RouteParam;
+import com.vaadin.flow.router.RouteParameters;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.view.support.RouteIds;
 
 /**
  * Tests for Vaadin Binder validation and binding logic in DirectionEditorView.
@@ -89,6 +103,28 @@ class DirectionEditorViewBinderTest {
         Field binderField = DirectionEditorView.class.getDeclaredField("binder");
         binderField.setAccessible(true);
         binder = (Binder<DirectionViewModel>) binderField.get(view);
+
+        UserData testUser = new UserData();
+        testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private void enterWithDirectionId(String aDirectionId) {
+        BeforeEnterEvent event = mock(BeforeEnterEvent.class);
+        when(event.getRouteParameters()).thenReturn(new RouteParameters(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                new RouteParam(RouteIds.DIRECTION_ID.getValue(), aDirectionId)));
+        when(accessService.findAdventureById(eq(adventureData.getId()), any(UserData.class)))
+                .thenReturn(Optional.of(adventureData));
+        view.beforeEnter(event);
     }
 
     @Test
@@ -100,10 +136,8 @@ class DirectionEditorViewBinderTest {
     @Test
     void binder_afterSetData_shouldHaveBean() {
         //given
-        view.setUpLoading("direction-1");
-
         // when
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // then
         assertThat(view.getViewModel()).isNotNull();
@@ -112,9 +146,7 @@ class DirectionEditorViewBinderTest {
     @Test
     void binder_withValidData_shouldPassValidation() {
         // given
-        view.setUpLoading("direction-1");
-
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // when
         BinderValidationStatus<DirectionViewModel> status = binder.validate();
@@ -127,9 +159,7 @@ class DirectionEditorViewBinderTest {
     @Test
     void binder_withoutVerb_shouldFailValidation() throws Exception {
         // given
-        view.setUpLoading("direction-1");
-
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // Get the view model and remove verb
         DirectionViewModel viewModel = view.getViewModel();
@@ -147,9 +177,7 @@ class DirectionEditorViewBinderTest {
     @Test
     void binder_hasChanges_shouldReturnFalseAfterReadBean() {
         // given
-        view.setUpLoading("direction-1");
-
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // when
         DirectionViewModel viewModel = view.getViewModel();
@@ -162,9 +190,7 @@ class DirectionEditorViewBinderTest {
     @Test
     void binder_shouldBindDirectionId() {
         // given
-        view.setUpLoading("direction-1");
-
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // when
         DirectionViewModel viewModel = view.getViewModel();
@@ -177,9 +203,7 @@ class DirectionEditorViewBinderTest {
     @Test
     void binder_shouldBindDescriptions() {
         // given
-        view.setUpLoading("direction-1");
-
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // when
         DirectionViewModel viewModel = view.getViewModel();

@@ -108,8 +108,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
         editSpecialWords = new Button("Edit Special Words", _ -> {
             UI.getCurrent().navigate(SpecialWordsView.class,
                                      new RouteParameters(
-                                             new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))
-            ).ifPresent(editor -> editor.setAdventureData(adventureData));
+                                             new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
         });
         create = new Button("Create Word", _ -> {
             createWordInfoDialog(WordEditorDialogue.EditType.NEW, null);
@@ -175,7 +174,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     }
 
 
-    public void setAdventureData(AdventureData anAdventureData) {
+    private void setAdventureData(AdventureData anAdventureData) {
         adventureData = anAdventureData;
         vocabularyData = adventureData.getVocabularyData();
         wordUsageTracker = new WordUsageTracker(adventureData, vocabularyData);

@@ -110,7 +110,6 @@ public class ItemEditorView extends VerticalLayout
                         new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
                         new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
                         new RouteParam(RouteIds.ITEM_ID.getValue(), itemId)))
-                  .ifPresent(view -> view.setData(adventureData, locationData, itemData))
         );
         commandsButton.setEnabled(false);
 
@@ -236,8 +235,7 @@ public class ItemEditorView extends VerticalLayout
         UI.getCurrent().navigate(ItemsMenuView.class, new RouteParameters(
 //                  new RouteParam(RouteIds.ITEM_ID.getValue(), itemId),
                   new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-          .ifPresent(editor -> editor.setData(adventureData, locationData));
+                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
     }
 
     private boolean tryToAddPickUpCommands(final ItemData anItemData, final VocabularyData aVocabularyData) {
@@ -437,7 +435,7 @@ public class ItemEditorView extends VerticalLayout
         AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges());
     }
 
-    public void setData(AdventureData anAdventureData, LocationData aLocationData) {
+    private void setData(AdventureData anAdventureData, LocationData aLocationData) {
         adventureData = anAdventureData;
         locationData = aLocationData;
 

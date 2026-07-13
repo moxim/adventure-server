@@ -87,6 +87,16 @@ class DirectionEditorViewEdgeCasesTest {
         SecurityContextHolder.clearContext();
     }
 
+    private void enterWithDirectionId(String aDirectionId) {
+        when(beforeEnterEvent.getRouteParameters()).thenReturn(routeParameters);
+        when(routeParameters.get(RouteIds.ADVENTURE_ID.getValue())).thenReturn(Optional.of(adventureData.getId()));
+        when(routeParameters.get(RouteIds.LOCATION_ID.getValue())).thenReturn(Optional.of(locationData.getId()));
+        when(routeParameters.get(RouteIds.DIRECTION_ID.getValue())).thenReturn(Optional.of(aDirectionId));
+        when(accessService.findAdventureById(eq(adventureData.getId()), any(UserData.class)))
+                .thenReturn(Optional.of(adventureData));
+        view.beforeEnter(beforeEnterEvent);
+    }
+
     @Test
     void setData_withEmptyVocabulary_shouldNotThrowException() {
         // given
@@ -97,10 +107,8 @@ class DirectionEditorViewEdgeCasesTest {
         directionData.setDescriptionData(new DescriptionData("Test", "Test direction"));
         locationData.getDirectionsData().add(directionData);
 
-        view.setUpLoading("direction-1");
-
         // when/then
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // Should complete without exception
         assertThat(view).isNotNull();
@@ -127,11 +135,8 @@ class DirectionEditorViewEdgeCasesTest {
         vocabularyData.setWords(Set.of(verb));
         locationData.getDirectionsData().add(directionData);
 
-        view.setUpLoading("direction-1");
-
-
         // when
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // then
         // Grid should be empty (no other locations to show)
@@ -156,10 +161,8 @@ class DirectionEditorViewEdgeCasesTest {
         vocabularyData.setWords(Set.of(verb));
         locationData.getDirectionsData().add(directionData);
 
-        view.setUpLoading("direction-1");
-
         // when/then
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // Should not crash
         assertThat(directionData.getDestinationId()).isNull();
@@ -239,10 +242,8 @@ class DirectionEditorViewEdgeCasesTest {
 
         locationData.getDirectionsData().add(directionData);
 
-        view.setUpLoading("direction-1");
-
         // when
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // then
         assertThat(vocabularyData.getWords()).hasSize(2);

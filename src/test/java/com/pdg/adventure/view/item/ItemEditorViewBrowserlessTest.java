@@ -141,7 +141,7 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
     @Test
     @DisplayName("The view renders exactly one 'Commands' button")
     void view_rendersCommandsButton() {
-        view.setData(adventureData, locationData);
+        enterWithItemId(null);
 
         assertThat(commandsButton()).isNotNull();
     }
@@ -149,7 +149,7 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
     @Test
     @DisplayName("The 'Commands' button sits immediately to the right of the 'Is worn' checkbox")
     void commandsButton_sitsRightOfIsWornCheckbox() {
-        view.setData(adventureData, locationData);
+        enterWithItemId(null);
 
         Button commands = commandsButton();
         Checkbox worn = checkboxLabelled("Is worn");
@@ -165,7 +165,7 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
     @DisplayName("The 'Commands' button is disabled for a new (unsaved) item")
     void commandsButton_isDisabled_forNewItem() {
         // No itemId entered and nothing in the container -> brand-new item.
-        view.setData(adventureData, locationData);
+        enterWithItemId(null);
 
         assertThat(commandsButton().isEnabled()).isFalse();
     }
@@ -176,15 +176,13 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
         locationData.getItemContainerData().getItems().add(existingItem);
         enterWithItemId(ITEM_ID);
 
-        view.setData(adventureData, locationData);
-
         assertThat(commandsButton().isEnabled()).isTrue();
     }
 
     @Test
     @DisplayName("The view renders the three item-property checkboxes")
     void view_rendersThreePropertyCheckboxes() {
-        view.setData(adventureData, locationData);
+        enterWithItemId(null);
 
         assertThat(find(Checkbox.class, view).all())
                 .extracting(Checkbox::getLabel)
@@ -194,7 +192,7 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
     @Test
     @DisplayName("The Save button is disabled immediately after loading data")
     void saveButton_isDisabled_afterSetData() {
-        view.setData(adventureData, locationData);
+        enterWithItemId(null);
 
         assertThat(find(Button.class, view).withText("Save").single().isEnabled()).isFalse();
     }
@@ -202,7 +200,7 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
     @Test
     @DisplayName("Toggling a property checkbox marks the form dirty and enables Reset")
     void togglingCheckbox_enablesResetButton() {
-        view.setData(adventureData, locationData);
+        enterWithItemId(null);
 
         Button reset = find(Button.class, view).withText("Reset").single();
         assertThat(reset.isEnabled()).isFalse();

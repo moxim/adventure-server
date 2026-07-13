@@ -168,8 +168,7 @@ public class MessageEditorView extends VerticalLayout
 
     private void navigateBack() {
         UI.getCurrent().navigate(MessagesMenuView.class, new RouteParameters(
-                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-          .ifPresent(e -> e.setData(adventureData));
+                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
     }
 
     private boolean isMessageIdUnique(String id) {
@@ -333,7 +332,7 @@ public class MessageEditorView extends VerticalLayout
         AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges());
     }
 
-    public void setData(AdventureData anAdventureData) {
+    private void setData(AdventureData anAdventureData) {
         adventureData = anAdventureData;
 
         // Load existing message or create new one

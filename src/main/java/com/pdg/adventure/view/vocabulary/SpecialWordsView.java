@@ -81,8 +81,7 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
 
         back = new Button("Back", _ -> {
             UI.getCurrent().navigate(VocabularyMenuView.class, new RouteParameters(
-                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-              .ifPresent(editor -> editor.setAdventureData(adventureData));
+                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
         });
         back.addClickShortcut(Key.ESCAPE);
 
@@ -175,7 +174,7 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
         notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
     }
 
-    public void setAdventureData(AdventureData anAdventureData) {
+    private void setAdventureData(AdventureData anAdventureData) {
         adventureData = anAdventureData;
         vocabularyData = adventureData.getVocabularyData();
         wordUsageTracker = new WordUsageTracker(adventureData, vocabularyData);

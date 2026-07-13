@@ -116,20 +116,17 @@ public class LocationEditorView extends VerticalLayout
         Button manageCommands = new Button("Manage Commands");
         manageCommands.addClickListener(_ -> UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
                                                            new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                                                           new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                                   .ifPresent(e -> e.setData(adventureData, locationData)));
+                                                           new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))));
 
         Button manageItems = new Button("Manage Items");
         manageItems.addClickListener(_ -> UI.getCurrent().navigate(ItemsMenuView.class, new RouteParameters(
                                                         new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                                                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                                .ifPresent(e -> e.setData(adventureData, locationData)));
+                                                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))));
 
         Button manageExits = new Button("Manage Exits");
         manageExits.addClickListener(_ -> UI.getCurrent().navigate(DirectionsMenuView.class, new RouteParameters(
                                                         new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                                                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                                .ifPresent(e -> e.setData(adventureData, locationData)));
+                                                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))));
 
         setMargin(true);
         setPadding(true);
@@ -205,8 +202,9 @@ public class LocationEditorView extends VerticalLayout
     }
 
     private void navigateBack() {
-        UI.getCurrent().navigate(LocationsMenuView.class)
-          .ifPresent(editor -> editor.setAdventureData(adventureData));
+        UI.getCurrent().navigate(LocationsMenuView.class,
+                                 new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                    adventureData.getId())));
     }
 
     private void validateSave(LocationViewModel aLocationViewModel) {
@@ -255,7 +253,7 @@ public class LocationEditorView extends VerticalLayout
         AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges());
     }
 
-    public void setData(AdventureData anAdventureData) {
+    private void setData(AdventureData anAdventureData) {
         adventureData = anAdventureData;
         locationData = adventureData.getLocationData().getOrDefault(locationId, new LocationData());
         locationId = locationData.getId();
