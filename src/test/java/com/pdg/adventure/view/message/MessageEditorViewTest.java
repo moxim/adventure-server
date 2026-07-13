@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.MessageService;
 
@@ -28,6 +29,9 @@ class MessageEditorViewTest {
 
     @Mock
     private MessageService messageService;
+
+    @Mock
+    private AdventureAccessService accessService;
 
     private MessageEditorView view;
     private AdventureData adventureData;
@@ -50,7 +54,7 @@ class MessageEditorViewTest {
     @Test
     void constructor_shouldCreateViewWithAllComponents() {
         // when
-        view = new MessageEditorView(adventureService, messageService);
+        view = new MessageEditorView(adventureService, messageService, accessService);
 
         // then
         assertThat(view).isNotNull();
@@ -59,7 +63,7 @@ class MessageEditorViewTest {
     @Test
     void setData_shouldPopulateAdventureData() {
         // given
-        view = new MessageEditorView(adventureService, messageService);
+        view = new MessageEditorView(adventureService, messageService, accessService);
 
         // when
         view.setData(adventureData);
@@ -73,7 +77,7 @@ class MessageEditorViewTest {
     @Test
     void setData_withExistingMessage_shouldLoadMessageFromMap() {
         // given
-        view = new MessageEditorView(adventureService, messageService);
+        view = new MessageEditorView(adventureService, messageService, accessService);
         adventureData.getMessages().put("welcome_message", messageData);
 
         // when
@@ -90,7 +94,7 @@ class MessageEditorViewTest {
     @Test
     void getPageTitle_shouldReturnNullBeforeRouteEnter() {
         // given
-        view = new MessageEditorView(adventureService, messageService);
+        view = new MessageEditorView(adventureService, messageService, accessService);
 
         // when
         String title = view.getPageTitle();

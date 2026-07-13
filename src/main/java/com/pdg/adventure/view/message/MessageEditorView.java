@@ -25,10 +25,13 @@ import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
+import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.component.ResetBackSaveView;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
 
 @Route(value = "author/adventures/:adventureId/messages/:messageId/edit", layout = MessagesMainLayout.class)
@@ -45,6 +48,7 @@ public class MessageEditorView extends VerticalLayout
 
     private final transient AdventureService adventureService;
     private final transient MessageService messageService;
+    private final transient AdventureAccessService accessService;
     private final Binder<MessageViewModel> binder;
 
     private Button saveButton;
@@ -59,11 +63,13 @@ public class MessageEditorView extends VerticalLayout
     private transient AdventureData adventureData;
     private transient MessageViewModel mvm;
 
-    public MessageEditorView(AdventureService anAdventureService, MessageService aMessageService) {
+    public MessageEditorView(AdventureService anAdventureService, MessageService aMessageService,
+                             AdventureAccessService anAccessService) {
         setSizeFull();
 
         adventureService = anAdventureService;
         messageService = aMessageService;
+        accessService = anAccessService;
         binder = new Binder<>(MessageViewModel.class);
 
         // Build UI
@@ -306,6 +312,11 @@ public class MessageEditorView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        if (resolvedAdventure.isEmpty()) {
+            event.forwardTo(AdventuresMenuView.class);
+            return;
+        }
         final Optional<String> optionalMessageId = event.getRouteParameters().get(RouteIds.MESSAGE_ID.getValue());
         if (optionalMessageId.isPresent()) {
             messageId = optionalMessageId.get();
@@ -314,6 +325,7 @@ public class MessageEditorView extends VerticalLayout
             messageId = null;
             pageTitle = "New Message";
         }
+        setData(resolvedAdventure.get());
     }
 
     @Override
