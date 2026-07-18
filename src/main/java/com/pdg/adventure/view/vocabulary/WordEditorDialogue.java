@@ -218,11 +218,11 @@ public class WordEditorDialogue {
             return false;
         }
 
-        // '%' is disallowed: a stored word containing a valid percent-escape sequence
-        // (e.g. "%41") would be wrongly decoded once embedded in a route parameter and
-        // later run through AdventureRouteResolver.decodeRouteParam on a cold-load
-        // navigation, since decoding can't tell "real word text" from "actual encoding".
-        if (text.indexOf('%') >= 0) {
+        // Word text must be a single word: Unicode letters only — no digits, punctuation,
+        // or whitespace-separated additional words. This also rules out a stored '%' being
+        // wrongly decoded as a percent-escape once embedded in a route parameter and later
+        // run through AdventureRouteResolver.decodeRouteParam on a cold-load navigation.
+        if (!text.trim().matches("\\p{L}+")) {
             return false;
         }
 
