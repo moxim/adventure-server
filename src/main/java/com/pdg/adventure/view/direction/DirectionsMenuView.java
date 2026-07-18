@@ -25,9 +25,7 @@ import com.pdg.adventure.model.DirectionData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.location.LocationEditorView;
-import com.pdg.adventure.view.location.LocationsMenuView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
@@ -124,23 +122,15 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventureOrForward(event, accessService);
         if (resolvedAdventure.isEmpty()) {
-            event.forwardTo(AdventuresMenuView.class);
             return;
         }
-        Optional<LocationData> resolvedLocation = AdventureRouteResolver.resolveLocation(resolvedAdventure.get(), event);
+        Optional<LocationData> resolvedLocation = AdventureRouteResolver.resolveLocationOrForward(resolvedAdventure.get(), event);
         if (resolvedLocation.isEmpty()) {
-            event.forwardTo(LocationsMenuView.class, new RouteParameters(
-                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), resolvedAdventure.get().getId())));
             return;
         }
-        Optional<String> locId = event.getRouteParameters().get(RouteIds.LOCATION_ID.getValue());
-        if (locId.isPresent()) {
-            pageTitle = "Exits for " + ViewSupporter.formatDescription(resolvedLocation.get());
-        } else {
-            pageTitle = "Exits";
-        }
+        pageTitle = "Exits for " + ViewSupporter.formatDescription(resolvedLocation.get());
         setData(resolvedAdventure.get(), resolvedLocation.get());
     }
 

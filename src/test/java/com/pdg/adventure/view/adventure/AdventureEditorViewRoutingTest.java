@@ -2,6 +2,7 @@ package com.pdg.adventure.view.adventure;
 
 import com.vaadin.browserless.BrowserlessTest;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
@@ -19,11 +20,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
+import com.pdg.adventure.view.support.FlashNotifier;
 import com.pdg.adventure.view.support.RouteIds;
 
 class AdventureEditorViewRoutingTest extends BrowserlessTest {
@@ -67,6 +70,20 @@ class AdventureEditorViewRoutingTest extends BrowserlessTest {
         view.beforeEnter(eventWithAdventureId("adv-1"));
 
         assertThat(view.getPageTitle()).isEqualTo("Edit Adventure: The Demo");
+    }
+
+    @Test
+    void beforeEnter_unknownAdventureId_forwardsToAdventuresMenuInsteadOfCrashing() {
+        when(accessService.findAdventureById(eq("missing"), any(UserData.class)))
+                .thenReturn(Optional.empty());
+        BeforeEnterEvent event = eventWithAdventureId("missing");
+
+        view.beforeEnter(event);
+
+        verify(event).forwardTo(AdventuresMenuView.class);
+        FlashNotifier.showPending();
+        Notification notification = find(Notification.class).single();
+        assertThat(test(notification).getText()).isEqualTo("Adventure not found or access denied: missing");
     }
 
     @Test

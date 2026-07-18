@@ -32,7 +32,6 @@ import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
-import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
@@ -42,9 +41,6 @@ import com.pdg.adventure.view.support.ViewSupporter;
 @PageTitle("Locations")
 @RolesAllowed("ROLE_AUTHOR")
 public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObserver, BeforeEnterObserver {
-
-    private static final String LOCATION_ID = "locationId";
-    private static final String ADVENTURE_ID = "adventureId";
 
     private final transient AdventureService adventureService;
     private final transient AdventureAccessService accessService;
@@ -94,7 +90,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
 
         create = new Button("Create Location", _ -> {
             UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(
-//                            new RouteParam(LOCATION_ID, "new"),
+//                            new RouteParam(RouteIds.LOCATION_ID.getValue(), "new"),
                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
         });
 
@@ -211,9 +207,8 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventureOrForward(event, accessService);
         if (resolvedAdventure.isEmpty()) {
-            event.forwardTo(AdventuresMenuView.class);
             return;
         }
         setAdventureData(resolvedAdventure.get());
@@ -239,9 +234,10 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
     }
 
     private void navigateToLocationEditor(String aLocationId) {
-        UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(new RouteParam(LOCATION_ID, aLocationId),
-                                                                               new RouteParam(ADVENTURE_ID,
-                                                                                              adventureData.getId())));
+        UI.getCurrent().navigate(LocationEditorView.class,
+                                 new RouteParameters(new RouteParam(RouteIds.LOCATION_ID.getValue(), aLocationId),
+                                                     new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                    adventureData.getId())));
     }
 
     private class LocationDataContextMenu extends GridContextMenu<LocationDescriptionAdapter> {

@@ -25,15 +25,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.CommandChainData;
-import com.pdg.adventure.model.CommandProviderData;
-import com.pdg.adventure.model.DirectionData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
+import com.pdg.adventure.view.adventure.AdventuresMenuView;
+import com.pdg.adventure.view.item.ItemsMenuView;
+import com.pdg.adventure.view.location.LocationsMenuView;
 
 class AdventureRouteResolverTest extends BrowserlessTest {
 
@@ -84,6 +83,8 @@ class AdventureRouteResolverTest extends BrowserlessTest {
         Optional<AdventureData> result = AdventureRouteResolver.resolveAdventure(event, accessService);
 
         assertThat(result).isEmpty();
+        assertThat(find(Notification.class).all()).isEmpty();
+        FlashNotifier.showPending();
         Notification notification = find(Notification.class).single();
         assertThat(test(notification).getText()).isEqualTo("Adventure not found or access denied: missing");
     }
@@ -122,6 +123,8 @@ class AdventureRouteResolverTest extends BrowserlessTest {
         Optional<LocationData> result = AdventureRouteResolver.resolveLocation(adventure, event);
 
         assertThat(result).isEmpty();
+        assertThat(find(Notification.class).all()).isEmpty();
+        FlashNotifier.showPending();
         Notification notification = find(Notification.class).single();
         assertThat(test(notification).getText()).isEqualTo("Location not found or access denied: missing");
     }
@@ -154,93 +157,118 @@ class AdventureRouteResolverTest extends BrowserlessTest {
         Optional<ItemData> result = AdventureRouteResolver.resolveItem(location, event);
 
         assertThat(result).isEmpty();
+        assertThat(find(Notification.class).all()).isEmpty();
+        FlashNotifier.showPending();
         Notification notification = find(Notification.class).single();
         assertThat(test(notification).getText()).isEqualTo("Item not found or access denied: missing");
     }
 
-    // --- resolveDirection ---
+    // --- resolveAdventureOrForward ---
 
     @Test
-    void resolveDirection_validId_returnsDirection() {
-        DirectionData direction = new DirectionData();
-        direction.setId("dir-1");
-        LocationData location = new LocationData();
-        location.setDirectionsData(Set.of(direction));
-        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.DIRECTION_ID.getValue(), "dir-1"));
-
-        Optional<DirectionData> result = AdventureRouteResolver.resolveDirection(location, event);
-
-        assertThat(result).contains(direction);
-    }
-
-    @Test
-    void resolveDirection_unknownId_returnsEmptyAndShowsNotification() {
-        LocationData location = new LocationData();
-        location.setDirectionsData(Set.of());
-        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.DIRECTION_ID.getValue(), "missing"));
-
-        Optional<DirectionData> result = AdventureRouteResolver.resolveDirection(location, event);
-
-        assertThat(result).isEmpty();
-        Notification notification = find(Notification.class).single();
-        assertThat(test(notification).getText()).isEqualTo("Direction not found or access denied: missing");
-    }
-
-    // --- resolveMessage ---
-
-    @Test
-    void resolveMessage_validId_returnsMessage() {
-        MessageData message = new MessageData();
+    void resolveAdventureOrForward_validId_returnsAdventureWithoutForwarding() {
         AdventureData adventure = new AdventureData();
-        adventure.setMessages(Map.of("msg-1", message));
-        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.MESSAGE_ID.getValue(), "msg-1"));
+        adventure.setId("adv-1");
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"));
 
-        Optional<MessageData> result = AdventureRouteResolver.resolveMessage(adventure, event);
+        Optional<AdventureData> result = AdventureRouteResolver.resolveAdventureOrForward(event, accessService);
 
-        assertThat(result).contains(message);
+        assertThat(result).contains(adventure);
+        verify(event, never()).forwardTo(AdventuresMenuView.class);
     }
 
     @Test
-    void resolveMessage_unknownId_returnsEmptyAndShowsNotification() {
+    void resolveAdventureOrForward_unknownId_returnsEmptyAndForwardsToAdventuresMenu() {
+        when(accessService.findAdventureById(eq("missing"), any(UserData.class)))
+                .thenReturn(Optional.empty());
+        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "missing"));
+
+        Optional<AdventureData> result = AdventureRouteResolver.resolveAdventureOrForward(event, accessService);
+
+        assertThat(result).isEmpty();
+        verify(event).forwardTo(AdventuresMenuView.class);
+    }
+
+    @Test
+    void resolveAdventureOrForward_missingRouteParam_returnsEmptyAndForwardsToAdventuresMenu() {
+        BeforeEnterEvent event = eventWithParams();
+
+        Optional<AdventureData> result = AdventureRouteResolver.resolveAdventureOrForward(event, accessService);
+
+        assertThat(result).isEmpty();
+        verify(event).forwardTo(AdventuresMenuView.class);
+    }
+
+    // --- resolveLocationOrForward ---
+
+    @Test
+    void resolveLocationOrForward_validId_returnsLocationWithoutForwarding() {
+        LocationData location = new LocationData();
+        location.setId("loc-1");
         AdventureData adventure = new AdventureData();
-        adventure.setMessages(Map.of());
-        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.MESSAGE_ID.getValue(), "missing"));
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of("loc-1", location));
+        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"));
 
-        Optional<MessageData> result = AdventureRouteResolver.resolveMessage(adventure, event);
+        Optional<LocationData> result = AdventureRouteResolver.resolveLocationOrForward(adventure, event);
 
-        assertThat(result).isEmpty();
-        Notification notification = find(Notification.class).single();
-        assertThat(test(notification).getText()).isEqualTo("Message not found or access denied: missing");
-    }
-
-    // --- resolveCommandChain ---
-
-    @Test
-    void resolveCommandChain_validId_returnsChain() {
-        CommandChainData chain = new CommandChainData();
-        CommandProviderData provider = new CommandProviderData();
-        provider.setAvailableCommands(Map.of("go|north|", chain));
-        LocationData location = new LocationData();
-        location.setCommandProviderData(provider);
-        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.COMMAND_ID.getValue(), "go|north|"));
-
-        Optional<CommandChainData> result = AdventureRouteResolver.resolveCommandChain(location, event);
-
-        assertThat(result).contains(chain);
+        assertThat(result).contains(location);
+        verify(event, never()).forwardTo(eq(LocationsMenuView.class), any(RouteParameters.class));
     }
 
     @Test
-    void resolveCommandChain_unknownId_returnsEmptyAndShowsNotification() {
-        CommandProviderData provider = new CommandProviderData();
-        provider.setAvailableCommands(Map.of());
-        LocationData location = new LocationData();
-        location.setCommandProviderData(provider);
-        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.COMMAND_ID.getValue(), "missing"));
+    void resolveLocationOrForward_unknownId_returnsEmptyAndForwardsToLocationsMenuForAdventure() {
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of());
+        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.LOCATION_ID.getValue(), "missing"));
 
-        Optional<CommandChainData> result = AdventureRouteResolver.resolveCommandChain(location, event);
+        Optional<LocationData> result = AdventureRouteResolver.resolveLocationOrForward(adventure, event);
 
         assertThat(result).isEmpty();
-        Notification notification = find(Notification.class).single();
-        assertThat(test(notification).getText()).isEqualTo("Command not found or access denied: missing");
+        verify(event).forwardTo(LocationsMenuView.class, new RouteParameters(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1")));
+    }
+
+    // --- resolveItemOrForward ---
+
+    @Test
+    void resolveItemOrForward_validId_returnsItemWithoutForwarding() {
+        ItemData item = new ItemData();
+        item.setId("item-1");
+        ItemContainerData container = new ItemContainerData("loc-1");
+        container.setItems(List.of(item));
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        location.setItemContainerData(container);
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.ITEM_ID.getValue(), "item-1"));
+
+        Optional<ItemData> result = AdventureRouteResolver.resolveItemOrForward(adventure, location, event);
+
+        assertThat(result).contains(item);
+        verify(event, never()).forwardTo(eq(ItemsMenuView.class), any(RouteParameters.class));
+    }
+
+    @Test
+    void resolveItemOrForward_unknownId_returnsEmptyAndForwardsToItemsMenuForLocation() {
+        ItemContainerData container = new ItemContainerData("loc-1");
+        container.setItems(List.of());
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        location.setItemContainerData(container);
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.ITEM_ID.getValue(), "missing"));
+
+        Optional<ItemData> result = AdventureRouteResolver.resolveItemOrForward(adventure, location, event);
+
+        assertThat(result).isEmpty();
+        verify(event).forwardTo(ItemsMenuView.class, new RouteParameters(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1")));
     }
 }

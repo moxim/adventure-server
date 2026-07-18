@@ -23,7 +23,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
@@ -49,7 +48,6 @@ class MessageEditorViewTest {
 
     private MessageEditorView view;
     private AdventureData adventureData;
-    private MessageData messageData;
 
     @BeforeEach
     void setUp() {
@@ -57,12 +55,6 @@ class MessageEditorViewTest {
         adventureData = new AdventureData();
         adventureData.setId("adventure-1");
         adventureData.setMessages(new HashMap<>());
-
-        // Create test message
-        messageData = new MessageData();
-        messageData.setAdventureId("adventure-1");
-        messageData.setMessageId("welcome_message");
-        messageData.setText("Welcome to the adventure!");
 
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
@@ -111,22 +103,11 @@ class MessageEditorViewTest {
         assertThat(view).isNotNull();
     }
 
-    @Test
-    void setData_withExistingMessage_shouldLoadMessageFromMap() {
-        // given
-        view = new MessageEditorView(adventureService, messageService, accessService);
-        adventureData.getMessages().put("welcome_message", messageData);
-
-        // when
-        enterWithMessageId("welcome_message");
-
-        // then
-        // View should load the existing message
-        assertThat(adventureData.getMessages())
-                .hasSize(1)
-                .containsKey("welcome_message");
-        assertThat(adventureData.getMessages().get("welcome_message")).isEqualTo(messageData);
-    }
+    // Loading an existing message's text into the view is verified with a real UI assertion
+    // in MessageEditorViewRoutingTest.beforeEnter_validIds_populatesMessageTextFromResolvedAdventure
+    // — this view has no content-derived public accessor (getPageTitle() uses the raw route
+    // parameter, not the loaded message), so a plain-Mockito assertion here could only re-check
+    // the fixture map this test itself populated, never the view's actual loaded state.
 
     @Test
     void getPageTitle_shouldReturnNullBeforeRouteEnter() {

@@ -29,7 +29,6 @@ import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
-import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.GridProvider;
 import com.pdg.adventure.view.support.RouteIds;
@@ -262,17 +261,11 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventureOrForward(event, accessService);
         if (resolvedAdventure.isEmpty()) {
-            event.forwardTo(AdventuresMenuView.class);
             return;
         }
-        Optional<String> adventureId = event.getRouteParameters().get(RouteIds.ADVENTURE_ID.getValue());
-        if (adventureId.isPresent()) {
-            pageTitle = "Messages for " + resolvedAdventure.get().getTitle();
-        } else {
-            pageTitle = "Messages";
-        }
+        pageTitle = "Messages for " + resolvedAdventure.get().getTitle();
         setData(resolvedAdventure.get());
     }
 

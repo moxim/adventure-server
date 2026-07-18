@@ -121,6 +121,67 @@ class WordEditorDialogueTest {
     }
 
     @Test
+    @DisplayName("Test 2a2: Form validation - rejects word text containing a percent sign")
+    void isFormValid_shouldRejectWordTextContainingPercentSign() {
+        // given: word text that happens to contain '%'. A '%XX' sequence in stored word text
+        // is indistinguishable from a real percent-escape once embedded in a route parameter
+        // (e.g. a command spec) and later decoded by AdventureRouteResolver.decodeRouteParam
+        // on a cold-load navigation — disallowing '%' at the source prevents that ambiguity.
+        wordText.setValue("50%off");
+        typeSelector.setValue(Word.Type.NOUN);
+
+        // when: validating form
+        boolean isValid = dialogue.isFormValid();
+
+        // then: should be invalid
+        assertThat(isValid).isFalse();
+    }
+
+    @Test
+    @DisplayName("Test 2a3: Form validation - rejects multiple words separated by whitespace")
+    void isFormValid_shouldRejectMultipleWordsSeparatedBySpace() {
+        wordText.setValue("fire sword");
+        typeSelector.setValue(Word.Type.NOUN);
+
+        boolean isValid = dialogue.isFormValid();
+
+        assertThat(isValid).isFalse();
+    }
+
+    @Test
+    @DisplayName("Test 2a4: Form validation - rejects word text containing digits")
+    void isFormValid_shouldRejectWordTextContainingDigits() {
+        wordText.setValue("sword2");
+        typeSelector.setValue(Word.Type.NOUN);
+
+        boolean isValid = dialogue.isFormValid();
+
+        assertThat(isValid).isFalse();
+    }
+
+    @Test
+    @DisplayName("Test 2a5: Form validation - rejects word text containing punctuation")
+    void isFormValid_shouldRejectWordTextContainingPunctuation() {
+        wordText.setValue("fire-breathing");
+        typeSelector.setValue(Word.Type.NOUN);
+
+        boolean isValid = dialogue.isFormValid();
+
+        assertThat(isValid).isFalse();
+    }
+
+    @Test
+    @DisplayName("Test 2a6: Form validation - accepts word text with Unicode letters")
+    void isFormValid_shouldAcceptWordTextWithUnicodeLetters() {
+        wordText.setValue("café");
+        typeSelector.setValue(Word.Type.NOUN);
+
+        boolean isValid = dialogue.isFormValid();
+
+        assertThat(isValid).isTrue();
+    }
+
+    @Test
     @DisplayName("Test 2b: Form validation - requires either type or synonym")
     void isFormValid_shouldRequireTypeOrSynonym() {
         // given: valid word text but no type or synonym
