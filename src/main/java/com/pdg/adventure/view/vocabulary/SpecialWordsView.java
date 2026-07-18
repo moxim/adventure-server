@@ -27,7 +27,6 @@ import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
@@ -59,9 +58,8 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventureOrForward(event, accessService);
         if (resolvedAdventure.isEmpty()) {
-            event.forwardTo(AdventuresMenuView.class);
             return;
         }
         setAdventureData(resolvedAdventure.get());

@@ -36,11 +36,8 @@ import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
-import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.item.ItemEditorView;
-import com.pdg.adventure.view.item.ItemsMenuView;
 import com.pdg.adventure.view.location.LocationEditorView;
-import com.pdg.adventure.view.location.LocationsMenuView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
@@ -163,24 +160,19 @@ public class CommandsMenuView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventureOrForward(event, accessService);
         if (resolvedAdventure.isEmpty()) {
-            event.forwardTo(AdventuresMenuView.class);
             return;
         }
-        Optional<LocationData> resolvedLocation = AdventureRouteResolver.resolveLocation(resolvedAdventure.get(), event);
+        Optional<LocationData> resolvedLocation = AdventureRouteResolver.resolveLocationOrForward(resolvedAdventure.get(), event);
         if (resolvedLocation.isEmpty()) {
-            event.forwardTo(LocationsMenuView.class, new RouteParameters(
-                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), resolvedAdventure.get().getId())));
             return;
         }
         final Optional<String> optionalItemId = event.getRouteParameters().get(RouteIds.ITEM_ID.getValue());
         if (optionalItemId.isPresent()) {
-            Optional<ItemData> resolvedItem = AdventureRouteResolver.resolveItem(resolvedLocation.get(), event);
+            Optional<ItemData> resolvedItem = AdventureRouteResolver.resolveItemOrForward(
+                    resolvedAdventure.get(), resolvedLocation.get(), event);
             if (resolvedItem.isEmpty()) {
-                event.forwardTo(ItemsMenuView.class, new RouteParameters(
-                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), resolvedAdventure.get().getId()),
-                        new RouteParam(RouteIds.LOCATION_ID.getValue(), resolvedLocation.get().getId())));
                 return;
             }
             pageTitle = "Commands for " + ViewSupporter.formatDescription(resolvedItem.get());

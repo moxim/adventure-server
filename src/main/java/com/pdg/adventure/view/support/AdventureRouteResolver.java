@@ -3,6 +3,8 @@ package com.pdg.adventure.view.support;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.RouteParam;
+import com.vaadin.flow.router.RouteParameters;
 import org.springframework.web.util.UriUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -16,6 +18,9 @@ import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.ThingData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
+import com.pdg.adventure.view.adventure.AdventuresMenuView;
+import com.pdg.adventure.view.item.ItemsMenuView;
+import com.pdg.adventure.view.location.LocationsMenuView;
 
 /**
  * Resolves domain objects from a navigation event's route parameters, access-checked
@@ -93,6 +98,52 @@ public final class AdventureRouteResolver {
             return Optional.empty();
         }
         return Optional.of(message);
+    }
+
+    /**
+     * Resolves the adventure from the route parameters, forwarding to the adventures list
+     * when it cannot be resolved (missing parameter, unknown id, or access denied).
+     * Callers should {@code return} immediately on an empty result.
+     */
+    public static Optional<AdventureData> resolveAdventureOrForward(BeforeEnterEvent event,
+                                                                    AdventureAccessService accessService) {
+        Optional<AdventureData> adventure = resolveAdventure(event, accessService);
+        if (adventure.isEmpty()) {
+            event.forwardTo(AdventuresMenuView.class);
+        }
+        return adventure;
+    }
+
+    /**
+     * Resolves the location from the route parameters, forwarding to the given adventure's
+     * locations menu when it cannot be resolved. Callers should {@code return} immediately
+     * on an empty result.
+     */
+    public static Optional<LocationData> resolveLocationOrForward(AdventureData adventure,
+                                                                  BeforeEnterEvent event) {
+        Optional<LocationData> location = resolveLocation(adventure, event);
+        if (location.isEmpty()) {
+            event.forwardTo(LocationsMenuView.class, new RouteParameters(
+                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventure.getId())));
+        }
+        return location;
+    }
+
+    /**
+     * Resolves the item from the route parameters, forwarding to the given location's items
+     * menu when it cannot be resolved. Only call when the item route parameter is present —
+     * an absent parameter also resolves empty and would forward a location-scoped navigation
+     * away. Callers should {@code return} immediately on an empty result.
+     */
+    public static Optional<ItemData> resolveItemOrForward(AdventureData adventure, LocationData location,
+                                                          BeforeEnterEvent event) {
+        Optional<ItemData> item = resolveItem(location, event);
+        if (item.isEmpty()) {
+            event.forwardTo(ItemsMenuView.class, new RouteParameters(
+                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventure.getId()),
+                    new RouteParam(RouteIds.LOCATION_ID.getValue(), location.getId())));
+        }
+        return item;
     }
 
     public static Optional<CommandChainData> resolveCommandChain(ThingData thing, BeforeEnterEvent event) {
