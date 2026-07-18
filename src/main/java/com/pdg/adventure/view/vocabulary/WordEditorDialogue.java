@@ -218,6 +218,14 @@ public class WordEditorDialogue {
             return false;
         }
 
+        // '%' is disallowed: a stored word containing a valid percent-escape sequence
+        // (e.g. "%41") would be wrongly decoded once embedded in a route parameter and
+        // later run through AdventureRouteResolver.decodeRouteParam on a cold-load
+        // navigation, since decoding can't tell "real word text" from "actual encoding".
+        if (text.indexOf('%') >= 0) {
+            return false;
+        }
+
         // When synonym is selected, type can be ignored (it will be inherited)
         Word selectedSynonym = synonyms.getValue();
         Word.Type selectedType = typeSelector.getValue();
