@@ -29,7 +29,6 @@ import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
-import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
@@ -311,9 +310,8 @@ public class MessageEditorView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventure(event, accessService);
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventureOrForward(event, accessService);
         if (resolvedAdventure.isEmpty()) {
-            event.forwardTo(AdventuresMenuView.class);
             return;
         }
         final Optional<String> optionalMessageId = event.getRouteParameters().get(RouteIds.MESSAGE_ID.getValue());

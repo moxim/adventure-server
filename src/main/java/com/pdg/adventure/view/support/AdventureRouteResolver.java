@@ -1,26 +1,27 @@
 package com.pdg.adventure.view.support;
 
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.RouteParam;
+import com.vaadin.flow.router.RouteParameters;
 import org.springframework.web.util.UriUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.CommandChainData;
-import com.pdg.adventure.model.DirectionData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.model.MessageData;
-import com.pdg.adventure.model.ThingData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
+import com.pdg.adventure.view.adventure.AdventuresMenuView;
+import com.pdg.adventure.view.item.ItemsMenuView;
+import com.pdg.adventure.view.location.LocationsMenuView;
 
 /**
  * Resolves domain objects from a navigation event's route parameters, access-checked
- * where applicable. Every method shows a "not found or access denied" notification
- * and returns {@code Optional.empty()} on failure; callers decide where to forward.
+ * where applicable. Every method queues a "not found or access denied" message via
+ * {@link FlashNotifier} (shown once the navigation completes, so it survives the forward)
+ * and returns {@code Optional.empty()} on failure; the {@code ...OrForward} variants also
+ * forward to the nearest still-valid parent view.
  */
 public final class AdventureRouteResolver {
 
@@ -68,44 +69,50 @@ public final class AdventureRouteResolver {
         return item;
     }
 
-    public static Optional<DirectionData> resolveDirection(LocationData location, BeforeEnterEvent event) {
-        Optional<String> directionId = event.getRouteParameters().get(RouteIds.DIRECTION_ID.getValue());
-        if (directionId.isEmpty()) {
-            return Optional.empty();
+    /**
+     * Resolves the adventure from the route parameters, forwarding to the adventures list
+     * when it cannot be resolved (missing parameter, unknown id, or access denied).
+     * Callers should {@code return} immediately on an empty result.
+     */
+    public static Optional<AdventureData> resolveAdventureOrForward(BeforeEnterEvent event,
+                                                                    AdventureAccessService accessService) {
+        Optional<AdventureData> adventure = resolveAdventure(event, accessService);
+        if (adventure.isEmpty()) {
+            event.forwardTo(AdventuresMenuView.class);
         }
-        Optional<DirectionData> direction = location.getDirectionsData().stream()
-                .filter(candidate -> candidate.getId().equals(directionId.get()))
-                .findFirst();
-        if (direction.isEmpty()) {
-            showNotFound("Direction", directionId.get());
-        }
-        return direction;
+        return adventure;
     }
 
-    public static Optional<MessageData> resolveMessage(AdventureData adventure, BeforeEnterEvent event) {
-        Optional<String> messageId = event.getRouteParameters().get(RouteIds.MESSAGE_ID.getValue());
-        if (messageId.isEmpty()) {
-            return Optional.empty();
+    /**
+     * Resolves the location from the route parameters, forwarding to the given adventure's
+     * locations menu when it cannot be resolved. Callers should {@code return} immediately
+     * on an empty result.
+     */
+    public static Optional<LocationData> resolveLocationOrForward(AdventureData adventure,
+                                                                  BeforeEnterEvent event) {
+        Optional<LocationData> location = resolveLocation(adventure, event);
+        if (location.isEmpty()) {
+            event.forwardTo(LocationsMenuView.class, new RouteParameters(
+                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventure.getId())));
         }
-        MessageData message = adventure.getMessages().get(messageId.get());
-        if (message == null) {
-            showNotFound("Message", messageId.get());
-            return Optional.empty();
-        }
-        return Optional.of(message);
+        return location;
     }
 
-    public static Optional<CommandChainData> resolveCommandChain(ThingData thing, BeforeEnterEvent event) {
-        Optional<String> commandId = event.getRouteParameters().get(RouteIds.COMMAND_ID.getValue());
-        if (commandId.isEmpty()) {
-            return Optional.empty();
+    /**
+     * Resolves the item from the route parameters, forwarding to the given location's items
+     * menu when it cannot be resolved. Only call when the item route parameter is present —
+     * an absent parameter also resolves empty and would forward a location-scoped navigation
+     * away. Callers should {@code return} immediately on an empty result.
+     */
+    public static Optional<ItemData> resolveItemOrForward(AdventureData adventure, LocationData location,
+                                                          BeforeEnterEvent event) {
+        Optional<ItemData> item = resolveItem(location, event);
+        if (item.isEmpty()) {
+            event.forwardTo(ItemsMenuView.class, new RouteParameters(
+                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventure.getId()),
+                    new RouteParam(RouteIds.LOCATION_ID.getValue(), location.getId())));
         }
-        CommandChainData chain = thing.getCommandProviderData().getAvailableCommands().get(commandId.get());
-        if (chain == null) {
-            showNotFound("Command", commandId.get());
-            return Optional.empty();
-        }
-        return Optional.of(chain);
+        return item;
     }
 
     /**
@@ -132,8 +139,6 @@ public final class AdventureRouteResolver {
     }
 
     private static void showNotFound(String kind, String id) {
-        Notification notification = Notification.show(
-                kind + " not found or access denied: " + id, 5000, Notification.Position.MIDDLE);
-        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        FlashNotifier.flash(kind + " not found or access denied: " + id);
     }
 }

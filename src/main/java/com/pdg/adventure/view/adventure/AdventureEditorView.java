@@ -3,8 +3,6 @@ package com.pdg.adventure.view.adventure;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -25,6 +23,7 @@ import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.view.item.AllItemsMenuView;
 import com.pdg.adventure.view.location.LocationsMenuView;
 import com.pdg.adventure.view.message.MessagesMenuView;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 import com.pdg.adventure.view.vocabulary.VocabularyMenuView;
@@ -191,19 +190,25 @@ public class AdventureEditorView extends VerticalLayout
     public void beforeEnter(BeforeEnterEvent event) {
         Optional<String> adventureId = event.getRouteParameters().get(RouteIds.ADVENTURE_ID.getValue());
         if (adventureId.isPresent()) {
-            setUpLoading(adventureId.get(), event);
+            Optional<AdventureData> resolvedAdventure =
+                    AdventureRouteResolver.resolveAdventureOrForward(event, accessService);
+            if (resolvedAdventure.isEmpty()) {
+                return;
+            }
+            setUpLoadedAdventure(resolvedAdventure.get());
         } else {
             setUpNewEdit();
         }
         checkIfSaveAvailable();
     }
 
-    private void setUpLoading(String anAdventureId, BeforeEnterEvent event) {
-        boolean loaded = loadAdventure(anAdventureId);
-        if (!loaded) {
-            event.forwardTo(AdventuresMenuView.class);
-            return;
-        }
+    private void setUpLoadedAdventure(AdventureData aLoadedAdventure) {
+        adventureData = aLoadedAdventure;
+        startLocation.setValue(ViewSupporter.getLocationsShortedDescription(
+                adventureData.getLocationData().get(adventureData.getCurrentLocationId())));
+        numberOfLocations.setValue(adventureData.getLocationData().size() + "");
+        numberOfItems.setValue(ViewSupporter.getItemLocationPairs(adventureData.getLocationData().values()).size() + "");
+        binder.setBean(adventureData);
         isNewAdventure = false;
         pageTitle = "Edit Adventure: " + adventureData.getTitle();
     }
@@ -216,26 +221,6 @@ public class AdventureEditorView extends VerticalLayout
         binder.setBean(adventureData);
         isNewAdventure = true;
         pageTitle = "A new adventure awaits!";
-    }
-
-    /** Returns true if the adventure was found and the user has read access. */
-    public boolean loadAdventure(String aAdventureId) {
-        Optional<AdventureData> loadedAdventure =
-                accessService.findAdventureById(aAdventureId, ViewSupporter.getCurrentUser());
-        if (loadedAdventure.isEmpty()) {
-            Notification notification = Notification.show(
-                    "Adventure not found or access denied: %s".formatted(aAdventureId),
-                    5000, Notification.Position.MIDDLE);
-            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return false;
-        }
-        adventureData = loadedAdventure.get();
-        startLocation.setValue(ViewSupporter.getLocationsShortedDescription(
-                adventureData.getLocationData().get(adventureData.getCurrentLocationId())));
-        numberOfLocations.setValue(adventureData.getLocationData().size() + "");
-        numberOfItems.setValue(ViewSupporter.getItemLocationPairs(adventureData.getLocationData().values()).size() + "");
-        binder.setBean(adventureData);
-        return true;
     }
 
     @Override

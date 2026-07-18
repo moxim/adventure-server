@@ -156,10 +156,10 @@ class ItemEditorViewTest {
                 new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())));
 
         // then
-        // View should load the existing item
-        assertThat(locationData.getItemContainerData().getItems())
-                .hasSize(1)
-                .contains(itemData);
+        // View should load the existing item, not treat it as new — proven by the page
+        // title reflecting the item's actual description (derived from itemData, which
+        // beforeEnter must have found by id in the container) rather than "New Item".
+        assertThat(view.getPageTitle()).isEqualTo("Edit Item: A golden sword");
     }
 
     @Test

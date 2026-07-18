@@ -40,6 +40,7 @@ import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.item.ItemsMenuView;
 import com.pdg.adventure.view.location.LocationsMenuView;
+import com.pdg.adventure.view.support.FlashNotifier;
 import com.pdg.adventure.view.support.RouteIds;
 
 class CommandsMenuViewRoutingTest extends BrowserlessTest {
@@ -182,6 +183,7 @@ class CommandsMenuViewRoutingTest extends BrowserlessTest {
         verify(event).forwardTo(ItemsMenuView.class, new RouteParameters(
                 new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
                 new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1")));
+        FlashNotifier.showPending();
         Notification notification = find(Notification.class).single();
         assertThat(test(notification).getText()).isEqualTo("Item not found or access denied: missing");
     }
