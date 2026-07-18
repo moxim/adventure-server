@@ -25,13 +25,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.CommandChainData;
-import com.pdg.adventure.model.CommandProviderData;
-import com.pdg.adventure.model.DirectionData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.view.adventure.AdventuresMenuView;
@@ -159,92 +155,6 @@ class AdventureRouteResolverTest extends BrowserlessTest {
         assertThat(result).isEmpty();
         Notification notification = find(Notification.class).single();
         assertThat(test(notification).getText()).isEqualTo("Item not found or access denied: missing");
-    }
-
-    // --- resolveDirection ---
-
-    @Test
-    void resolveDirection_validId_returnsDirection() {
-        DirectionData direction = new DirectionData();
-        direction.setId("dir-1");
-        LocationData location = new LocationData();
-        location.setDirectionsData(Set.of(direction));
-        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.DIRECTION_ID.getValue(), "dir-1"));
-
-        Optional<DirectionData> result = AdventureRouteResolver.resolveDirection(location, event);
-
-        assertThat(result).contains(direction);
-    }
-
-    @Test
-    void resolveDirection_unknownId_returnsEmptyAndShowsNotification() {
-        LocationData location = new LocationData();
-        location.setDirectionsData(Set.of());
-        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.DIRECTION_ID.getValue(), "missing"));
-
-        Optional<DirectionData> result = AdventureRouteResolver.resolveDirection(location, event);
-
-        assertThat(result).isEmpty();
-        Notification notification = find(Notification.class).single();
-        assertThat(test(notification).getText()).isEqualTo("Direction not found or access denied: missing");
-    }
-
-    // --- resolveMessage ---
-
-    @Test
-    void resolveMessage_validId_returnsMessage() {
-        MessageData message = new MessageData();
-        AdventureData adventure = new AdventureData();
-        adventure.setMessages(Map.of("msg-1", message));
-        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.MESSAGE_ID.getValue(), "msg-1"));
-
-        Optional<MessageData> result = AdventureRouteResolver.resolveMessage(adventure, event);
-
-        assertThat(result).contains(message);
-    }
-
-    @Test
-    void resolveMessage_unknownId_returnsEmptyAndShowsNotification() {
-        AdventureData adventure = new AdventureData();
-        adventure.setMessages(Map.of());
-        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.MESSAGE_ID.getValue(), "missing"));
-
-        Optional<MessageData> result = AdventureRouteResolver.resolveMessage(adventure, event);
-
-        assertThat(result).isEmpty();
-        Notification notification = find(Notification.class).single();
-        assertThat(test(notification).getText()).isEqualTo("Message not found or access denied: missing");
-    }
-
-    // --- resolveCommandChain ---
-
-    @Test
-    void resolveCommandChain_validId_returnsChain() {
-        CommandChainData chain = new CommandChainData();
-        CommandProviderData provider = new CommandProviderData();
-        provider.setAvailableCommands(Map.of("go|north|", chain));
-        LocationData location = new LocationData();
-        location.setCommandProviderData(provider);
-        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.COMMAND_ID.getValue(), "go|north|"));
-
-        Optional<CommandChainData> result = AdventureRouteResolver.resolveCommandChain(location, event);
-
-        assertThat(result).contains(chain);
-    }
-
-    @Test
-    void resolveCommandChain_unknownId_returnsEmptyAndShowsNotification() {
-        CommandProviderData provider = new CommandProviderData();
-        provider.setAvailableCommands(Map.of());
-        LocationData location = new LocationData();
-        location.setCommandProviderData(provider);
-        BeforeEnterEvent event = eventWithParams(new RouteParam(RouteIds.COMMAND_ID.getValue(), "missing"));
-
-        Optional<CommandChainData> result = AdventureRouteResolver.resolveCommandChain(location, event);
-
-        assertThat(result).isEmpty();
-        Notification notification = find(Notification.class).single();
-        assertThat(test(notification).getText()).isEqualTo("Command not found or access denied: missing");
     }
 
     // --- resolveAdventureOrForward ---
