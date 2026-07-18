@@ -1,7 +1,5 @@
 package com.pdg.adventure.view.support;
 
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
@@ -20,8 +18,10 @@ import com.pdg.adventure.view.location.LocationsMenuView;
 
 /**
  * Resolves domain objects from a navigation event's route parameters, access-checked
- * where applicable. Every method shows a "not found or access denied" notification
- * and returns {@code Optional.empty()} on failure; callers decide where to forward.
+ * where applicable. Every method queues a "not found or access denied" message via
+ * {@link FlashNotifier} (shown once the navigation completes, so it survives the forward)
+ * and returns {@code Optional.empty()} on failure; the {@code ...OrForward} variants also
+ * forward to the nearest still-valid parent view.
  */
 public final class AdventureRouteResolver {
 
@@ -139,8 +139,6 @@ public final class AdventureRouteResolver {
     }
 
     private static void showNotFound(String kind, String id) {
-        Notification notification = Notification.show(
-                kind + " not found or access denied: " + id, 5000, Notification.Position.MIDDLE);
-        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        FlashNotifier.flash(kind + " not found or access denied: " + id);
     }
 }

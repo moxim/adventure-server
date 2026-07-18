@@ -83,6 +83,8 @@ class AdventureRouteResolverTest extends BrowserlessTest {
         Optional<AdventureData> result = AdventureRouteResolver.resolveAdventure(event, accessService);
 
         assertThat(result).isEmpty();
+        assertThat(find(Notification.class).all()).isEmpty();
+        FlashNotifier.showPending();
         Notification notification = find(Notification.class).single();
         assertThat(test(notification).getText()).isEqualTo("Adventure not found or access denied: missing");
     }
@@ -121,6 +123,8 @@ class AdventureRouteResolverTest extends BrowserlessTest {
         Optional<LocationData> result = AdventureRouteResolver.resolveLocation(adventure, event);
 
         assertThat(result).isEmpty();
+        assertThat(find(Notification.class).all()).isEmpty();
+        FlashNotifier.showPending();
         Notification notification = find(Notification.class).single();
         assertThat(test(notification).getText()).isEqualTo("Location not found or access denied: missing");
     }
@@ -153,6 +157,8 @@ class AdventureRouteResolverTest extends BrowserlessTest {
         Optional<ItemData> result = AdventureRouteResolver.resolveItem(location, event);
 
         assertThat(result).isEmpty();
+        assertThat(find(Notification.class).all()).isEmpty();
+        FlashNotifier.showPending();
         Notification notification = find(Notification.class).single();
         assertThat(test(notification).getText()).isEqualTo("Item not found or access denied: missing");
     }
