@@ -66,6 +66,7 @@ class LocationEditorViewRoutingTest extends BrowserlessTest {
     void beforeEnter_validIds_populatesFormFromResolvedData() {
         LocationData location = new LocationData();
         location.setId("loc-1");
+        location.getDescriptionData().setShortDescription("the old jetty");
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
         adventure.setLocationData(Map.of("loc-1", location));
@@ -78,6 +79,7 @@ class LocationEditorViewRoutingTest extends BrowserlessTest {
 
         assertThat(find(TextField.class, view).withValue("loc-1").exists()).isTrue();
         assertThat(find(TextField.class, view).withValue("adv-1").exists()).isTrue();
+        assertThat(view.getPageTitle()).isEqualTo("Edit Location: the old jetty");
     }
 
     @Test

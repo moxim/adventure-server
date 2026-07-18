@@ -27,7 +27,7 @@ public class AdventureGrid<T> extends Grid<T> {
         addItemDoubleClickListener(_ ->
                                            NavigationHelper.navigateTo(targetView, new RouteParameters(
                                                    new RouteParam(RouteIds.ADVENTURE_ID.getValue(), anAdventureId),
-                                                   new RouteParam("locationId", aLocationId))));
+                                                   new RouteParam(RouteIds.LOCATION_ID.getValue(), aLocationId))));
         return this;
     }
 

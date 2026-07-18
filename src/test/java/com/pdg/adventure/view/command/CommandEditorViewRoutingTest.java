@@ -100,7 +100,7 @@ class CommandEditorViewRoutingTest extends BrowserlessTest {
                 new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"),
                 new RouteParam(RouteIds.COMMAND_ID.getValue(), "go|north|")));
 
-        assertThat(view.getPageTitle()).isEqualTo("Edit Command #go|north|");
+        assertThat(view.getPageTitle()).isEqualTo("Edit Command: go north");
         Grid<?> grid = find(Grid.class, view).single();
         assertThat(test(grid).size()).isEqualTo(1);
     }
@@ -131,7 +131,7 @@ class CommandEditorViewRoutingTest extends BrowserlessTest {
                 new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"),
                 new RouteParam(RouteIds.COMMAND_ID.getValue(), "jump%7C%7Csea")));
 
-        assertThat(view.getPageTitle()).isEqualTo("Edit Command #jump||sea");
+        assertThat(view.getPageTitle()).isEqualTo("Edit Command: jump sea");
         Grid<?> grid = find(Grid.class, view).single();
         assertThat(test(grid).size()).isEqualTo(1);
     }
@@ -162,7 +162,7 @@ class CommandEditorViewRoutingTest extends BrowserlessTest {
                 new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"),
                 new RouteParam(RouteIds.COMMAND_ID.getValue(), "jump|100%|sea")));
 
-        assertThat(view.getPageTitle()).isEqualTo("Edit Command #jump|100%|sea");
+        assertThat(view.getPageTitle()).isEqualTo("Edit Command: jump 100% sea");
         Grid<?> grid = find(Grid.class, view).single();
         assertThat(test(grid).size()).isEqualTo(1);
     }
@@ -193,7 +193,7 @@ class CommandEditorViewRoutingTest extends BrowserlessTest {
                 new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"),
                 new RouteParam(RouteIds.COMMAND_ID.getValue(), "a+b||sea")));
 
-        assertThat(view.getPageTitle()).isEqualTo("Edit Command #a+b||sea");
+        assertThat(view.getPageTitle()).isEqualTo("Edit Command: a+b sea");
         Grid<?> grid = find(Grid.class, view).single();
         assertThat(test(grid).size()).isEqualTo(1);
     }

@@ -88,6 +88,7 @@ class CommandsMenuViewRoutingTest extends BrowserlessTest {
     void beforeEnter_locationScoped_validIds_populatesGridFromLocationCommands() {
         LocationData location = new LocationData();
         location.setId("loc-1");
+        location.getDescriptionData().setShortDescription("the dunes");
         location.setCommandProviderData(providerWithOneCommand());
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
@@ -99,7 +100,7 @@ class CommandsMenuViewRoutingTest extends BrowserlessTest {
                 new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
                 new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1")));
 
-        assertThat(view.getPageTitle()).isEqualTo("Commands for location #loc-1");
+        assertThat(view.getPageTitle()).isEqualTo("Commands for the dunes");
         Grid<?> grid = find(Grid.class, view).single();
         assertThat(test(grid).size()).isEqualTo(1);
     }
@@ -108,6 +109,7 @@ class CommandsMenuViewRoutingTest extends BrowserlessTest {
     void beforeEnter_itemScoped_validIds_populatesGridFromItemCommands() {
         ItemData item = new ItemData();
         item.setId("item-1");
+        item.getDescriptionData().setShortDescription("a rusty key");
         item.setCommandProviderData(providerWithOneCommand());
         ItemContainerData container = new ItemContainerData("loc-1");
         container.setItems(List.of(item));
@@ -125,7 +127,7 @@ class CommandsMenuViewRoutingTest extends BrowserlessTest {
                 new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"),
                 new RouteParam(RouteIds.ITEM_ID.getValue(), "item-1")));
 
-        assertThat(view.getPageTitle()).isEqualTo("Commands for item #item-1");
+        assertThat(view.getPageTitle()).isEqualTo("Commands for a rusty key");
         Grid<?> grid = find(Grid.class, view).single();
         assertThat(test(grid).size()).isEqualTo(1);
     }

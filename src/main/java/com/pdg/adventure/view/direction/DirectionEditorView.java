@@ -276,13 +276,11 @@ public class DirectionEditorView extends VerticalLayout
             return;
         }
         final Optional<String> optionalDirectionId = event.getRouteParameters().get(RouteIds.DIRECTION_ID.getValue());
-        if (optionalDirectionId.isPresent()) {
-            directionId = optionalDirectionId.get();
-            pageTitle = "Edit Direction #" + directionId;
-        } else {
-            pageTitle = "New Direction";
-        }
+        optionalDirectionId.ifPresent(id -> directionId = id);
         setData(resolvedLocation.get(), resolvedAdventure.get());
+        pageTitle = optionalDirectionId.isPresent()
+                ? "Edit Direction: " + ViewSupporter.formatDescription(directionData.getDescriptionData())
+                : "New Direction";
     }
 
     @Override

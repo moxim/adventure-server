@@ -73,6 +73,7 @@ class ItemEditorViewRoutingTest extends BrowserlessTest {
     void beforeEnter_validIds_populatesFormFromResolvedItem() {
         ItemData item = new ItemData();
         item.setId("item-1");
+        item.getDescriptionData().setShortDescription("a rusty key");
         ItemContainerData container = new ItemContainerData("loc-1");
         container.setItems(List.of(item));
         LocationData location = new LocationData();
@@ -92,6 +93,7 @@ class ItemEditorViewRoutingTest extends BrowserlessTest {
         assertThat(find(TextField.class, view).withValue("item-1").exists()).isTrue();
         assertThat(find(TextField.class, view).withValue("loc-1").exists()).isTrue();
         assertThat(find(TextField.class, view).withValue("adv-1").exists()).isTrue();
+        assertThat(view.getPageTitle()).isEqualTo("Edit Item: a rusty key");
     }
 
     @Test

@@ -182,9 +182,11 @@ class DirectionEditorViewEdgeCasesTest {
         // when
         view.beforeEnter(beforeEnterEvent);
 
-        // then
+        // then — title is built from the resolved direction's short description, not the
+        // raw (possibly huge) route parameter, so it must not echo longId back verbatim.
         String title = view.getPageTitle();
-        assertThat(title).contains(longId);
+        assertThat(title).startsWith("Edit Direction");
+        assertThat(title).doesNotContain(longId);
     }
 
     @Test
@@ -202,7 +204,7 @@ class DirectionEditorViewEdgeCasesTest {
 
         // then
         String title = view.getPageTitle();
-        assertThat(title).contains("Edit Direction #");
+        assertThat(title).startsWith("Edit Direction");
     }
 
     @Test
@@ -219,7 +221,7 @@ class DirectionEditorViewEdgeCasesTest {
         view.beforeEnter(beforeEnterEvent);
 
         // when/then
-        assertThat(view.getPageTitle()).isEqualTo("Edit Direction #nonexistent-id");
+        assertThat(view.getPageTitle()).startsWith("Edit Direction");
     }
 
     @Test
