@@ -137,7 +137,7 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
         }
         Optional<String> locId = event.getRouteParameters().get(RouteIds.LOCATION_ID.getValue());
         if (locId.isPresent()) {
-            pageTitle = "Exits for location #" + locId.get();
+            pageTitle = "Exits for " + ViewSupporter.formatDescription(resolvedLocation.get());
         } else {
             pageTitle = "Exits";
         }

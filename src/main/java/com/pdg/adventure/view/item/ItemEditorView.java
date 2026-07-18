@@ -416,13 +416,11 @@ public class ItemEditorView extends VerticalLayout
             return;
         }
         final Optional<String> optionalItemId = event.getRouteParameters().get(RouteIds.ITEM_ID.getValue());
-        if (optionalItemId.isPresent()) {
-            itemId = optionalItemId.get();
-            pageTitle = "Edit Item #" + itemId;
-        } else {
-            pageTitle = "New Item";
-        }
+        optionalItemId.ifPresent(id -> itemId = id);
         setData(resolvedAdventure.get(), resolvedLocation.get());
+        pageTitle = optionalItemId.isPresent()
+                ? "Edit Item: " + ViewSupporter.formatDescription(itemData)
+                : "New Item";
     }
 
     @Override

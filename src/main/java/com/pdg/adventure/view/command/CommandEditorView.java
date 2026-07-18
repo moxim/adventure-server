@@ -38,6 +38,7 @@ import com.pdg.adventure.view.location.LocationsMainLayout;
 import com.pdg.adventure.view.location.LocationsMenuView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
+import com.pdg.adventure.view.support.ViewSupporter;
 
 @Route(value = "author/adventures/:adventureId/locations/:locationId/commands/:commandId/edit", layout = LocationsMainLayout.class)
 @RouteAlias(value = "author/adventures/:adventureId/locations/:locationId/commands/new", layout = LocationsMainLayout.class)
@@ -370,7 +371,7 @@ public class CommandEditorView extends VerticalLayout
             // characters from vocabulary text. AdventureRouteResolver.decodeRouteParam performs
             // percent-only decoding with graceful fallback for both cases.
             commandId = AdventureRouteResolver.decodeRouteParam(optionalCommandId.get());
-            pageTitle = "Edit Command #" + commandId;
+            pageTitle = "Edit Command: " + ViewSupporter.formatDescription(new CommandDescriptionData(commandId));
         } else {
             pageTitle = "New Command";
         }

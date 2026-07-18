@@ -176,7 +176,6 @@ public class CommandsMenuView extends VerticalLayout
         }
         final Optional<String> optionalItemId = event.getRouteParameters().get(RouteIds.ITEM_ID.getValue());
         if (optionalItemId.isPresent()) {
-            pageTitle = "Commands for item #" + optionalItemId.get();
             Optional<ItemData> resolvedItem = AdventureRouteResolver.resolveItem(resolvedLocation.get(), event);
             if (resolvedItem.isEmpty()) {
                 event.forwardTo(ItemsMenuView.class, new RouteParameters(
@@ -184,10 +183,10 @@ public class CommandsMenuView extends VerticalLayout
                         new RouteParam(RouteIds.LOCATION_ID.getValue(), resolvedLocation.get().getId())));
                 return;
             }
+            pageTitle = "Commands for " + ViewSupporter.formatDescription(resolvedItem.get());
             setData(resolvedAdventure.get(), resolvedLocation.get(), resolvedItem.get());
         } else {
-            String locationId = event.getRouteParameters().get(LOCATION_ID.getValue()).orElse("666");
-            pageTitle = "Commands for location #" + locationId;
+            pageTitle = "Commands for " + ViewSupporter.formatDescription(resolvedLocation.get());
             setData(resolvedAdventure.get(), resolvedLocation.get());
         }
     }

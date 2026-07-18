@@ -125,7 +125,7 @@ class DirectionEditorViewNavigationTest {
         view.beforeEnter(beforeEnterEvent);
 
         // then
-        assertThat(view.getPageTitle()).isEqualTo("Edit Direction #direction-123");
+        assertThat(view.getPageTitle()).isEqualTo("Edit Direction: Go north");
     }
 
     @Test
@@ -173,21 +173,21 @@ class DirectionEditorViewNavigationTest {
     }
 
     @Test
-    void getPageTitle_afterEditNavigation_shouldContainDirectionId() {
+    void getPageTitle_afterEditNavigation_shouldContainDirectionShortDescription() {
         // given
         when(beforeEnterEvent.getRouteParameters()).thenReturn(routeParameters);
         when(routeParameters.get(RouteIds.ADVENTURE_ID.getValue())).thenReturn(Optional.of("adventure-1"));
         when(routeParameters.get(RouteIds.LOCATION_ID.getValue())).thenReturn(Optional.of("location-1"));
         when(accessService.findAdventureById(eq("adventure-1"), any(UserData.class)))
                 .thenReturn(Optional.of(adventureData));
-        when(routeParameters.get("directionId")).thenReturn(Optional.of("abc-123"));
+        when(routeParameters.get("directionId")).thenReturn(Optional.of("direction-123"));
 
         // when
         view.beforeEnter(beforeEnterEvent);
         String title = view.getPageTitle();
 
         // then
-        assertThat(title).contains("abc-123");
+        assertThat(title).contains("Go north");
         assertThat(title).startsWith("Edit Direction");
     }
 

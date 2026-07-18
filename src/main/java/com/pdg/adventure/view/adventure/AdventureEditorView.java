@@ -205,7 +205,7 @@ public class AdventureEditorView extends VerticalLayout
             return;
         }
         isNewAdventure = false;
-        pageTitle = "Edit Adventure #" + anAdventureId;
+        pageTitle = "Edit Adventure: " + adventureData.getTitle();
     }
 
     private void setUpNewEdit() {

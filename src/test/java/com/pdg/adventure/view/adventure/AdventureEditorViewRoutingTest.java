@@ -1,9 +1,7 @@
-package com.pdg.adventure.view.message;
+package com.pdg.adventure.view.adventure;
 
 import com.vaadin.browserless.BrowserlessTest;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
@@ -13,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.Map;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.Set;
 
@@ -21,36 +19,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
-import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.server.storage.service.MessageService;
-import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.support.RouteIds;
 
-class MessagesMenuViewRoutingTest extends BrowserlessTest {
+class AdventureEditorViewRoutingTest extends BrowserlessTest {
 
-    private MessageService messageService;
-    private AdventureService adventureService;
     private AdventureAccessService accessService;
-    private MessagesMenuView view;
+    private AdventureEditorView view;
 
     @BeforeEach
     void setUp() {
-        messageService = mock(MessageService.class);
-        adventureService = mock(AdventureService.class);
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
         testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
-        view = new MessagesMenuView(messageService, adventureService, accessService);
+        view = new AdventureEditorView(accessService);
         UI.getCurrent().add(view);
     }
 
@@ -67,32 +56,26 @@ class MessagesMenuViewRoutingTest extends BrowserlessTest {
     }
 
     @Test
-    void beforeEnter_validAdventureId_populatesMessagesGrid() {
-        MessageData message = new MessageData();
+    void beforeEnter_validAdventureId_setsTitleFromAdventureTitle() {
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
         adventure.setTitle("The Demo");
-        adventure.setMessages(Map.of("msg-1", message));
+        adventure.setLocationData(new HashMap<>());
         when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
                 .thenReturn(Optional.of(adventure));
 
         view.beforeEnter(eventWithAdventureId("adv-1"));
 
-        assertThat(view.getPageTitle()).isEqualTo("Messages for The Demo");
-        Grid<?> grid = find(Grid.class, view).single();
-        assertThat(test(grid).size()).isEqualTo(1);
+        assertThat(view.getPageTitle()).isEqualTo("Edit Adventure: The Demo");
     }
 
     @Test
-    void beforeEnter_unknownAdventureId_forwardsToAdventuresMenuView() {
-        when(accessService.findAdventureById(eq("missing"), any(UserData.class)))
-                .thenReturn(Optional.empty());
-        BeforeEnterEvent event = eventWithAdventureId("missing");
+    void beforeEnter_noAdventureId_setsNewAdventureTitle() {
+        BeforeEnterEvent event = mock(BeforeEnterEvent.class);
+        when(event.getRouteParameters()).thenReturn(new RouteParameters());
 
         view.beforeEnter(event);
 
-        verify(event).forwardTo(AdventuresMenuView.class);
-        Notification notification = find(Notification.class).single();
-        assertThat(test(notification).getText()).isEqualTo("Adventure not found or access denied: missing");
+        assertThat(view.getPageTitle()).isEqualTo("A new adventure awaits!");
     }
 }

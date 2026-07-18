@@ -269,7 +269,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         }
         Optional<String> adventureId = event.getRouteParameters().get(RouteIds.ADVENTURE_ID.getValue());
         if (adventureId.isPresent()) {
-            pageTitle = "Messages for Adventure #" + adventureId.get();
+            pageTitle = "Messages for " + resolvedAdventure.get().getTitle();
         } else {
             pageTitle = "Messages";
         }

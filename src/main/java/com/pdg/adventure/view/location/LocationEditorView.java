@@ -35,6 +35,7 @@ import com.pdg.adventure.view.direction.DirectionsMenuView;
 import com.pdg.adventure.view.item.ItemsMenuView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
+import com.pdg.adventure.view.support.ViewSupporter;
 
 @Route(value = "author/adventures/:adventureId/locations/:locationId/edit", layout = LocationsMainLayout.class)
 @RouteAlias(value = "author/adventures/:adventureId/locations/new", layout = LocationsMainLayout.class)
@@ -234,13 +235,11 @@ public class LocationEditorView extends VerticalLayout
             return;
         }
         final Optional<String> optionalLocationId = event.getRouteParameters().get(RouteIds.LOCATION_ID.getValue());
-        if (optionalLocationId.isPresent()) {
-            locationId = optionalLocationId.get();
-            pageTitle = "Edit Location #" + locationId;
-        } else {
-            pageTitle = "New Location";
-        }
+        optionalLocationId.ifPresent(id -> locationId = id);
         setData(resolvedAdventure.get());
+        pageTitle = optionalLocationId.isPresent()
+                ? "Edit Location: " + ViewSupporter.formatDescription(locationData)
+                : "New Location";
     }
 
     @Override

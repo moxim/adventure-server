@@ -70,6 +70,7 @@ class DirectionsMenuViewTest extends BrowserlessTest {
         direction.setId("dir-1");
         LocationData location = new LocationData();
         location.setId("loc-1");
+        location.getDescriptionData().setShortDescription("the old jetty");
         location.setDirectionsData(Set.of(direction));
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
@@ -81,6 +82,7 @@ class DirectionsMenuViewTest extends BrowserlessTest {
                 new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
                 new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1")));
 
+        assertThat(view.getPageTitle()).isEqualTo("Exits for the old jetty");
         Grid<?> grid = find(Grid.class, view).single();
         assertThat(test(grid).size()).isEqualTo(1);
     }
