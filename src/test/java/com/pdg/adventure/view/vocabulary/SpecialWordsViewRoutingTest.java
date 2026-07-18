@@ -24,10 +24,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.model.Word;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMenuView;
+import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.support.FlashNotifier;
 import com.pdg.adventure.view.support.RouteIds;
 
@@ -66,6 +69,9 @@ class SpecialWordsViewRoutingTest extends BrowserlessTest {
     void beforeEnter_validAdventureId_resolvesAndPopulatesWithoutForwarding() {
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
+        VocabularyData vocabularyData = new VocabularyData();
+        Word take = vocabularyData.createWord("grab", Word.Type.VERB);
+        adventure.setVocabularyData(vocabularyData);
         when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
                 .thenReturn(Optional.of(adventure));
         BeforeEnterEvent event = eventWithAdventureId("adv-1");
@@ -74,6 +80,13 @@ class SpecialWordsViewRoutingTest extends BrowserlessTest {
 
         verify(accessService).findAdventureById(eq("adv-1"), any(UserData.class));
         verify(event, never()).forwardTo(any(Class.class));
+        // ComboBox.getValue() is unreliable under BrowserlessTest (DataKeyMapper not
+        // initialised — see reference-adventurebuilder-browserless-testing memory), but the
+        // in-memory backing item list assigned via populate()/setItems() is a real, reliably
+        // readable signal that the resolved adventure's vocabulary — not an empty/wrong one —
+        // reached the selectors.
+        VocabularyPickerField takeSelector = find(VocabularyPickerField.class, view).atIndex(1);
+        assertThat(takeSelector.getListDataView().getItems()).containsExactly(take);
     }
 
     @Test
