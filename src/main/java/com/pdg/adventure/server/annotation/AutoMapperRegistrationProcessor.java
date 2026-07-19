@@ -3,6 +3,7 @@ package com.pdg.adventure.server.annotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -24,7 +25,7 @@ import com.pdg.adventure.server.support.MapperSupporter;
  */
 @Component
 @Order(1001)
-public class AutoMapperRegistrationProcessor implements BeanPostProcessor {
+public class AutoMapperRegistrationProcessor implements BeanPostProcessor, SmartInitializingSingleton {
 
     private static final Logger logger = LoggerFactory.getLogger(AutoMapperRegistrationProcessor.class);
 
@@ -63,14 +64,16 @@ public class AutoMapperRegistrationProcessor implements BeanPostProcessor {
         return bean;
     }
 
+    // AutoMapperRegistrationProcessor is itself a BeanPostProcessor with a constructor dependency on
+    // MapperSupporter, which forces Spring to construct MapperSupporter during the early
+    // BeanPostProcessor-registration phase - before this processor is fully registered as an active
+    // BeanPostProcessor. Triggering the flush from postProcessBeforeInitialization(mapperSupporterBean)
+    // therefore never fires. SmartInitializingSingleton.afterSingletonsInstantiated() runs once every
+    // singleton (including every @AutoRegisterMapper mapper, all of which depend on MapperSupporter via
+    // their abstract base classes) has been constructed, which is the correct point to flush.
     @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        // Check if this is the MapperSupporter being fully initialized
-        if (bean instanceof MapperSupporter && "mapperSupporter".equals(beanName)) {
-            registerAllPendingAutoMappers();
-        }
-
-        return bean;
+    public void afterSingletonsInstantiated() {
+        registerAllPendingAutoMappers();
     }
 
     private Class<?>[] resolveMapperGenericTypes(Class<?> mapperClass) {
