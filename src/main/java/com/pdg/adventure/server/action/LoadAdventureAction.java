@@ -108,6 +108,8 @@ public class LoadAdventureAction extends AbstractAction {
 
         gameContext.setPocket(savedAdventure.getPocket());
 
+        gameContext.setWorkflowData(adventureData.getWorkflowData());
+
         throw new ReloadAdventureException("Adventure reloaded, restarting game...");
     }
 
