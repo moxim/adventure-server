@@ -83,10 +83,10 @@ public class WorkflowEditorView extends VerticalLayout
         nounSelector = new VocabularyPickerField("Noun", "You may filter on nouns.");
         setUpBinding();
 
-        Span helpText = new Span("Workflow commands run automatically every turn, in "
-                + "gameContext.preProcessCommands() - they are not triggered by matching player input. "
-                + "Verb/Adjective/Noun just label the command. Add preconditions to control when it fires; "
-                + "an unmet precondition still shows its message every turn, it does not silently skip.");
+        Span helpText = new Span("Workflow commands run automatically every turn. " +
+                                 "Add preconditions to control when it fires; " +
+                                 "an unmet precondition still shows its message every turn," +
+                                 " it does not silently skip.");
         helpText.getStyle().set("font-style", "italic").set("color", "var(--lumo-secondary-text-color)");
 
         grid = buildGrid();
