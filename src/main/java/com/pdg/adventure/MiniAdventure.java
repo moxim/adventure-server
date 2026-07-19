@@ -105,6 +105,12 @@ public class MiniAdventure {
                 createSpecialWords(allWords);
                 commandFactory.setUpWorkflowCommands(wf);
 
+                // TODO: Review needed — layer authored WorkflowData onto `wf` here via WorkflowMapper
+                //  once this demo entry point loads a specific AdventureData again (see LoadAdventureAction).
+                //  Not wired today: MiniAdventure/GameContext/GameLoop have no live caller (AdventureClient's
+                //  @SpringBootApplication is commented out, and Adventure.run()'s GameLoop wiring is commented
+                //  out too), so there is nothing to regression-test against yet.
+
                 final GameLoop gameLoop = initializeGameLoop();
 
                 BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
