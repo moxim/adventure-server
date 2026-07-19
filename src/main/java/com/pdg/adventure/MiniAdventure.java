@@ -21,6 +21,7 @@ import com.pdg.adventure.server.engine.Workflow;
 import com.pdg.adventure.server.exception.ReloadAdventureException;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.AdventureMapper;
+import com.pdg.adventure.server.mapper.WorkflowMapper;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.Parser;
@@ -35,6 +36,7 @@ import com.pdg.adventure.server.vocabulary.Vocabulary;
 public class MiniAdventure {
     private final AdventureService adventureService;
     private final AdventureMapper adventureMapper;
+    private final WorkflowMapper workflowMapper;
     private final GameContext gameContext;
     private final VocabularyData vocabularyData;
     private AdventureConfig adventureConfig;
@@ -46,10 +48,11 @@ public class MiniAdventure {
     private MiniAdventureContent content;
 
     public MiniAdventure(@Lazy AdventureConfig anAdventureConfig, final AdventureMapper anAdventureMapper,
-                         AdventureService anAdventureService, GameContext aGameContext,
-                         final VocabularyData aVocabularyData) {
+                         final WorkflowMapper aWorkflowMapper, AdventureService anAdventureService,
+                         GameContext aGameContext, final VocabularyData aVocabularyData) {
         adventureService = anAdventureService;
         adventureMapper = anAdventureMapper;
+        workflowMapper = aWorkflowMapper;
         gameContext = aGameContext;
         vocabularyData = aVocabularyData;
         useAdventureConfiguration(anAdventureConfig);
@@ -66,7 +69,7 @@ public class MiniAdventure {
 
     static void main(String[] args) {
         final GameContext gameContext = new GameContext();
-        final MiniAdventure game = new MiniAdventure(new AdventureConfig(gameContext), null, null, gameContext,
+        final MiniAdventure game = new MiniAdventure(new AdventureConfig(gameContext), null, null, null, gameContext,
                                                      new VocabularyData());
         game.setup();
         game.run();
@@ -105,11 +108,11 @@ public class MiniAdventure {
                 createSpecialWords(allWords);
                 commandFactory.setUpWorkflowCommands(wf);
 
-                // TODO: Review needed — layer authored WorkflowData onto `wf` here via WorkflowMapper
-                //  once this demo entry point loads a specific AdventureData again (see LoadAdventureAction).
-                //  Not wired today: MiniAdventure/GameContext/GameLoop have no live caller (AdventureClient's
-                //  @SpringBootApplication is commented out, and Adventure.run()'s GameLoop wiring is commented
-                //  out too), so there is nothing to regression-test against yet.
+                // Layer the author's persisted workflow commands (set on gameContext by
+                // LoadAdventureAction when an adventure is loaded) on top of the hardcoded ones above.
+                if (workflowMapper != null) {
+                    workflowMapper.populate(gameContext.getWorkflowData(), wf);
+                }
 
                 final GameLoop gameLoop = initializeGameLoop();
 

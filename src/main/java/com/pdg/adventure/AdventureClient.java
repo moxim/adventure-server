@@ -15,6 +15,7 @@ import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.LoadAdventureAction;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.mapper.AdventureMapper;
+import com.pdg.adventure.server.mapper.WorkflowMapper;
 import com.pdg.adventure.server.storage.service.AdventureService;
 
 /**
@@ -27,13 +28,16 @@ public class AdventureClient implements CommandLineRunner {
 
     private final AdventureService adventureService;
     private final AdventureMapper adventureMapper;
+    private final WorkflowMapper workflowMapper;
     private final AdventureConfig adventureConfig;
     private final Environment environment;
 
     public AdventureClient(@Lazy AdventureService anAdventureService, @Lazy AdventureMapper anAdventureMapper,
-                           @Lazy AdventureConfig anAdventureConfig, Environment anEnvironment) {
+                           @Lazy WorkflowMapper aWorkflowMapper, @Lazy AdventureConfig anAdventureConfig,
+                           Environment anEnvironment) {
         adventureService = anAdventureService;
         adventureMapper = anAdventureMapper;
+        workflowMapper = aWorkflowMapper;
         adventureConfig = anAdventureConfig;
         environment = anEnvironment;
     }
@@ -69,8 +73,9 @@ public class AdventureClient implements CommandLineRunner {
             // ignore it this time
         }
 
-        MiniAdventure miniAdventure = new MiniAdventure(adventureConfig, adventureMapper, adventureService,
-                                                         gameContext, adventureData.getVocabularyData());
+        MiniAdventure miniAdventure = new MiniAdventure(adventureConfig, adventureMapper, workflowMapper,
+                                                         adventureService, gameContext,
+                                                         adventureData.getVocabularyData());
         Thread.sleep(3000); // Wait for 3 seconds to let the user read the messages
 
         miniAdventure.run();
