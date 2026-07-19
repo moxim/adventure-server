@@ -4,7 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.env.Environment;
 
 import java.util.List;
 
@@ -18,7 +20,7 @@ import com.pdg.adventure.server.storage.service.AdventureService;
 /**
  * The entry point of a Spring Boot application.
  */
-//@SpringBootApplication
+@SpringBootApplication
 public class AdventureClient implements CommandLineRunner {
 
     private static final Logger LOG = LoggerFactory.getLogger(AdventureClient.class);
@@ -26,16 +28,25 @@ public class AdventureClient implements CommandLineRunner {
     private final AdventureService adventureService;
     private final AdventureMapper adventureMapper;
     private final AdventureConfig adventureConfig;
+    private final Environment environment;
 
-    public AdventureClient(AdventureService anAdventureService, AdventureMapper anAdventureMapper,
-                           @Lazy AdventureConfig anAdventureConfig) {
+    public AdventureClient(@Lazy AdventureService anAdventureService, @Lazy AdventureMapper anAdventureMapper,
+                           @Lazy AdventureConfig anAdventureConfig, Environment anEnvironment) {
         adventureService = anAdventureService;
         adventureMapper = anAdventureMapper;
         adventureConfig = anAdventureConfig;
+        environment = anEnvironment;
     }
 
     @Override
     public void run(String... args) throws Exception {
+        // This CommandLineRunner boots the demo/manual game loop. Test slices (@DataMongoTest etc.)
+        // still start the real SpringApplication, which runs every CommandLineRunner bean - so without
+        // this guard, unrelated data-layer tests would try to play the game during context startup.
+        if (environment.matchesProfiles("test")) {
+            return;
+        }
+
         final List<AdventureData> adventures = adventureService.getAdventures();
         if (adventures.isEmpty()) {
             LOG.error("No adventures found in the database. Please add an adventure and try again.");
@@ -53,6 +64,7 @@ public class AdventureClient implements CommandLineRunner {
         try {
             loadAdventureAction.loadAdventure(adventureId);
         } catch (Exception e) {
+            e.printStackTrace();
             LOG.warn("Ignoring failed adventure load with ID {}: {}", adventureId, e.getMessage());
             // ignore it this time
         }
