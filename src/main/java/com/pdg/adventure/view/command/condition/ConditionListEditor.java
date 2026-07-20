@@ -16,7 +16,7 @@ public class ConditionListEditor extends VerticalLayout {
     private final AdventureData adventureData;
     private final VerticalLayout rowsLayout;
     @Setter
-    private Runnable onChange;
+    private transient Runnable onChange;
 
     public ConditionListEditor(AdventureData adventureData) {
         this.adventureData = adventureData;

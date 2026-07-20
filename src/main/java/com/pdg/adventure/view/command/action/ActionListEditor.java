@@ -15,7 +15,7 @@ public class ActionListEditor extends VerticalLayout {
     private final AdventureData adventureData;
     private final VerticalLayout rowsLayout;
     @Setter
-    private Runnable onChange;   // fired on any user-driven edit (add/remove/reorder/leaf-field)
+    private transient Runnable onChange;   // fired on any user-driven edit (add/remove/reorder/leaf-field)
 
     public ActionListEditor(AdventureData anAdventureData) {
         adventureData = anAdventureData;

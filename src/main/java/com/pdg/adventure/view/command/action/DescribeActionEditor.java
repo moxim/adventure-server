@@ -55,7 +55,7 @@ public class DescribeActionEditor extends ActionEditorComponent<DescribeActionDa
         Span description = new Span("Select an item or location to describe");
         description.getStyle().set("color", "var(--lumo-secondary-text-color)");
 
-        List<DescribableTarget> allTargets = collectAllTargets();
+        List<DescribableTarget> allTargets = collectAllTargets(adventureData);
 
         targetSelector = new ComboBox<>("Target to Describe");
         targetSelector.setItems(allTargets);
@@ -98,10 +98,42 @@ public class DescribeActionEditor extends ActionEditorComponent<DescribeActionDa
         };
     }
 
-    private List<DescribableTarget> collectAllTargets() {
+    private List<DescribableTarget> collectAllTargets(final AdventureData anAdventureData) {
         List<DescribableTarget> targets = new ArrayList<>();
 
         // Add all items from all location containers and player pocket
+        targets.addAll(collectItemsFromLocations(anAdventureData));
+        targets.addAll(collectItemsFromPlayerPocket(anAdventureData));
+
+        // Add all locations
+        targets.addAll(collectLocations(anAdventureData));
+
+        return targets;
+    }
+
+    private List<DescribableTarget> collectLocations(final AdventureData anAdventureData) {
+        List<DescribableTarget> targets = new ArrayList<>();
+        for (LocationData location : anAdventureData.getLocationData().values()) {
+            targets.add(new LocationTarget(location));
+        }
+        return targets;
+    }
+
+    private List<DescribableTarget> collectItemsFromPlayerPocket(final AdventureData anAdventureData) {
+        List<DescribableTarget> targets = new ArrayList<>();
+        if (anAdventureData.getPlayerPocket() != null) {
+            List<ItemData> pocketItems = anAdventureData.getPlayerPocket().getItems();
+            if (pocketItems != null) {
+                for (ItemData item : pocketItems) {
+                    targets.add(new ItemTarget(item));
+                }
+            }
+        }
+        return targets;
+    }
+
+    private List<DescribableTarget> collectItemsFromLocations(final AdventureData adventureData) {
+        List<DescribableTarget> targets = new ArrayList<>();
         for (LocationData location : adventureData.getLocationData().values()) {
             if (location.getItemContainerData() != null) {
                 List<ItemData> items = location.getItemContainerData().getItems();
@@ -112,21 +144,6 @@ public class DescribeActionEditor extends ActionEditorComponent<DescribeActionDa
                 }
             }
         }
-
-        if (adventureData.getPlayerPocket() != null) {
-            List<ItemData> pocketItems = adventureData.getPlayerPocket().getItems();
-            if (pocketItems != null) {
-                for (ItemData item : pocketItems) {
-                    targets.add(new ItemTarget(item));
-                }
-            }
-        }
-
-        // Add all locations
-        for (LocationData location : adventureData.getLocationData().values()) {
-            targets.add(new LocationTarget(location));
-        }
-
         return targets;
     }
 
