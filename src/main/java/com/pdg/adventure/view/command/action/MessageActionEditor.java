@@ -17,7 +17,8 @@ import com.pdg.adventure.model.action.MessageActionData;
  * Editor component for MessageActionData.
  * Allows selecting a message from the message catalog.
  */
-public class MessageActionEditor extends ActionEditorComponent {
+@AutoRegisterActionEditor
+public class MessageActionEditor extends ActionEditorComponent<MessageActionData> {
     private final MessageActionData messageActionData;
     private final AdventureData adventureData;
     private ComboBox<String> messageIdComboBox;

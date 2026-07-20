@@ -3,6 +3,7 @@ package com.pdg.adventure.view.command.action;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.action.WearActionData;
 
+@AutoRegisterActionEditor
 public class WearActionEditor extends AbstractSingleItemActionEditor<WearActionData> {
 
     public WearActionEditor(WearActionData actionData, AdventureData adventureData) {

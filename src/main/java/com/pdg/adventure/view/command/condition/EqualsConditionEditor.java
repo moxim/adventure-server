@@ -4,7 +4,8 @@ import com.vaadin.flow.component.textfield.TextField;
 
 import com.pdg.adventure.model.condition.EqualsConditionData;
 
-public class EqualsConditionEditor extends ConditionEditorComponent {
+@AutoRegisterConditionEditor
+public class EqualsConditionEditor extends ConditionEditorComponent<EqualsConditionData> {
     private final EqualsConditionData equalsData;
     private TextField variableNameField;
     private TextField valueField;

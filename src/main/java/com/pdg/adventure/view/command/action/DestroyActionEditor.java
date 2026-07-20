@@ -3,6 +3,7 @@ package com.pdg.adventure.view.command.action;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.action.DestroyActionData;
 
+@AutoRegisterActionEditor
 public class DestroyActionEditor extends AbstractSingleItemActionEditor<DestroyActionData> {
 
     public DestroyActionEditor(DestroyActionData actionData, AdventureData adventureData) {

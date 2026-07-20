@@ -10,7 +10,8 @@ import com.pdg.adventure.model.action.DecrementVariableActionData;
  * Editor component for DecrementVariableActionData.
  * Allows specifying the variable name and the amount to decrement it by.
  */
-public class DecrementVariableActionEditor extends ActionEditorComponent {
+@AutoRegisterActionEditor
+public class DecrementVariableActionEditor extends ActionEditorComponent<DecrementVariableActionData> {
     private final DecrementVariableActionData actionData;
     private TextField nameField;
     private TextField valueField;

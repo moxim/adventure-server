@@ -17,7 +17,8 @@ import com.pdg.adventure.view.support.ViewSupporter;
  * Editor component for DescribeActionData.
  * Allows selecting either an item or a location as the target to describe.
  */
-public class DescribeActionEditor extends ActionEditorComponent {
+@AutoRegisterActionEditor
+public class DescribeActionEditor extends ActionEditorComponent<DescribeActionData> {
 
     private sealed interface DescribableTarget permits ItemTarget, LocationTarget {
         String id();

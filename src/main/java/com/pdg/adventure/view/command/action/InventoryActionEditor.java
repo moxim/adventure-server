@@ -11,7 +11,8 @@ import com.pdg.adventure.model.action.InventoryActionData;
  * inventory automatically. The underlying fields (messageConsumerId, containerProviderId)
  * are broken placeholders and are intentionally not exposed in the UI.
  */
-public class InventoryActionEditor extends ActionEditorComponent {
+@AutoRegisterActionEditor
+public class InventoryActionEditor extends ActionEditorComponent<InventoryActionData> {
 
     public InventoryActionEditor(InventoryActionData actionData) {
         super(actionData);
