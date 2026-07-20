@@ -33,12 +33,14 @@ import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.model.condition.CarriedConditionData;
 import com.pdg.adventure.model.condition.HereConditionData;
 import com.pdg.adventure.model.condition.NotConditionData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.command.CommandsMenuView;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPickerField;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ShowNotification;
 import com.pdg.adventure.view.support.ViewSupporter;
@@ -53,6 +55,7 @@ public class ItemEditorView extends VerticalLayout
 
     private final transient AdventureService adventureService;
     private final transient ItemService itemService;
+    private final transient AdventureAccessService accessService;
     private final Binder<ItemViewModel> binder;
     private final VocabularyPickerField adjectiveSelector;
     private final VocabularyPickerField nounSelector;
@@ -68,12 +71,14 @@ public class ItemEditorView extends VerticalLayout
     private transient AdventureData adventureData;
     private transient LocationData locationData;
 
-    public ItemEditorView(AdventureService anAdventureService, ItemService anItemService) {
+    public ItemEditorView(AdventureService anAdventureService, ItemService anItemService,
+                          AdventureAccessService anAccessService) {
 
         setSizeFull();
 
         adventureService = anAdventureService;
         itemService = anItemService;
+        accessService = anAccessService;
         binder = new Binder<>(ItemViewModel.class);
 
         itemData = new ItemData();
@@ -103,7 +108,6 @@ public class ItemEditorView extends VerticalLayout
                         new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
                         new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
                         new RouteParam(RouteIds.ITEM_ID.getValue(), itemId)))
-                  .ifPresent(view -> view.setData(adventureData, locationData, itemData))
         );
         commandsButton.setEnabled(false);
 
@@ -229,8 +233,7 @@ public class ItemEditorView extends VerticalLayout
         UI.getCurrent().navigate(ItemsMenuView.class, new RouteParameters(
 //                  new RouteParam(RouteIds.ITEM_ID.getValue(), itemId),
                   new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-          .ifPresent(editor -> editor.setData(adventureData, locationData));
+                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
     }
 
     private boolean tryToAddPickUpCommands(final ItemData anItemData, final VocabularyData aVocabularyData) {
@@ -399,14 +402,20 @@ public class ItemEditorView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        final Optional<String> optionalItemId = event.getRouteParameters().get(RouteIds.ITEM_ID.getValue());
-
-        if (optionalItemId.isPresent()) {
-            itemId = optionalItemId.get();
-            pageTitle = "Edit Item #" + itemId;
-        } else {
-            pageTitle = "New Item";
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventureOrForward(event, accessService);
+        if (resolvedAdventure.isEmpty()) {
+            return;
         }
+        Optional<LocationData> resolvedLocation = AdventureRouteResolver.resolveLocationOrForward(resolvedAdventure.get(), event);
+        if (resolvedLocation.isEmpty()) {
+            return;
+        }
+        final Optional<String> optionalItemId = event.getRouteParameters().get(RouteIds.ITEM_ID.getValue());
+        optionalItemId.ifPresent(id -> itemId = id);
+        setData(resolvedAdventure.get(), resolvedLocation.get());
+        pageTitle = optionalItemId.isPresent()
+                ? "Edit Item: " + ViewSupporter.formatDescription(itemData)
+                : "New Item";
     }
 
     @Override
@@ -419,7 +428,7 @@ public class ItemEditorView extends VerticalLayout
         AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges());
     }
 
-    public void setData(AdventureData anAdventureData, LocationData aLocationData) {
+    private void setData(AdventureData anAdventureData, LocationData aLocationData) {
         adventureData = anAdventureData;
         locationData = aLocationData;
 

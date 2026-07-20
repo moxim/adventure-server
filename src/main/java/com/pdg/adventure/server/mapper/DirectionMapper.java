@@ -21,7 +21,6 @@ public class DirectionMapper implements Mapper<DirectionData, GenericDirection> 
                            CommandMapper aCommandMapper) {
         mapperSupporter = aMapperSupporter;
         commandMapper = aCommandMapper;
-        mapperSupporter.registerMapper(DirectionData.class, GenericDirection.class, this);
     }
 
     @Override

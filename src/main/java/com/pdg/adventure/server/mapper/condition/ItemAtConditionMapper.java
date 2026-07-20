@@ -20,7 +20,6 @@ public class ItemAtConditionMapper extends PreConditionMapper<ItemAtConditionDat
     public ItemAtConditionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig) {
         super(aMapperSupporter);
         adventureConfig = anAdventureConfig;
-        aMapperSupporter.registerMapper(ItemAtConditionData.class, ItemAtCondition.class, this);
     }
 
     @Override

@@ -8,6 +8,8 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParam;
@@ -15,6 +17,7 @@ import com.vaadin.flow.router.RouteParameters;
 import jakarta.annotation.security.RolesAllowed;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static com.pdg.adventure.model.Word.Type.VERB;
@@ -22,16 +25,19 @@ import static com.pdg.adventure.model.Word.Type.VERB;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.component.VocabularyPickerField;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
 
 @Route(value = "author/adventures/:adventureId/vocabulary/special", layout = VocabularyMainLayout.class)
 @PageTitle("Special Words")
 @RolesAllowed("ROLE_AUTHOR")
-public class SpecialWordsView extends VerticalLayout implements SaveListener, GuiListener {
+public class SpecialWordsView extends VerticalLayout implements SaveListener, GuiListener, BeforeEnterObserver {
 
     private final transient AdventureService adventureService;
+    private final transient AdventureAccessService accessService;
     private AdventureData adventureData;
     private VocabularyData vocabularyData;
     private transient WordUsageTracker wordUsageTracker;
@@ -43,10 +49,20 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
     private VocabularyPickerField loadSelector;
     private VocabularyPickerField examineSelector;
 
-    public SpecialWordsView(AdventureService anAdventureService) {
+    public SpecialWordsView(AdventureService anAdventureService, AdventureAccessService anAccessService) {
         adventureService = anAdventureService;
+        accessService = anAccessService;
         setSizeFull();
         createGUI();
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventureOrForward(event, accessService);
+        if (resolvedAdventure.isEmpty()) {
+            return;
+        }
+        setAdventureData(resolvedAdventure.get());
     }
 
     private void createGUI() {
@@ -63,8 +79,7 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
 
         back = new Button("Back", _ -> {
             UI.getCurrent().navigate(VocabularyMenuView.class, new RouteParameters(
-                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-              .ifPresent(editor -> editor.setAdventureData(adventureData));
+                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
         });
         back.addClickShortcut(Key.ESCAPE);
 
@@ -157,7 +172,7 @@ public class SpecialWordsView extends VerticalLayout implements SaveListener, Gu
         notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
     }
 
-    public void setAdventureData(AdventureData anAdventureData) {
+    private void setAdventureData(AdventureData anAdventureData) {
         adventureData = anAdventureData;
         vocabularyData = adventureData.getVocabularyData();
         wordUsageTracker = new WordUsageTracker(adventureData, vocabularyData);

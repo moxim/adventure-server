@@ -22,7 +22,6 @@ public class IncrementVariableActionMapper extends ActionMapper<IncrementVariabl
         super(aMapperSupporter);
         variableProvider = aVariableProvider;
         messagesHolder = aMessagesHolder;
-        aMapperSupporter.registerMapper(IncrementVariableActionData.class, IncrementVariableAction.class, this);
     }
 
     @Override

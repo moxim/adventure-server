@@ -23,7 +23,6 @@ public class PlayerAtConditionMapper extends PreConditionMapper<PlayerAtConditio
         super(aMapperSupporter);
         adventureConfig = anAdventureConfig;
         gameContext = aGameContext;
-        aMapperSupporter.registerMapper(PlayerAtConditionData.class, PlayerAtCondition.class, this);
     }
 
     @Override

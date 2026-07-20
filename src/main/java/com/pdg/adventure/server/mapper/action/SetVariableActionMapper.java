@@ -21,7 +21,6 @@ public class SetVariableActionMapper extends ActionMapper<SetVariableActionData,
         super(aMapperSupporter);
         messagesHolder = aMessagesHolder;
         variableProvider = aVariableProvider;
-        aMapperSupporter.registerMapper(SetVariableActionData.class, SetVariableAction.class, this);
     }
 
     @Override

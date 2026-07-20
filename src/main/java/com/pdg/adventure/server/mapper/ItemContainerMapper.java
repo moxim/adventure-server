@@ -31,7 +31,6 @@ public class ItemContainerMapper implements Mapper<ItemContainerData, GenericCon
         allItems = aMapperSupporter.getMappedItems();
         descriptionMapper = aDescriptionMapper;
         itemMapper = aItemMapper;
-        mapperSupporter.registerMapper(ItemContainerData.class, GenericContainer.class, this);
     }
 
     @Override

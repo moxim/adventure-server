@@ -218,6 +218,14 @@ public class WordEditorDialogue {
             return false;
         }
 
+        // Word text must be a single word: Unicode letters only — no digits, punctuation,
+        // or whitespace-separated additional words. This also rules out a stored '%' being
+        // wrongly decoded as a percent-escape once embedded in a route parameter and later
+        // run through AdventureRouteResolver.decodeRouteParam on a cold-load navigation.
+        if (!text.trim().matches("\\p{L}+")) {
+            return false;
+        }
+
         // When synonym is selected, type can be ignored (it will be inherited)
         Word selectedSynonym = synonyms.getValue();
         Word.Type selectedType = typeSelector.getValue();
@@ -277,11 +285,7 @@ public class WordEditorDialogue {
         String newWordText = wordText.getValue().toLowerCase().trim();
 
         // Check for duplicate
-        if (vocabularyData.findWord(newWordText).isPresent()) {
-            wordText.setErrorMessage(VocabularyData.DUPLICATE_WORD_TEXT.formatted(newWordText));
-            wordText.setInvalid(true);
-            return;
-        }
+        if (isWordDuplicate(newWordText)) return;
 
         Word selectedSynonym = synonyms.getValue();
         if (selectedSynonym == null) {
@@ -305,12 +309,7 @@ public class WordEditorDialogue {
 
         // Check if word text changed and if new text already exists
         if (!currentWord.getText().equals(newWordText)) {
-            Optional<Word> existingWord = vocabularyData.findWord(newWordText);
-            if (existingWord.isPresent()) {
-                wordText.setErrorMessage(VocabularyData.DUPLICATE_WORD_TEXT.formatted(newWordText));
-                wordText.setInvalid(true);
-                return;
-            }
+            if (isWordDuplicate(newWordText)) return;
         }
 
         // Remove the old word
@@ -359,6 +358,16 @@ public class WordEditorDialogue {
         dialog.close();
         notifyListeners(true);
         showSuccessNotification("Word updated successfully");
+    }
+
+    private boolean isWordDuplicate(final String newWordText) {
+        Optional<Word> existingWord = vocabularyData.findWord(newWordText);
+        if (existingWord.isPresent()) {
+            wordText.setErrorMessage(VocabularyData.DUPLICATE_WORD_TEXT.formatted(newWordText));
+            wordText.setInvalid(true);
+            return true;
+        }
+        return false;
     }
 
     private void showSynonymCascadeDialog(Dialog parentDialog, Word editedWord, Word newRoot,

@@ -24,6 +24,7 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.command.CommandsMenuView;
@@ -31,7 +32,9 @@ import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.direction.DirectionsMenuView;
 import com.pdg.adventure.view.item.ItemsMenuView;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
+import com.pdg.adventure.view.support.ViewSupporter;
 
 @Route(value = "author/adventures/:adventureId/locations/:locationId/edit", layout = LocationsMainLayout.class)
 @RouteAlias(value = "author/adventures/:adventureId/locations/new", layout = LocationsMainLayout.class)
@@ -46,6 +49,7 @@ public class LocationEditorView extends VerticalLayout
     private static final int LUMEN_STEP = 1;
 
     private final transient AdventureService adventureService;
+    private final transient AdventureAccessService accessService;
     private final Binder<LocationViewModel> binder;
     private final VocabularyPickerField adjectiveSelector;
     private final VocabularyPickerField nounSelector;
@@ -59,11 +63,12 @@ public class LocationEditorView extends VerticalLayout
     private transient LocationViewModel lvm;
     private transient AdventureData adventureData;
 
-    public LocationEditorView(AdventureService anAdventureService) {
+    public LocationEditorView(AdventureService anAdventureService, AdventureAccessService anAccessService) {
 
         setSizeFull();
 
         adventureService = anAdventureService;
+        accessService = anAccessService;
         binder = new Binder<>(LocationViewModel.class);
 
         locationData = new LocationData();
@@ -111,20 +116,17 @@ public class LocationEditorView extends VerticalLayout
         Button manageCommands = new Button("Manage Commands");
         manageCommands.addClickListener(_ -> UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
                                                            new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                                                           new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                                   .ifPresent(e -> e.setData(adventureData, locationData)));
+                                                           new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))));
 
         Button manageItems = new Button("Manage Items");
         manageItems.addClickListener(_ -> UI.getCurrent().navigate(ItemsMenuView.class, new RouteParameters(
                                                         new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                                                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                                .ifPresent(e -> e.setData(adventureData, locationData)));
+                                                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))));
 
         Button manageExits = new Button("Manage Exits");
         manageExits.addClickListener(_ -> UI.getCurrent().navigate(DirectionsMenuView.class, new RouteParameters(
                                                         new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                                                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-                                                .ifPresent(e -> e.setData(adventureData, locationData)));
+                                                        new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))));
 
         setMargin(true);
         setPadding(true);
@@ -200,8 +202,9 @@ public class LocationEditorView extends VerticalLayout
     }
 
     private void navigateBack() {
-        UI.getCurrent().navigate(LocationsMenuView.class)
-          .ifPresent(editor -> editor.setAdventureData(adventureData));
+        UI.getCurrent().navigate(LocationsMenuView.class,
+                                 new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                    adventureData.getId())));
     }
 
     private void validateSave(LocationViewModel aLocationViewModel) {
@@ -225,13 +228,16 @@ public class LocationEditorView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        final Optional<String> optionalLocationId = event.getRouteParameters().get(RouteIds.LOCATION_ID.getValue());
-        if (optionalLocationId.isPresent()) {
-            locationId = optionalLocationId.get();
-            pageTitle = "Edit Location #" + locationId;
-        } else {
-            pageTitle = "New Location";
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventureOrForward(event, accessService);
+        if (resolvedAdventure.isEmpty()) {
+            return;
         }
+        final Optional<String> optionalLocationId = event.getRouteParameters().get(RouteIds.LOCATION_ID.getValue());
+        optionalLocationId.ifPresent(id -> locationId = id);
+        setData(resolvedAdventure.get());
+        pageTitle = optionalLocationId.isPresent()
+                ? "Edit Location: " + ViewSupporter.formatDescription(locationData)
+                : "New Location";
     }
 
     @Override
@@ -244,7 +250,7 @@ public class LocationEditorView extends VerticalLayout
         AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges());
     }
 
-    public void setData(AdventureData anAdventureData) {
+    private void setData(AdventureData anAdventureData) {
         adventureData = anAdventureData;
         locationData = adventureData.getLocationData().getOrDefault(locationId, new LocationData());
         locationId = locationData.getId();

@@ -25,6 +25,7 @@ import static com.pdg.adventure.model.Word.Type.*;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
@@ -32,7 +33,9 @@ import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPicker;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.location.LocationsMainLayout;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
+import com.pdg.adventure.view.support.ViewSupporter;
 
 @Route(value = "author/adventures/:adventureId/locations/:locationId/commands/:commandId/edit", layout = LocationsMainLayout.class)
 @RouteAlias(value = "author/adventures/:adventureId/locations/:locationId/commands/new", layout = LocationsMainLayout.class)
@@ -46,6 +49,7 @@ public class CommandEditorView extends VerticalLayout
 
     private final transient AdventureService adventureService;
     private final transient ItemService itemService;
+    private final transient AdventureAccessService accessService;
     private final Binder<CommandViewModel> binder;
     private final VocabularyPicker nounSelector;
     private final VocabularyPicker adjectiveSelector;
@@ -68,9 +72,11 @@ public class CommandEditorView extends VerticalLayout
     private transient CommandChainData currentCommandChain; // The command chain being edited
     private int selectedCommandIndex = 0; // Which command in the chain we're currently editing
 
-    public CommandEditorView(AdventureService anAdventureService, ItemService anItemService) {
+    public CommandEditorView(AdventureService anAdventureService, ItemService anItemService,
+                             AdventureAccessService anAccessService) {
         adventureService = anAdventureService;
         itemService = anItemService;
+        accessService = anAccessService;
         binder = new Binder<>(CommandViewModel.class);
 
         verbSelector = new VocabularyPickerField("Verb", "You may filter on verbs.");
@@ -194,13 +200,11 @@ public class CommandEditorView extends VerticalLayout
             UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                      new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())))
-              .ifPresent(e -> e.setData(adventureData, locationData, itemData));
+                      new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())));
         } else {
             UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-              .ifPresent(e -> e.setData(adventureData, locationData));
+                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
         }
     }
 
@@ -334,14 +338,40 @@ public class CommandEditorView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventureOrForward(event, accessService);
+        if (resolvedAdventure.isEmpty()) {
+            return;
+        }
+        Optional<LocationData> resolvedLocation = AdventureRouteResolver.resolveLocationOrForward(resolvedAdventure.get(), event);
+        if (resolvedLocation.isEmpty()) {
+            return;
+        }
+        final Optional<String> optionalItemId = event.getRouteParameters().get(RouteIds.ITEM_ID.getValue());
+        Optional<ItemData> resolvedItem = Optional.empty();
+        if (optionalItemId.isPresent()) {
+            resolvedItem = AdventureRouteResolver.resolveItemOrForward(
+                    resolvedAdventure.get(), resolvedLocation.get(), event);
+            if (resolvedItem.isEmpty()) {
+                return;
+            }
+        }
         final Optional<String> optionalCommandId = event.getRouteParameters().get(RouteIds.COMMAND_ID.getValue());
         if (optionalCommandId.isPresent()) {
-            commandId = optionalCommandId.get();
-            pageTitle = "Edit Command #" + commandId;
+            // Cold-load (bookmark/refresh) navigation delivers this route parameter still
+            // percent-encoded (e.g. "jump%7C%7Csea"); in-app navigate() preserves the raw
+            // pipe-delimited value (e.g. "jump||sea"), which may itself contain '%' or '+'
+            // characters from vocabulary text. AdventureRouteResolver.decodeRouteParam performs
+            // percent-only decoding with graceful fallback for both cases.
+            commandId = AdventureRouteResolver.decodeRouteParam(optionalCommandId.get());
+            pageTitle = "Edit Command: " + ViewSupporter.formatDescription(new CommandDescriptionData(commandId));
         } else {
             pageTitle = "New Command";
         }
-
+        if (resolvedItem.isPresent()) {
+            setData(resolvedAdventure.get(), resolvedLocation.get(), resolvedItem.get());
+        } else {
+            setData(resolvedAdventure.get(), resolvedLocation.get());
+        }
     }
 
     @Override
@@ -349,12 +379,12 @@ public class CommandEditorView extends VerticalLayout
         AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges() || editorHasChanges);
     }
 
-    public void setData(AdventureData anAdventureData, LocationData aLocationData, ItemData anItemData) {
+    private void setData(AdventureData anAdventureData, LocationData aLocationData, ItemData anItemData) {
         itemData = anItemData;
         populate(anAdventureData, aLocationData);
     }
 
-    public void setData(AdventureData anAdventureData, LocationData aLocationData) {
+    private void setData(AdventureData anAdventureData, LocationData aLocationData) {
         itemData = null;
         populate(anAdventureData, aLocationData);
     }

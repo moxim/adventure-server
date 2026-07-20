@@ -3,21 +3,29 @@ package com.pdg.adventure.view.direction;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.RouteParameters;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.security.model.UserData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.view.support.RouteIds;
 
 /**
  * Navigation and routing tests for DirectionEditorView.
@@ -29,6 +37,9 @@ class DirectionEditorViewNavigationTest {
 
     @Mock
     private AdventureService adventureService;
+
+    @Mock
+    private AdventureAccessService accessService;
 
     @Mock
     private BeforeEnterEvent beforeEnterEvent;
@@ -86,26 +97,45 @@ class DirectionEditorViewNavigationTest {
 
         locationData.getDirectionsData().add(directionData);
 
-        view = new DirectionEditorView(adventureService);
+        UserData testUser = new UserData();
+        testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
+
+        view = new DirectionEditorView(adventureService, accessService);
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
     void beforeEnter_withDirectionId_shouldSetEditModeTitle() {
         // given
         when(beforeEnterEvent.getRouteParameters()).thenReturn(routeParameters);
+        when(routeParameters.get(RouteIds.ADVENTURE_ID.getValue())).thenReturn(Optional.of("adventure-1"));
+        when(routeParameters.get(RouteIds.LOCATION_ID.getValue())).thenReturn(Optional.of("location-1"));
+        when(accessService.findAdventureById(eq("adventure-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventureData));
         when(routeParameters.get("directionId")).thenReturn(Optional.of("direction-123"));
 
         // when
         view.beforeEnter(beforeEnterEvent);
 
         // then
-        assertThat(view.getPageTitle()).isEqualTo("Edit Direction #direction-123");
+        assertThat(view.getPageTitle()).isEqualTo("Edit Direction: Go north");
     }
 
     @Test
     void beforeEnter_withoutDirectionId_shouldSetNewModeTitle() {
         // given
         when(beforeEnterEvent.getRouteParameters()).thenReturn(routeParameters);
+        when(routeParameters.get(RouteIds.ADVENTURE_ID.getValue())).thenReturn(Optional.of("adventure-1"));
+        when(routeParameters.get(RouteIds.LOCATION_ID.getValue())).thenReturn(Optional.of("location-1"));
+        when(accessService.findAdventureById(eq("adventure-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventureData));
         when(routeParameters.get("directionId")).thenReturn(Optional.empty());
 
         // when
@@ -119,6 +149,10 @@ class DirectionEditorViewNavigationTest {
     void beforeEnter_withNewDirection_shouldGenerateUUID() {
         // given
         when(beforeEnterEvent.getRouteParameters()).thenReturn(routeParameters);
+        when(routeParameters.get(RouteIds.ADVENTURE_ID.getValue())).thenReturn(Optional.of("adventure-1"));
+        when(routeParameters.get(RouteIds.LOCATION_ID.getValue())).thenReturn(Optional.of("location-1"));
+        when(accessService.findAdventureById(eq("adventure-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventureData));
         when(routeParameters.get("directionId")).thenReturn(Optional.empty());
 
         // when
@@ -139,27 +173,35 @@ class DirectionEditorViewNavigationTest {
     }
 
     @Test
-    void getPageTitle_afterEditNavigation_shouldContainDirectionId() {
+    void getPageTitle_afterEditNavigation_shouldContainDirectionShortDescription() {
         // given
         when(beforeEnterEvent.getRouteParameters()).thenReturn(routeParameters);
-        when(routeParameters.get("directionId")).thenReturn(Optional.of("abc-123"));
+        when(routeParameters.get(RouteIds.ADVENTURE_ID.getValue())).thenReturn(Optional.of("adventure-1"));
+        when(routeParameters.get(RouteIds.LOCATION_ID.getValue())).thenReturn(Optional.of("location-1"));
+        when(accessService.findAdventureById(eq("adventure-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventureData));
+        when(routeParameters.get("directionId")).thenReturn(Optional.of("direction-123"));
 
         // when
         view.beforeEnter(beforeEnterEvent);
         String title = view.getPageTitle();
 
         // then
-        assertThat(title).contains("abc-123");
+        assertThat(title).contains("Go north");
         assertThat(title).startsWith("Edit Direction");
     }
 
     @Test
     void setData_shouldPopulateLocationAndAdventureIds() {
         // when
+        when(beforeEnterEvent.getRouteParameters()).thenReturn(routeParameters);
+        when(routeParameters.get(RouteIds.ADVENTURE_ID.getValue())).thenReturn(Optional.of("adventure-1"));
+        when(routeParameters.get(RouteIds.LOCATION_ID.getValue())).thenReturn(Optional.of("location-1"));
+        when(accessService.findAdventureById(eq("adventure-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventureData));
+        when(routeParameters.get("directionId")).thenReturn(Optional.of("direction-123"));
 
-        view.setUpLoading("direction-123");
-
-        view.setData(locationData, adventureData);
+        view.beforeEnter(beforeEnterEvent);
 
         // then
         // Verify view is properly initialized (no exceptions thrown)

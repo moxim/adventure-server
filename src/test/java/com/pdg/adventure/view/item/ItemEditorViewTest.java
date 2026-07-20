@@ -1,22 +1,37 @@
 package com.pdg.adventure.view.item;
 
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.RouteParam;
+import com.vaadin.flow.router.RouteParameters;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.security.model.UserData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
+import com.pdg.adventure.view.support.RouteIds;
 
 /**
  * Unit tests for ItemEditorView business logic.
@@ -31,6 +46,9 @@ class ItemEditorViewTest {
 
     @Mock
     private ItemService itemService;
+
+    @Mock
+    private AdventureAccessService accessService;
 
     private ItemEditorView view;
     private AdventureData adventureData;
@@ -79,12 +97,31 @@ class ItemEditorViewTest {
         itemData.setContainable(true);
         itemData.setWearable(false);
         itemData.setWorn(false);
+
+        UserData testUser = new UserData();
+        testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private BeforeEnterEvent eventWithParams(RouteParam... params) {
+        BeforeEnterEvent event = mock(BeforeEnterEvent.class);
+        when(event.getRouteParameters()).thenReturn(new RouteParameters(params));
+        when(accessService.findAdventureById(eq(adventureData.getId()), any(UserData.class)))
+                .thenReturn(Optional.of(adventureData));
+        return event;
     }
 
     @Test
     void constructor_shouldCreateViewWithAllComponents() {
         // when
-        view = new ItemEditorView(adventureService, itemService);
+        view = new ItemEditorView(adventureService, itemService, accessService);
 
         // then
         assertThat(view).isNotNull();
@@ -93,10 +130,12 @@ class ItemEditorViewTest {
     @Test
     void setData_shouldPopulateAdventureAndLocationData() {
         // given
-        view = new ItemEditorView(adventureService, itemService);
+        view = new ItemEditorView(adventureService, itemService, accessService);
 
         // when
-        view.setData(adventureData, locationData);
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId())));
 
         // then
         // View should be populated with data
@@ -107,23 +146,26 @@ class ItemEditorViewTest {
     @Test
     void setData_withExistingItem_shouldLoadItemFromContainer() {
         // given
-        view = new ItemEditorView(adventureService, itemService);
+        view = new ItemEditorView(adventureService, itemService, accessService);
         locationData.getItemContainerData().getItems().add(itemData);
 
         // when
-        view.setData(adventureData, locationData);
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())));
 
         // then
-        // View should load the existing item
-        assertThat(locationData.getItemContainerData().getItems())
-                .hasSize(1)
-                .contains(itemData);
+        // View should load the existing item, not treat it as new — proven by the page
+        // title reflecting the item's actual description (derived from itemData, which
+        // beforeEnter must have found by id in the container) rather than "New Item".
+        assertThat(view.getPageTitle()).isEqualTo("Edit Item: A golden sword");
     }
 
     @Test
     void getPageTitle_shouldReturnNullBeforeRouteEnter() {
         // given
-        view = new ItemEditorView(adventureService, itemService);
+        view = new ItemEditorView(adventureService, itemService, accessService);
 
         // when
         String title = view.getPageTitle();

@@ -9,6 +9,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizedUrl;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -63,6 +64,7 @@ public class SecurityConfig {
             auth.requestMatchers("/admin/**").hasAnyRole(Role.ADMIN.name())
                 .requestMatchers("/author/**").hasAnyRole(Role.AUTHOR.name())
                 .requestMatchers("/player/**").hasAnyRole(Role.PLAYER.name())
+                .requestMatchers("/actuator/**").hasAnyRole(Role.ADMIN.name())
                 .requestMatchers("/public/**").permitAll();
             // Permit "/" so an anonymous visit to the root is never saved as a redirect
             // target by ExceptionTranslationFilter and bounced back after login.
@@ -80,8 +82,12 @@ public class SecurityConfig {
                     "/frontend/**").permitAll();
         });
 
+        // Unmatched requests must reach Vaadin's router for RouteNotFoundView to render;
+        // real routes stay gated by the hasRole matchers above (evaluated first) and by
+        // each view's own NavigationAccessControl annotation (@RolesAllowed/@AnonymousAllowed).
         http.with(VaadinSecurityConfigurer.vaadin(), configurer -> {
-            configurer.loginView(LoginView.class);
+            configurer.loginView(LoginView.class)
+                    .anyRequest(AuthorizedUrl::permitAll);
 //                    , "/logged-out.html");
         });
 

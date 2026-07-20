@@ -25,7 +25,6 @@ public class CommandMapper implements Mapper<CommandData, Command> {
                          CommandDescriptionMapper aCommandDescriptionMapper) {
         mapperSupporter = aMapperSupporter;
         commandDescriptionMapper = aCommandDescriptionMapper;
-        mapperSupporter.registerMapper(CommandData.class, Command.class, this);
     }
 
     public Command mapToBO(CommandData aCommandData) {

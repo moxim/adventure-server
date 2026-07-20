@@ -22,7 +22,6 @@ public class MovePlayerActionMapper extends ActionMapper<MovePlayerActionData, M
         super(aMapperSupporter);
         gameContext = aGameContext;
         messagesHolder = aMessagesHolder;
-        aMapperSupporter.registerMapper(MovePlayerActionData.class, MovePlayerAction.class, this);
     }
 
     @Override

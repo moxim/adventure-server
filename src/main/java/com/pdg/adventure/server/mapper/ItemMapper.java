@@ -33,7 +33,6 @@ public class ItemMapper implements Mapper<ItemData, Item> {
         descriptionMapper = aDescriptionMapper;
         commandProviderMapper = aCommandProviderMapper;
         commandMapper = aCommandMapper;
-        mapperSupporter.registerMapper(ItemData.class, Item.class, this);
     }
 
     public Item mapToBO(ItemData anItemData) {

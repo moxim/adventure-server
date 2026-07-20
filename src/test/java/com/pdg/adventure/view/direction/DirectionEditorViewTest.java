@@ -1,22 +1,37 @@
 package com.pdg.adventure.view.direction;
 
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.RouteParam;
+import com.vaadin.flow.router.RouteParameters;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.security.model.UserData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.view.support.RouteIds;
 
 /**
  * Unit tests for DirectionEditorView business logic.
@@ -28,6 +43,9 @@ class DirectionEditorViewTest {
 
     @Mock
     private AdventureService adventureService;
+
+    @Mock
+    private AdventureAccessService accessService;
 
     private DirectionEditorView view;
     private AdventureData adventureData;
@@ -74,12 +92,34 @@ class DirectionEditorViewTest {
         commandDescription.setNoun(northNoun);
         commandData.setCommandDescription(commandDescription);
         directionData.setCommandData(commandData);
+
+        UserData testUser = new UserData();
+        testUser.setUsername("test-author");
+        testUser.setRoles(Set.of());
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private void enterWithDirectionId(String aDirectionId) {
+        BeforeEnterEvent event = mock(BeforeEnterEvent.class);
+        when(event.getRouteParameters()).thenReturn(new RouteParameters(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                new RouteParam(RouteIds.DIRECTION_ID.getValue(), aDirectionId)));
+        when(accessService.findAdventureById(eq(adventureData.getId()), any(UserData.class)))
+                .thenReturn(Optional.of(adventureData));
+        view.beforeEnter(event);
     }
 
     @Test
     void constructor_shouldCreateViewWithAllComponents() {
         // when
-        view = new DirectionEditorView(adventureService);
+        view = new DirectionEditorView(adventureService, accessService);
 
         // then
         assertThat(view).isNotNull();
@@ -88,7 +128,7 @@ class DirectionEditorViewTest {
     @Test
     void getPageTitle_shouldReturnInitialTitle() {
         // given
-        view = new DirectionEditorView(adventureService);
+        view = new DirectionEditorView(adventureService, accessService);
 
         // when
         String title = view.getPageTitle();
@@ -100,13 +140,11 @@ class DirectionEditorViewTest {
     @Test
     void setData_shouldPopulateAdventureAndLocationData() {
         // given
-        view = new DirectionEditorView(adventureService);
+        view = new DirectionEditorView(adventureService, accessService);
         locationData.getDirectionsData().add(directionData);
 
-        view.setUpLoading("direction-1");
-
         // when
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // then
         // View should be populated with data
@@ -118,7 +156,7 @@ class DirectionEditorViewTest {
     @Test
     void setData_withMultipleLocations_shouldExcludeCurrentLocationFromGrid() {
         // given
-        view = new DirectionEditorView(adventureService);
+        view = new DirectionEditorView(adventureService, accessService);
         locationData.getDirectionsData().add(directionData);
 
         LocationData thirdLocation = new LocationData();
@@ -126,11 +164,8 @@ class DirectionEditorViewTest {
         thirdLocation.setDescriptionData(new DescriptionData("Third", "Third location"));
         adventureData.getLocationData().put(thirdLocation.getId(), thirdLocation);
 
-        view.setUpLoading("direction-1");
-
-
         // when
-        view.setData(locationData, adventureData);
+        enterWithDirectionId("direction-1");
 
         // then
         // Grid should contain 2 locations (excluding current)

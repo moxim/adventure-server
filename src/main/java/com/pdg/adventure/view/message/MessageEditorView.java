@@ -25,10 +25,12 @@ import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.component.ResetBackSaveView;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
 
 @Route(value = "author/adventures/:adventureId/messages/:messageId/edit", layout = MessagesMainLayout.class)
@@ -45,6 +47,7 @@ public class MessageEditorView extends VerticalLayout
 
     private final transient AdventureService adventureService;
     private final transient MessageService messageService;
+    private final transient AdventureAccessService accessService;
     private final Binder<MessageViewModel> binder;
 
     private Button saveButton;
@@ -59,11 +62,13 @@ public class MessageEditorView extends VerticalLayout
     private transient AdventureData adventureData;
     private transient MessageViewModel mvm;
 
-    public MessageEditorView(AdventureService anAdventureService, MessageService aMessageService) {
+    public MessageEditorView(AdventureService anAdventureService, MessageService aMessageService,
+                             AdventureAccessService anAccessService) {
         setSizeFull();
 
         adventureService = anAdventureService;
         messageService = aMessageService;
+        accessService = anAccessService;
         binder = new Binder<>(MessageViewModel.class);
 
         // Build UI
@@ -162,8 +167,7 @@ public class MessageEditorView extends VerticalLayout
 
     private void navigateBack() {
         UI.getCurrent().navigate(MessagesMenuView.class, new RouteParameters(
-                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())))
-          .ifPresent(e -> e.setData(adventureData));
+                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
     }
 
     private boolean isMessageIdUnique(String id) {
@@ -306,14 +310,22 @@ public class MessageEditorView extends VerticalLayout
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+        Optional<AdventureData> resolvedAdventure = AdventureRouteResolver.resolveAdventureOrForward(event, accessService);
+        if (resolvedAdventure.isEmpty()) {
+            return;
+        }
         final Optional<String> optionalMessageId = event.getRouteParameters().get(RouteIds.MESSAGE_ID.getValue());
         if (optionalMessageId.isPresent()) {
-            messageId = optionalMessageId.get();
+            // Message ids are constrained to [a-zA-Z0-9_]+ by the UI binder, so decoding is a
+            // no-op for UI-created ids; legacy/imported data has no such guarantee, and cold-load
+            // navigation may deliver this route parameter percent-encoded.
+            messageId = AdventureRouteResolver.decodeRouteParam(optionalMessageId.get());
             pageTitle = "Edit Message: " + messageId;
         } else {
             messageId = null;
             pageTitle = "New Message";
         }
+        setData(resolvedAdventure.get());
     }
 
     @Override
@@ -321,7 +333,7 @@ public class MessageEditorView extends VerticalLayout
         AdventuresMainLayout.checkIfUserWantsToLeavePage(event, binder.hasChanges());
     }
 
-    public void setData(AdventureData anAdventureData) {
+    private void setData(AdventureData anAdventureData) {
         adventureData = anAdventureData;
 
         // Load existing message or create new one
