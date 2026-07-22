@@ -1,0 +1,18 @@
+# Build output
+target/
+
+# Node / Vaadin frontend artifacts (regenerated inside the build stage)
+node_modules/
+src/main/dev-bundle/
+src/main/frontend/generated/
+vite.generated.ts
+
+# VCS & IDE
+.git/
+.github/
+.idea/
+.vscode/
+*.iml
+
+# Local DB tooling (not part of the app image)
+adventureDb/
