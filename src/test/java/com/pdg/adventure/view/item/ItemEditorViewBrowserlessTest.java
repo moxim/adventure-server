@@ -128,7 +128,7 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
     }
 
     private Button commandsButton() {
-        return find(Button.class, view).withText("Commands").single();
+        return find(Button.class, view).withText("Manage Commands").single();
     }
 
     private Checkbox checkboxLabelled(String label) {
@@ -139,7 +139,7 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
     }
 
     @Test
-    @DisplayName("The view renders exactly one 'Commands' button")
+    @DisplayName("The view renders exactly one 'Manage Commands' button")
     void view_rendersCommandsButton() {
         enterWithItemId(null);
 
