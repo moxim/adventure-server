@@ -7,6 +7,7 @@ import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.condition.WornConditionData;
 import com.pdg.adventure.view.support.ViewSupporter;
 
+@AutoRegisterConditionEditor
 public class WornConditionEditor extends AbstractSingleItemConditionEditor<WornConditionData> {
 
     public WornConditionEditor(WornConditionData conditionData, AdventureData adventureData) {

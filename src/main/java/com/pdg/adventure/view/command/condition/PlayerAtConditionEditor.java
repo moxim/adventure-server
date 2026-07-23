@@ -9,7 +9,8 @@ import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.condition.PlayerAtConditionData;
 import com.pdg.adventure.view.support.ViewSupporter;
 
-public class PlayerAtConditionEditor extends ConditionEditorComponent {
+@AutoRegisterConditionEditor
+public class PlayerAtConditionEditor extends ConditionEditorComponent<PlayerAtConditionData> {
     private final AdventureData adventureData;
     private final PlayerAtConditionData playerAtData;
     private ComboBox<LocationData> locationSelector;

@@ -12,7 +12,7 @@ import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 public abstract class AbstractSingleItemActionEditor<T extends ActionData>
-        extends ActionEditorComponent {
+        extends ActionEditorComponent<T> {
 
     protected final T typedAction;
     protected final AdventureData adventureData;

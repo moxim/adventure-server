@@ -16,7 +16,7 @@ public class ConditionListEditor extends VerticalLayout {
     private final AdventureData adventureData;
     private final VerticalLayout rowsLayout;
     @Setter
-    private Runnable onChange;
+    private transient Runnable onChange;
 
     public ConditionListEditor(AdventureData adventureData) {
         this.adventureData = adventureData;
@@ -58,12 +58,13 @@ public class ConditionListEditor extends VerticalLayout {
         row.setOnMoveUp(() -> moveRow(row, -1));
         row.setOnMoveDown(() -> moveRow(row, 1));
         rowsLayout.add(row);
-        // On leaf-field edits: refresh the row header live, and mark dirty for client edits (mirrors ActionListEditor).
+        // On leaf-field edits: refresh the row header live, and mark dirty (mirrors ActionListEditor,
+        // including not gating on isFromClient() - see its comment for why).
         editor.getChildren().forEach(child -> {
             if (child instanceof HasValue<?, ?> hasValue) {
                 hasValue.addValueChangeListener(e -> {
                     row.refreshSummary();
-                    if (e.isFromClient()) notifyChange();
+                    notifyChange();
                 });
             }
         });

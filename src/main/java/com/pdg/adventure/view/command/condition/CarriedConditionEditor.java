@@ -3,6 +3,7 @@ package com.pdg.adventure.view.command.condition;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.condition.CarriedConditionData;
 
+@AutoRegisterConditionEditor
 public class CarriedConditionEditor extends AbstractSingleItemConditionEditor<CarriedConditionData> {
 
     public CarriedConditionEditor(CarriedConditionData conditionData, AdventureData adventureData) {

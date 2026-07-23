@@ -6,6 +6,7 @@ import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.model.WorkflowData;
 import com.pdg.adventure.server.location.Location;
 
 @Component
@@ -14,6 +15,7 @@ public class GameContext {
     private Workflow workflow;
     private Location currentLocation;
     private Container pocket;
+    private WorkflowData workflowData = new WorkflowData();
 
     public void show(Describable aThing) {
         tell(aThing.getLongDescription());
@@ -42,6 +44,14 @@ public class GameContext {
     public Workflow setUpWorkflows() {
         workflow = new Workflow(this);
         return workflow;
+    }
+
+    public void setWorkflowData(WorkflowData aWorkflowData) {
+        workflowData = aWorkflowData;
+    }
+
+    public WorkflowData getWorkflowData() {
+        return workflowData;
     }
 
     public Workflow getWorkflow() {

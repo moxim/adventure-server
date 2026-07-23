@@ -16,13 +16,13 @@ public class ConditionRow extends Details {
     private final Checkbox negateCheckbox;
     private final String virginTypeName;
     @Setter
-    private Runnable onRemove;
+    private transient Runnable onRemove;
     @Setter
-    private Runnable onChange;
+    private transient Runnable onChange;
     @Setter
-    private Runnable onMoveUp;
+    private transient Runnable onMoveUp;
     @Setter
-    private Runnable onMoveDown;
+    private transient Runnable onMoveDown;
 
     public ConditionRow(ConditionEditorComponent editor, boolean negate) {
         this.editor = editor;

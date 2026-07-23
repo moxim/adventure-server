@@ -41,7 +41,7 @@ public class AdventureData extends DatedData {
 
     private String notes = ""; // to outline a story or whatever
 
-    // WorkflowData workFlow = new WorkflowData();
+    private WorkflowData workflowData = new WorkflowData();
 
     public AdventureData() {
         this(new VocabularyData());
