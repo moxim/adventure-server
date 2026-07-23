@@ -103,7 +103,7 @@ public class ItemEditorView extends VerticalLayout
         Checkbox isWornCheckbox = new Checkbox("Is worn");
         isWornCheckbox.setTooltipText("If checked, this item starts out being worn.");
 
-        commandsButton = new Button("Commands", _ ->
+        commandsButton = new Button("Manage Commands", _ ->
                 UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
                         new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
                         new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
