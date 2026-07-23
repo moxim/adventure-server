@@ -12,10 +12,10 @@ import com.pdg.adventure.model.action.ActionData;
  * Note: The UI is not built in the constructor. After construction, call initialize()
  * to trigger the UI building. This allows subclasses to set their fields before buildUI() is called.
  */
-public abstract class ActionEditorComponent extends VerticalLayout {
-    protected final ActionData actionData;
+public abstract class ActionEditorComponent<D extends ActionData> extends VerticalLayout {
+    protected final D actionData;
 
-    protected ActionEditorComponent(ActionData actionData) {
+    protected ActionEditorComponent(D actionData) {
         this.actionData = actionData;
         setPadding(true);
         setSpacing(true);
@@ -40,7 +40,7 @@ public abstract class ActionEditorComponent extends VerticalLayout {
      *
      * @return the action data
      */
-    public ActionData getActionData() {
+    public D getActionData() {
         return actionData;
     }
 

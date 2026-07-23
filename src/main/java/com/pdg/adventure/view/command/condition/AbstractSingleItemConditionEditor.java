@@ -10,7 +10,7 @@ import com.pdg.adventure.model.condition.PreConditionData;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 public abstract class AbstractSingleItemConditionEditor<T extends PreConditionData>
-        extends ConditionEditorComponent {
+        extends ConditionEditorComponent<T> {
 
     protected final T typedCondition;
     protected final AdventureData adventureData;

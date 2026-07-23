@@ -3,6 +3,7 @@ package com.pdg.adventure.view.command.action;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.action.TakeActionData;
 
+@AutoRegisterActionEditor
 public class TakeActionEditor extends AbstractSingleItemActionEditor<TakeActionData> {
 
     public TakeActionEditor(TakeActionData actionData, AdventureData adventureData) {

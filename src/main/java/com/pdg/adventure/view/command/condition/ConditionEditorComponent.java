@@ -12,10 +12,10 @@ import com.pdg.adventure.model.condition.PreConditionData;
  * Note: The UI is not built in the constructor. After construction, call initialize()
  * to trigger the UI building. This allows subclasses to set their fields before buildUI() is called.
  */
-public abstract class ConditionEditorComponent extends VerticalLayout {
-    protected final PreConditionData conditionData;
+public abstract class ConditionEditorComponent<D extends PreConditionData> extends VerticalLayout {
+    protected final D conditionData;
 
-    protected ConditionEditorComponent(PreConditionData conditionData) {
+    protected ConditionEditorComponent(D conditionData) {
         this.conditionData = conditionData;
         setPadding(true);
         setSpacing(true);
@@ -28,7 +28,7 @@ public abstract class ConditionEditorComponent extends VerticalLayout {
 
     protected abstract void buildUI();
 
-    public PreConditionData getConditionData() {
+    public D getConditionData() {
         return conditionData;
     }
 

@@ -6,7 +6,8 @@ import com.vaadin.flow.component.textfield.TextField;
 
 import com.pdg.adventure.model.action.SetVariableActionData;
 
-public class SetVariableActionEditor extends ActionEditorComponent {
+@AutoRegisterActionEditor
+public class SetVariableActionEditor extends ActionEditorComponent<SetVariableActionData> {
     private final SetVariableActionData setVariableActionData;
     private TextField variableNameField;
     private TextField variableValueField;

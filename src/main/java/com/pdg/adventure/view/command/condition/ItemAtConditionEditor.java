@@ -10,7 +10,8 @@ import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.condition.ItemAtConditionData;
 import com.pdg.adventure.view.support.ViewSupporter;
 
-public class ItemAtConditionEditor extends ConditionEditorComponent {
+@AutoRegisterConditionEditor
+public class ItemAtConditionEditor extends ConditionEditorComponent<ItemAtConditionData> {
     private final AdventureData adventureData;
     private final ItemAtConditionData itemAtData;
     private ComboBox<ItemData> itemSelector;

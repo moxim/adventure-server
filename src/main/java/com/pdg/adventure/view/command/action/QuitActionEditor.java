@@ -10,7 +10,8 @@ import com.pdg.adventure.model.action.QuitActionData;
  * The quit action has no configurable parameters — it terminates the game when executed.
  * This editor is a pure informational panel.
  */
-public class QuitActionEditor extends ActionEditorComponent {
+@AutoRegisterActionEditor
+public class QuitActionEditor extends ActionEditorComponent<QuitActionData> {
 
     public QuitActionEditor(QuitActionData actionData) {
         super(actionData);

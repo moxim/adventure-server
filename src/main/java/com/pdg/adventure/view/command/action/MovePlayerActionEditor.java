@@ -13,7 +13,8 @@ import com.pdg.adventure.view.support.ViewSupporter;
  * Editor component for MovePlayerActionData.
  * Allows selecting a destination location where the player will be moved to.
  */
-public class MovePlayerActionEditor extends ActionEditorComponent {
+@AutoRegisterActionEditor
+public class MovePlayerActionEditor extends ActionEditorComponent<MovePlayerActionData> {
     private final AdventureData adventureData;
     private final MovePlayerActionData moveActionData;
     private ComboBox<LocationData> locationSelector;

@@ -14,7 +14,7 @@ import com.pdg.adventure.model.condition.*;
 public class ConditionSelector extends HorizontalLayout {
 
     @Setter
-    private ConditionSelectedListener conditionSelectedListener;
+    private transient ConditionSelectedListener conditionSelectedListener;
 
     private final ComboBox<ConditionTypeDescriptor> typeSelector;
 

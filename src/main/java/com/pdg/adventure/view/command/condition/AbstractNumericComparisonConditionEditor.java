@@ -5,7 +5,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.pdg.adventure.model.condition.PreConditionData;
 
 public abstract class AbstractNumericComparisonConditionEditor<T extends PreConditionData>
-        extends ConditionEditorComponent {
+        extends ConditionEditorComponent<T> {
 
     protected final T typedCondition;
     private final String operator;

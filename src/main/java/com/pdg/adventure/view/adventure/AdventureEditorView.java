@@ -27,6 +27,7 @@ import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 import com.pdg.adventure.view.vocabulary.VocabularyMenuView;
+import com.pdg.adventure.view.workflow.WorkflowEditorView;
 
 @Route(value = "author/adventures/:adventureId/edit", layout = AdventuresMainLayout.class)
 @RouteAlias(value = "author/adventures/new", layout = AdventuresMainLayout.class)
@@ -85,8 +86,13 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button workflowButton = new Button("Manage Workflow");
-        workflowButton.setEnabled(false);
+        Button workflowButton = new Button("Manage Workflow", _ -> {
+            if (binder.writeBeanIfValid(adventureData)) {
+                UI.getCurrent().navigate(WorkflowEditorView.class,
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                            adventureData.getId())));
+            }
+        });
 
         saveButton.setEnabled(false);
         saveButton.addClickListener(_ -> validateSave(adventureData));

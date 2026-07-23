@@ -2,6 +2,7 @@ package com.pdg.adventure.view.command.condition;
 
 import com.pdg.adventure.model.condition.LowerThanConditionData;
 
+@AutoRegisterConditionEditor
 public class LowerThanConditionEditor extends AbstractNumericComparisonConditionEditor<LowerThanConditionData> {
 
     public LowerThanConditionEditor(LowerThanConditionData conditionData) {

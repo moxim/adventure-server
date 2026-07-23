@@ -10,7 +10,8 @@ import com.pdg.adventure.model.action.IncrementVariableActionData;
  * Editor component for IncrementVariableActionData.
  * Allows specifying a variable name and the amount to increment it by.
  */
-public class IncrementVariableActionEditor extends ActionEditorComponent {
+@AutoRegisterActionEditor
+public class IncrementVariableActionEditor extends ActionEditorComponent<IncrementVariableActionData> {
     private final IncrementVariableActionData incrementActionData;
     private TextField variableNameField;
     private TextField incrementAmountField;

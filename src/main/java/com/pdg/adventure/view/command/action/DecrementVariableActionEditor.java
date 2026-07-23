@@ -10,14 +10,15 @@ import com.pdg.adventure.model.action.DecrementVariableActionData;
  * Editor component for DecrementVariableActionData.
  * Allows specifying the variable name and the amount to decrement it by.
  */
-public class DecrementVariableActionEditor extends ActionEditorComponent {
-    private final DecrementVariableActionData actionData;
+@AutoRegisterActionEditor
+public class DecrementVariableActionEditor extends ActionEditorComponent<DecrementVariableActionData> {
+    private final DecrementVariableActionData decrementVariableActionData;
     private TextField nameField;
     private TextField valueField;
 
-    public DecrementVariableActionEditor(DecrementVariableActionData actionData) {
-        super(actionData);
-        this.actionData = actionData;
+    public DecrementVariableActionEditor(DecrementVariableActionData aDecrementVariableActionData) {
+        super(aDecrementVariableActionData);
+        decrementVariableActionData = aDecrementVariableActionData;
         // UI will be built when initialize() is called
     }
 
@@ -38,16 +39,16 @@ public class DecrementVariableActionEditor extends ActionEditorComponent {
         valueField.setRequired(true);
 
         // Pre-populate fields if actionData already has values
-        if (actionData.getName() != null) {
-            nameField.setValue(actionData.getName());
+        if (decrementVariableActionData.getName() != null) {
+            nameField.setValue(decrementVariableActionData.getName());
         }
-        if (actionData.getValue() != null) {
-            valueField.setValue(actionData.getValue());
+        if (decrementVariableActionData.getValue() != null) {
+            valueField.setValue(decrementVariableActionData.getValue());
         }
 
         // Write back to actionData on change
-        nameField.addValueChangeListener(e -> actionData.setName(e.getValue()));
-        valueField.addValueChangeListener(e -> actionData.setValue(e.getValue()));
+        nameField.addValueChangeListener(e -> decrementVariableActionData.setName(e.getValue()));
+        valueField.addValueChangeListener(e -> decrementVariableActionData.setValue(e.getValue()));
 
         add(title, description, nameField, valueField);
     }

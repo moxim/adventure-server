@@ -3,6 +3,7 @@ package com.pdg.adventure.view.command.action;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.action.DropActionData;
 
+@AutoRegisterActionEditor
 public class DropActionEditor extends AbstractSingleItemActionEditor<DropActionData> {
 
     public DropActionEditor(DropActionData actionData, AdventureData adventureData) {

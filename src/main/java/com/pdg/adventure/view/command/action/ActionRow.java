@@ -12,11 +12,11 @@ import com.pdg.adventure.model.action.ActionData;
 public class ActionRow extends Details {
     private final ActionEditorComponent editor;
     @Setter
-    private Runnable onRemove;
+    private transient Runnable onRemove;
     @Setter
-    private Runnable onMoveUp;
+    private transient Runnable onMoveUp;
     @Setter
-    private Runnable onMoveDown;
+    private transient Runnable onMoveDown;
 
     public ActionRow(ActionEditorComponent anEditor) {
         editor = anEditor;

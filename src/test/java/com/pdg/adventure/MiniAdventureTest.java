@@ -12,6 +12,7 @@ import com.pdg.adventure.server.Adventure;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.mapper.AdventureMapper;
+import com.pdg.adventure.server.mapper.WorkflowMapper;
 import com.pdg.adventure.server.storage.service.AdventureService;
 
 @SpringBootTest
@@ -25,6 +26,9 @@ class MiniAdventureTest {
     AdventureMapper adventureMapper;
 
     @Autowired
+    WorkflowMapper workflowMapper;
+
+    @Autowired
     GameContext gameContext;
 
     @Autowired
@@ -36,8 +40,9 @@ class MiniAdventureTest {
         final AdventureData adventureData = adventures.getFirst();
         Adventure adventure = adventureMapper.mapToBO(adventureData);
 
-        MiniAdventure miniAdventure = new MiniAdventure(adventureConfig, adventureMapper, adventureService,
-                                                        gameContext, adventureData.getVocabularyData());
+        MiniAdventure miniAdventure = new MiniAdventure(adventureConfig, adventureMapper, workflowMapper,
+                                                        adventureService, gameContext,
+                                                        adventureData.getVocabularyData());
         miniAdventure.setLocations(adventure.getLocations());
         miniAdventure.run();
     }

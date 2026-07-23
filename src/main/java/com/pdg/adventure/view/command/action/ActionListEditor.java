@@ -15,7 +15,7 @@ public class ActionListEditor extends VerticalLayout {
     private final AdventureData adventureData;
     private final VerticalLayout rowsLayout;
     @Setter
-    private Runnable onChange;   // fired on any user-driven edit (add/remove/reorder/leaf-field)
+    private transient Runnable onChange;   // fired on any user-driven edit (add/remove/reorder/leaf-field)
 
     public ActionListEditor(AdventureData anAdventureData) {
         adventureData = anAdventureData;
@@ -59,13 +59,17 @@ public class ActionListEditor extends VerticalLayout {
         row.setOnRemove(() -> { rowsLayout.remove(row); notifyChange(); });
         row.setOnMoveUp(() -> moveRow(row, -1));
         row.setOnMoveDown(() -> moveRow(row, 1));
-        // On leaf-field edits: refresh the row header live, and mark dirty for client edits
-        // (ports the old CommandEditorView.attachActionEditorListeners).
+        // On leaf-field edits: refresh the row header live, and mark dirty
+        // (ports the old CommandEditorView.attachActionEditorListeners). This listener is only ever
+        // attached after the editor's initial fields are already populated (both for a freshly
+        // selected action and for one loaded via setActions), so every event it sees reflects a real
+        // edit - including a ComboBox custom-value commit, which sets its value server-side and so
+        // arrives with isFromClient() false despite being entirely user-driven.
         editor.getChildren().forEach(child -> {
             if (child instanceof HasValue<?, ?> hasValue) {
                 hasValue.addValueChangeListener(e -> {
                     row.refreshSummary();
-                    if (e.isFromClient()) notifyChange();
+                    notifyChange();
                 });
             }
         });

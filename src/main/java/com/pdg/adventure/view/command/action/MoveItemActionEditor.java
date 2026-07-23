@@ -13,7 +13,8 @@ import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.action.MoveItemActionData;
 import com.pdg.adventure.view.support.ViewSupporter;
 
-public class MoveItemActionEditor extends ActionEditorComponent {
+@AutoRegisterActionEditor
+public class MoveItemActionEditor extends ActionEditorComponent<MoveItemActionData> {
     private final AdventureData adventureData;
     private final MoveItemActionData moveActionData;
     private ComboBox<ItemData> itemSelector;

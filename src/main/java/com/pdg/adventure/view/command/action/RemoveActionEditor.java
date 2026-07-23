@@ -3,6 +3,7 @@ package com.pdg.adventure.view.command.action;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.action.RemoveActionData;
 
+@AutoRegisterActionEditor
 public class RemoveActionEditor extends AbstractSingleItemActionEditor<RemoveActionData> {
 
     public RemoveActionEditor(RemoveActionData actionData, AdventureData adventureData) {
