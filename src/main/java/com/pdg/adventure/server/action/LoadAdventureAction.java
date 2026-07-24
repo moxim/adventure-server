@@ -64,23 +64,27 @@ public class LoadAdventureAction extends AbstractAction {
         AdventureData adventureData = loadedAdventure.get();
         LOG.info("Loaded adventure: {}", adventureData.getTitle());
 
-        adventureConfig.allMessages().clear();
-        for (MessageData messageData : adventureData.getMessages().values()) {
-            adventureConfig.allMessages().addMessage(messageData.getMessageId(), messageData.getText());
-        }
-
-        Adventure savedAdventure = adventureMapper.mapToBO(adventureData);
-
-        final var adventureLocations = savedAdventure.getLocations();
-
-        if (adventureLocations.isEmpty()) {
+        if (adventureData.getLocationData().isEmpty()) {
             LOG.error("The adventure '{}' has no locations defined. Please add locations and try again.",
                       adventureData.getTitle());
             return;
         }
 
+        adventureConfig.allMessages().clear();
+        for (MessageData messageData : adventureData.getMessages().values()) {
+            adventureConfig.allMessages().addMessage(messageData.getMessageId(), messageData.getText());
+        }
+
+        // Reset all registries before mapping. Mapping registers the new adventure's locations,
+        // containers and items as it goes; anything left over from a previously loaded adventure
+        // would let references resolve against stale objects.
         adventureConfig.allLocations().clear();
-        adventureLocations.forEach(location -> adventureConfig.allLocations().put(location.getId(), location));
+        adventureConfig.allItems().clear();
+        adventureConfig.allContainers().clear();
+
+        Adventure savedAdventure = adventureMapper.mapToBO(adventureData);
+
+        final var adventureLocations = savedAdventure.getLocations();
 
         CommandFactory commandFactory = new CommandFactory(
                 adventureConfig.allMessages(), gameContext, adventureData.getVocabularyData());

@@ -8,7 +8,6 @@ import java.io.IOException;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.VocabularyData;
-import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.exception.QuitException;
 import com.pdg.adventure.server.exception.ReloadAdventureException;
 import com.pdg.adventure.server.location.Location;
@@ -47,7 +46,7 @@ public class GameLoop {
 
                 // Continue if the user provided nothing that we understand.
                 if (command.toString().equals("||")) {
-                    IO.println(new MessageAction("I don't understand, please rephrase.", null).execute());
+                    gameContext.tell("I don't understand, please rephrase.");
                     continue;
                 }
 
@@ -57,6 +56,12 @@ public class GameLoop {
 
                 if (!VocabularyData.EMPTY_STRING.equals(result.getResultMessage())) {
                     gameContext.tell(result.getResultMessage());
+                } else {
+                    if (result.getExecutionState() == ExecutionResult.State.FAILURE) {
+                        gameContext.tell("I can't do that.");
+                    } else {
+                        gameContext.tell("Done.");
+                    }
                 }
             } catch (QuitException anException) {
                 gameContext.tell(anException.getMessage());

@@ -12,6 +12,8 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.action.CreateActionData;
@@ -50,7 +52,7 @@ class CreateActionMapperTest {
         CreateActionData data = new CreateActionData();
         data.setThingId(THING_ID);
         data.setContainerProviderId(CONTAINER_ID);
-        when(adventureConfig.allItems()).thenReturn(Map.of(THING_ID, thing));
+        when(mapperSupporter.requireMappedItem(eq(THING_ID), any())).thenReturn(thing);
         when(adventureConfig.allContainers()).thenReturn(Map.of(CONTAINER_ID, container));
 
         CreateAction result = mapper.mapToBO(data);
@@ -63,7 +65,7 @@ class CreateActionMapperTest {
         CreateActionData data = new CreateActionData();
         data.setThingId(THING_ID);
         data.setContainerProviderId(LOCATION_ID);
-        when(adventureConfig.allItems()).thenReturn(Map.of(THING_ID, thing));
+        when(mapperSupporter.requireMappedItem(eq(THING_ID), any())).thenReturn(thing);
         when(adventureConfig.allContainers()).thenReturn(Map.of());
         when(adventureConfig.allLocations()).thenReturn(Map.of(LOCATION_ID, location));
         when(location.getItemContainer()).thenReturn(locationContainer);
@@ -78,7 +80,7 @@ class CreateActionMapperTest {
         CreateActionData data = new CreateActionData();
         data.setThingId(THING_ID);
         data.setContainerProviderId("missing");
-        when(adventureConfig.allItems()).thenReturn(Map.of(THING_ID, thing));
+        when(mapperSupporter.requireMappedItem(eq(THING_ID), any())).thenReturn(thing);
         when(adventureConfig.allContainers()).thenReturn(Map.of());
         when(adventureConfig.allLocations()).thenReturn(Map.of());
 

@@ -14,11 +14,11 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.condition.CarriedConditionData;
-import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.condition.CarriedCondition;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.support.MapperSupporter;
@@ -39,9 +39,6 @@ class CarriedConditionMapperTest {
     private MapperSupporter mapperSupporter;
 
     @Mock
-    private AdventureConfig adventureConfig;
-
-    @Mock
     private GameContext gameContext;
 
     @Mock
@@ -53,11 +50,17 @@ class CarriedConditionMapperTest {
     @BeforeEach
     void setUp() {
         doNothing().when(mapperSupporter).registerMapper(any(), any(), any());
-        mapper = new CarriedConditionMapper(mapperSupporter, adventureConfig, gameContext);
+        mapper = new CarriedConditionMapper(mapperSupporter, gameContext);
 
-        // Setup items map for adventureConfig
         allItemsMap = new HashMap<>();
-        when(adventureConfig.allItems()).thenReturn(allItemsMap);
+        when(mapperSupporter.requireMappedItem(anyString(), any())).thenAnswer(invocation -> {
+            Item item = allItemsMap.get(invocation.getArgument(0, String.class));
+            if (item == null) {
+                throw new IllegalStateException("Unknown item id '%s'".formatted(
+                        invocation.getArgument(0, String.class)));
+            }
+            return item;
+        });
     }
 
     @Test

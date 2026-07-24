@@ -1,10 +1,8 @@
 package com.pdg.adventure.server.mapper.condition;
 
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.pdg.adventure.model.condition.HereConditionData;
-import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.condition.HereCondition;
 import com.pdg.adventure.server.engine.GameContext;
@@ -15,19 +13,17 @@ import com.pdg.adventure.server.tangible.Item;
 @AutoRegisterMapper(priority = 20, description = "HereCondition mapping with dynamic action resolution")
 public class HereConditionMapper extends PreConditionMapper<HereConditionData, HereCondition> {
 
-    private final AdventureConfig adventureConfig;
     private final GameContext gameContext;
 
-    public HereConditionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig,
-                               GameContext aGameContext) {
+    public HereConditionMapper(MapperSupporter aMapperSupporter, GameContext aGameContext) {
         super(aMapperSupporter);
-        adventureConfig = anAdventureConfig;
         gameContext = aGameContext;
     }
 
     @Override
     public HereCondition mapToBO(HereConditionData aHereConditionData) {
-        final Item item = adventureConfig.allItems().get(aHereConditionData.getThingId());
+        final Item item = getMapperSupporter().requireMappedItem(aHereConditionData.getThingId(),
+                                                                 aHereConditionData);
         HereCondition result = new HereCondition(item, gameContext);
         result.setId(aHereConditionData.getId());
         return result;

@@ -11,6 +11,7 @@ import java.util.Map;
 
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.Mapper;
+import com.pdg.adventure.model.basic.BasicData;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
@@ -109,6 +110,44 @@ public class MapperSupporter {
 
     public Item getMappedItem(final String anId) {
         return mappedItems.get(anId);
+    }
+
+    /**
+     * Resolves an item reference that must exist. Mapped conditions and actions hold direct
+     * object references, so an unresolved id here would surface much later as an NPE during
+     * command execution — fail at mapping time instead, naming the broken reference.
+     */
+    public Item requireMappedItem(final String anItemId, final BasicData aReferrer) {
+        final Item item = mappedItems.get(anItemId);
+        if (item == null) {
+            throw new IllegalStateException(
+                    "Unknown item id '%s' referenced by %s '%s'. Known item ids: %s".formatted(
+                            anItemId, aReferrer.getClass().getSimpleName(), aReferrer.getId(),
+                            mappedItems.keySet()));
+        }
+        return item;
+    }
+
+    public Location requireMappedLocation(final String aLocationId, final BasicData aReferrer) {
+        final Location location = mappedLocations.get(aLocationId);
+        if (location == null) {
+            throw new IllegalStateException(
+                    "Unknown location id '%s' referenced by %s '%s'. Known location ids: %s".formatted(
+                            aLocationId, aReferrer.getClass().getSimpleName(), aReferrer.getId(),
+                            mappedLocations.keySet()));
+        }
+        return location;
+    }
+
+    public Container requireMappedContainer(final String aContainerId, final BasicData aReferrer) {
+        final Container container = mappedContainers.get(aContainerId);
+        if (container == null) {
+            throw new IllegalStateException(
+                    "Unknown container id '%s' referenced by %s '%s'. Known container ids: %s".formatted(
+                            aContainerId, aReferrer.getClass().getSimpleName(), aReferrer.getId(),
+                            mappedContainers.keySet()));
+        }
+        return container;
     }
 
     public Container getMappedContainer(final String aParentContainerId) {

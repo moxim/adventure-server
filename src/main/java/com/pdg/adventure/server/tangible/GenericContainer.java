@@ -51,8 +51,10 @@ public class GenericContainer extends Item implements Container {
 
     @Override
     public boolean contains(Containable aThing) {
-        Containable thing = findItemByShortDescription(aThing.getAdjective(), aThing.getNoun());
-        return thing != null;
+        // Membership of a known object — must match by identity (id-based equals), never by
+        // description: distinct items may share adjective and noun (e.g. two "suit" items).
+        // Description-based lookup is what findItemByShortDescription is for.
+        return contents.contains(aThing);
     }
 
     @Override

@@ -14,11 +14,11 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.condition.PlayerAtConditionData;
-import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.condition.PlayerAtCondition;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
@@ -32,9 +32,6 @@ class PlayerAtConditionMapperTest {
     private MapperSupporter mapperSupporter;
 
     @Mock
-    private AdventureConfig adventureConfig;
-
-    @Mock
     private GameContext gameContext;
 
     @Mock
@@ -46,10 +43,17 @@ class PlayerAtConditionMapperTest {
     @BeforeEach
     void setUp() {
         doNothing().when(mapperSupporter).registerMapper(any(), any(), any());
-        mapper = new PlayerAtConditionMapper(mapperSupporter, adventureConfig, gameContext);
+        mapper = new PlayerAtConditionMapper(mapperSupporter, gameContext);
 
         allLocationsMap = new HashMap<>();
-        when(adventureConfig.allLocations()).thenReturn(allLocationsMap);
+        when(mapperSupporter.requireMappedLocation(anyString(), any())).thenAnswer(invocation -> {
+            Location location = allLocationsMap.get(invocation.getArgument(0, String.class));
+            if (location == null) {
+                throw new IllegalStateException("Unknown location id '%s'".formatted(
+                        invocation.getArgument(0, String.class)));
+            }
+            return location;
+        });
     }
 
     @Test

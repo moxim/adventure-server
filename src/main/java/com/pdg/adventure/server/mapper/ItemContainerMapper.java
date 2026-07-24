@@ -22,7 +22,7 @@ public class ItemContainerMapper implements Mapper<ItemContainerData, GenericCon
     private final MapperSupporter mapperSupporter;
     private final Map<String, Item> allItems;
     private final Mapper<DescriptionData, DescriptionProvider> descriptionMapper;
-    private final Mapper<ItemData, Item> itemMapper;
+    private final ItemMapper itemMapper;
 
     public ItemContainerMapper(MapperSupporter aMapperSupporter,
                                DescriptionMapper aDescriptionMapper,
@@ -35,15 +35,34 @@ public class ItemContainerMapper implements Mapper<ItemContainerData, GenericCon
 
     @Override
     public GenericContainer mapToBO(ItemContainerData anItemContainerData) {
+        GenericContainer container = registerContainer(anItemContainerData);
+        mapItemCommands(anItemContainerData);
+        return container;
+    }
+
+    /**
+     * Phase 1: create the container and register it and its items with the MapperSupporter,
+     * without mapping any item commands. Commands may reference items in other containers by id,
+     * so every container's items must be registered before any command is mapped.
+     */
+    public GenericContainer registerContainer(ItemContainerData anItemContainerData) {
         final DescriptionData descriptionData = anItemContainerData.getDescriptionData();
         DescriptionProvider descriptionProvider = descriptionMapper.mapToBO(descriptionData);
         GenericContainer container = new GenericContainer(descriptionProvider, anItemContainerData.getMaxSize());
         container.setId(anItemContainerData.getId());
         container.setMaxSize(anItemContainerData.getMaxSize());
         mapperSupporter.addMappedContainer(container);
-        List<Item> itemList = itemMapper.mapToBOs(anItemContainerData.getItems());
+        List<Item> itemList = itemMapper.registerItems(anItemContainerData.getItems());
         container.setContents(itemList);
         return container;
+    }
+
+    /**
+     * Phase 2: map the commands of this container's items. Must run after all items of the
+     * adventure are registered.
+     */
+    public void mapItemCommands(ItemContainerData anItemContainerData) {
+        itemMapper.mapCommands(anItemContainerData.getItems());
     }
 
     @Override

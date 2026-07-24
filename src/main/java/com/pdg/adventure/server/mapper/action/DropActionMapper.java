@@ -30,7 +30,7 @@ public class DropActionMapper extends ActionMapper<DropActionData, DropAction> {
     public DropAction mapToBO(final DropActionData aDropActionData) {
         // Use lazy evaluation - defer getting current location until action execution
         DropAction action = new DropAction(
-                adventureConfig.allItems().get(aDropActionData.getThingId()),
+                getMapperSupporter().requireMappedItem(aDropActionData.getThingId(), aDropActionData),
                 new ContainerSupplier(() -> gameContext.getCurrentLocation().getItemContainer()),
                 adventureConfig.allMessages());
         return action;

@@ -50,10 +50,28 @@ public class ItemMapper implements Mapper<ItemData, Item> {
 
     @Override
     public List<Item> mapToBOs(List<ItemData> anItemDataList) {
+        final List<Item> itemList = registerItems(anItemDataList);
+        mapCommands(anItemDataList);
+        return itemList;
+    }
+
+    /**
+     * Phase 1: create the items and register them with the MapperSupporter, without mapping
+     * their commands. Commands (and their conditions/actions) may reference items anywhere in
+     * the adventure by id, so every item must be registered before any command is mapped.
+     */
+    public List<Item> registerItems(List<ItemData> anItemDataList) {
         final List<Item> itemList = new ArrayList<>(anItemDataList.size());
         for (ItemData itemData : anItemDataList) {
             itemList.add(mapToBO(itemData));
         }
+        return itemList;
+    }
+
+    /**
+     * Phase 2: map the items' commands. Must run after all items of the adventure are registered.
+     */
+    public void mapCommands(List<ItemData> anItemDataList) {
         for (ItemData itemData : anItemDataList) {
             final Item item = mapperSupporter.getMappedItem(itemData.getId());
             final CommandProviderData commandProviderData = itemData.getCommandProviderData();
@@ -61,7 +79,6 @@ public class ItemMapper implements Mapper<ItemData, Item> {
             item.setCommandProvider(commandProvider);
             item.setParentContainer(mapperSupporter.getMappedContainer(itemData.getParentContainerId()));
         }
-        return itemList;
     }
 
     public ItemData mapToDO(Item anItem) {
