@@ -24,6 +24,8 @@ components:
   # Secrets (set per-stage via config-data).
   - name: MONGO_ROOT_PASSWORD
     config-ref: MONGO_ROOT_PASSWORD
+  - name: MONGO_ADV_ADMIN_PASSWORD
+    config-ref: MONGO_ADV_ADMIN_PASSWORD
   - name: MYSQL_PASSWORD
     config-ref: MYSQL_PASSWORD
   - name: REMEMBER_ME_KEY
@@ -31,7 +33,7 @@ components:
   # MongoDB (adventure storage). Overrides the dev defaults in application.properties
   # using the standard Spring Boot property so no source change is needed.
   - name: SPRING_DATA_MONGODB_URI
-    value: "mongodb://root:$(MONGO_ROOT_PASSWORD)@$(MONGO_HOST):27017/adventures?authSource=admin"
+    value: "mongodb://advAdmin:$(MONGO_ADV_ADMIN_PASSWORD)@$(MONGO_HOST):27017/adventures?authSource=admin"
   # MySQL (user / security data).
   - name: SPRING_DATASOURCE_URL
     value: "jdbc:mysql://$(MYSQL_HOST):3306/adventure_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
