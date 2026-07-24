@@ -32,7 +32,7 @@ components:
     config-ref: REMEMBER_ME_KEY
   # MongoDB (adventure storage). Overrides the dev defaults in application.properties
   # using the standard Spring Boot property so no source change is needed.
-  - name: SPRING_DATA_MONGODB_URI
+  - name: SPRING_MONGODB_URI
     value: "mongodb://advAdmin:$(MONGO_ADV_ADMIN_PASSWORD)@$(MONGO_HOST):27017/adventures?authSource=admin"
   # MySQL (user / security data).
   - name: SPRING_DATASOURCE_URL
