@@ -10,6 +10,7 @@ import com.pdg.adventure.model.*;
 public class WordUsageTracker {
 
     private static final String DIRECTION_TEXT = "Direction";
+    public static final String SPECIAL = "Special";
     private final AdventureData adventureData;
     private final VocabularyData vocabularyData;
 
@@ -26,30 +27,40 @@ public class WordUsageTracker {
 
         // Check if this word is the take or drop verb
         if (vocabularyData != null) {
-            if (vocabularyData.getTakeWord() != null &&
-                vocabularyData.getTakeWord().getId().equals(targetWord.getId())) {
-                usages.add(new WordUsage("Take Verb", "Special verb for picking up items", "Special"));
-            }
-            if (vocabularyData.getDropWord() != null &&
-                vocabularyData.getDropWord().getId().equals(targetWord.getId())) {
-                usages.add(new WordUsage("Drop Verb", "Special verb for dropping items", "Special"));
-            }
-            if (vocabularyData.getExamineWord() != null &&
-                vocabularyData.getExamineWord().getId().equals(targetWord.getId())) {
-                usages.add(new WordUsage("Examine Verb", "Special verb for examining things", "Special"));
-            }
-
-            // Check synonyms
-            for (Word word : vocabularyData.getWords()) {
-                if (word.getSynonym() != null && word.getSynonym().getId().equals(targetWord.getId())) {
-                    usages.add(new WordUsage("Synonym", word.getText() + " (" + word.getType() + ")", "Word"));
-                }
-            }
+            addTakeAndDropWords(targetWord, usages);
+            addExamineWord(targetWord, usages);
+            checkSynonyms(targetWord, usages);
         }
 
         usages.addAll(findWordUsagesInLocations(targetWord));
 
         return usages;
+    }
+
+    private void checkSynonyms(final Word targetWord, final List<WordUsage> usages) {
+        for (Word word : vocabularyData.getWords()) {
+            if (word.getSynonym() != null && word.getSynonym().getId().equals(targetWord.getId())) {
+                usages.add(new WordUsage("Synonym", word.getText() + " (" + word.getType() + ")", "Word"));
+            }
+        }
+    }
+
+    private void addExamineWord(final Word targetWord, final List<WordUsage> usages) {
+        if (vocabularyData.getExamineWord() != null &&
+            vocabularyData.getExamineWord().getId().equals(targetWord.getId())) {
+            usages.add(new WordUsage("Examine Verb", "Special verb for examining things", SPECIAL));
+        }
+    }
+
+    private void addTakeAndDropWords(final Word targetWord, final List<WordUsage> usages) {
+        if (vocabularyData.getTakeWord() != null &&
+            vocabularyData.getTakeWord().getId().equals(targetWord.getId())) {
+            usages.add(new WordUsage("Take Verb", "Special verb for picking up items", SPECIAL));
+        }
+        if (vocabularyData.getDropWord() != null &&
+            vocabularyData.getDropWord().getId().equals(targetWord.getId())) {
+            usages.add(new WordUsage("Drop Verb", "Special verb for dropping items", SPECIAL));
+        }
     }
 
     List<WordUsage> findWordUsagesInLocations(final Word targetWord) {
@@ -137,11 +148,8 @@ public class WordUsageTracker {
         }
     }
 
+    // Build the message with grouped usages
     StringBuilder createUsagesText(final List<WordUsage> usages, int maxUsagesToShow) {
-        // Build the message with grouped usages
-        StringBuilder message = new StringBuilder();
-        message.append("Found ").append(usages.size()).append(" usage(s):\n\n");
-
         // Group usages by type
         Map<String, List<WordUsage>> groupedUsages = new HashMap<>();
 
@@ -151,10 +159,20 @@ public class WordUsageTracker {
             groupedUsages.computeIfAbsent(key, _ -> new ArrayList<>()).add(usage);
         }
 
+        StringBuilder message = new StringBuilder("Found ");
+        message.append(usages.size()).append(" usage(s):\n\n");
+        message.append(createGroupedUsages(groupedUsages));
+
+        return message;
+    }
+
         // Display grouped usages
-        for (String groupType : groupedUsages.keySet()) {
+    private static StringBuilder createGroupedUsages(final Map<String, List<WordUsage>> groupedUsages) {
+        StringBuilder message = new StringBuilder();
+        for (var entry : groupedUsages.entrySet()) {
+            String groupType = entry.getKey();
             message.append("▶ ").append(groupType).append("s:\n");
-            for (WordUsage usage : groupedUsages.get(groupType)) {
+            for (WordUsage usage : entry.getValue()) {
                 message.append("  • ").append(usage.itemId);
                 if (!usage.usageType.equals(groupType)) {
                     message.append(" (").append(usage.usageType).append(")");

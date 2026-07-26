@@ -23,27 +23,26 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 
-import java.util.List;
-
 import java.util.*;
+
+import static com.pdg.adventure.view.support.UiSupporter.BOLD;
+import static com.pdg.adventure.view.support.UiSupporter.FONT_WEIGHT;
 
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 
 public class WordEditorDialogue {
 
+    private final VocabularyData vocabularyData;
+    private final List<GuiListener> guiListeners;
+    private final List<SaveListener> saveListeners;
     private RadioButtonGroup<Word.Type> typeSelector;
+    private final Binder<Word> binder;
+
     private ComboBox<Word> synonyms;
     private TextField wordText;
     private Button saveButton;
-
-    private final Binder<Word> binder;
-
-    private final VocabularyData vocabularyData;
-    private transient Word currentWord;
-
-    private final transient List<GuiListener> guiListeners;
-    private final transient List<SaveListener> saveListeners;
+    private Word currentWord;
 
     public enum EditType {
         EDIT("Edit"),
@@ -308,8 +307,8 @@ public class WordEditorDialogue {
         String newWordText = wordText.getValue().toLowerCase().trim();
 
         // Check if word text changed and if new text already exists
-        if (!currentWord.getText().equals(newWordText)) {
-            if (isWordDuplicate(newWordText)) return;
+        if (!currentWord.getText().equals(newWordText) && (isWordDuplicate(newWordText))) {
+            return;
         }
 
         // Remove the old word
@@ -382,7 +381,7 @@ public class WordEditorDialogue {
         H2 header = new H2("Update Synonym References");
         header.addClassName("draggable");
         header.getStyle().set("margin", "0").set("font-size", "1.5em")
-              .set("font-weight", "bold").set("cursor", "move")
+              .set(FONT_WEIGHT, BOLD).set("cursor", "move")
               .set("padding", "var(--lumo-space-m) 0").set("flex", "1");
         cascadeDialog.getHeader().add(header);
 
@@ -410,7 +409,7 @@ public class WordEditorDialogue {
                 + newRoot.getText() + "' (" + newRoot.getType() + ").");
         warning.getStyle()
                .set("color", "var(--lumo-warning-text-color)")
-               .set("font-weight", "bold")
+               .set(FONT_WEIGHT, BOLD)
                .set("display", "block");
         content.add(warning);
 
@@ -507,7 +506,7 @@ public class WordEditorDialogue {
         H2 header = new H2(anEditType.value + " word");
         header.addClassName("draggable");
         header.getStyle().set("margin", "0").set("font-size", "1.5em")
-              .set("font-weight", "bold").set("cursor", "move")
+              .set(FONT_WEIGHT, BOLD).set("cursor", "move")
               .set("padding", "var(--lumo-space-m) 0").set("flex", "1");
 
         return header;

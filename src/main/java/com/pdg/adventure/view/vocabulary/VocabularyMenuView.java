@@ -24,6 +24,7 @@ import jakarta.annotation.security.RolesAllowed;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
@@ -291,9 +292,9 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
                 usageCounts.put(key, usageCounts.getOrDefault(key, 0) + 1);
             }
 
-            for (String type : usageCounts.keySet()) {
-                message.append("• ").append(usageCounts.get(type)).append(" ").append(type);
-                if (usageCounts.get(type) > 1) {
+            for (Map.Entry<String, Integer> type : usageCounts.entrySet()) {
+                message.append("• ").append(type.getValue()).append(" ").append(type.getKey());
+                if (type.getValue() > 1) {
                     message.append("s");
                 }
                 message.append("\n");
