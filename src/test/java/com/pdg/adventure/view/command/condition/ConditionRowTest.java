@@ -119,7 +119,7 @@ class ConditionRowTest {
     void constructor_withFilledEditor_summaryIncludesContent() {
         EqualsConditionData eqData = new EqualsConditionData();
         eqData.setVariableName("score");
-        eqData.setValue("10");
+        eqData.setValue(10);
         ConditionEditorComponent filledEditor = new EqualsConditionEditor(eqData);
         filledEditor.initialize();
 

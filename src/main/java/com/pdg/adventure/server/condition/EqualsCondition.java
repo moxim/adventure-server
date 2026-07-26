@@ -12,9 +12,9 @@ public class EqualsCondition extends AbstractVariableCondition {
     @Getter
     private final String variableName;
     @Getter
-    private final String value;
+    private final Integer value;
 
-    public EqualsCondition(String aVariableName, String aValue, VariableProvider aVariableProvider) {
+    public EqualsCondition(String aVariableName, Integer aValue, VariableProvider aVariableProvider) {
         super(aVariableProvider);
         variableName = aVariableName;
         value = aValue;

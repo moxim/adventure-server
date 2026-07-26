@@ -1,5 +1,6 @@
 package com.pdg.adventure.view.command.condition;
 
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 
 import com.pdg.adventure.model.condition.EqualsConditionData;
@@ -8,7 +9,7 @@ import com.pdg.adventure.model.condition.EqualsConditionData;
 public class EqualsConditionEditor extends ConditionEditorComponent<EqualsConditionData> {
     private final EqualsConditionData equalsData;
     private TextField variableNameField;
-    private TextField valueField;
+    private IntegerField valueField;
 
     public EqualsConditionEditor(EqualsConditionData conditionData) {
         super(conditionData);
@@ -21,7 +22,7 @@ public class EqualsConditionEditor extends ConditionEditorComponent<EqualsCondit
         variableNameField.setWidthFull();
         variableNameField.setRequired(true);
 
-        valueField = new TextField("Value");
+        valueField = new IntegerField("Value");
         valueField.setWidthFull();
         valueField.setRequired(true);
 
@@ -37,7 +38,7 @@ public class EqualsConditionEditor extends ConditionEditorComponent<EqualsCondit
     @Override
     public boolean validate() {
         boolean nameValid = variableNameField.getValue() != null && !variableNameField.getValue().trim().isEmpty();
-        boolean valValid = valueField.getValue() != null && !valueField.getValue().trim().isEmpty();
+        boolean valValid = valueField.getValue() != null;
         variableNameField.setInvalid(!nameValid);
         valueField.setInvalid(!valValid);
         if (!nameValid) variableNameField.setErrorMessage("Please enter a variable name");
@@ -49,8 +50,8 @@ public class EqualsConditionEditor extends ConditionEditorComponent<EqualsCondit
     public String getConditionSummary() {
         String var = (variableNameField != null && !variableNameField.getValue().isEmpty())
                 ? variableNameField.getValue() : (equalsData.getVariableName() != null ? equalsData.getVariableName() : "");
-        String val = (valueField != null && !valueField.getValue().isEmpty())
-                ? valueField.getValue() : (equalsData.getValue() != null ? equalsData.getValue() : "");
+        String val = (valueField != null)
+                ? String.valueOf(valueField.getValue()) : (equalsData.getValue() != null ? String.valueOf(equalsData.getValue()) : "");
         if (var.isEmpty()) return "(none)";
         return var + " = " + val;
     }

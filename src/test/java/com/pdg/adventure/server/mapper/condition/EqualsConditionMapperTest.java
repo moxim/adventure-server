@@ -41,7 +41,7 @@ class EqualsConditionMapperTest {
     @Test
     @DisplayName("Test 1: mapToBO - converts EqualsConditionData to EqualsCondition")
     void mapToBO_shouldConvertEqualsConditionDataToEqualsCondition() {
-        EqualsConditionData data = new EqualsConditionData("score", "100");
+        EqualsConditionData data = new EqualsConditionData("score", 100);
         data.setId("equals-001");
 
         EqualsCondition result = mapper.mapToBO(data);
@@ -49,13 +49,13 @@ class EqualsConditionMapperTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("equals-001");
         assertThat(result.getVariableName()).isEqualTo("score");
-        assertThat(result.getValue()).isEqualTo("100");
+        assertThat(result.getValue()).isEqualTo(100);
     }
 
     @Test
     @DisplayName("Test 2: mapToBO - passes VariableProvider from MapperSupporter to condition")
     void mapToBO_shouldPassVariableProviderToCondition() {
-        EqualsConditionData data = new EqualsConditionData("lives", "3");
+        EqualsConditionData data = new EqualsConditionData("lives", 3);
 
         EqualsCondition result = mapper.mapToBO(data);
 
@@ -65,7 +65,7 @@ class EqualsConditionMapperTest {
     @Test
     @DisplayName("Test 3: mapToDO - converts EqualsCondition to EqualsConditionData")
     void mapToDO_shouldConvertEqualsConditionToEqualsConditionData() {
-        EqualsCondition condition = new EqualsCondition("level", "5", variableProvider);
+        EqualsCondition condition = new EqualsCondition("level", 5, variableProvider);
         condition.setId("equals-002");
 
         EqualsConditionData result = mapper.mapToDO(condition);
@@ -73,16 +73,16 @@ class EqualsConditionMapperTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("equals-002");
         assertThat(result.getVariableName()).isEqualTo("level");
-        assertThat(result.getValue()).isEqualTo("5");
+        assertThat(result.getValue()).isEqualTo(5);
     }
 
     @Test
     @DisplayName("Test 4: mapToDO - preserves ID during conversion")
     void mapToDO_shouldPreserveIdDuringConversion() {
-        EqualsCondition condition1 = new EqualsCondition("x", "1", variableProvider);
+        EqualsCondition condition1 = new EqualsCondition("x", 1, variableProvider);
         condition1.setId("equals-id-001");
 
-        EqualsCondition condition2 = new EqualsCondition("x", "1", variableProvider);
+        EqualsCondition condition2 = new EqualsCondition("x", 1, variableProvider);
         condition2.setId("equals-id-002");
 
         EqualsConditionData result1 = mapper.mapToDO(condition1);
@@ -96,7 +96,7 @@ class EqualsConditionMapperTest {
     @Test
     @DisplayName("Test 5: Round-trip mapping - data → BO → data preserves information")
     void roundTripMapping_shouldPreserveInformation() {
-        EqualsConditionData original = new EqualsConditionData("score", "100");
+        EqualsConditionData original = new EqualsConditionData("score", 100);
         original.setId("round-trip-equals");
 
         EqualsCondition bo = mapper.mapToBO(original);

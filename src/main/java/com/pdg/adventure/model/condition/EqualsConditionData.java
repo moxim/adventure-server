@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class EqualsConditionData extends PreConditionData {
     private String variableName;
-    private String value;
+    private Integer value;
 }
