@@ -9,5 +9,5 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SetVariableActionData extends ActionData {
     private String variableName;
-    private String variableValue;
+    private Integer variableValue;
 }

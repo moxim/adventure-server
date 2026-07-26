@@ -95,7 +95,7 @@ class AdventureAssignmentViewTest extends BrowserlessTest {
         test(confirm).confirm();
 
         verify(accessService).removePlayer("adv-1", paul);
-        Notification notification = find(Notification.class).first();
+        Notification notification = find(Notification.class).single();
         assertThat(test(notification).getText()).contains("Player removed.");
     }
 

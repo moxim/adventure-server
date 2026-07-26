@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class DecrementVariableActionData extends ActionData {
     private String name;
-    private String value;
+    private Integer value;
 }

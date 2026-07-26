@@ -2,6 +2,7 @@ package com.pdg.adventure.view.command.action;
 
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 
 import com.pdg.adventure.model.action.SetVariableActionData;
@@ -10,7 +11,7 @@ import com.pdg.adventure.model.action.SetVariableActionData;
 public class SetVariableActionEditor extends ActionEditorComponent<SetVariableActionData> {
     private final SetVariableActionData setVariableActionData;
     private TextField variableNameField;
-    private TextField variableValueField;
+    private IntegerField variableValueField;
 
     public SetVariableActionEditor(SetVariableActionData actionData) {
         super(actionData);
@@ -28,7 +29,7 @@ public class SetVariableActionEditor extends ActionEditorComponent<SetVariableAc
         variableNameField.setWidthFull();
         variableNameField.setRequired(true);
 
-        variableValueField = new TextField("Variable Value");
+        variableValueField = new IntegerField("Variable Value");
         variableValueField.setPlaceholder("Enter variable value");
         variableValueField.setWidthFull();
         variableValueField.setRequired(true);
@@ -49,7 +50,7 @@ public class SetVariableActionEditor extends ActionEditorComponent<SetVariableAc
     @Override
     public boolean validate() {
         boolean nameValid = variableNameField.getValue() != null && !variableNameField.getValue().trim().isEmpty();
-        boolean valueValid = variableValueField.getValue() != null && !variableValueField.getValue().trim().isEmpty();
+        boolean valueValid = variableValueField.getValue() != null;
 
         if (!nameValid) {
             variableNameField.setErrorMessage("Please enter a variable name");
@@ -72,8 +73,8 @@ public class SetVariableActionEditor extends ActionEditorComponent<SetVariableAc
     public String getActionSummary() {
         String name = (variableNameField != null && !variableNameField.getValue().isEmpty())
                 ? variableNameField.getValue() : "";
-        String value = (variableValueField != null && !variableValueField.getValue().isEmpty())
-                ? variableValueField.getValue() : "";
+        String value = (variableValueField != null && variableValueField.getValue() != null)
+                ? variableValueField.getValue().toString() : "";
         if (name.isEmpty()) return "(none)";
         return name + " = " + value;
     }

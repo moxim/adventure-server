@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.action.ActionData;
@@ -33,13 +34,14 @@ class SetVariableActionMapperTest {
 
     @BeforeEach
     void setUp() {
-        setVariableActionMapper = new SetVariableActionMapper(variableProvider, messagesHolder, mapperSupporter);
+        when(mapperSupporter.getVariableProvider()).thenReturn(variableProvider);
+        setVariableActionMapper = new SetVariableActionMapper(messagesHolder, mapperSupporter);
     }
 
     @Test
     void mapToDOAndBO() {
         // given
-        SetVariableAction setVariableAction = new SetVariableAction("name", "value", variableProvider, messagesHolder);
+        SetVariableAction setVariableAction = new SetVariableAction("name", 7, variableProvider, messagesHolder);
         Mapper<SetVariableActionData, SetVariableAction> mapper = setVariableActionMapper;
 
         // when
@@ -50,7 +52,7 @@ class SetVariableActionMapperTest {
         assertThat(setVariableActionData).isInstanceOf(ActionData.class);
         assertThat(setVariableActionData.getActionName()).isEqualTo("SetVariableActionData");
         assertThat(setVariableActionData.getVariableName()).isEqualTo("name");
-        assertThat(setVariableActionData.getVariableValue()).isEqualTo("value");
+        assertThat(setVariableActionData.getVariableValue()).isEqualTo(7);
 
         // when
         final SetVariableAction setVariableActionReborn = mapper.mapToBO(setVariableActionData);
@@ -59,6 +61,6 @@ class SetVariableActionMapperTest {
         assertThat(setVariableActionReborn).isNotNull();
         assertThat(setVariableActionReborn).isInstanceOf(SetVariableAction.class);
         assertThat(setVariableActionReborn.getVariableName()).isEqualTo("name");
-        assertThat(setVariableActionReborn.getVariableValue()).isEqualTo("value");
+        assertThat(setVariableActionReborn.getVariableValue()).isEqualTo(7);
     }
 }

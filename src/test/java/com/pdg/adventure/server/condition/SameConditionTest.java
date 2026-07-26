@@ -13,9 +13,9 @@ class SameConditionTest {
     VariableProvider vp = new VariableProvider();
 
     {
-        Variable v1 = new Variable("one", "one");
-        Variable v2 = new Variable("two", "twp");
-        Variable v3 = new Variable("oneToo", "one");
+        Variable v1 = new Variable("one", 1);
+        Variable v2 = new Variable("two", 2);
+        Variable v3 = new Variable("oneToo", 1);
 
         vp.set(v1);
         vp.set(v2);

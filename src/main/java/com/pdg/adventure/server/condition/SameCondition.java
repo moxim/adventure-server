@@ -1,10 +1,11 @@
 package com.pdg.adventure.server.condition;
 
-import lombok.Getter;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
+import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
@@ -25,7 +26,9 @@ public class SameCondition extends AbstractVariableCondition {
     public ExecutionResult check() {
         ExecutionResult result = new CommandExecutionResult();
 
-        if (variableProvider.get(variableNameOne).equals(variableProvider.get(variableNameTwo))) {
+        final Variable variable1 = variableProvider.get(variableNameOne);
+        final Variable variable2 = variableProvider.get(variableNameTwo);
+        if (variable1.value().equals(variable2.value())) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         }
 

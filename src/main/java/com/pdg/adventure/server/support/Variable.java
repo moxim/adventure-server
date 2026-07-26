@@ -2,9 +2,9 @@ package com.pdg.adventure.server.support;
 
 import java.util.Objects;
 
-public record Variable(String aName, String aValue) {
+public record Variable(String name, Integer value) {
     public Variable {
-        Objects.requireNonNull(aName);
-        Objects.requireNonNull(aValue);
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(value);
     }
 }

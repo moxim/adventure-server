@@ -8,5 +8,5 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class IncrementVariableActionData extends ActionData {
     private String name;
-    private String value;
+    private Integer value;
 }

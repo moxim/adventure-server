@@ -23,4 +23,16 @@ public abstract class AbstractVariableCondition extends AbstractCondition {
         }
         return envVariable;
     }
+
+    protected int extractVariableValue(String aVariableName) {
+        final Variable envVariable = getVariable(aVariableName);
+        int envVal;
+        try {
+            envVal = envVariable.value();
+        } catch (NumberFormatException _) {
+            throw new ConfigurationException("This variable does not contain a number: " + aVariableName);
+        }
+        return envVal;
+    }
+
 }

@@ -2,6 +2,7 @@ package com.pdg.adventure.view.command.action;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,9 +36,11 @@ class ActionListEditorTest {
         assertThat(row.getSummaryText()).isEqualTo("SetVariable: (none)");
 
         // Simulate the user typing into the editor's fields — no manual refresh.
-        List<TextField> fields = textFieldsOf(row);
-        fields.get(0).setValue("score");
-        fields.get(1).setValue("10");
+        List<TextField> textFields = textFieldsOf(row);
+        textFields.getFirst().setValue("score");
+
+        List<IntegerField> integerFields = integerFieldsOf(row);
+        integerFields.getFirst().setValue(10);
 
         assertThat(row.getSummaryText()).isEqualTo("SetVariable: score = 10");
     }
@@ -64,6 +67,19 @@ class ActionListEditorTest {
         return editor.getChildren()
                 .filter(c -> c instanceof TextField)
                 .map(c -> (TextField) c)
+                .toList();
+    }
+
+    private List<IntegerField> integerFieldsOf(ActionRow row) {
+        ActionEditorComponent editor = row.getChildren()
+                .filter(c -> c instanceof Div).findFirst()
+                .flatMap(div -> ((Div) div).getChildren()
+                        .filter(c -> c instanceof ActionEditorComponent).findFirst())
+                .map(c -> (ActionEditorComponent) c)
+                .orElseThrow();
+        return editor.getChildren()
+                .filter(c -> c instanceof IntegerField)
+                .map(c -> (IntegerField) c)
                 .toList();
     }
 }

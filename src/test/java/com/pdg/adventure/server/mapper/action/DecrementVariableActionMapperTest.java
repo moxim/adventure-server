@@ -1,12 +1,13 @@
 package com.pdg.adventure.server.mapper.action;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.action.DecrementVariableActionData;
 import com.pdg.adventure.server.action.DecrementVariableAction;
@@ -18,16 +19,22 @@ import com.pdg.adventure.server.support.VariableProvider;
 class DecrementVariableActionMapperTest {
 
     private static final String VAR_NAME = "score";
-    private static final String VAR_VALUE = "5";
+    private static final Integer VAR_VALUE = 5;
 
     @Mock private MapperSupporter mapperSupporter;
     @Mock private VariableProvider variableProvider;
     @Mock private MessagesHolder messagesHolder;
 
-    @InjectMocks private DecrementVariableActionMapper mapper;
+    private DecrementVariableActionMapper mapper;
+
+    @BeforeEach
+    void setUp() {
+        mapper = new DecrementVariableActionMapper(messagesHolder, mapperSupporter);
+    }
 
     @Test
     void mapToBO_buildsActionWithNameAndValue() {
+        when(mapperSupporter.getVariableProvider()).thenReturn(variableProvider);
         DecrementVariableActionData data = new DecrementVariableActionData(VAR_NAME, VAR_VALUE);
 
         DecrementVariableAction result = mapper.mapToBO(data);

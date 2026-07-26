@@ -7,5 +7,5 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class GreaterThanConditionData extends PreConditionData {
     private String variableName;
-    private Number value;
+    private Integer value;
 }

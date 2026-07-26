@@ -24,7 +24,7 @@ public class EqualsCondition extends AbstractVariableCondition {
     public ExecutionResult check() {
         ExecutionResult result = new CommandExecutionResult();
         final Variable envVariable = getVariable(variableName);
-        if (envVariable.aValue().equals(value)) {
+        if (envVariable.value().equals(value)) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         }
         return result;

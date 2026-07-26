@@ -47,7 +47,7 @@ class DecrementVariableActionEditorTest {
     void validate_withNameAndValue_shouldReturnTrue() {
         // Given
         actionData.setName("score");
-        actionData.setValue("10");
+        actionData.setValue(10);
         DecrementVariableActionEditor editor = new DecrementVariableActionEditor(actionData);
         editor.initialize();
 

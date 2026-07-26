@@ -113,13 +113,13 @@ public class PreconditionActionFormatter {
             return "?";
         }
         if (a instanceof SetVariableActionData sv) {
-            return "SETVAR " + txt(sv.getVariableName()) + " " + txt(sv.getVariableValue());
+            return "SETVAR " + txt(sv.getVariableName()) + " " + num(sv.getVariableValue());
         }
         if (a instanceof IncrementVariableActionData iv) {
-            return "INCVAR " + txt(iv.getName()) + " " + txt(iv.getValue());
+            return "INCVAR " + txt(iv.getName()) + " " + num(iv.getValue());
         }
         if (a instanceof DecrementVariableActionData dv) {
-            return "DECVAR " + txt(dv.getName()) + " " + txt(dv.getValue());
+            return "DECVAR " + txt(dv.getName()) + " " + num(dv.getValue());
         }
         if (a instanceof MessageActionData m) {
             return "MESSAGE " + txt(m.getMessageId());

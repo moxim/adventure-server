@@ -28,7 +28,7 @@ class SetVariableActionEditorTest {
 
     @Test
     void validate_withNameAndValue_shouldReturnTrue() {
-        SetVariableActionData actionData = new SetVariableActionData("score", "100");
+        SetVariableActionData actionData = new SetVariableActionData("score", 100);
         SetVariableActionEditor editor = new SetVariableActionEditor(actionData);
         editor.initialize();
 
@@ -64,7 +64,7 @@ class SetVariableActionEditorTest {
 
     @Test
     void getActionSummary_withNameAndValue_returnsAssignment() {
-        SetVariableActionData actionData = new SetVariableActionData("score", "100");
+        SetVariableActionData actionData = new SetVariableActionData("score", 100);
         SetVariableActionEditor editor = new SetVariableActionEditor(actionData);
         editor.initialize();
 

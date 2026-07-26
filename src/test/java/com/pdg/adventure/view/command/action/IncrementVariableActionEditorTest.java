@@ -42,7 +42,7 @@ class IncrementVariableActionEditorTest {
         // Given
         IncrementVariableActionData actionData = new IncrementVariableActionData();
         actionData.setName("score");
-        actionData.setValue("10");
+        actionData.setValue(10);
         IncrementVariableActionEditor editor = new IncrementVariableActionEditor(actionData);
         editor.initialize();
 
@@ -82,7 +82,7 @@ class IncrementVariableActionEditorTest {
     void getActionSummary_withNameAndValue_returnsIncrement() {
         IncrementVariableActionData actionData = new IncrementVariableActionData();
         actionData.setName("score");
-        actionData.setValue("5");
+        actionData.setValue(5);
         IncrementVariableActionEditor editor = new IncrementVariableActionEditor(actionData);
         editor.initialize();
 
