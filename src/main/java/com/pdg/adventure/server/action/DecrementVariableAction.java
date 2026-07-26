@@ -11,10 +11,10 @@ import com.pdg.adventure.server.support.VariableProvider;
 @Getter
 public class DecrementVariableAction extends AbstractVariableAction {
     private final String name;
-    private final String value;
+    private final Integer value;
 
 
-    public DecrementVariableAction(String aName, String aValue, VariableProvider aVariableProvider,
+    public DecrementVariableAction(String aName, Integer aValue, VariableProvider aVariableProvider,
                                    MessagesHolder aMessagesHolder) {
         super(aVariableProvider, aMessagesHolder);
         name = aName;
@@ -26,13 +26,11 @@ public class DecrementVariableAction extends AbstractVariableAction {
         CommandExecutionResult result = new CommandExecutionResult();
         Variable envVariable = variableProvider.get(name);
         if (envVariable == null) {
-            // TODO
-            //  should this be an exception? it is not part of normal programm execution
+            // TODO should this be an exception? it is not part of normal programm execution
             result.setResultMessage("Variable " + name + " does not exist!");
         } else {
-            Long envVal = Long.valueOf(envVariable.aValue());
-            Long iVal = Long.valueOf(value);
-            variableProvider.set(new Variable(name, String.valueOf(Long.valueOf(envVal - iVal))));
+            Integer envVal = envVariable.value();
+            variableProvider.set(new Variable(name, envVal - value));
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         }
         return result;

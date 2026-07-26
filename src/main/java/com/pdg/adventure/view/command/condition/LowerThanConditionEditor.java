@@ -16,8 +16,8 @@ public class LowerThanConditionEditor extends AbstractNumericComparisonCondition
     protected void applyVariableName(String name) { typedCondition.setVariableName(name); }
 
     @Override
-    protected Number currentValue() { return typedCondition.getValue(); }
+    protected Integer currentValue() { return typedCondition.getValue(); }
 
     @Override
-    protected void applyValue(Double value) { typedCondition.setValue(value); }
+    protected void applyValue(Integer value) { typedCondition.setValue(value); }
 }

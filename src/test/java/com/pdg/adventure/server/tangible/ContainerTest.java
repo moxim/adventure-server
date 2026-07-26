@@ -88,6 +88,31 @@ class ContainerTest {
     }
 
     @Test
+    void containsReportsPresentItem() {
+        // given
+        Item item = new Item(descriptionProvider, true);
+        sut.add(item);
+
+        // when
+
+        // then
+        assertThat(sut.contains(item)).isTrue();
+    }
+
+    @Test
+    void doesNotContainDifferentItemWithSameDescription() {
+        // given: two distinct items sharing the same description ("box")
+        Item carried = new Item(descriptionProvider, true);
+        Item other = new Item(descriptionProvider, true);
+        sut.add(carried);
+
+        // when
+
+        // then
+        assertThat(sut.contains(other)).isFalse();
+    }
+
+    @Test
     void cannotAddPresentItem() {
         // given
         Item item = new Item(descriptionProvider, true);

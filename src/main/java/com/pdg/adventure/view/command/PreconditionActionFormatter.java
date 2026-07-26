@@ -27,6 +27,7 @@ import com.pdg.adventure.model.action.SetVariableActionData;
 import com.pdg.adventure.model.action.TakeActionData;
 import com.pdg.adventure.model.action.WearActionData;
 import com.pdg.adventure.model.condition.CarriedConditionData;
+import com.pdg.adventure.model.condition.ChanceConditionData;
 import com.pdg.adventure.model.condition.EqualsConditionData;
 import com.pdg.adventure.model.condition.GreaterThanConditionData;
 import com.pdg.adventure.model.condition.HereConditionData;
@@ -94,6 +95,9 @@ public class PreconditionActionFormatter {
         if (c instanceof SameConditionData same) {
             return "SAME " + txt(same.getVariableNameOne()) + " " + txt(same.getVariableNameTwo());
         }
+        if (c instanceof ChanceConditionData chance) {
+            return "CHANCE " + num(chance.getValue());
+        }
         return c.getPreconditionName().replace("ConditionData", "").toUpperCase(Locale.ROOT);
     }
 
@@ -109,13 +113,13 @@ public class PreconditionActionFormatter {
             return "?";
         }
         if (a instanceof SetVariableActionData sv) {
-            return "SETVAR " + txt(sv.getVariableName()) + " " + txt(sv.getVariableValue());
+            return "SETVAR " + txt(sv.getVariableName()) + " " + num(sv.getVariableValue());
         }
         if (a instanceof IncrementVariableActionData iv) {
-            return "INCVAR " + txt(iv.getName()) + " " + txt(iv.getValue());
+            return "INCVAR " + txt(iv.getName()) + " " + num(iv.getValue());
         }
         if (a instanceof DecrementVariableActionData dv) {
-            return "DECVAR " + txt(dv.getName()) + " " + txt(dv.getValue());
+            return "DECVAR " + txt(dv.getName()) + " " + num(dv.getValue());
         }
         if (a instanceof MessageActionData m) {
             return "MESSAGE " + txt(m.getMessageId());

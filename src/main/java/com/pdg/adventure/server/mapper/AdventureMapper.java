@@ -25,8 +25,8 @@ public class AdventureMapper implements Mapper<AdventureData, Adventure> {
 
     private final MapperSupporter mapperSupporter;
     private final Mapper<VocabularyData, Vocabulary> vocabularyMapper;
-    private final Mapper<LocationData, Location> locationMapper;
-    private final Mapper<ItemContainerData, GenericContainer> containerMapper;
+    private final LocationMapper locationMapper;
+    private final ItemContainerMapper containerMapper;
 
     public AdventureMapper(MapperSupporter aMapperSupporter,
                            VocabularyMapper aVocabularyMapper,
@@ -43,11 +43,19 @@ public class AdventureMapper implements Mapper<AdventureData, Adventure> {
         Adventure adventure = new Adventure(vocabulary, new HashMap<>(4), new MessagesHolder(), new HashMap<>());
         adventure.setId((anAdventureData.getId()));
         adventure.setTitle(anAdventureData.getTitle());
-        Set<LocationData> locationDataList = new HashSet<>(anAdventureData.getLocationData().values());
-        List<Location> locationList = locationMapper.mapToBOs(List.copyOf(locationDataList));
+        Set<LocationData> locationDataSet = new HashSet<>(anAdventureData.getLocationData().values());
+        List<LocationData> locationDataList = List.copyOf(locationDataSet);
+        // Commands (and their conditions/actions) resolve item references by id, and may point at
+        // an item anywhere in the adventure. So: register every location, container and item first
+        // — including the player's pocket — and only then map any commands.
+        List<Location> locationList = locationMapper.createLocations(locationDataList);
+        locationMapper.registerItems(locationDataList);
+        GenericContainer pocket = containerMapper.registerContainer(anAdventureData.getPlayerPocket());
+        locationMapper.mapCommands(locationDataList);
+        containerMapper.mapItemCommands(anAdventureData.getPlayerPocket());
         adventure.setLocations(locationList);
         adventure.setCurrentLocationId(anAdventureData.getCurrentLocationId());
-        adventure.setPocket(containerMapper.mapToBO(anAdventureData.getPlayerPocket()));
+        adventure.setPocket(pocket);
         return adventure;
     }
 

@@ -23,7 +23,7 @@ public class RemoveActionMapper extends ActionMapper<RemoveActionData, RemoveAct
     @Override
     public RemoveAction mapToBO(RemoveActionData actionData) {
         return new RemoveAction(
-                adventureConfig.allItems().get(actionData.getThingId()),
+                getMapperSupporter().requireMappedItem(actionData.getThingId(), actionData),
                 adventureConfig.allMessages());
     }
 

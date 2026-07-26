@@ -218,7 +218,7 @@ class LocationMapperTest {
                 .thenReturn(castleLoc);
 
         when(descriptionMapper.mapToBO(any(DescriptionData.class))).thenReturn(descriptionProvider);
-        when(itemContainerMapper.mapToBO(any(ItemContainerData.class))).thenReturn(itemContainer);
+        when(itemContainerMapper.registerContainer(any(ItemContainerData.class))).thenReturn(itemContainer);
 
         // Mock empty directions and command providers
 //        when(directionMapper.mapToBO(any(DirectionData.class))).thenReturn(direction);
@@ -270,7 +270,7 @@ class LocationMapperTest {
                 .thenReturn(location);  // Second call during direction mapping
 
         when(descriptionMapper.mapToBO(any(DescriptionData.class))).thenReturn(descriptionProvider);
-        when(itemContainerMapper.mapToBO(any(ItemContainerData.class))).thenReturn(itemContainer);
+        when(itemContainerMapper.registerContainer(any(ItemContainerData.class))).thenReturn(itemContainer);
 
         GenericDirection northDir = mock(GenericDirection.class);
         GenericDirection southDir = mock(GenericDirection.class);
@@ -311,7 +311,7 @@ class LocationMapperTest {
                 .thenReturn(location);  // Second call during command provider mapping
 
         when(descriptionMapper.mapToBO(any(DescriptionData.class))).thenReturn(descriptionProvider);
-        when(itemContainerMapper.mapToBO(any(ItemContainerData.class))).thenReturn(itemContainer);
+        when(itemContainerMapper.registerContainer(any(ItemContainerData.class))).thenReturn(itemContainer);
         when(commandProviderMapper.mapToBO(commandProviderData)).thenReturn(commandProvider);
 
         // When: mapping list

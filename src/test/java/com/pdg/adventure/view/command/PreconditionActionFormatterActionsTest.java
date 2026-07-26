@@ -1,27 +1,13 @@
 package com.pdg.adventure.view.command;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.action.CreateActionData;
-import com.pdg.adventure.model.action.DecrementVariableActionData;
-import com.pdg.adventure.model.action.DescribeActionData;
-import com.pdg.adventure.model.action.DestroyActionData;
-import com.pdg.adventure.model.action.DropActionData;
-import com.pdg.adventure.model.action.IncrementVariableActionData;
-import com.pdg.adventure.model.action.InventoryActionData;
-import com.pdg.adventure.model.action.MessageActionData;
-import com.pdg.adventure.model.action.MoveItemActionData;
-import com.pdg.adventure.model.action.MovePlayerActionData;
-import com.pdg.adventure.model.action.QuitActionData;
-import com.pdg.adventure.model.action.RemoveActionData;
-import com.pdg.adventure.model.action.SetVariableActionData;
-import com.pdg.adventure.model.action.TakeActionData;
-import com.pdg.adventure.model.action.WearActionData;
+import com.pdg.adventure.model.action.*;
 
 class PreconditionActionFormatterActionsTest {
 
@@ -30,14 +16,14 @@ class PreconditionActionFormatterActionsTest {
 
     @Test
     void setVariable() {
-        assertThat(formatter.formatAction(new SetVariableActionData("b_fill", "1"))).isEqualTo("SETVAR b_fill 1");
+        assertThat(formatter.formatAction(new SetVariableActionData("b_fill", 1))).isEqualTo("SETVAR b_fill 1");
     }
 
     @Test
     void incrementVariable() {
         IncrementVariableActionData a = new IncrementVariableActionData();
         a.setName("score");
-        a.setValue("2");
+        a.setValue(2);
         assertThat(formatter.formatAction(a)).isEqualTo("INCVAR score 2");
     }
 
@@ -45,7 +31,7 @@ class PreconditionActionFormatterActionsTest {
     void decrementVariable() {
         DecrementVariableActionData a = new DecrementVariableActionData();
         a.setName("score");
-        a.setValue("1");
+        a.setValue(1);
         assertThat(formatter.formatAction(a)).isEqualTo("DECVAR score 1");
     }
 

@@ -1,10 +1,8 @@
 package com.pdg.adventure.server.mapper.condition;
 
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.pdg.adventure.model.condition.CarriedConditionData;
-import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.condition.CarriedCondition;
 import com.pdg.adventure.server.engine.GameContext;
@@ -15,19 +13,17 @@ import com.pdg.adventure.server.tangible.Item;
 @AutoRegisterMapper(priority = 20, description = "CarriedCondition mapping with dynamic action resolution")
 public class CarriedConditionMapper extends PreConditionMapper<CarriedConditionData, CarriedCondition> {
 
-    private final AdventureConfig adventureConfig;
     private final GameContext gameContext;
 
-    public CarriedConditionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig,
-                                  GameContext aGameContext) {
+    public CarriedConditionMapper(MapperSupporter aMapperSupporter, GameContext aGameContext) {
         super(aMapperSupporter);
-        adventureConfig = anAdventureConfig;
         gameContext = aGameContext;
     }
 
     @Override
     public CarriedCondition mapToBO(CarriedConditionData aCarriedConditionData) {
-        final Item item = adventureConfig.allItems().get(aCarriedConditionData.getItemId());
+        final Item item = getMapperSupporter().requireMappedItem(aCarriedConditionData.getItemId(),
+                                                                 aCarriedConditionData);
         CarriedCondition result = new CarriedCondition(item, gameContext);
         result.setId(aCarriedConditionData.getId());
         return result;

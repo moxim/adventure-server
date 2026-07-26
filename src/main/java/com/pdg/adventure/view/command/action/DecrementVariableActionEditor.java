@@ -2,6 +2,7 @@ package com.pdg.adventure.view.command.action;
 
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 
 import com.pdg.adventure.model.action.DecrementVariableActionData;
@@ -14,7 +15,7 @@ import com.pdg.adventure.model.action.DecrementVariableActionData;
 public class DecrementVariableActionEditor extends ActionEditorComponent<DecrementVariableActionData> {
     private final DecrementVariableActionData decrementVariableActionData;
     private TextField nameField;
-    private TextField valueField;
+    private IntegerField valueField;
 
     public DecrementVariableActionEditor(DecrementVariableActionData aDecrementVariableActionData) {
         super(aDecrementVariableActionData);
@@ -33,7 +34,7 @@ public class DecrementVariableActionEditor extends ActionEditorComponent<Decreme
         nameField.setWidthFull();
         nameField.setRequired(true);
 
-        valueField = new TextField("Decrement Amount");
+        valueField = new IntegerField("Decrement Amount");
         valueField.setPlaceholder("Enter decrement amount");
         valueField.setWidthFull();
         valueField.setRequired(true);
@@ -56,7 +57,7 @@ public class DecrementVariableActionEditor extends ActionEditorComponent<Decreme
     @Override
     public boolean validate() {
         boolean nameValid = nameField.getValue() != null && !nameField.getValue().isBlank();
-        boolean valueValid = valueField.getValue() != null && !valueField.getValue().isBlank();
+        boolean valueValid = valueField.getValue() != null;
 
         nameField.setInvalid(!nameValid);
         if (!nameValid) {
@@ -75,8 +76,8 @@ public class DecrementVariableActionEditor extends ActionEditorComponent<Decreme
     public String getActionSummary() {
         String name = (nameField != null && !nameField.getValue().isEmpty())
                 ? nameField.getValue() : "";
-        String amount = (valueField != null && !valueField.getValue().isEmpty())
-                ? valueField.getValue() : "";
+        String amount = (valueField != null && valueField.getValue() != null)
+                ? valueField.getValue().toString() : "";
         if (name.isEmpty()) return "(none)";
         return name + " -= " + amount;
     }

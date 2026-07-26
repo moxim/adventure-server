@@ -2,6 +2,7 @@ package com.pdg.adventure.view.command.action;
 
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 
 import com.pdg.adventure.model.action.IncrementVariableActionData;
@@ -14,7 +15,7 @@ import com.pdg.adventure.model.action.IncrementVariableActionData;
 public class IncrementVariableActionEditor extends ActionEditorComponent<IncrementVariableActionData> {
     private final IncrementVariableActionData incrementActionData;
     private TextField variableNameField;
-    private TextField incrementAmountField;
+    private IntegerField incrementAmountField;
 
     public IncrementVariableActionEditor(IncrementVariableActionData actionData) {
         super(actionData);
@@ -33,7 +34,7 @@ public class IncrementVariableActionEditor extends ActionEditorComponent<Increme
         variableNameField.setWidthFull();
         variableNameField.setRequired(true);
 
-        incrementAmountField = new TextField("Increment Amount");
+        incrementAmountField = new IntegerField("Increment Amount");
         incrementAmountField.setPlaceholder("Enter increment amount");
         incrementAmountField.setWidthFull();
         incrementAmountField.setRequired(true);
@@ -56,7 +57,7 @@ public class IncrementVariableActionEditor extends ActionEditorComponent<Increme
     @Override
     public boolean validate() {
         boolean nameValid = variableNameField.getValue() != null && !variableNameField.getValue().trim().isEmpty();
-        boolean valueValid = incrementAmountField.getValue() != null && !incrementAmountField.getValue().trim().isEmpty();
+        boolean valueValid = incrementAmountField.getValue() != null;
 
         if (!nameValid) {
             variableNameField.setErrorMessage("Please enter a variable name");
@@ -79,8 +80,8 @@ public class IncrementVariableActionEditor extends ActionEditorComponent<Increme
     public String getActionSummary() {
         String name = (variableNameField != null && !variableNameField.getValue().isEmpty())
                 ? variableNameField.getValue() : "";
-        String amount = (incrementAmountField != null && !incrementAmountField.getValue().isEmpty())
-                ? incrementAmountField.getValue() : "";
+        String amount = (incrementAmountField != null && incrementAmountField.getValue() != null)
+                ? incrementAmountField.getValue().toString() : "";
         if (name.isEmpty()) return "(none)";
         return name + " += " + amount;
     }

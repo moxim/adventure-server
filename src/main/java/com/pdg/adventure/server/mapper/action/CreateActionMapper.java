@@ -26,7 +26,7 @@ public class CreateActionMapper extends ActionMapper<CreateActionData, CreateAct
     @Override
     public CreateAction mapToBO(CreateActionData actionData) {
         return new CreateAction(
-                adventureConfig.allItems().get(actionData.getThingId()),
+                getMapperSupporter().requireMappedItem(actionData.getThingId(), actionData),
                 new ContainerSupplier(resolveContainer(actionData.getContainerProviderId())),
                 adventureConfig.allMessages());
     }

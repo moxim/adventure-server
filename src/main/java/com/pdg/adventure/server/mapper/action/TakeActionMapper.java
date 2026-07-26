@@ -28,7 +28,7 @@ public class TakeActionMapper extends ActionMapper<TakeActionData, TakeAction> {
     @Override
     public TakeAction mapToBO(final TakeActionData aTakeActionData) {
         TakeAction action = new TakeAction(
-                adventureConfig.allItems().get(aTakeActionData.getThingId()),
+                getMapperSupporter().requireMappedItem(aTakeActionData.getThingId(), aTakeActionData),
                 new ContainerSupplier(gameContext::getPocket),
                 adventureConfig.allMessages());
         return action;

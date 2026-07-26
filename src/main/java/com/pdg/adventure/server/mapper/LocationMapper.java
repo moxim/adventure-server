@@ -27,7 +27,7 @@ public class LocationMapper implements Mapper<LocationData, Location> {
 
     private final MapperSupporter mapperSupporter;
     private final Mapper<DescriptionData, DescriptionProvider> descriptionMapper;
-    private final Mapper<ItemContainerData, GenericContainer> itemContainerMapper;
+    private final ItemContainerMapper itemContainerMapper;
     private final Mapper<DirectionData, GenericDirection> directionMapper;
     private final Mapper<CommandProviderData, GenericCommandProvider> commandProviderMapper;
 
@@ -75,24 +75,51 @@ public class LocationMapper implements Mapper<LocationData, Location> {
     }
 
     public List<Location> mapToBOs(List<LocationData> aDataObjectList) {
+        List<Location> result = createLocations(aDataObjectList);
+        registerItems(aDataObjectList);
+        mapCommands(aDataObjectList);
+        return result;
+    }
+
+    /**
+     * Phase 1: create and register the bare locations.
+     */
+    public List<Location> createLocations(List<LocationData> aDataObjectList) {
         List<Location> result = new ArrayList<>(aDataObjectList.size());
         for (LocationData dataObject : aDataObjectList) {
             result.add(mapToBO(dataObject));
         }
+        return result;
+    }
 
+    /**
+     * Phase 2: create the locations' item containers and register their items, without mapping
+     * any commands yet.
+     */
+    public void registerItems(List<LocationData> aDataObjectList) {
+        for (LocationData locationData : aDataObjectList) {
+            Location location = mapperSupporter.getMappedLocation(locationData.getId());
+            mapLocationItems(locationData, location);
+        }
+    }
+
+    /**
+     * Phase 3: map directions, item commands and location commands. Commands (and their
+     * conditions/actions) resolve item and location references by id, so this phase must only
+     * run once every item of the adventure is registered — including the player pocket's.
+     */
+    public void mapCommands(List<LocationData> aDataObjectList) {
         for (LocationData locationData : aDataObjectList) {
             Location location = mapperSupporter.getMappedLocation(locationData.getId());
             mapLocationDirections(locationData, location);
-            mapLocationItems(locationData, location);
+            itemContainerMapper.mapItemCommands(locationData.getItemContainerData());
             mapLocationCommands(locationData, location);
         }
-
-        return result;
     }
 
     private void mapLocationItems(final LocationData aLocationData, final Location aLocation) {
         final ItemContainerData itemContainerData = aLocationData.getItemContainerData();
-        final Container itemContainer = itemContainerMapper.mapToBO(itemContainerData);
+        final Container itemContainer = itemContainerMapper.registerContainer(itemContainerData);
         aLocation.setItemContainer(itemContainer);
     }
 

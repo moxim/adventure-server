@@ -132,7 +132,20 @@ public class AdventureService {
     }
 
     public void deleteLocation(String anId) {
-        locationRepository.deleteById(anId);
+        LOG.info("Deleting location: {}", anId);
+
+        Optional<LocationData> locationOpt = locationRepository.findById(anId);
+
+        if (locationOpt.isPresent()) {
+            LocationData location = locationOpt.get();
+
+            // A location owns its item container (and the items in it); without the cascade
+            // those documents become unreachable orphans once the location is gone.
+            cascadeDeleteHelper.cascadeDelete(location);
+            locationRepository.delete(location);
+        } else {
+            LOG.warn("Location not found for deletion: {}", anId);
+        }
     }
 
     public void deleteAdventure(String anId) {

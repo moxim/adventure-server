@@ -14,9 +14,9 @@ import com.pdg.adventure.server.support.VariableProvider;
 public class SetVariableAction extends AbstractVariableAction {
 
     private String variableName;
-    private String variableValue;
+    private Integer variableValue;
 
-    public SetVariableAction(String aName, String aValue, VariableProvider aVariableProvider,
+    public SetVariableAction(String aName, Integer aValue, VariableProvider aVariableProvider,
                              MessagesHolder aMessagesHolder) {
         super(aVariableProvider, aMessagesHolder);
         variableName = aName;

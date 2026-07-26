@@ -14,11 +14,11 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.condition.ItemAtConditionData;
-import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.condition.ItemAtCondition;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.support.MapperSupporter;
@@ -30,9 +30,6 @@ class ItemAtConditionMapperTest {
 
     @Mock
     private MapperSupporter mapperSupporter;
-
-    @Mock
-    private AdventureConfig adventureConfig;
 
     @Mock
     private Item mockItem;
@@ -47,12 +44,26 @@ class ItemAtConditionMapperTest {
     @BeforeEach
     void setUp() {
         doNothing().when(mapperSupporter).registerMapper(any(), any(), any());
-        mapper = new ItemAtConditionMapper(mapperSupporter, adventureConfig);
+        mapper = new ItemAtConditionMapper(mapperSupporter);
 
         allItemsMap = new HashMap<>();
         allLocationsMap = new HashMap<>();
-        when(adventureConfig.allItems()).thenReturn(allItemsMap);
-        when(adventureConfig.allLocations()).thenReturn(allLocationsMap);
+        when(mapperSupporter.requireMappedItem(anyString(), any())).thenAnswer(invocation -> {
+            Item item = allItemsMap.get(invocation.getArgument(0, String.class));
+            if (item == null) {
+                throw new IllegalStateException("Unknown item id '%s'".formatted(
+                        invocation.getArgument(0, String.class)));
+            }
+            return item;
+        });
+        when(mapperSupporter.requireMappedLocation(anyString(), any())).thenAnswer(invocation -> {
+            Location location = allLocationsMap.get(invocation.getArgument(0, String.class));
+            if (location == null) {
+                throw new IllegalStateException("Unknown location id '%s'".formatted(
+                        invocation.getArgument(0, String.class)));
+            }
+            return location;
+        });
     }
 
     @Test

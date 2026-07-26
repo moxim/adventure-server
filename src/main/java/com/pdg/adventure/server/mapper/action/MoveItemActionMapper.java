@@ -30,8 +30,8 @@ public class MoveItemActionMapper extends ActionMapper<MoveItemActionData, MoveI
 
     @Override
     public MoveItemAction mapToBO(MoveItemActionData actionData) {
-        Item item = adventureConfig.allItems().get(actionData.getThingId());
-        Container container = adventureConfig.allContainers().get(actionData.getDestinationId());
+        Item item = getMapperSupporter().requireMappedItem(actionData.getThingId(), actionData);
+        Container container = getMapperSupporter().requireMappedContainer(actionData.getDestinationId(), actionData);
         return new MoveItemAction(item, container, adventureConfig.allMessages());
     }
 }

@@ -29,7 +29,7 @@ public class WearActionMapper extends ActionMapper<WearActionData, WearAction> {
     @Override
     public WearAction mapToBO(WearActionData actionData) {
         return new WearAction(
-                adventureConfig.allItems().get(actionData.getThingId()),
+                getMapperSupporter().requireMappedItem(actionData.getThingId(), actionData),
                 adventureConfig.allMessages());
     }
 }

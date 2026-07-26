@@ -22,17 +22,17 @@ class SetVariableActionTest {
 
     @Test
     void execute_setsVariableInProvider() {
-        new SetVariableAction("score", "100", variableProvider, messagesHolder).execute();
+        new SetVariableAction("score", 100, variableProvider, messagesHolder).execute();
 
         ArgumentCaptor<Variable> captor = ArgumentCaptor.forClass(Variable.class);
         verify(variableProvider).set(captor.capture());
-        assertThat(captor.getValue().aName()).isEqualTo("score");
-        assertThat(captor.getValue().aValue()).isEqualTo("100");
+        assertThat(captor.getValue().name()).isEqualTo("score");
+        assertThat(captor.getValue().value()).isEqualTo(100);
     }
 
     @Test
     void execute_returnsSuccess() {
-        ExecutionResult result = new SetVariableAction("lives", "3", variableProvider, messagesHolder).execute();
+        ExecutionResult result = new SetVariableAction("lives", 3, variableProvider, messagesHolder).execute();
 
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
     }

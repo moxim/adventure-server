@@ -189,7 +189,7 @@ public class MiniAdventureContent {
     }
 
     private void setUpVariables() {
-        variableProvider.set(new Variable("wornRing", "false"));
+        variableProvider.set(new Variable("wornRing", 0));
     }
 
     private void setUpPocket() {

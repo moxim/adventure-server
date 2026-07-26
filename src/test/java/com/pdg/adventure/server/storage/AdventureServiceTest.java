@@ -134,10 +134,25 @@ class AdventureServiceTest {
     }
 
     @Test
-    void deleteLocation_delegatesToRepository() {
+    void deleteLocation_found_cascadeDeletesThenDeletesLocation() {
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        when(locationRepository.findById("loc-1")).thenReturn(Optional.of(location));
+
         adventureService.deleteLocation("loc-1");
 
-        verify(locationRepository).deleteById("loc-1");
+        verify(cascadeDeleteHelper).cascadeDelete(location);
+        verify(locationRepository).delete(location);
+    }
+
+    @Test
+    void deleteLocation_notFound_doesNothing() {
+        when(locationRepository.findById("missing")).thenReturn(Optional.empty());
+
+        adventureService.deleteLocation("missing");
+
+        verify(cascadeDeleteHelper, never()).cascadeDelete(any());
+        verify(locationRepository, never()).delete(any(LocationData.class));
     }
 
     @Test

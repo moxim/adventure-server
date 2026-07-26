@@ -11,7 +11,7 @@ class ActionRowTest {
 
     @Test
     void summaryText_withTargetSummary_showsTypeAndTarget() {
-        SetVariableActionData data = new SetVariableActionData("score", "10");
+        SetVariableActionData data = new SetVariableActionData("score", 10);
         SetVariableActionEditor editor = new SetVariableActionEditor(data);
         editor.initialize();
 

@@ -8,9 +8,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.action.DestroyActionData;
@@ -41,7 +42,7 @@ class DestroyActionMapperTest {
     void mapToBO_resolvesThingById() {
         DestroyActionData data = new DestroyActionData();
         data.setThingId(THING_ID);
-        when(adventureConfig.allItems()).thenReturn(Map.of(THING_ID, thing));
+        when(mapperSupporter.requireMappedItem(eq(THING_ID), any())).thenReturn(thing);
 
         DestroyAction result = mapper.mapToBO(data);
 
@@ -50,15 +51,15 @@ class DestroyActionMapperTest {
     }
 
     @Test
-    void mapToBO_returnsActionWithNullThingWhenIdUnknown() {
+    void mapToBO_failsFastWhenIdUnknown() {
         DestroyActionData data = new DestroyActionData();
         data.setThingId("missing");
-        when(adventureConfig.allItems()).thenReturn(Map.of());
+        when(mapperSupporter.requireMappedItem(eq("missing"), any()))
+                .thenThrow(new IllegalStateException("Unknown item id 'missing'"));
 
-        DestroyAction result = mapper.mapToBO(data);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getThing()).isNull();
+        assertThatThrownBy(() -> mapper.mapToBO(data))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("missing");
     }
 
     @Test

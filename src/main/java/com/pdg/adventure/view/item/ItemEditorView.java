@@ -27,6 +27,7 @@ import static com.pdg.adventure.model.Word.Type.NOUN;
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.action.DropActionData;
 import com.pdg.adventure.model.action.MessageActionData;
+import com.pdg.adventure.model.action.RemoveActionData;
 import com.pdg.adventure.model.action.TakeActionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
@@ -304,32 +305,43 @@ public class ItemEditorView extends VerticalLayout
 
         CarriedConditionData carriedCondition = new CarriedConditionData();
         carriedCondition.setItemId(anItemData.getId());
-        HereConditionData hereCondition = new HereConditionData();
-        hereCondition.setThingId(anItemData.getId());
         NotConditionData notCarriedCondition = new NotConditionData();
         notCarriedCondition.setPreCondition(carriedCondition);
-        NotConditionData notHereCondition = new NotConditionData();
-        notHereCondition.setPreCondition(carriedCondition);
 
-        final CommandData takeCommandFailed_allreadyCarried = createTakeCommandData(aTakeVerb, anItemData);
-        takeCommandFailed_allreadyCarried.getPreConditions().add(carriedCondition);
-        MessageActionData messageData_alreadyCarried = new MessageActionData();
-        messageData_alreadyCarried.setMessageId("You already carry the %s.".formatted(itemDescription));
-        takeCommandFailed_allreadyCarried.setActions(new ArrayList<>(List.of(messageData_alreadyCarried)));
-        anItemData.getCommandProviderData().add(takeCommandFailed_allreadyCarried);
+        HereConditionData hereCondition = new HereConditionData();
+        hereCondition.setThingId(anItemData.getId());
+        NotConditionData notHereCondition = new NotConditionData();
+        notHereCondition.setPreCondition(hereCondition);
+
+        final CommandData takeCommandFailedBecauseAlreadyCarried = createTakeCommandData(aTakeVerb, anItemData);
+        takeCommandFailedBecauseAlreadyCarried.getPreConditions().add(carriedCondition);
+        MessageActionData messageDataBecauseAlreadyCarried = new MessageActionData();
+        messageDataBecauseAlreadyCarried.setMessageId("You already have the %s.".formatted(itemDescription));
+        takeCommandFailedBecauseAlreadyCarried.setActions(new ArrayList<>(List.of(messageDataBecauseAlreadyCarried)));
+        anItemData.getCommandProviderData().add(takeCommandFailedBecauseAlreadyCarried);
+
+        final CommandData takeCommandFailedBecauseNotHere = createTakeCommandData(aTakeVerb, anItemData);
+        takeCommandFailedBecauseNotHere.getPreConditions().add(notHereCondition);
+        MessageActionData messageDataBecauseNotHere = new MessageActionData();
+        messageDataBecauseNotHere.setMessageId("The %s is not here.".formatted(itemDescription));
+        takeCommandFailedBecauseNotHere.setActions(new ArrayList<>(List.of(messageDataBecauseNotHere)));
+        anItemData.getCommandProviderData().add(takeCommandFailedBecauseNotHere);
 
         final CommandData takeCommandData = createTakeCommandData(aTakeVerb, anItemData);
         takeCommandData.getPreConditions().add(hereCondition);
         anItemData.getCommandProviderData().add(takeCommandData);
 
-        final CommandData dropCommandFailed_notCarried = createDropCommandData(aDropVerb, anItemData);
-        dropCommandFailed_notCarried.getPreConditions().add(notCarriedCondition);
-        MessageActionData messageData_notCarried = new MessageActionData();
-        messageData_notCarried.setMessageId("You are not carrying the %s.".formatted(itemDescription));
-        dropCommandFailed_notCarried.setActions(new ArrayList<>(List.of(messageData_notCarried)));
-        anItemData.getCommandProviderData().add(dropCommandFailed_notCarried);
+        final CommandData dropCommandFailedBecauseNotCarried = createDropCommandData(aDropVerb, anItemData);
+        dropCommandFailedBecauseNotCarried.getPreConditions().add(notCarriedCondition);
+        MessageActionData messageDataBecauseNotCarried = new MessageActionData();
+        messageDataBecauseNotCarried.setMessageId("You don't have the %s.".formatted(itemDescription));
+        dropCommandFailedBecauseNotCarried.setActions(new ArrayList<>(List.of(messageDataBecauseNotCarried)));
+        anItemData.getCommandProviderData().add(dropCommandFailedBecauseNotCarried);
 
         final CommandData dropCommandData = createDropCommandData(aDropVerb, anItemData);
+        RemoveActionData removeActionData = new RemoveActionData();
+        removeActionData.setThingId(anItemData.getId());
+        dropCommandData.getActions().add(removeActionData);
         anItemData.getCommandProviderData().add(dropCommandData);
     }
 

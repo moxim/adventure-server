@@ -1,12 +1,13 @@
 package com.pdg.adventure.server.mapper.action;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.action.IncrementVariableActionData;
 import com.pdg.adventure.server.action.IncrementVariableAction;
@@ -18,16 +19,22 @@ import com.pdg.adventure.server.support.VariableProvider;
 class IncrementVariableActionMapperTest {
 
     private static final String VAR_NAME = "score";
-    private static final String VAR_VALUE = "5";
+    private static final Integer VAR_VALUE = 5;
 
-    @Mock private MapperSupporter mapperSupporter;
     @Mock private VariableProvider variableProvider;
     @Mock private MessagesHolder messagesHolder;
+    @Mock private MapperSupporter mapperSupporter;
 
-    @InjectMocks private IncrementVariableActionMapper mapper;
+    private IncrementVariableActionMapper mapper;
+
+    @BeforeEach
+    void setUp() {
+        mapper = new IncrementVariableActionMapper(messagesHolder, mapperSupporter);
+    }
 
     @Test
     void mapToBO_buildsActionWithNameAndValue() {
+        when(mapperSupporter.getVariableProvider()).thenReturn(variableProvider);
         IncrementVariableActionData data = new IncrementVariableActionData();
         data.setName(VAR_NAME);
         data.setValue(VAR_VALUE);

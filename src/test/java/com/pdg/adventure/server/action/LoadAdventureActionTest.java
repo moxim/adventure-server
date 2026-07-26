@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.CommandData;
+import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.WorkflowData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.server.Adventure;
@@ -51,6 +52,8 @@ class LoadAdventureActionTest {
         gameContext = new GameContext();
         lenient().when(adventureConfig.allMessages()).thenReturn(new MessagesHolder());
         lenient().when(adventureConfig.allLocations()).thenReturn(new HashMap<>());
+        lenient().when(adventureConfig.allItems()).thenReturn(new HashMap<>());
+        lenient().when(adventureConfig.allContainers()).thenReturn(new HashMap<>());
         loadAdventureAction = new LoadAdventureAction(adventureService, adventureMapper, adventureConfig, gameContext);
     }
 
@@ -59,6 +62,9 @@ class LoadAdventureActionTest {
         AdventureData adventureData = new AdventureData();
         adventureData.setId("adv-1");
         adventureData.setCurrentLocationId("loc-1");
+        LocationData locationData = new LocationData();
+        locationData.setId("loc-1");
+        adventureData.getLocationData().put("loc-1", locationData);
         WorkflowData workflowData = new WorkflowData();
         workflowData.getCommands().add(new CommandData(new CommandDescriptionData("shiver||")));
         adventureData.setWorkflowData(workflowData);

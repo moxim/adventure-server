@@ -14,11 +14,11 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.condition.WornConditionData;
-import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.condition.WornCondition;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.Item;
@@ -31,9 +31,6 @@ class WornConditionMapperTest {
     private MapperSupporter mapperSupporter;
 
     @Mock
-    private AdventureConfig adventureConfig;
-
-    @Mock
     private Item mockItem;
 
     private WornConditionMapper mapper;
@@ -42,10 +39,17 @@ class WornConditionMapperTest {
     @BeforeEach
     void setUp() {
         doNothing().when(mapperSupporter).registerMapper(any(), any(), any());
-        mapper = new WornConditionMapper(mapperSupporter, adventureConfig);
+        mapper = new WornConditionMapper(mapperSupporter);
 
         allItemsMap = new HashMap<>();
-        when(adventureConfig.allItems()).thenReturn(allItemsMap);
+        when(mapperSupporter.requireMappedItem(anyString(), any())).thenAnswer(invocation -> {
+            Item item = allItemsMap.get(invocation.getArgument(0, String.class));
+            if (item == null) {
+                throw new IllegalStateException("Unknown item id '%s'".formatted(
+                        invocation.getArgument(0, String.class)));
+            }
+            return item;
+        });
     }
 
     @Test
