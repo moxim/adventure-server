@@ -27,6 +27,7 @@ import com.pdg.adventure.model.action.SetVariableActionData;
 import com.pdg.adventure.model.action.TakeActionData;
 import com.pdg.adventure.model.action.WearActionData;
 import com.pdg.adventure.model.condition.CarriedConditionData;
+import com.pdg.adventure.model.condition.ChanceConditionData;
 import com.pdg.adventure.model.condition.EqualsConditionData;
 import com.pdg.adventure.model.condition.GreaterThanConditionData;
 import com.pdg.adventure.model.condition.HereConditionData;
@@ -93,6 +94,9 @@ public class PreconditionActionFormatter {
         }
         if (c instanceof SameConditionData same) {
             return "SAME " + txt(same.getVariableNameOne()) + " " + txt(same.getVariableNameTwo());
+        }
+        if (c instanceof ChanceConditionData chance) {
+            return "CHANCE " + num(chance.getValue());
         }
         return c.getPreconditionName().replace("ConditionData", "").toUpperCase(Locale.ROOT);
     }

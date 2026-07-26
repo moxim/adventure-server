@@ -3,6 +3,7 @@ package com.pdg.adventure.server.storage.mongo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.convert.LazyLoadingProxy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
@@ -31,6 +32,7 @@ public class CascadeDeleteHelper {
      * @param entity The entity to process for cascade deletes
      */
     public void cascadeDelete(Object entity) {
+        entity = resolveLazyProxy(entity);
         if (entity == null) {
             LOG.warn("Cannot cascade delete - entity is null");
             return;
@@ -71,6 +73,11 @@ public class CascadeDeleteHelper {
     }
 
     private void deleteReferencedEntities(Object value, Set<Object> processedObjects) {
+        value = resolveLazyProxy(value);
+        if (value == null) {
+            LOG.warn("Referenced entity no longer exists, skipping");
+            return;
+        }
         if (value instanceof Map<?, ?> map) {
             // Handle Map: Delete each value
             LOG.info("Processing map with {} entries", map.size());
@@ -105,6 +112,7 @@ public class CascadeDeleteHelper {
     }
 
     private void deleteEntity(Object entity, Set<Object> processedObjects) {
+        entity = resolveLazyProxy(entity);
         if (entity == null || processedObjects.contains(entity)) {
             return;
         }
@@ -121,5 +129,19 @@ public class CascadeDeleteHelper {
         } catch (Exception e) {
             LOG.error("Error deleting entity: {}", entity.getClass().getSimpleName(), e);
         }
+    }
+
+    /**
+     * A lazy {@code @DBRef} field holds a proxy whose own fields are never populated — the
+     * loaded state lives behind its method interceptor, so reflective field access reads null
+     * for every {@code @CascadeDelete} field and the referenced entities silently survive.
+     * Resolve the proxy to the real entity before scanning it; null means the referenced
+     * document no longer exists.
+     */
+    private Object resolveLazyProxy(Object entity) {
+        if (entity instanceof LazyLoadingProxy proxy) {
+            return proxy.getTarget();
+        }
+        return entity;
     }
 }

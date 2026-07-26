@@ -80,6 +80,12 @@ class ConditionEditorFactoryTest {
     }
 
     @Test
+    void createEditor_withChanceConditionData_returnsChanceEditor() {
+        assertThat(ConditionEditorFactory.createEditor(new ChanceConditionData(), adventureData))
+                .isInstanceOf(ChanceConditionEditor.class);
+    }
+
+    @Test
     void createEditor_withUnknownType_throwsUnsupportedOperationException() {
         PreConditionData unknown = new PreConditionData() {};
         assertThatThrownBy(() -> ConditionEditorFactory.createEditor(unknown, adventureData))

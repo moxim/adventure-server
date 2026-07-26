@@ -10,6 +10,7 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.model.condition.CarriedConditionData;
+import com.pdg.adventure.model.condition.ChanceConditionData;
 import com.pdg.adventure.model.condition.EqualsConditionData;
 import com.pdg.adventure.model.condition.GreaterThanConditionData;
 import com.pdg.adventure.model.condition.HereConditionData;
@@ -95,6 +96,13 @@ class PreconditionActionFormatterConditionsTest {
         c.setVariableNameOne("a");
         c.setVariableNameTwo("b");
         assertThat(formatter.formatCondition(c)).isEqualTo("SAME a b");
+    }
+
+    @Test
+    void chance() {
+        ChanceConditionData c = new ChanceConditionData();
+        c.setValue(75);
+        assertThat(formatter.formatCondition(c)).isEqualTo("CHANCE 75");
     }
 
     @Test
