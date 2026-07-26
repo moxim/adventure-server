@@ -32,6 +32,11 @@ public class ViewSupporter {
     public static int MAX_TEXT_IN_GRID = 32;
     public static int MAX_ID_LENGTH = 26;
 
+
+    private ViewSupporter() {
+        // don't instantiate me
+    }
+
     public static UserData getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getPrincipal() instanceof UserData userData) {

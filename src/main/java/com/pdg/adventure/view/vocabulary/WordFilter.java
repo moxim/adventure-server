@@ -7,6 +7,11 @@ import com.vaadin.flow.function.SerializablePredicate;
 import com.pdg.adventure.model.Word;
 
 public class WordFilter {
+
+    private WordFilter() {
+        // don't instantiate me
+    }
+
     public static SerializablePredicate<DescribableWordAdapter> filterByTypeTextOrSynonym(TextField searchField) {
         return (aWord) -> {
             String searchTerm = searchField.getValue().trim();
