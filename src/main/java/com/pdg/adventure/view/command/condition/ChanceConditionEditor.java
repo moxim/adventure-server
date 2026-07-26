@@ -30,7 +30,7 @@ public class ChanceConditionEditor extends ConditionEditorComponent<ChanceCondit
         chanceField.setValueChangeMode(ValueChangeMode.EAGER);
 
         if (typedCondition.getValue() != null) {
-            chanceField.setValue(typedCondition.getValue().intValue());
+            chanceField.setValue(typedCondition.getValue());
         }
 
         chanceField.addValueChangeListener(e -> typedCondition.setValue(e.getValue()));

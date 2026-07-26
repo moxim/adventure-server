@@ -17,7 +17,7 @@ class EqualsConditionEditorTest {
 
     @Test
     void validate_withBothFieldsPreSet_returnsTrue() {
-        EqualsConditionData data = new EqualsConditionData("score", "100");
+        EqualsConditionData data = new EqualsConditionData("score", 100);
         EqualsConditionEditor editor = new EqualsConditionEditor(data);
         editor.initialize();
         assertThat(editor.validate()).isTrue();
@@ -39,7 +39,7 @@ class EqualsConditionEditorTest {
 
     @Test
     void getConditionSummary_withPreSetValues_returnsFormattedString() {
-        EqualsConditionData data = new EqualsConditionData("lives", "3");
+        EqualsConditionData data = new EqualsConditionData("lives", 3);
         EqualsConditionEditor editor = new EqualsConditionEditor(data);
         editor.initialize();
         assertThat(editor.getConditionSummary()).isEqualTo("lives = 3");

@@ -84,7 +84,7 @@ public class PreconditionActionFormatter {
             return "ITEM_AT " + resolveName(itemAt.getThingId()) + " " + resolveName(itemAt.getLocationId());
         }
         if (c instanceof EqualsConditionData eq) {
-            return "EQ " + txt(eq.getVariableName()) + " " + txt(eq.getValue());
+            return "EQ " + txt(eq.getVariableName()) + " " + num(eq.getValue());
         }
         if (c instanceof GreaterThanConditionData gt) {
             return "GT " + txt(gt.getVariableName()) + " " + num(gt.getValue());

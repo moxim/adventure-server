@@ -1,25 +1,15 @@
 package com.pdg.adventure.view.command;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.basic.DescriptionData;
-import com.pdg.adventure.model.condition.CarriedConditionData;
-import com.pdg.adventure.model.condition.ChanceConditionData;
-import com.pdg.adventure.model.condition.EqualsConditionData;
-import com.pdg.adventure.model.condition.GreaterThanConditionData;
-import com.pdg.adventure.model.condition.HereConditionData;
-import com.pdg.adventure.model.condition.ItemAtConditionData;
-import com.pdg.adventure.model.condition.LowerThanConditionData;
-import com.pdg.adventure.model.condition.NotConditionData;
-import com.pdg.adventure.model.condition.PlayerAtConditionData;
-import com.pdg.adventure.model.condition.SameConditionData;
-import com.pdg.adventure.model.condition.WornConditionData;
+import com.pdg.adventure.model.condition.*;
 
 class PreconditionActionFormatterConditionsTest {
 
@@ -70,7 +60,7 @@ class PreconditionActionFormatterConditionsTest {
     void equals_() {
         EqualsConditionData c = new EqualsConditionData();
         c.setVariableName("score");
-        c.setValue("5");
+        c.setValue(5);
         assertThat(formatter.formatCondition(c)).isEqualTo("EQ score 5");
     }
 
