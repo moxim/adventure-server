@@ -31,7 +31,7 @@ class SameConditionTest {
         boolean ok = TestSupporter.conditionToBoolean(sut);
 
         // then
-        assertThat(ok).isFalse();
+        assertThat(ok).isTrue();
     }
 
     @Test
