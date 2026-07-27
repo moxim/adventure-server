@@ -6,11 +6,13 @@ import java.util.List;
 import com.pdg.adventure.server.exception.ReloadAdventureException;
 
 /**
- * A single browser Test session, driving the shared GameLoop/GameContext singleton one command
- * at a time. Only created by {@link AdventureTestSessionFactory#start}, which has already primed
- * it with the opening room description.
+ * A single interactive play session, driving the shared GameLoop/GameContext singleton one
+ * command at a time. Used both when an author clicks "Test" on their own adventure and when a
+ * player clicks "Run Adventure" on one they're assigned to. Only created by
+ * {@link AdventureRunSessionFactory#start}, which has already primed it with the opening room
+ * description.
  */
-public class AdventureTestSession {
+public class AdventureRunSession {
 
     private static final String PROMPT = "What now? > ";
 
@@ -18,14 +20,14 @@ public class AdventureTestSession {
     private final GameContext gameContext;
     private boolean gameOver;
 
-    AdventureTestSession(GameLoop aGameLoop, GameContext aGameContext) {
+    AdventureRunSession(GameLoop aGameLoop, GameContext aGameContext) {
         gameLoop = aGameLoop;
         gameContext = aGameContext;
     }
 
-    public TestResult submit(String rawInput) {
+    public RunResult submit(String rawInput) {
         if (gameOver) {
-            return new TestResult(List.of(), true);
+            return new RunResult(List.of(), true);
         }
         List<String> lines = new ArrayList<>();
         gameContext.setOutputSink(line -> {
@@ -38,21 +40,21 @@ public class AdventureTestSession {
             GameLoop.CommandOutcome outcome = gameLoop.processCommand(rawInput);
             gameOver = outcome != GameLoop.CommandOutcome.CONTINUE;
         } catch (ReloadAdventureException unexpected) {
-            // A Test session never registers the cross-adventure "load X" command, so this
+            // A run session never registers the cross-adventure "load X" command, so this
             // should be unreachable — guarded so a surprise author workflow command can't leak
             // an uncaught exception into the Vaadin listener.
-            lines.add("Something interrupted the game unexpectedly. Ending this test session.");
+            lines.add("Something interrupted the game unexpectedly. Ending this session.");
             gameOver = true;
         } finally {
             gameContext.setOutputSink(null);
         }
-        return new TestResult(lines, gameOver);
+        return new RunResult(lines, gameOver);
     }
 
     public boolean isGameOver() {
         return gameOver;
     }
 
-    public record TestResult(List<String> lines, boolean gameOver) {
+    public record RunResult(List<String> lines, boolean gameOver) {
     }
 }

@@ -18,7 +18,7 @@ import com.pdg.adventure.server.vocabulary.Vocabulary;
 /**
  * Exercises processCommand(String) directly, i.e. the browser Test session's entry point into
  * the engine (no BufferedReader involved). Wires the same interceptor commands
- * AdventureTestSessionFactory registers in production, via the real CommandFactory.
+ * AdventureRunSessionFactory registers in production, via the real CommandFactory.
  */
 class GameLoopTest {
 

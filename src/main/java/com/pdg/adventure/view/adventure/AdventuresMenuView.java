@@ -44,6 +44,7 @@ public class AdventuresMenuView extends VerticalLayout {
 
         runAdventure = new Button("Run Adventure");
         runAdventure.setEnabled(false);
+        runAdventure.addClickListener(_ -> navigateToAdventureRun(targetAdventureId));
 
         VerticalLayout leftSide = new VerticalLayout(create, runAdventure);
 
@@ -65,6 +66,7 @@ public class AdventuresMenuView extends VerticalLayout {
             if (optionalAdventure.isPresent()) {
                 targetAdventureId = optionalAdventure.get().getId();
             }
+            runAdventure.setEnabled(optionalAdventure.isPresent());
         });
         grid.addItemDoubleClickListener(e -> {
             targetAdventureId = e.getItem().getId();
@@ -87,6 +89,10 @@ public class AdventuresMenuView extends VerticalLayout {
     private void navigateToAdventureEditor(String aTargetAdventureId) {
         UI.getCurrent().navigate(AdventureEditorView.class,
                                  new RouteParameters(RouteIds.ADVENTURE_ID.getValue(), aTargetAdventureId));
+    }
+
+    private void navigateToAdventureRun(String aTargetAdventureId) {
+        UI.getCurrent().navigate(AdventureRunView.menuRunPath(aTargetAdventureId));
     }
 
     private class AdventureDataContextMenu extends GridContextMenu<AdventureData> {

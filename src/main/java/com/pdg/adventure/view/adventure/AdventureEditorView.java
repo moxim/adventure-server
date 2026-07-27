@@ -103,9 +103,8 @@ public class AdventureEditorView extends VerticalLayout
         saveButton.addClickListener(_ -> validateSave(adventureData));
 
         testButton.setEnabled(false);
-        testButton.addClickListener(_ -> UI.getCurrent().navigate(AdventureTestView.class,
-                                     new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                        adventureData.getId()))));
+        testButton.addClickListener(_ -> UI.getCurrent().navigate(AdventureRunView.editorTestPath(
+                adventureData.getId())));
 
         TextField adventureIdTF = getAdventureIdTF();
         TextField title = getTitleField();

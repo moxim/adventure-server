@@ -20,7 +20,7 @@ import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.Adventure;
 import com.pdg.adventure.server.AdventureConfig;
-import com.pdg.adventure.server.engine.AdventureTestSession.TestResult;
+import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.mapper.WorkflowMapper;
@@ -29,7 +29,7 @@ import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 @ExtendWith(MockitoExtension.class)
-class AdventureTestSessionFactoryTest {
+class AdventureRunSessionFactoryTest {
 
     @Mock
     private AdventureService adventureService;
@@ -47,7 +47,7 @@ class AdventureTestSessionFactoryTest {
     private Location startLocation;
 
     private GameContext gameContext;
-    private AdventureTestSessionFactory factory;
+    private AdventureRunSessionFactory factory;
 
     @BeforeEach
     void setUp() {
@@ -57,8 +57,8 @@ class AdventureTestSessionFactoryTest {
         lenient().when(adventureConfig.allItems()).thenReturn(new HashMap<>());
         lenient().when(adventureConfig.allContainers()).thenReturn(new HashMap<>());
         lenient().when(adventureConfig.allWords()).thenReturn(new Vocabulary());
-        factory = new AdventureTestSessionFactory(adventureService, adventureMapper, workflowMapper, adventureConfig,
-                                                   gameContext);
+        factory = new AdventureRunSessionFactory(adventureService, adventureMapper, workflowMapper, adventureConfig,
+                                                  gameContext);
     }
 
     @Test
@@ -74,8 +74,8 @@ class AdventureTestSessionFactoryTest {
         Adventure adventure = adventureBoundTo(startLocation, "loc-1");
         when(adventureMapper.mapToBO(adventureData)).thenReturn(adventure);
 
-        AdventureTestSession session = factory.start(adventureData);
-        TestResult result = session.submit("look");
+        AdventureRunSession session = factory.start(adventureData);
+        RunResult result = session.submit("look");
 
         assertThat(result.gameOver()).isFalse();
         assertThat(result.lines()).singleElement().asString().contains("A grand throne room.");

@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pdg.adventure.CommandFactory;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
-import com.pdg.adventure.server.engine.AdventureTestSession.TestResult;
+import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.Parser;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
@@ -16,10 +16,10 @@ import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
-class AdventureTestSessionTest {
+class AdventureRunSessionTest {
 
     private GameContext gameContext;
-    private AdventureTestSession session;
+    private AdventureRunSession session;
 
     @BeforeEach
     void setUp() {
@@ -38,19 +38,19 @@ class AdventureTestSessionTest {
         Workflow workflow = gameContext.setUpWorkflows();
         new CommandFactory(new MessagesHolder(), gameContext, new VocabularyData()).setUpWorkflowCommands(workflow);
 
-        session = new AdventureTestSession(new GameLoop(new Parser(vocabulary), gameContext), gameContext);
+        session = new AdventureRunSession(new GameLoop(new Parser(vocabulary), gameContext), gameContext);
     }
 
     @Test
     void submit_filtersOutTheConsolePromptLine() {
-        TestResult result = session.submit("describe");
+        RunResult result = session.submit("describe");
 
         assertThat(result.lines()).singleElement().asString().contains("A grand throne room.");
     }
 
     @Test
     void submit_quit_setsGameOver() {
-        TestResult result = session.submit("quit");
+        RunResult result = session.submit("quit");
 
         assertThat(result.gameOver()).isTrue();
         assertThat(session.isGameOver()).isTrue();
@@ -60,7 +60,7 @@ class AdventureTestSessionTest {
     void submit_afterGameOver_doesNothingFurther() {
         session.submit("quit");
 
-        TestResult result = session.submit("describe");
+        RunResult result = session.submit("describe");
 
         assertThat(result.lines()).isEmpty();
         assertThat(result.gameOver()).isTrue();

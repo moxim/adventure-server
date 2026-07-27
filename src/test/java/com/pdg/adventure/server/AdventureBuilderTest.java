@@ -22,7 +22,7 @@ import com.pdg.adventure.server.testhelper.TestSupporter;
 
 // Only GameContext is needed from server.engine (AdventureConfig's @Lazy GameContext dependency).
 // Importing it directly, rather than component-scanning the whole package, keeps this narrow
-// context from breaking every time an unrelated bean (e.g. AdventureTestSessionFactory, which
+// context from breaking every time an unrelated bean (e.g. AdventureRunSessionFactory, which
 // needs AdventureService/WorkflowMapper that this context doesn't provide) is added to server.engine.
 @SpringBootTest
 @ContextConfiguration(classes = com.pdg.adventure.server.AdventureConfig.class)

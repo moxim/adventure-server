@@ -17,15 +17,17 @@ import com.pdg.adventure.server.vocabulary.Vocabulary;
 /**
  * Bootstraps a browser-playable game session for a single, already-saved adventure — the
  * plain-web-app equivalent of what MiniAdventure/AdventureClient assemble for the console.
+ * Serves both the author's "Test" flow and a player's "Run Adventure" flow; access control
+ * (who may load which adventure) is handled by the caller via AdventureAccessService, not here.
  * Reuses the same process-wide GameContext/AdventureConfig singletons the console engine uses
- * (no per-session engine isolation), so at most one Test session is meaningfully active at a
+ * (no per-session engine isolation), so at most one run session is meaningfully active at a
  * time — the same constraint the console already has.
  * <p>
  * The returned session has not shown the opening room yet — call {@code session.submit("look")}
  * to render it, exactly like any other turn.
  */
 @Service
-public class AdventureTestSessionFactory {
+public class AdventureRunSessionFactory {
 
     private final AdventureService adventureService;
     private final AdventureMapper adventureMapper;
@@ -33,9 +35,9 @@ public class AdventureTestSessionFactory {
     private final AdventureConfig adventureConfig;
     private final GameContext gameContext;
 
-    public AdventureTestSessionFactory(AdventureService anAdventureService, AdventureMapper anAdventureMapper,
-                                       WorkflowMapper aWorkflowMapper, AdventureConfig anAdventureConfig,
-                                       GameContext aGameContext) {
+    public AdventureRunSessionFactory(AdventureService anAdventureService, AdventureMapper anAdventureMapper,
+                                      WorkflowMapper aWorkflowMapper, AdventureConfig anAdventureConfig,
+                                      GameContext aGameContext) {
         adventureService = anAdventureService;
         adventureMapper = anAdventureMapper;
         workflowMapper = aWorkflowMapper;
@@ -43,7 +45,7 @@ public class AdventureTestSessionFactory {
         gameContext = aGameContext;
     }
 
-    public AdventureTestSession start(AdventureData anAdventureData) {
+    public AdventureRunSession start(AdventureData anAdventureData) {
         loadIntoSharedEngine(anAdventureData);
 
         Vocabulary vocabulary = adventureConfig.allWords();
@@ -56,7 +58,7 @@ public class AdventureTestSessionFactory {
         workflowMapper.populate(gameContext.getWorkflowData(), workflow);
 
         GameLoop gameLoop = new GameLoop(new Parser(vocabulary), gameContext);
-        return new AdventureTestSession(gameLoop, gameContext);
+        return new AdventureRunSession(gameLoop, gameContext);
     }
 
     // LoadAdventureAction signals success by throwing ReloadAdventureException and failure (bad
@@ -71,12 +73,12 @@ public class AdventureTestSessionFactory {
             return;
         }
         throw new IllegalStateException(
-                "Adventure '%s' could not be loaded for testing — check it has at least one location."
+                "Adventure '%s' could not be loaded to run — check it has at least one location."
                         .formatted(anAdventureData.getId()));
     }
 
     // Mirrors MiniAdventure.createSpecialWords(Vocabulary), minus addAdventureIdsToNouns() and
-    // the cross-adventure "load X" workflow wiring — a Test session is scoped to one adventure.
+    // the cross-adventure "load X" workflow wiring — a run session is scoped to one adventure.
     private void registerBaseVerbs(Vocabulary aVocabulary) {
         aVocabulary.createNewWord("quit", Word.Type.VERB);
         aVocabulary.createSynonym("exit", "quit");
