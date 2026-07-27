@@ -1,5 +1,6 @@
 package com.pdg.adventure.view.adventure;
 
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -47,6 +48,10 @@ public class AdventureEditorView extends VerticalLayout
     AdventureData adventureData;
     private String pageTitle;
     private boolean isNewAdventure;
+    // Binder.hasChanges() can't drive this: in setBean() mode every field edit auto-commits to
+    // the bean and clears its changed-bindings set immediately, so hasChanges() is always false
+    // by the time a listener observes it. Track "edited since last load/save" ourselves instead.
+    private boolean unsavedChanges;
 
     public AdventureEditorView(AdventureAccessService anAccessService) {
 
@@ -98,6 +103,9 @@ public class AdventureEditorView extends VerticalLayout
         saveButton.addClickListener(_ -> validateSave(adventureData));
 
         testButton.setEnabled(false);
+        testButton.addClickListener(_ -> UI.getCurrent().navigate(AdventureTestView.class,
+                                     new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                        adventureData.getId()))));
 
         TextField adventureIdTF = getAdventureIdTF();
         TextField title = getTitleField();
@@ -144,6 +152,10 @@ public class AdventureEditorView extends VerticalLayout
                 accessService.saveAdventureData(adventureData, ViewSupporter.getCurrentUser());
             }
             saveButton.setEnabled(false);
+            unsavedChanges = false;
+            // Deliberately not calling checkIfSaveAvailable(): its validity-only check would
+            // immediately re-enable saveButton, which just went false above.
+            checkIfTestAvailable();
         } catch (ValidationException ve) {
             LOG.error(ve.getMessage());
         } catch (RuntimeException e) {
@@ -165,7 +177,7 @@ public class AdventureEditorView extends VerticalLayout
         field.setErrorMessage("The title is required");
         binder.forField(field).asRequired("You must provide a title.");
         binder.forField(field).bind(AdventureData::getTitle, AdventureData::setTitle);
-        field.addValueChangeListener(_ -> checkIfSaveAvailable());
+        field.addValueChangeListener(this::onFieldValueChanged);
         return field;
     }
 
@@ -181,15 +193,34 @@ public class AdventureEditorView extends VerticalLayout
         field.setMinHeight("200px");
         field.setMaxHeight("350px");
         field.setTooltipText("Use this to jot down notes about your adventure while developing it.");
-        field.addValueChangeListener(_ -> checkIfSaveAvailable());
+        field.addValueChangeListener(this::onFieldValueChanged);
         binder.bind(field, AdventureData::getNotes, AdventureData::setNotes);
         return field;
+    }
+
+    // Programmatic value changes (binder.setBean() populating fields on load) fire with
+    // isFromClient() == false; only a real edit should mark the adventure dirty.
+    private void onFieldValueChanged(HasValue.ValueChangeEvent<?> event) {
+        if (event.isFromClient()) {
+            unsavedChanges = true;
+        }
+        checkIfSaveAvailable();
     }
 
     private void checkIfSaveAvailable() {
         if (binder.validate().isOk()) {
             saveButton.setEnabled(!binder.getBean().getTitle().isEmpty());
         }
+        checkIfTestAvailable();
+    }
+
+    // A locations check matters here because LoadAdventureAction silently fails to load an
+    // adventure with no locations (returns normally instead of throwing) - without it, Test
+    // would be enabled for an adventure that's guaranteed to fail to start.
+    private void checkIfTestAvailable() {
+        boolean canTest = !isNewAdventure && !unsavedChanges && !adventureData.getLocationData().isEmpty();
+        testButton.setEnabled(canTest);
+        testButton.setTooltipText(canTest ? "Play through this adventure." : "Save your changes before testing.");
     }
 
     @Override

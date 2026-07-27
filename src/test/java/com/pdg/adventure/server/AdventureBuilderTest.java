@@ -14,15 +14,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.DescriptionData;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.testhelper.TestSupporter;
 
+// Only GameContext is needed from server.engine (AdventureConfig's @Lazy GameContext dependency).
+// Importing it directly, rather than component-scanning the whole package, keeps this narrow
+// context from breaking every time an unrelated bean (e.g. AdventureTestSessionFactory, which
+// needs AdventureService/WorkflowMapper that this context doesn't provide) is added to server.engine.
 @SpringBootTest
 @ContextConfiguration(classes = com.pdg.adventure.server.AdventureConfig.class)
-@ComponentScan(basePackages = {"com.pdg.adventure.server.mapper", "com.pdg.adventure.server.engine"})
-@Import({com.pdg.adventure.server.AdventureConfig.class, com.pdg.adventure.server.mapper.AdventureMapper.class})
+@ComponentScan(basePackages = "com.pdg.adventure.server.mapper")
+@Import({com.pdg.adventure.server.AdventureConfig.class, com.pdg.adventure.server.mapper.AdventureMapper.class,
+        GameContext.class})
 class AdventureBuilderTest {
     @Autowired
     AdventureMapper adventureMapper;

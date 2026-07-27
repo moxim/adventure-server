@@ -2,6 +2,8 @@ package com.pdg.adventure.server.engine;
 
 import org.springframework.stereotype.Component;
 
+import java.util.function.Consumer;
+
 import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.Describable;
@@ -16,13 +18,24 @@ public class GameContext {
     private Location currentLocation;
     private Container pocket;
     private WorkflowData workflowData = new WorkflowData();
+    private Consumer<String> outputSink = IO::println;
 
     public void show(Describable aThing) {
         tell(aThing.getLongDescription());
     }
 
     public void tell(String aMessage) {
-        IO.println(aMessage);
+        outputSink.accept(aMessage);
+    }
+
+    /**
+     * Redirects tell() output, e.g. so a browser Test session can capture gameplay text
+     * instead of it going to the console. GameContext is a process-wide singleton, so callers
+     * must install the sink immediately before driving the engine and clear it (pass null)
+     * right after — never leave a non-default sink installed between calls.
+     */
+    public void setOutputSink(Consumer<String> aSink) {
+        outputSink = aSink != null ? aSink : IO::println;
     }
 
     public void setCurrentLocation(Location aDestination) {
