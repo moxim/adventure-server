@@ -5,8 +5,13 @@
 This chapter explains how the system *plays* an adventure: how typed input becomes
 a parsed command, how that command is dispatched, and how `Action` and
 `PreCondition` co-operate through the engine's data model. It also catalogs every
-concrete `Action` (16) and `PreCondition` (10) so a rebuild reproduces the
-behaviour faithfully.
+concrete `Action` (16) and `PreCondition` (11) so a rebuild reproduces the
+behaviour faithfully. Of these, 15 Actions and 10 PreConditions are directly
+selectable in the authoring UI (see
+[`07-ui-and-navigation.md` § Action editor factory](07-ui-and-navigation.md#action-editor-factory));
+`LoadAdventureAction` is engine-managed rather than author-placed, and
+`NotCondition` is applied structurally via a per-row **Negate** toggle
+instead of being one of the 10 selectable kinds.
 
 The data shapes that back this chapter are documented in
 [`03-domain-model.md`](03-domain-model.md). The persistence path that loads them
@@ -70,7 +75,7 @@ The engine talks in terms of small interfaces in `com.pdg.adventure.api`:
 |-----------|---------|
 | `Action` | `ExecutionResult execute()`, `String getActionName()`. The unit of side effect. Always returns a non-null result. |
 | `PreCondition` | `ExecutionResult check()`, `String getName()`. Returns `SUCCESS`/`FAILURE` and a message. |
-| `Command` | A `CommandDescription` + an `Action` + ordered lists of `PreCondition`s and follow-up `Action`s. `execute()` runs each pre-condition, then the action, then the follow-ups. |
+| `Command` | A `CommandDescription` + an ordered `List<PreCondition>` + an ordered `List<Action>` (`GenericCommand`, the sole implementation). `execute()` runs preconditions in order and stops at the first failure (returning that failure); if all pass, it runs every action in order — a single failing action aborts the rest and returns that action's failure immediately, otherwise all action result messages are joined with newlines into one SUCCESS result. There is no separate "follow-up actions" concept; every action is just the next entry in the same list. |
 | `CommandDescription` | A 3-slot key `(verb, adjective, noun)`; equality is by joined-string spec. |
 | `CommandChain` | An ordered list of `Command`s sharing one description; `execute()` runs the first whose preconditions pass. |
 | `HasCommands` | Implemented by anything that can match command descriptions: `Thing`, `GenericDirection`. Wraps a `GenericCommandProvider` via `CommandHandler`. |
@@ -184,13 +189,18 @@ For each item, `setUpTakeCommands(item)` registers four commands on the item:
    `CarriedCondition`. Reads as: *"You already have it."*
 2. **`get` (success)** — `TakeAction` (delegates to `MoveItemAction(item, pocket)`).
    Pre-conditions: `Not(Carried)` AND `HereCondition`.
-3. **`drop` (worn)** — `DropAction` (move to current-location container) with
-   a follow-up `RemoveAction`. Pre-condition: `WornCondition`.
+3. **`drop` (worn)** — `DropAction`, then a second action appended to the
+   same command's action list, `RemoveAction` (move to current-location
+   container, then un-wear). Pre-condition: `WornCondition`.
 4. **`drop` (plain)** — `DropAction`. Pre-conditions: `Not(Worn)` AND
    `Carried`.
 
-This is the canonical example of follow-up actions: dropping a worn item
-performs the drop AND the unwear in one player turn.
+This is the canonical example of a multi-action command: dropping a worn
+item performs the drop AND the unwear in one player turn, because
+`RemoveAction` is simply the second entry in that command's `actions` list
+(`dropAndRemoveCommand.addAction(...)` in `CommandFactory`) — see
+[§ Core API contracts](#core-api-contracts) for how `execute()` walks that
+list.
 
 ### Wear / Remove
 
@@ -234,7 +244,8 @@ the same kind to behave equivalently.
 | `SetVariableAction(name, value, vars, msgs)` | Write `Variable(name, value)` into the `VariableProvider`. |
 | `IncrementVariableAction(name, vars, msgs)` | Read the variable, parse it as an integer, write `+1`. |
 | `DecrementVariableAction(name, vars, msgs)` | Same, `-1`. |
-| `CreateAction` / `DestroyAction` | Skeletons reserved for runtime item creation/destruction. Not exercised by current commands. |
+| `CreateAction(thing, containerSupplier, msgs)` | Add `thing` to the supplied container; on success emits `messages[-12]`. Authorable via the "Create Item" action editor. |
+| `DestroyAction(thing, msgs)` | Remove `thing` from its current parent container; on success emits `messages[-11]`. Authorable via the "Destroy" action editor. |
 
 `ExamineFallbackAction` (in `server/parser/`) is the synthetic action used by
 `CommandHandler.getMatchingCommandChain` when no authored command matches the
@@ -276,6 +287,7 @@ conditions wrap others.
 | `HereCondition(item, gc)` | `gc.currentLocation.contains(item)`. Failure message: `"There is no <noun> here."`. |
 | `ItemAtCondition(item, location, gc)` | The item is at the named location. |
 | `PlayerAtCondition(location, gc)` | `gc.currentLocation.equals(location)`. |
+| `ChanceCondition(chance)` | A fresh random integer in `[1, 100]` (`new Random().nextInt(100) + 1`, injectable via a package-private constructor for testing) is `<= chance`. Re-rolled on every attempt — a 20% chance is "roughly one in five tries," not "one in five players." No failure message of its own. |
 
 ### Variable comparators
 
@@ -293,11 +305,14 @@ when the variable is not defined.
 
 | Condition | Semantics |
 |-----------|-----------|
-| `NotCondition(inner)` | Inverts the inner result; clears the inner's message. |
+| `NotCondition(inner)` | Inverts the inner result; clears the inner's message. It is the only composite — there is no `AndCondition` / `OrCondition`. In the authoring UI it is not a directly-selectable condition kind; every condition row carries a **Negate** checkbox, and `ConditionRow.toConditionData()` wraps the picked condition in a `NotConditionData` when checked, so authors never construct one explicitly. |
 
 `Command.execute()` runs the condition list **in order** and stops at the first
 failure, surfacing that condition's message. Authors can therefore order
 conditions by message-quality, putting the most informative failure first.
+All conditions in the list are combined with **AND**; "either of these"
+logic is expressed as separate Command Chain variants (see
+[§ CommandExecutor](#commandexecutor)) rather than an OR composite.
 
 ## GameContext and engine lifecycle
 
@@ -327,9 +342,51 @@ A typical adventure boot, performed by `MiniAdventure.setup`:
 ## IO
 
 `server/engine/IO.java` (referenced by `GameContext.tell` and various actions)
-is the static IO sink. In the CLI runner it writes to `System.out`; the planned
-in-browser play surface MUST replace this with a Vaadin-friendly sink (a
-`Consumer<String>` injected via `GameContext` is the obvious refactor).
+is the static IO sink; in the CLI runner it writes to `System.out`. This is
+also `GameContext.outputSink`'s **default** — `GameContext.setOutputSink(Consumer<String>)`
+lets a caller redirect `tell()` output elsewhere, which is exactly how the
+in-browser play surface captures gameplay text (see below).
+
+## AdventureRunSession: the in-browser play surface
+
+`server/engine/AdventureRunSession.java` and `AdventureRunSessionFactory.java`
+give `AdventureRunView` (the Vaadin play screen — see
+[`07-ui-and-navigation.md`](07-ui-and-navigation.md)) a turn-based API over the
+same engine the CLI uses, without touching `GameLoop`/`GameContext` themselves:
+
+1. `AdventureRunSessionFactory.start(AdventureData)`:
+   - Loads the adventure into the shared engine via `LoadAdventureAction`
+     (its inverted success signal — throwing `ReloadAdventureException` on
+     success, returning normally on failure — is unwrapped into a plain
+     `IllegalStateException` here so the Vaadin view doesn't have to know
+     about it).
+   - Registers a small set of always-available verbs directly on the
+     `Vocabulary` (`quit`/`exit`/`bye`, `describe`/`look`/`l`/`desc`/`examine`/`x`,
+     `help`, `inventory`/`i`) — independent of whatever special words the
+     author has configured. This mirrors `MiniAdventure.createSpecialWords`
+     minus adventure-switching (`addAdventureIdsToNouns`) and the
+     cross-adventure `load X` workflow command, since a run session is
+     scoped to one adventure.
+   - Calls `commandFactory.setUpWorkflowCommands(workflow)` and
+     `workflowMapper.populate(gameContext.getWorkflowData(), workflow)` —
+     the author's own workflow commands (§ [Workflow](03-domain-model.md#workflow))
+     are layered on top of the built-in ones.
+   - Returns an `AdventureRunSession` wrapping a fresh `GameLoop`. The
+     caller must still call `session.submit("look")` to render the opening
+     room — the factory does not do this itself.
+2. `AdventureRunSession.submit(String input)`:
+   - Installs a capturing `Consumer<String>` via `gameContext.setOutputSink(...)`,
+     runs `gameContext.preProcessCommands()` then `gameLoop.processCommand(input)`,
+     collects the non-blank/non-prompt lines, and **always** clears the sink
+     (`setOutputSink(null)`) in a `finally` block before returning.
+   - Returns a `RunResult(List<String> lines, boolean gameOver)`.
+
+**This reuses the process-wide `GameContext`/`AdventureConfig` singleton
+beans** — there is no per-session engine isolation. That is not a new
+limitation introduced by the Vaadin view; it is the same constraint
+`MiniAdventure`'s console loop already had. It just becomes more visible now
+that multiple browser users can each trigger a session concurrently. See
+[Known gaps](#known-gaps).
 
 ## Exceptions used as control flow
 
@@ -350,7 +407,7 @@ control flow; the others are genuine error conditions caught at the call site
 
 - `src/main/java/com/pdg/adventure/api/{Action,PreCondition,Command,CommandDescription,CommandChain,Container,Containable,Wearable,Visitable,Actionable,HasCommands,ExecutionResult}.java`
 - `src/main/java/com/pdg/adventure/server/parser/{Parser,CommandHandler,CommandExecutor,CommandMatcher,GenericCommand,GenericCommandDescription,GenericCommandProvider,GenericCommandChain,CommandExecutionResult,ExamineFallbackAction}.java`
-- `src/main/java/com/pdg/adventure/server/engine/{GameLoop,GameContext,Workflow,ContainerSupplier,IO}.java`
+- `src/main/java/com/pdg/adventure/server/engine/{GameLoop,GameContext,Workflow,ContainerSupplier,IO,AdventureRunSession,AdventureRunSessionFactory}.java`
 - `src/main/java/com/pdg/adventure/server/action/*.java`
 - `src/main/java/com/pdg/adventure/server/condition/*.java`
 - `src/main/java/com/pdg/adventure/server/exception/*.java`
@@ -358,6 +415,9 @@ control flow; the others are genuine error conditions caught at the call site
 - `src/main/java/com/pdg/adventure/MiniAdventure.java`,
   `src/main/java/com/pdg/adventure/AdventureClient.java` —
   CLI runner and content composition for manual play.
+- `src/main/java/com/pdg/adventure/view/adventure/AdventureRunView.java` —
+  the Vaadin consumer of `AdventureRunSession` (see
+  [`07-ui-and-navigation.md`](07-ui-and-navigation.md)).
 
 ## Known gaps
 
@@ -372,12 +432,21 @@ control flow; the others are genuine error conditions caught at the call site
   replace `Parser.handle` without ripple changes.
 - **Save / Load game state.** `VocabularyData.saveWord` and `loadWord` slots
   exist; `LoadAdventureAction` covers adventure-level reloading. There is no
-  per-game *save state* (variables, container snapshot) yet.
-- **`CreateAction` / `DestroyAction` are skeletons.** They appear in the
-  catalogue but are not exercised by any registered command.
+  per-game *save state* (variables, container snapshot) yet, and
+  `AdventureRunView`/`AdventureRunSession` do not wire `save`/`load` at all
+  — a run session is one continuous sitting.
 - **`AmbiguousCommandException`** is declared but not used by `CommandExecutor`,
   which emits a literal clarification string instead. Either retire the
   exception or route the message through it.
-- **In-browser play surface.** No Vaadin view drives `GameLoop` yet. The
-  current `IO.println` sink writes to standard out. A rebuild MUST replace it
-  with an injected `Consumer<String>` so the engine is UI-agnostic.
+- **`GameContext`/`AdventureConfig` are process-wide singletons — no
+  per-session engine isolation.** Both the CLI runner and
+  `AdventureRunSessionFactory` (§ [AdventureRunSession](#adventurerunsession-the-in-browser-play-surface))
+  share the same beans, so at most one Test/Run session is meaningfully
+  active across the whole server at a time; a second concurrent session
+  (another author testing, another player's tab) mutates the same
+  `currentLocation`/`pocket`/`outputSink` state. `GameContext.setOutputSink`'s
+  own doc comment flags this explicitly. A rebuild that wants concurrent
+  play MUST scope `GameContext` (and the vocabulary/message/variable state
+  it reaches through `AdventureConfig`) per session — e.g. request- or
+  session-scoped beans, or an explicit session object threaded through the
+  engine instead of singleton injection.

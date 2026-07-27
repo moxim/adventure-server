@@ -108,7 +108,10 @@ the `UuidIdGenerationMongoEventListener` (HIGHEST_PRECEDENCE), the
 2. Implement the documents in `model/`:
    `AdventureData`, `LocationData`, `ItemData`, `ItemContainerData`,
    `DirectionData`, `CommandData`, `CommandChainData`,
-   `CommandProviderData`, `MessageData`, `VocabularyData`, `Word`, `ThingData`.
+   `CommandProviderData`, `MessageData`, `VocabularyData`, `Word`, `ThingData`,
+   `WorkflowData` (a plain embedded field on `AdventureData` — no `@DBRef`,
+   no cascade annotations, unlike its siblings; see
+   [`03-domain-model.md` § Workflow](03-domain-model.md#workflow)).
    Apply the cascade annotations exactly as documented.
 3. Add the `*ActionData` and `*ConditionData` subclasses under
    `model/action/` and `model/condition/`.
@@ -189,16 +192,28 @@ Pay attention to:
 2. Implement `server/engine/`:
    `GameContext`, `Workflow` (preCommands and interceptorCommands as
    `TreeMap<CommandDescription, Command>`), `GameLoop`,
-   `ContainerSupplier`, `IO`. **Make `IO` injectable** — a
-   `Consumer<String>` injected via `GameContext` is the recommended
-   shape, so the engine is reusable from a Vaadin view.
-3. Implement `CommandFactory.java` (top-level, in
+   `ContainerSupplier`, `IO`. Make `GameContext.tell()` route through an
+   injectable `Consumer<String> outputSink` (default `IO::println`, via
+   `GameContext.setOutputSink(...)`) rather than writing straight to
+   `IO` — this is what lets a Vaadin view capture engine output. Note that
+   `GameContext` (and the `AdventureConfig` beans it reaches) are
+   ordinary Spring singletons in the current code: there is no
+   per-session isolation, so only one Test/Run/CLI session is
+   meaningfully active at a time server-wide. Preserve this constraint
+   knowingly, or design it away — see
+   [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps).
+3. Implement `server/engine/AdventureRunSession.java` and
+   `AdventureRunSessionFactory.java` — the turn-based (`submit(String) →
+   RunResult(lines, gameOver)`) wrapper a Vaadin view needs around
+   `GameLoop`/`GameContext`, described in
+   [`04-runtime-engine.md` § AdventureRunSession](04-runtime-engine.md#adventurerunsession-the-in-browser-play-surface).
+4. Implement `CommandFactory.java` (top-level, in
    `com.pdg.adventure`): the take/drop/wear/look wiring exactly as
    described in
    [`04-runtime-engine.md` § CommandFactory](04-runtime-engine.md#commandfactory-wiring-conventions).
-4. Implement `MiniAdventure.java` and `AdventureClient.java` for CLI play.
-   These are useful for end-to-end testing even after the in-browser play
-   surface lands.
+5. Implement `MiniAdventure.java` and `AdventureClient.java` for CLI play.
+   These remain useful for end-to-end testing alongside the in-browser
+   play surface (Step 11), not superseded by it.
 
 ### Step 10 — AI integration (intentional placeholder)
 
@@ -234,13 +249,25 @@ and
    - Item: `ItemsMenuView`, `AllItemsMenuView`, `ItemEditorView`.
    - Direction: `DirectionsMenuView`, `DirectionEditorView`.
    - Command: `CommandsMenuView`, `CommandEditorView`,
-     `view/command/action/*`.
+     `view/command/action/*`, `view/command/condition/*`
+     (annotation-driven `*EditorRegistry` discovery, not a hand-maintained
+     switch — see
+     [`07-ui-and-navigation.md` § Action editor factory](07-ui-and-navigation.md#action-editor-factory)).
+   - Workflow: `WorkflowMainLayout`, `WorkflowEditorView` — reuses the
+     Command editor's `PreconditionActionEditor` component directly, so
+     build it after the Command views above, not in parallel with them.
    - Message: `MessagesMenuView`, `MessageEditorView`.
    - Vocabulary: `VocabularyMenuView`, `WordEditorDialogue`,
      `SpecialWordsView`.
    - Admin: `UserManagementView`, `AdventureAssignmentView`.
-   - Player: a real **`*PlayView`** that drives `GameLoop` — this is
-     missing from the current code and is the largest TODO.
+   - Play surface: `AdventureRunView`, reached three ways (author "Test"
+     from `AdventureEditorView`, author/admin "Run Adventure" from
+     `AdventuresMenuView`, player "Run Adventure" from
+     `PlayerLibraryView`) — one `@Route` plus one `@RouteAlias`, both
+     `@RolesAllowed({"ROLE_AUTHOR", "ROLE_PLAYER"})`, disambiguated at
+     runtime by URL prefix and a `?from=menu` query parameter (see
+     [`07-ui-and-navigation.md` § Route × role matrix](07-ui-and-navigation.md#route--role-matrix)).
+     Depends on `AdventureRunSessionFactory` from Step 9.
 5. Annotate every view with the right `@Route` and `@RolesAllowed` /
    `@AnonymousAllowed` per
    [`07-ui-and-navigation.md` § Route × role matrix](07-ui-and-navigation.md#route--role-matrix).
@@ -307,17 +334,17 @@ table with severity and pointer:
 |----------|-----|--------|
 | **Critical** | Hardcoded admin password | [`06-security-and-access-control.md`](06-security-and-access-control.md#known-gaps) — replace with secret-sourced bootstrap. |
 | **Critical** | Hardcoded remember-me key | Same — override via env / secret. |
-| **High** | `CommandMapper` incomplete | [`05-persistence-and-mappers.md`](05-persistence-and-mappers.md#known-gaps) — finish DO ↔ BO for commands, preconditions, actions, follow-ups. |
+| **High** | `CommandMapper` incomplete | [`05-persistence-and-mappers.md`](05-persistence-and-mappers.md#known-gaps) — finish DO ↔ BO for commands, preconditions, actions. |
 | **High** | `LocationMapper` destination resolution & `ItemContainerMapper` contents | Same. |
 | **High** | `VocabularyReporitory` class-name typo | Same. |
-| **High** | Missing player play surface (`*PlayView`) | [`02-functional-requirements.md` § C2](02-functional-requirements.md#c2-play-an-adventure-target-state), [`07-ui-and-navigation.md` § Known gaps](07-ui-and-navigation.md#known-gaps). |
 | **High** | `AdventureBuilderServer` lacks `@SpringBootApplication` | [`01-product-overview.md` § Known gaps](01-product-overview.md#known-gaps). |
+| **Medium** | `GameContext`/`AdventureConfig` are process-wide singletons — no per-session engine isolation | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps) — at most one Test/Run/CLI session is meaningfully active server-wide at a time. |
 | **Medium** | NLP parser approach undecided | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps). |
 | **Medium** | Spring AI / Ollama integration commented out, base URL hardcoded | Same. |
-| **Medium** | No per-game save state (variables not persisted) | [`03-domain-model.md` § Known gaps](03-domain-model.md#known-gaps). |
-| **Medium** | `CreateAction` / `DestroyAction` skeletons | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps). |
-| **Medium** | `AmbiguousCommandException` declared but unused | Same. |
-| **Low** | `NotConditionData` has no editor in `ConditionEditorFactory` | [`07-ui-and-navigation.md` § Known gaps](07-ui-and-navigation.md#known-gaps). |
+| **Medium** | No per-game save state (variables not persisted); `AdventureRunView` sessions don't wire save/load at all | [`03-domain-model.md` § Known gaps](03-domain-model.md#known-gaps), [`02-functional-requirements.md` § Known gaps](02-functional-requirements.md#known-gaps). |
+| **Medium** | `AmbiguousCommandException` declared but unused | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps). |
+| **Low** | `LocationMapView` is a non-functional static-image placeholder, not bound to real location data | [`07-ui-and-navigation.md` § Known gaps](07-ui-and-navigation.md#known-gaps). |
+| **Low** | Deleting an adventure or an exit skips confirmation (every other delete path confirms) | Same. |
 | **Medium** | `UserService.delete` does not block on referencing rows | [`06-security-and-access-control.md` § Known gaps](06-security-and-access-control.md#known-gaps). |
 | **Medium** | Cross-store atomicity gap on adventure create | [`05-persistence-and-mappers.md` § Cross-store consistency](05-persistence-and-mappers.md#cross-store-consistency). |
 | **Medium** | No password change view | [`06-security-and-access-control.md` § Known gaps](06-security-and-access-control.md#known-gaps). |
@@ -375,6 +402,10 @@ Before declaring the rebuild done, walk this list:
       then editing each one again, all work without errors and respect
       the BACK / SAVE / RESET / CANCEL contract.
 - [ ] Running `MiniAdventure` against the saved adventure plays through.
+- [ ] Clicking **Test** on that adventure (once saved and non-empty) opens
+      `AdventureRunView` and plays through the same way in the browser;
+      **Run Adventure** from the adventures list and from a player's
+      library both reach the identical view.
 - [ ] CI workflow on `main` is green.
 - [ ] `find server/docs/specs -name '*.md'` lists this 10-document suite
       and every link inside resolves.

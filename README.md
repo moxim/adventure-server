@@ -10,7 +10,7 @@ A tool to configure adventure games. Currently, this is text only.
 2. Start a MongoDb instance as defined in `Dockerfile.mongodb.yaml`
 3. Run `mvn spring-boot:run`
 4. Open your browser to `http://localhost:8080`
-5. Start configuring your adventure!
+5. Start [configuring your adventure](docs/handbooks/README.md)!
 
 ## Features
 

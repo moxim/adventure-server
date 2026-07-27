@@ -26,13 +26,15 @@ AppShell: AdventureBuilderServer (@PWA Adventure Builder)
    ├── AboutView ("/about", anonymous)
    │
    └── AdventureAppLayout (base @PermitAll)
-        ├── AdventuresMainLayout — used by adventure / admin / about / dashboards
+        ├── AdventuresMainLayout — used by adventure / admin / about / dashboards,
+        │                          the Player library, and AdventureRunView (Test/Run)
         ├── LocationsMainLayout  — used by location / map editors
         ├── ItemsMainLayout      — used by item editors
         ├── DirectionsMainLayout — used by direction editors
         ├── CommandMainLayout    — alternative for commands menu (see route table)
         ├── MessagesMainLayout   — used by message editors
-        └── VocabularyMainLayout — used by vocabulary editors
+        ├── VocabularyMainLayout — used by vocabulary editors
+        └── WorkflowMainLayout   — used by WorkflowEditorView
 ```
 
 The drawer always carries: **About** (all users), **Dashboard** (ADMIN /
@@ -66,6 +68,9 @@ primary route.
 | `author/adventures` | `AdventuresMenuView` | `AdventuresMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/edit` | `AdventureEditorView` | `AdventuresMainLayout` | `ROLE_AUTHOR` |
 | ↳ alias `author/adventures/new` | `AdventureEditorView` | `AdventuresMainLayout` | `ROLE_AUTHOR` |
+| `author/adventures/:adventureId/test` | `AdventureRunView` | `AdventuresMainLayout` | `ROLE_AUTHOR`, `ROLE_PLAYER` |
+| ↳ alias `player/library/:adventureId/run` | `AdventureRunView` | `AdventuresMainLayout` | `ROLE_AUTHOR`, `ROLE_PLAYER` |
+| `author/adventures/:adventureId/workflow` | `WorkflowEditorView` | `WorkflowMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/locations` | `LocationsMenuView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
 | ↳ alias `author/adventures/locations` | `LocationsMenuView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/locations/:locationId/edit` | `LocationEditorView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
@@ -79,8 +84,11 @@ primary route.
 | `author/adventures/:adventureId/locations/:locationId/direction/:directionId/edit` | `DirectionEditorView` | `DirectionsMainLayout` | `ROLE_AUTHOR` |
 | ↳ alias `author/adventures/:adventureId/locations/:locationId/direction/new` | `DirectionEditorView` | `DirectionsMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/locations/:locationId/commands` | `CommandsMenuView` | `AdventuresMainLayout` (note: not `CommandMainLayout` — see Known gaps) | `ROLE_AUTHOR` |
+| ↳ alias `author/adventures/:adventureId/locations/:locationId/items/:itemId/commands` | `CommandsMenuView` | `AdventuresMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/locations/:locationId/commands/:commandId/edit` | `CommandEditorView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
 | ↳ alias `author/adventures/:adventureId/locations/:locationId/commands/new` | `CommandEditorView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
+| ↳ alias `author/adventures/:adventureId/locations/:locationId/items/:itemId/commands/:commandId/edit` | `CommandEditorView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
+| ↳ alias `author/adventures/:adventureId/locations/:locationId/items/:itemId/commands/new` | `CommandEditorView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/messages` | `MessagesMenuView` | `MessagesMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/messages/:messageId/edit` | `MessageEditorView` | `MessagesMainLayout` | `ROLE_AUTHOR` |
 | ↳ alias `author/adventures/:adventureId/messages/new` | `MessageEditorView` | `MessagesMainLayout` | `ROLE_AUTHOR` |
@@ -91,6 +99,22 @@ primary route.
 The role hierarchy (`ROLE_ADMIN > ROLE_AUTHOR > ROLE_PLAYER`) means an admin
 can reach every route, an author every author + player route, and a player
 only player routes.
+
+**`AdventureRunView`'s three logical origins, two physical routes.** The
+table above shows its `@Route` and `@RouteAlias`, but a third origin —
+`AdventuresMenuView`'s "Run Adventure" button — reuses the *first* route
+template with a `?from=menu` query parameter instead of a third mapping,
+because Vaadin's outbound URL generation for class-based `navigate(...)`
+calls can't disambiguate between two templates with an identically-shaped
+`:adventureId` parameter (it always resolves to the primary `@Route`).
+Callers navigate via literal path strings from the static
+`AdventureRunView.editorTestPath(id)` / `.menuRunPath(id)` /
+`.libraryRunPath(id)` helpers instead of `navigate(AdventureRunView.class, …)`
+— incoming route *matching* does correctly consider aliases, so this only
+affects outbound link generation. The view's own `beforeEnter` resolves
+which of the three origins sent it here (from the path prefix and the
+query parameter) and uses that to decide both its `HasDynamicTitle` value
+("Test: …" vs "Playing: …") and where its **Back** button returns to.
 
 ## Layouts
 
@@ -118,6 +142,7 @@ themed image:
 | `CommandMainLayout` | `icons/to-do-list.gif` | (none) — note: `CommandsMenuView` currently uses `AdventuresMainLayout` instead |
 | `MessagesMainLayout` | `icons/scroll-with-quill.gif` | (none) |
 | `VocabularyMainLayout` | `icons/grammar.gif` | (none) |
+| `WorkflowMainLayout` | `icons/to-do-list.gif` | (none) — used only by `WorkflowEditorView` |
 
 `AdventuresMainLayout.checkIfUserWantsToLeavePage(event, hasChanges)` is the
 shared unsaved-change guard called by every editor's `beforeLeave(...)`.
@@ -302,7 +327,8 @@ editing many commands at once.
 | `ActionEditorComponent` | Abstract base for all per-action sub-editors. |
 | `AbstractSingleItemActionEditor<T extends ActionData>` | Generic abstract mid-layer for the 8 editors that need one `ItemData` selector (title, description, label, placeholder, error text customised per subclass). |
 | `ActionSelector` | A combo-box of supported `Action` kinds. Picking one swaps in the matching editor. |
-| `ActionEditorFactory` | Java `switch` pattern-match over `ActionData`; covers all 15 authorable action types. |
+| `ActionEditorFactory` | `createEditor(ActionData, AdventureData)` — the stable entry point every call site uses. Delegates lookup to `ActionEditorRegistry` (package-private); covers all 15 authorable action types. |
+| `ActionEditorRegistry` | One-time classpath scan (`ClassPathScanningCandidateComponentProvider`) for `@AutoRegisterActionEditor`-annotated `ActionEditorComponent`s, keyed by the `ActionData` subtype resolved from each editor's generic type argument. Replaced a hand-maintained `switch` statement — adding a new action editor means writing the class and annotating it, not touching the factory. Reflectively picks a `(ActionData)` or `(ActionData, AdventureData)` constructor to instantiate. |
 | `MessageActionEditor` | Inline text field for the message body. |
 | `MoveItemActionEditor` | Item selector (uses `ViewSupporter.collectAllItems`). |
 | `MovePlayerActionEditor` | Location selector (uses `ViewSupporter.collectAllLocations`). |
@@ -328,17 +354,28 @@ editing many commands at once.
 | `ConditionEditorComponent` | Abstract base for all per-condition sub-editors. |
 | `AbstractSingleItemConditionEditor` | Abstract mid-layer for the 3 item-presence conditions (Carried / Here / Worn) that share one `ItemData` selector. |
 | `AbstractNumericComparisonConditionEditor` | Abstract mid-layer for the 2 numeric-comparison conditions (GreaterThan / LowerThan) that share a variable-name field and a numeric value field. |
-| `ConditionSelector` | A combo-box of supported `PreCondition` kinds. |
-| `ConditionEditorFactory` | Java `switch` pattern-match over `PreConditionData`; covers 9 of the 10 condition types (see Known gaps). |
+| `ConditionSelector` | A combo-box of supported `PreCondition` kinds — 10 entries; `NotCondition` is not among them (see below). |
+| `ConditionEditorFactory` | Entry point for condition editors, mirroring `ActionEditorFactory`'s shape. Delegates to `ConditionEditorRegistry`; covers all 10 selectable condition types. |
+| `ConditionEditorRegistry` | Classpath scan for `@AutoRegisterConditionEditor`-annotated `ConditionEditorComponent`s, the condition-side twin of `ActionEditorRegistry` above — same replaced-the-switch-statement story. |
 | `CarriedConditionEditor` | Item selector (via `AbstractSingleItemConditionEditor`). |
 | `HereConditionEditor` | Item selector (via `AbstractSingleItemConditionEditor`). |
 | `WornConditionEditor` | Item selector (via `AbstractSingleItemConditionEditor`). |
+| `ChanceConditionEditor` | A single numeric field for the 1–100 chance percentage. |
 | `EqualsConditionEditor` | Variable name + value text fields. |
 | `GreaterThanConditionEditor` | Variable name + numeric threshold (via `AbstractNumericComparisonConditionEditor`). |
 | `LowerThanConditionEditor` | Variable name + numeric threshold (via `AbstractNumericComparisonConditionEditor`). |
 | `SameConditionEditor` | Two variable name text fields. |
 | `PlayerAtConditionEditor` | Location selector. |
 | `ItemAtConditionEditor` | Item selector + location selector. |
+
+**There is no `NotConditionEditor`, by design.** `NotConditionData` is
+applied structurally rather than picked as a kind: `ConditionRow`
+(`view/command/condition/ConditionRow.java`) renders every condition row
+with a **Negate** checkbox alongside whichever of the 10 kinds above was
+chosen, and `ConditionRow.toConditionData()` wraps the underlying
+`PreConditionData` in a `NotConditionData` when it's checked. This is a
+structural choice, not a coverage gap — see
+[`04-runtime-engine.md` § Composites](04-runtime-engine.md#composites).
 
 ## PWA configuration
 
@@ -370,11 +407,12 @@ swapping the brand image per layout and using `LumoUtility` classes.
 - `src/main/java/com/pdg/adventure/view/admin/{AdminDashboardView,AdventureAssignmentView,UserManagementView}.java`
 - `src/main/java/com/pdg/adventure/view/author/AuthorDashboardView.java`
 - `src/main/java/com/pdg/adventure/view/player/PlayerLibraryView.java`
-- `src/main/java/com/pdg/adventure/view/adventure/{AdventuresMainLayout,AdventuresMenuView,AdventureEditorView}.java`
+- `src/main/java/com/pdg/adventure/view/adventure/{AdventuresMainLayout,AdventuresMenuView,AdventureEditorView,AdventureRunView}.java`
+- `src/main/java/com/pdg/adventure/view/workflow/{WorkflowMainLayout,WorkflowEditorView}.java`
 - `src/main/java/com/pdg/adventure/view/location/{LocationsMainLayout,LocationsMenuView,LocationEditorView,LocationMapView,LocationViewModel,LocationDescriptionAdapter,LocationProvider,LocationUsageTracker}.java`
 - `src/main/java/com/pdg/adventure/view/item/*.java`
 - `src/main/java/com/pdg/adventure/view/direction/*.java`
-- `src/main/java/com/pdg/adventure/view/command/*.java` (and `command/action/`)
+- `src/main/java/com/pdg/adventure/view/command/*.java` (and `command/action/`, `command/condition/`)
 - `src/main/java/com/pdg/adventure/view/message/*.java`
 - `src/main/java/com/pdg/adventure/view/vocabulary/*.java`
 - `src/main/resources/META-INF/resources/{images,icons}/` — assets.
@@ -388,13 +426,20 @@ swapping the brand image per layout and using `LumoUtility` classes.
 - **`VocabularyMenuView` has a commented-out `@RouteAlias`**
   (`adventures/vocabulary`). Decide whether to keep the alias for
   bookmark-friendly URLs and re-enable it, or remove the dead annotation.
-- **Player play surface missing.** `PlayerLibraryView` is a stub heading;
-  there is no `*PlayView` driving `GameLoop`. See
-  [`02-functional-requirements.md` § C2](02-functional-requirements.md#c2-play-an-adventure-target-state).
-- **`NotConditionData` has no condition editor.** `ConditionEditorFactory`
-  covers 9 of the 10 condition types; `NotConditionData` is not yet surfaced
-  in the authoring UI. A rebuild should add `NotConditionEditor` and wire it
-  into `ConditionEditorFactory`.
+- **`LocationMapView` is a non-functional placeholder.** It renders a
+  static `islandMap.jpg` via `ImageMap` with a hardcoded 100×100px click
+  grid (`for (x = 0; x < 2451; x += 100) for (y = 0; y < 2628; y += 100) …`)
+  that just pops a `"Location X : Y"` notification on click — it is not
+  bound to `LocationData` at all. A rebuild should either wire a real
+  node-graph view of the adventure's actual locations/exits, or drop the
+  drawer link until it is.
+- **Two deletion paths skip confirmation.** Deleting an adventure
+  (`AdventuresMenuView`'s context menu) and deleting an exit
+  (`DirectionsMenuView`'s context menu) both remove the row immediately
+  with no `ConfirmDialog`, unlike every other delete path in the app
+  (locations, items, words, messages, workflow commands all confirm
+  first). Confirm this is intentional or bring them in line with
+  [§ Validation feedback](#validation-feedback) below.
 - **`SpecialWordsView` browserless test workarounds.** Two ComboBox quirks
   (silent `setValue`, wrong scope on `$()` queries) are documented in the
   testing strategy; until the upstream fix lands, browserless tests for

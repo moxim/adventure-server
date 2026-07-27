@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 400" font-family="Georgia, 'Palatino Linotype', 'Book Antiqua', serif">
+  <title>Six playful building blocks: Locations, Items, Vocabulary, Commands, Messages, and Workflow, the pieces of every adventure</title>
+  <rect x="0" y="0" width="1060" height="400" fill="#fbf3e3"/>
+
+  <!-- Locations -->
+  <g transform="translate(60,110) rotate(-4)">
+    <rect x="6" y="10" width="140" height="140" rx="18" fill="#00000022"/>
+    <rect x="0" y="0" width="140" height="140" rx="18" fill="#e07a5f"/>
+    <path d="M70,35 c-20,0 -34,15 -34,34 c0,25 34,55 34,55 c0,0 34,-30 34,-55 c0,-19 -14,-34 -34,-34 z" fill="#ffffff"/>
+    <circle cx="70" cy="69" r="12" fill="#e07a5f"/>
+  </g>
+  <text x="130" y="290" text-anchor="middle" font-size="18" fill="#4a3728">Locations</text>
+
+  <!-- Items -->
+  <g transform="translate(220,90) rotate(3)">
+    <rect x="6" y="10" width="140" height="140" rx="18" fill="#00000022"/>
+    <rect x="0" y="0" width="140" height="140" rx="18" fill="#d4a24c"/>
+    <rect x="35" y="65" width="70" height="45" rx="6" fill="#ffffff"/>
+    <path d="M35,65 q35,-32 70,0" fill="none" stroke="#ffffff" stroke-width="8"/>
+    <circle cx="70" cy="88" r="6" fill="#d4a24c"/>
+  </g>
+  <text x="290" y="270" text-anchor="middle" font-size="18" fill="#4a3728">Items</text>
+
+  <!-- Vocabulary -->
+  <g transform="translate(380,115) rotate(-2)">
+    <rect x="6" y="10" width="140" height="140" rx="18" fill="#00000022"/>
+    <rect x="0" y="0" width="140" height="140" rx="18" fill="#3d8f8f"/>
+    <path d="M25,45 h90 a10,10 0 0 1 10,10 v35 a10,10 0 0 1 -10,10 h-55 l-20,20 v-20 h-15 a10,10 0 0 1 -10,-10 v-35 a10,10 0 0 1 10,-10 z" fill="#ffffff"/>
+    <text x="70" y="82" text-anchor="middle" font-size="26" fill="#3d8f8f" font-weight="700">Aa</text>
+  </g>
+  <text x="450" y="295" text-anchor="middle" font-size="18" fill="#4a3728">Vocabulary</text>
+
+  <!-- Commands -->
+  <g transform="translate(540,95) rotate(4)">
+    <rect x="6" y="10" width="140" height="140" rx="18" fill="#00000022"/>
+    <rect x="0" y="0" width="140" height="140" rx="18" fill="#4a5a8c"/>
+    <path d="M78,25 L45,80 h20 l-8,40 40,-55 h-20 z" fill="#ffffff"/>
+  </g>
+  <text x="610" y="275" text-anchor="middle" font-size="18" fill="#4a3728">Commands</text>
+
+  <!-- Messages -->
+  <g transform="translate(700,120) rotate(-3)">
+    <rect x="6" y="10" width="140" height="140" rx="18" fill="#00000022"/>
+    <rect x="0" y="0" width="140" height="140" rx="18" fill="#8e5b8e"/>
+    <rect x="28" y="48" width="84" height="58" rx="8" fill="#ffffff"/>
+    <path d="M28,52 L70,84 L112,52" fill="none" stroke="#8e5b8e" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="770" y="300" text-anchor="middle" font-size="18" fill="#4a3728">Messages</text>
+
+  <!-- Workflow -->
+  <g transform="translate(860,100) rotate(2)">
+    <rect x="6" y="10" width="140" height="140" rx="18" fill="#00000022"/>
+    <rect x="0" y="0" width="140" height="140" rx="18" fill="#4f7942"/>
+    <path d="M45,50 a30,30 0 1 1 -8,42" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round"/>
+    <path d="M30,80 l7,18 18,-7 z" fill="#ffffff"/>
+  </g>
+  <text x="930" y="280" text-anchor="middle" font-size="18" fill="#4a3728">Workflow</text>
+
+  <text x="530" y="45" text-anchor="middle" font-size="24" fill="#4a3728" font-weight="700">The six building blocks of an adventure</text>
+</svg>
