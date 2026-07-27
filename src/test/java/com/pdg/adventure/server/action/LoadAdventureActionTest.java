@@ -69,19 +69,47 @@ class LoadAdventureActionTest {
         workflowData.getCommands().add(new CommandData(new CommandDescriptionData("shiver||")));
         adventureData.setWorkflowData(workflowData);
 
-        when(adventureService.findAdventureById("adv-1")).thenReturn(Optional.of(adventureData));
-
-        Adventure adventure = new Adventure(null, null, null, null);
-        adventure.setCurrentLocationId("loc-1");
-        when(startLocation.getId()).thenReturn("loc-1");
-        adventure.setLocations(List.of(startLocation));
-
-        when(adventureMapper.mapToBO(adventureData)).thenReturn(adventure);
+        stubSuccessfulLoad(adventureData);
 
         assertThatThrownBy(() -> loadAdventureAction.loadAdventure("adv-1"))
                 .isInstanceOf(ReloadAdventureException.class);
 
         assertThat(gameContext.getWorkflowData()).isSameAs(workflowData);
         assertThat(gameContext.getWorkflowData().getCommands()).hasSize(1);
+    }
+
+    @Test
+    void loadAdventure_populatesGenericEngineMessages_neededByWearRemoveMoveInventoryDestroyCreateActions() {
+        AdventureData adventureData = new AdventureData();
+        adventureData.setId("adv-1");
+        adventureData.setCurrentLocationId("loc-1");
+        LocationData locationData = new LocationData();
+        locationData.setId("loc-1");
+        adventureData.getLocationData().put("loc-1", locationData);
+
+        stubSuccessfulLoad(adventureData);
+
+        assertThatThrownBy(() -> loadAdventureAction.loadAdventure("adv-1"))
+                .isInstanceOf(ReloadAdventureException.class);
+
+        MessagesHolder messages = adventureConfig.allMessages();
+        assertThat(messages.getMessage("-6")).isEqualTo("You can't wear %s.");
+        assertThat(messages.getMessage("-7")).isEqualTo("You can't remove %s.");
+        assertThat(messages.getMessage("-8")).isEqualTo("The %s is full.");
+        assertThat(messages.getMessage("-9")).isEqualTo("You put %s into %s.");
+        assertThat(messages.getMessage("-10")).isEqualTo("You carry:");
+        assertThat(messages.getMessage("-11")).isEqualTo("The %s evaporates into thin air.");
+        assertThat(messages.getMessage("-12")).isEqualTo("A %s appears in the %s.");
+    }
+
+    private void stubSuccessfulLoad(AdventureData anAdventureData) {
+        when(adventureService.findAdventureById(anAdventureData.getId())).thenReturn(Optional.of(anAdventureData));
+
+        Adventure adventure = new Adventure(null, null, null, null);
+        adventure.setCurrentLocationId("loc-1");
+        when(startLocation.getId()).thenReturn("loc-1");
+        adventure.setLocations(List.of(startLocation));
+
+        when(adventureMapper.mapToBO(anAdventureData)).thenReturn(adventure);
     }
 }

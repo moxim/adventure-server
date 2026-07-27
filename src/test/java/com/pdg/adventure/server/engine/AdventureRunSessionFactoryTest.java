@@ -82,6 +82,25 @@ class AdventureRunSessionFactoryTest {
     }
 
     @Test
+    void start_thenInventory_includesTheGenericCarryHeaderMessage() {
+        // InventoryAction looks up MessagesHolder id "-10" ("You carry:") unconditionally.
+        // LoadAdventureAction clears allMessages and repopulates only from the adventure's own
+        // persisted messages - without also re-seeding this generic, adventure-independent id,
+        // the header silently disappears (WearAction/RemoveAction/CreateAction/MoveItemAction/
+        // DestroyAction go further and throw NPE, since they call .formatted() on the result).
+        AdventureData adventureData = adventureWithOneLocation("adv-1", "loc-1");
+        when(adventureService.findAdventureById("adv-1")).thenReturn(Optional.of(adventureData));
+        when(startLocation.getId()).thenReturn("loc-1");
+        Adventure adventure = adventureBoundTo(startLocation, "loc-1");
+        when(adventureMapper.mapToBO(adventureData)).thenReturn(adventure);
+
+        AdventureRunSession session = factory.start(adventureData);
+        RunResult result = session.submit("inventory");
+
+        assertThat(result.lines()).contains("You carry:");
+    }
+
+    @Test
     void start_adventureNotFound_throwsIllegalStateException() {
         AdventureData adventureData = new AdventureData();
         adventureData.setId("missing-adv");

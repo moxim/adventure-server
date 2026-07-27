@@ -111,6 +111,18 @@ class AdventureRunViewTest extends BrowserlessTest {
     }
 
     @Test
+    void multipleNarratorLinesFromOneTurn_arePooledIntoASingleMessageListItem() {
+        when(session.submit("look")).thenReturn(
+                new RunResult(List.of("You carry:", "a rusty key"), false));
+
+        enterViaAuthorRoute();
+
+        MessageList messageList = find(MessageList.class, view).single();
+        assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
+                .containsExactly("You carry:\na rusty key");
+    }
+
+    @Test
     void gameOver_disablesTheMessageInput() {
         when(session.submit("look")).thenReturn(new RunResult(List.of("A grand throne room."), false));
         enterViaAuthorRoute();
