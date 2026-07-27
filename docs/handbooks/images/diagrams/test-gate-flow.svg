@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" font-family="Helvetica, Arial, sans-serif">
+  <title>Three launch points open the same play screen; Back returns to wherever you came from</title>
+  <defs>
+    <marker id="arrow3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b6b7c"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="900" height="560" fill="#f4f6f8"/>
+  <text x="450" y="34" text-anchor="middle" font-size="20" font-weight="600" fill="#2b3440">Three doors, one room</text>
+
+  <!-- three origin boxes -->
+  <rect x="40" y="70" width="230" height="90" rx="10" fill="#3d6b8c"/>
+  <text x="155" y="105" text-anchor="middle" font-size="14" fill="#fff">Adventure Editor</text>
+  <text x="155" y="124" text-anchor="middle" font-size="13" fill="#dce7f0">Test button *</text>
+  <text x="155" y="142" text-anchor="middle" font-size="11" fill="#b9cbdb">title: "Test: {adventure}"</text>
+
+  <rect x="335" y="70" width="230" height="90" rx="10" fill="#3d6b8c"/>
+  <text x="450" y="105" text-anchor="middle" font-size="14" fill="#fff">Your Adventures</text>
+  <text x="450" y="124" text-anchor="middle" font-size="13" fill="#dce7f0">Run Adventure button</text>
+  <text x="450" y="142" text-anchor="middle" font-size="11" fill="#b9cbdb">title: "Test: {adventure}"</text>
+
+  <rect x="630" y="70" width="230" height="90" rx="10" fill="#3d6b8c"/>
+  <text x="745" y="105" text-anchor="middle" font-size="14" fill="#fff">A Player's Library</text>
+  <text x="745" y="124" text-anchor="middle" font-size="13" fill="#dce7f0">Run Adventure button</text>
+  <text x="745" y="142" text-anchor="middle" font-size="11" fill="#b9cbdb">title: "Playing: {adventure}"</text>
+
+  <!-- converging solid arrows down -->
+  <line x1="155" y1="160" x2="420" y2="270" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow3)"/>
+  <line x1="450" y1="160" x2="450" y2="270" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow3)"/>
+  <line x1="745" y1="160" x2="480" y2="270" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow3)"/>
+
+  <!-- play screen -->
+  <rect x="325" y="275" width="250" height="100" rx="10" fill="#2b3440"/>
+  <text x="450" y="315" text-anchor="middle" font-size="16" font-weight="600" fill="#fff">Play Screen</text>
+  <text x="450" y="336" text-anchor="middle" font-size="12" fill="#c7cfd8">same engine, same UI</text>
+  <text x="450" y="354" text-anchor="middle" font-size="12" fill="#c7cfd8">every time</text>
+
+  <!-- back dashed arrow -->
+  <line x1="450" y1="375" x2="450" y2="430" stroke="#8a97a6" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arrow3)"/>
+  <text x="466" y="405" font-size="13" fill="#445063">Back</text>
+
+  <rect x="230" y="435" width="440" height="70" rx="10" fill="#eef2f5" stroke="#8a97a6" stroke-width="1.5"/>
+  <text x="450" y="463" text-anchor="middle" font-size="13" fill="#2b3440">Back always returns you to whichever of the</text>
+  <text x="450" y="482" text-anchor="middle" font-size="13" fill="#2b3440">three boxes above you actually came from</text>
+
+  <text x="450" y="535" text-anchor="middle" font-size="12" fill="#6b7686">* Test is disabled until the adventure is saved, has no pending edits, and has ≥ 1 location.</text>
+</svg>

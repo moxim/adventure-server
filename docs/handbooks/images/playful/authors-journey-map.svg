@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" font-family="Georgia, 'Palatino Linotype', 'Book Antiqua', serif">
+  <title>An illustrated map of the author's journey through Adventure Builder, from signing in to testing a playable adventure</title>
+  <defs>
+    <radialGradient id="parchment" cx="50%" cy="35%" r="75%">
+      <stop offset="0%" stop-color="#fdf6e8"/>
+      <stop offset="100%" stop-color="#f2e4c4"/>
+    </radialGradient>
+  </defs>
+  <rect x="0" y="0" width="1200" height="480" fill="url(#parchment)"/>
+
+  <text x="600" y="46" text-anchor="middle" font-size="28" font-weight="700" fill="#4a3728">Your Journey as an Author</text>
+
+  <!-- winding dashed path -->
+  <path d="M140,320 Q240,150 340,190 Q440,230 540,330 Q640,430 740,190 Q840,50 940,330 Q1020,430 1100,190"
+        fill="none" stroke="#b98b4e" stroke-width="4" stroke-dasharray="2 14" stroke-linecap="round"/>
+
+  <!-- "you are here" marker -->
+  <g transform="translate(140,320)">
+    <circle r="10" fill="none" stroke="#b98b4e" stroke-width="2" stroke-dasharray="3 4">
+      <animate attributeName="r" values="10;16;10" dur="2.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.2;1" dur="2.4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- 1 Sign In -->
+  <g transform="translate(140,320)">
+    <circle r="40" fill="#e07a5f"/>
+    <path d="M-8,-16 a12,12 0 1 1 -1,24 l0,4 -6,0 0,7 -8,0 0,8 -8,0 0,-9 15,-15 a12,12 0 0 1 8,-19 z" fill="#ffffff" transform="translate(10,0)"/>
+    <text x="0" y="76" text-anchor="middle" font-size="16" fill="#4a3728" font-weight="600">Sign In</text>
+  </g>
+
+  <!-- 2 Create -->
+  <g transform="translate(340,190)">
+    <circle r="40" fill="#d4a24c"/>
+    <path d="M0,-22 L6,-6 22,0 6,6 0,22 -6,6 -22,0 -6,-6 z" fill="#ffffff"/>
+    <text x="0" y="-58" text-anchor="middle" font-size="16" fill="#4a3728" font-weight="600">Create Your</text>
+    <text x="0" y="-40" text-anchor="middle" font-size="16" fill="#4a3728" font-weight="600">Adventure</text>
+  </g>
+
+  <!-- 3 Build the world -->
+  <g transform="translate(540,330)">
+    <circle r="40" fill="#3d8f8f"/>
+    <path d="M0,-22 c-14,0 -24,10 -24,24 c0,18 24,38 24,38 c0,0 24,-20 24,-38 c0,-14 -10,-24 -24,-24 z" fill="#ffffff"/>
+    <circle cx="0" cy="2" r="8" fill="#3d8f8f"/>
+    <text x="0" y="78" text-anchor="middle" font-size="16" fill="#4a3728" font-weight="600">Build the World</text>
+  </g>
+
+  <!-- 4 Items and words -->
+  <g transform="translate(740,190)">
+    <circle r="40" fill="#4a5a8c"/>
+    <rect x="-25" y="-4" width="50" height="30" rx="5" fill="#ffffff"/>
+    <path d="M-25,-4 q25,-24 50,0" fill="none" stroke="#ffffff" stroke-width="6"/>
+    <circle cx="0" cy="12" r="4" fill="#4a5a8c"/>
+    <text x="0" y="-58" text-anchor="middle" font-size="16" fill="#4a3728" font-weight="600">Fill It with Items</text>
+    <text x="0" y="-40" text-anchor="middle" font-size="16" fill="#4a3728" font-weight="600">&amp; Words</text>
+  </g>
+
+  <!-- 5 Puzzles / commands -->
+  <g transform="translate(940,330)">
+    <circle r="40" fill="#8e5b8e"/>
+    <rect x="-20" y="-10" width="20" height="20" rx="8" fill="none" stroke="#ffffff" stroke-width="6" transform="rotate(-20 -10 0)"/>
+    <rect x="0" y="-10" width="20" height="20" rx="8" fill="none" stroke="#ffffff" stroke-width="6" transform="rotate(-20 10 0)"/>
+    <text x="0" y="78" text-anchor="middle" font-size="16" fill="#4a3728" font-weight="600">Wire Up the</text>
+    <text x="0" y="96" text-anchor="middle" font-size="16" fill="#4a3728" font-weight="600">Puzzles</text>
+  </g>
+
+  <!-- 6 Test and play -->
+  <g transform="translate(1100,190)">
+    <circle r="46" fill="#4f7942"/>
+    <path d="M-12,-18 L18,0 -12,18 z" fill="#ffffff"/>
+    <path d="M32,-30 l4,10 10,4 -10,4 -4,10 -4,-10 -10,-4 10,-4 z" fill="#d4a24c"/>
+    <text x="0" y="-64" text-anchor="middle" font-size="17" fill="#4a3728" font-weight="700">Test &amp; Play!</text>
+  </g>
+
+  <!-- small compass flourish -->
+  <g transform="translate(1145,430)" opacity="0.55">
+    <circle r="26" fill="none" stroke="#b98b4e" stroke-width="2"/>
+    <path d="M0,-20 L6,0 0,20 -6,0 z" fill="#b98b4e"/>
+    <path d="M-20,0 L0,-6 20,0 0,6 z" fill="#b98b4e" opacity="0.6"/>
+  </g>
+</svg>

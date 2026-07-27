@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" font-family="Helvetica, Arial, sans-serif">
+  <title>Author navigation map: the Adventure Editor as the hub, with spokes to each Manage screen and Test</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b6b7c"/>
+    </marker>
+    <marker id="arrowDashed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8a97a6"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="600" fill="#f4f6f8"/>
+  <text x="450" y="34" text-anchor="middle" font-size="20" font-weight="600" fill="#2b3440">Author navigation map</text>
+
+  <!-- connecting lines (drawn first, under boxes) -->
+  <g stroke="#5b6b7c" stroke-width="2" fill="none">
+    <line x1="450" y1="250" x2="450" y2="120" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+    <line x1="590" y1="260" x2="668" y2="215" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+    <line x1="590" y1="330" x2="668" y2="375" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+    <line x1="450" y1="360" x2="450" y2="470" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+    <line x1="310" y1="330" x2="232" y2="375" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+  </g>
+  <line x1="310" y1="260" x2="232" y2="215" stroke="#8a97a6" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arrowDashed)" marker-start="url(#arrowDashed)"/>
+
+  <!-- labels on lines -->
+  <text x="465" y="185" font-size="13" fill="#445063">Manage Locations</text>
+  <text x="598" y="230" font-size="13" fill="#445063">Manage Items</text>
+  <text x="598" y="360" font-size="13" fill="#445063">Manage Vocabulary</text>
+  <text x="465" y="425" font-size="13" fill="#445063">Manage Messages</text>
+  <text x="120" y="360" font-size="13" fill="#445063">Manage Workflow</text>
+  <text x="112" y="230" font-size="13" fill="#6b7686">Test *</text>
+
+  <!-- center hub -->
+  <rect x="360" y="250" width="180" height="80" rx="10" fill="#2b3440"/>
+  <text x="450" y="284" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">Adventure</text>
+  <text x="450" y="304" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">Editor</text>
+
+  <!-- satellites -->
+  <g>
+    <rect x="365" y="40" width="170" height="70" rx="8" fill="#3d6b8c"/>
+    <text x="450" y="80" text-anchor="middle" font-size="14" fill="#ffffff">Locations &amp;</text>
+    <text x="450" y="98" text-anchor="middle" font-size="14" fill="#ffffff">Exits</text>
+  </g>
+
+  <g>
+    <rect x="668" y="145" width="170" height="70" rx="8" fill="#3d6b8c"/>
+    <text x="753" y="185" text-anchor="middle" font-size="14" fill="#ffffff">Items</text>
+  </g>
+
+  <g>
+    <rect x="668" y="375" width="170" height="70" rx="8" fill="#3d6b8c"/>
+    <text x="753" y="405" text-anchor="middle" font-size="14" fill="#ffffff">Vocabulary</text>
+    <text x="753" y="423" text-anchor="middle" font-size="14" fill="#ffffff">&amp; Words</text>
+  </g>
+
+  <g>
+    <rect x="365" y="470" width="170" height="70" rx="8" fill="#3d6b8c"/>
+    <text x="450" y="510" text-anchor="middle" font-size="14" fill="#ffffff">Messages</text>
+  </g>
+
+  <g>
+    <rect x="62" y="375" width="170" height="70" rx="8" fill="#3d6b8c"/>
+    <text x="147" y="405" text-anchor="middle" font-size="14" fill="#ffffff">Workflow</text>
+    <text x="147" y="423" text-anchor="middle" font-size="14" fill="#ffffff">(global commands)</text>
+  </g>
+
+  <g>
+    <rect x="62" y="145" width="170" height="70" rx="8" fill="#6b7686" stroke="#4a5361" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text x="147" y="177" text-anchor="middle" font-size="14" fill="#ffffff">Test</text>
+    <text x="147" y="195" text-anchor="middle" font-size="14" fill="#ffffff">(play screen)</text>
+  </g>
+
+  <text x="450" y="575" text-anchor="middle" font-size="12" fill="#6b7686">* Test is gated — see Chapter 4. Every spoke leads back to the Adventure Editor via its own Back button.</text>
+</svg>
