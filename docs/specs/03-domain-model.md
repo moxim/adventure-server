@@ -81,9 +81,12 @@ BasicData            (Ided; has @Id String id assigned to ULID)
 └── BasicData
     └── DirectionData     (+descriptionData, destinationId, destinationMustBeMentioned, commandData)
 └── BasicData
-    └── CommandData       (+commandDescription, preConditions, action, followUpActions)
+    └── CommandData       (+commandDescription, preConditions, actions: List<ActionData>)
 └── BasicData
     └── CommandChainData  (+commands: List<CommandData>)
+   (WorkflowData           +commands: List<CommandData> — a plain embedded field on
+                            AdventureData, not part of the BasicData hierarchy; see
+                            "Workflow" below)
 └── BasicData
     └── CommandProviderData (+availableCommands: Map<String, CommandChainData>)
 └── BasicDescriptionData
@@ -123,7 +126,8 @@ Fields:
 | `currentLocationId` | `String` | Resolves into `locationData`. |
 | `vocabularyData` | `@DBRef(lazy=false, transient) VocabularyData` | The adventure's vocabulary. Cascade save & delete. |
 | `messages` | `@DBRef(lazy=true) Map<String, MessageData>` | Reusable text. Cascade save & delete. |
-| `notes` | `String` | Free-text outline; not used at runtime. |
+| `notes` | `String` | Free-text outline; not used at runtime. Surfaced as a quick preview in `AdventuresMenuView`'s right-click context menu. |
+| `workflowData` | `WorkflowData`, default `new WorkflowData()` | The adventure's global commands. Plain embedded field — no `@DBRef`, no cascade annotations (unlike every other nested collection above); it round-trips as part of the `AdventureData` document itself. See [§ Workflow](#workflow) below. |
 
 Constructors initialise empty maps and an empty `ItemContainerData("your pocket")`.
 
@@ -279,14 +283,34 @@ equal — that is the key for command-chain lookup.
 |-------|------|
 | `commandDescription` | `CommandDescriptionData` |
 | `preConditions` | `List<PreConditionData>` |
-| `action` | `ActionData` (non-null after initialisation; setter rejects `null`) |
-| `followUpActions` | `List<? extends ActionData>` |
+| `actions` | `List<ActionData>` — a single ordered list; all actions in it run in sequence when the command fires. There is no primary-action/follow-up-actions split at the data level (`CommandData.addAction(ActionData)` appends). |
 
 ### CommandChainData
 
 `model/CommandChainData.java` extends `BasicData`. Ordered list of `CommandData`
 sharing the same `commandSpecification` key. The engine walks the list in
 order and runs the first command whose PreConditions all pass.
+
+### Workflow
+
+`model/WorkflowData.java` — a minimal `@Data` POJO, **not** a `BasicData`
+subclass and not its own MongoDB collection:
+
+```java
+public class WorkflowData {
+    private List<CommandData> commands = new ArrayList<>();
+}
+```
+
+It lives as a plain embedded field on `AdventureData.workflowData` (see the
+field table above) and holds the adventure's *global* commands — built from
+the identical `CommandData` shape as location/item commands, but run every
+turn regardless of the player's location rather than being scoped to one
+`Thing`. At runtime, `WorkflowMapper.populate(WorkflowData, Workflow)` layers
+these onto the engine's `Workflow` (`server/engine/Workflow.java`) as
+pre-commands after `GameContext.setUpWorkflows()` — see
+[`04-runtime-engine.md` § Workflow](04-runtime-engine.md#workflow-pre-commands-and-interceptors).
+Authored via `WorkflowEditorView` (`author/adventures/:adventureId/workflow`).
 
 ## Messages, variables, IO
 
@@ -326,7 +350,7 @@ this chapter only documents the storage shape.
 
 | ActionData | Maps to |
 |------------|---------|
-| `CreateActionData`, `DestroyActionData` | `CreateAction`, `DestroyAction` (skeletal) |
+| `CreateActionData`, `DestroyActionData` | `CreateAction` (add to a container), `DestroyAction` (remove from its parent container) — both authorable via the Action editor ("Create Item" / "Destroy") |
 | `DescribeActionData` | `DescribeAction` |
 | `DropActionData`, `TakeActionData`, `WearActionData`, `RemoveActionData` | inventory-handling actions |
 | `MovePlayerActionData`, `MoveItemActionData` | spatial actions |
@@ -339,8 +363,9 @@ Plus a runtime-only `LoadAdventureAction` (no DO; engine-managed).
 | PreConditionData | Maps to |
 |------------------|---------|
 | `CarriedConditionData`, `WornConditionData`, `HereConditionData`, `ItemAtConditionData`, `PlayerAtConditionData` | item / location predicates |
+| `ChanceConditionData` | random-roll gate (`ChanceCondition`) |
 | `EqualsConditionData`, `GreaterThanConditionData`, `LowerThanConditionData`, `SameConditionData` | variable comparisons |
-| `NotConditionData` | composites |
+| `NotConditionData` | composite — wraps another `PreConditionData` and inverts its result. Applied in the UI via a per-condition **Negate** checkbox (`ConditionRow.toConditionData()`) rather than being one of the directly-selectable condition kinds. |
 
 ## Security / access control entities
 
@@ -365,12 +390,14 @@ Adventure (BO)
 ├── MessagesHolder       (runtime cache of MessageData)
 ├── VariableProvider     (named runtime variables)
 ├── pocket: Container    (the player's GenericContainer)
+├── Workflow             (global CommandChains, from AdventureData.workflowData)
 └── locationMap: Map<String, Location>
      └── Location  (Thing + directions + items + lumen)
           ├── ItemContainer
           │    └── Item[] (Containable, Wearable)
           ├── Direction[]   (Description + destinationId + Command)
-          └── Command[]     (CommandDescription + PreCondition[] + Action + followUp Action[])
+          └── CommandChain[] (CommandDescription + Command[], each Command =
+                               PreCondition[] + Action[], tried in order)
 
 Cross-store
 ├── (MySQL) UserData (Spring Security UserDetails)
@@ -383,7 +410,7 @@ Cross-store
 1. **Adventure-owned cascade.** Saving an `AdventureData` cascades to
    `playerPocket`, `locationData`, `vocabularyData`, and `messages` via the
    custom `@CascadeSave` machinery. Deleting cascades likewise via
-   `@CascadeDelete` (see [`05-persistence-and-mappers.md`](05-persistence-and-mappers.md#cascade)).
+   `@CascadeDelete` (see [`05-persistence-and-mappers.md`](05-persistence-and-mappers.md#cascade-save)).
 2. **Item scoping.** An `ItemData` is uniquely identified by its `id`, but
    queries that list items at a location MUST filter by `(adventureId, locationId)`
    — the compound index supports this.

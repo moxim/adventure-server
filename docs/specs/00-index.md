@@ -15,6 +15,10 @@ guidance for AI agents working in the existing codebase lives in the repo-root
 `AGENTS-*.md` files; the present specifications are upstream of those — they describe
 *what* and *why*, not *how to keep editing the current code*.
 
+Looking for end-user-facing documentation instead — what an Author actually
+sees and clicks on screen? See the
+[Author Handbook](../handbooks/README.md).
+
 ## Scope
 
 In scope:

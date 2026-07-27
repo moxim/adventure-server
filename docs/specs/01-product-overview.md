@@ -70,12 +70,22 @@ and into UI structure in [`07-ui-and-navigation.md`](07-ui-and-navigation.md).
   - **Vocabulary** — nouns, adjectives, verbs, synonyms, and the special verbs
     (take, drop, look, examine, inventory, go, help, quit, save, load).
   - **Directions** — exits between locations, gated by a command.
-  - **Commands** — verb/adjective/noun triggers that run Actions when their
-    PreConditions hold; chained follow-up Actions are supported.
+  - **Commands** — verb/adjective/noun triggers that run an ordered list of
+    Actions when their PreConditions hold. Multiple commands sharing one
+    verb/adjective/noun form a **Command Chain**, tried in order until one
+    passes.
   - **Messages** — reusable text snippets emitted by `MessageAction`.
-- Visualise the adventure as a location map (`LocationMapView`).
-- Save/Reset/Cancel/Back semantics consistent across all editor views (see
-  [`02-functional-requirements.md`](02-functional-requirements.md#editor-navigation-contract)).
+  - **Workflow** — commands that run automatically every turn regardless of
+    the player's location (see `WorkflowEditorView`), built from the same
+    CommandDescription + PreConditions + Actions shape as location commands.
+- Visualise the adventure as a location map (`LocationMapView` — currently a
+  static placeholder image, not yet driven by the adventure's actual
+  locations).
+- Save/Reset/Cancel/Back semantics consistent across nested editor views
+  (see
+  [`02-functional-requirements.md`](02-functional-requirements.md#editor-navigation-contract));
+  `AdventureEditorView` itself is the one exception, with a simpler
+  Back/Test/Save bar instead.
 
 ### D. Adventure play (PLAYER)
 
@@ -116,7 +126,7 @@ and into UI structure in [`07-ui-and-navigation.md`](07-ui-and-navigation.md).
 
 These are referenced by the current code but not yet wired up. They appear in
 "Known gaps" sections of the relevant chapters and are consolidated in
-[`09-rebuild-blueprint.md` § Roadmap](09-rebuild-blueprint.md#roadmap--known-gaps):
+[`09-rebuild-blueprint.md` § Roadmap](09-rebuild-blueprint.md#roadmap--known-gaps-consolidated):
 
 - **AI-augmented descriptions.** `DescribeAction` contains commented-out Spring AI /
   Ollama wiring; the long-term intent is to allow authors to enrich location and
@@ -144,10 +154,11 @@ This is the canonical list. Other chapters reference it.
 | **Vocabulary** | The dictionary an adventure understands. A `Vocabulary` wraps a `VocabularyData` and exposes lookup, synonym creation, and the special-word slots. |
 | **Word** | A string + a `Word.Type` (NOUN, ADJECTIVE, VERB) + an optional synonym pointing at the canonical word. |
 | **Special words** | The vocabulary entries used by the engine for built-in mechanics: `take`, `drop`, `inventory`, `look`, `examine`, `go`, `help`, `quit`, `save`, `load`. |
-| **Command** | A unit composed of a `CommandDescription` (verb/adjective/noun), a list of `PreCondition`s, an `Action`, and a list of follow-up `Action`s. |
+| **Command** | A unit composed of a `CommandDescription` (verb/adjective/noun), a list of `PreCondition`s, and an ordered list of `Action`s (all run in sequence when the command fires). |
+| **Command Chain** | Multiple `Command`s that share one `CommandDescription`; the engine tries them in order and runs the first whose `PreCondition`s all pass. This is how one verb/noun pair can behave differently depending on game state. |
 | **CommandDescription** | A 3-slot tuple `(verb, adjective?, noun?)` produced by the parser and used by the matcher to find a `Command`. |
-| **Action** | A side-effect executed when a Command's PreConditions all pass. Returns an `ExecutionResult`. 16 concrete kinds (see [`04-runtime-engine.md`](04-runtime-engine.md#action-catalog)). |
-| **PreCondition** | A boolean predicate evaluated in the current `GameContext`; gates an Action. 12 concrete kinds (see [`04-runtime-engine.md`](04-runtime-engine.md#precondition-catalog)). |
+| **Action** | A side-effect executed when a Command's PreConditions all pass. Returns an `ExecutionResult`. 16 concrete kinds, 15 of them directly authorable (see [`04-runtime-engine.md`](04-runtime-engine.md#action-catalog)). |
+| **PreCondition** | A boolean predicate evaluated in the current `GameContext`; gates an Action. 11 concrete kinds, 10 of them directly selectable — `NotCondition` is applied via a per-row Negate toggle instead (see [`04-runtime-engine.md`](04-runtime-engine.md#precondition-catalog)). |
 | **GameContext** | The runtime carrier: current location, player pocket, message holder, workflow, variable provider, IO. |
 | **Workflow** | A list of *global* commands processed before location-scoped commands. Holds inventory, quit, help, load and any other engine-level Commands. |
 | **Variable** | A named integer/value tracked in the `VariableProvider`; readable/writable by Actions and PreConditions. |

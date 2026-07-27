@@ -166,6 +166,7 @@ src/test/java/com/pdg/adventure/
 ├── server/
 │   ├── action/                      ← Action unit tests
 │   ├── condition/
+│   ├── engine/                       ← GameLoopTest, AdventureRunSession(Factory)Test, WearMachineScenarioTest
 │   ├── location/
 │   ├── mapper/                       ← + mapper/action, mapper/condition
 │   ├── parser/
@@ -176,7 +177,8 @@ src/test/java/com/pdg/adventure/
 │   ├── testhelper/                   ← TestSupporter
 │   └── AdventureBuilderTest, ApplicationTest
 └── view/                              ← browserless Vaadin tests
-    ├── command/, direction/, item/, location/, message/, vocabulary/
+    ├── admin/, adventure/, command/, component/, direction/, error/,
+    │   item/, location/, message/, player/, support/, vocabulary/, workflow/
 ```
 
 Test resources live in `src/test/resources/`:
