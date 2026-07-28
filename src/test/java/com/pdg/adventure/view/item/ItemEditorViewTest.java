@@ -191,18 +191,20 @@ class ItemEditorViewTest {
         itemData.getDescriptionData().setAdjective(new Word("golden", Word.Type.ADJECTIVE));
         createPickupCommands.invoke(view, take, drop, itemData);
 
-        // then: still exactly one take chain and one drop chain - regenerating never leaves
-        // a stale duplicate behind, regardless of what the item's adjective was at either point
+        // then: still exactly one take chain and one drop chain, and each chain still holds
+        // only its original commands (3 take variants, 2 drop variants) - regenerating never
+        // leaves stale duplicates behind inside the chain, regardless of what the item's
+        // adjective was at either point
         Map<String, CommandChainData> commands = itemData.getCommandProviderData().getAvailableCommands();
         assertThat(commands).hasSize(2);
-        long takeChains = commands.values().stream()
+        CommandChainData takeChain = commands.values().stream()
                 .filter(chain -> chain.getCommands().getFirst().getCommandDescription().getVerb().getText().equals("take"))
-                .count();
-        long dropChains = commands.values().stream()
+                .findFirst().orElseThrow();
+        CommandChainData dropChain = commands.values().stream()
                 .filter(chain -> chain.getCommands().getFirst().getCommandDescription().getVerb().getText().equals("drop"))
-                .count();
-        assertThat(takeChains).isEqualTo(1);
-        assertThat(dropChains).isEqualTo(1);
+                .findFirst().orElseThrow();
+        assertThat(takeChain.getCommands()).hasSize(3);
+        assertThat(dropChain.getCommands()).hasSize(2);
     }
 
     @Test
