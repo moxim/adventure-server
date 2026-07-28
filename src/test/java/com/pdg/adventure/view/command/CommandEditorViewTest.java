@@ -270,4 +270,44 @@ class CommandEditorViewTest {
         assertThat(chain.getCommands()).hasSize(2);
         assertThat(chain.getCommands()).contains(second);
     }
+
+    @Test
+    void deletingTheLastCommandInAChainThenSaving_doesNotResurrectABlankCommand() throws Exception {
+        // given: a chain with exactly one command
+        Word go = vocabularyData.getWords().stream()
+                .filter(w -> "go".equals(w.getText())).findFirst().orElseThrow();
+        Word north = vocabularyData.getWords().stream()
+                .filter(w -> "north".equals(w.getText())).findFirst().orElseThrow();
+
+        CommandData only = new CommandData(new CommandDescriptionData(go, null, north));
+        only.setActions(java.util.List.of(new MessageActionData()));
+        commandProviderData.add(only);
+        String chainId = commandProviderData.findChainIdContaining(only).orElseThrow();
+
+        view = new CommandEditorView(adventureService, itemService, accessService);
+        enterWithCommandId(chainId); // loads the chain; selects `only` into the editor
+
+        // when: the author deletes the only command in the chain (via the grid's context menu),
+        // then clicks Save without picking a new trigger - exercised through validateSave, the
+        // real Save-button entry point, so the required-verb validation gate is respected rather
+        // than bypassed.
+        Method deleteCommandFromChain = CommandEditorView.class.getDeclaredMethod(
+                "deleteCommandFromChain", CommandData.class);
+        deleteCommandFromChain.setAccessible(true);
+        deleteCommandFromChain.invoke(view, only);
+
+        Method validateSave = CommandEditorView.class.getDeclaredMethod(
+                "validateSave", CommandProviderData.class);
+        validateSave.setAccessible(true);
+        validateSave.invoke(view, commandProviderData);
+
+        // then: the chain is gone, and nothing new was created to replace it (no chain anywhere
+        // in the map now contains a command with this trigger)
+        assertThat(commandProviderData.getAvailableCommands()).doesNotContainKey(chainId);
+        boolean anyChainHasGoNorth = commandProviderData.getAvailableCommands().values().stream()
+                .flatMap(c -> c.getCommands().stream())
+                .anyMatch(c -> c.getCommandDescription().getVerb() != null
+                        && "go".equals(c.getCommandDescription().getVerb().getText()));
+        assertThat(anyChainHasGoNorth).isFalse();
+    }
 }

@@ -458,11 +458,23 @@ public class CommandEditorView extends VerticalLayout
 
         // Update the grid to reflect the deletion
         if (currentCommandChain.getCommands().isEmpty()) {
-            // No more commands in the chain
+            // No more commands in the chain: drop the chain entry itself (mirrors
+            // CommandsMenuView.deleteCommand) so a later Save can't silently resurrect it by
+            // reusing the now-empty chain still found via commandId. Also reset the trigger
+            // fields to blank, so the required-verb validation keeps Save disabled until the
+            // author deliberately picks a new trigger - otherwise Save stays clickable with the
+            // deleted command's old verb/adjective/noun still selected and would create a
+            // fresh, content-free command under that same trigger instead of doing nothing.
+            if (commandId != null) {
+                commandProviderData.getAvailableCommands().remove(commandId);
+            }
             commandChainGrid.setDataProvider(new ListDataProvider<>(java.util.Collections.emptyList()));
             commandData = null;
+            commandId = null;
+            currentCommandChain = null;
             selectedCommandIndex = -1;
-            // Clear the editor by loading an empty command
+            cvm = new CommandViewModel(new CommandDescriptionData());
+            binder.readBean(cvm);
             preconditionActionEditor.setCommand(new CommandData());
         } else {
             // Refresh the grid with remaining commands
