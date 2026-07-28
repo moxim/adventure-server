@@ -56,6 +56,7 @@ class ItemEditorViewTest {
     private LocationData locationData;
     private VocabularyData vocabularyData;
     private ItemData itemData;
+    private Word golden;
 
     @BeforeEach
     void setUp() {
@@ -79,7 +80,7 @@ class ItemEditorViewTest {
         // Create vocabulary
         vocabularyData = new VocabularyData();
         Word sword = new Word("sword", Word.Type.NOUN);
-        Word golden = new Word("golden", Word.Type.ADJECTIVE);
+        golden = new Word("golden", Word.Type.ADJECTIVE);
         Word go = new Word("go", Word.Type.VERB);
         vocabularyData.setWords(List.of(sword, golden, go));
         adventureData.setVocabularyData(vocabularyData);
@@ -190,10 +191,51 @@ class ItemEditorViewTest {
         itemData.getDescriptionData().setAdjective(new Word("golden", Word.Type.ADJECTIVE));
         createPickupCommands.invoke(view, take, drop, itemData);
 
-        // then: only the adjective-qualified pair remains; the stale no-adjective pair is gone
+        // then: still exactly one take chain and one drop chain - regenerating never leaves
+        // a stale duplicate behind, regardless of what the item's adjective was at either point
         Map<String, CommandChainData> commands = itemData.getCommandProviderData().getAvailableCommands();
-        assertThat(commands).containsKeys("take|golden|sword", "drop|golden|sword");
-        assertThat(commands).doesNotContainKeys("take||sword", "drop||sword");
+        assertThat(commands).hasSize(2);
+        long takeChains = commands.values().stream()
+                .filter(chain -> chain.getCommands().getFirst().getCommandDescription().getVerb().getText().equals("take"))
+                .count();
+        long dropChains = commands.values().stream()
+                .filter(chain -> chain.getCommands().getFirst().getCommandDescription().getVerb().getText().equals("drop"))
+                .count();
+        assertThat(takeChains).isEqualTo(1);
+        assertThat(dropChains).isEqualTo(1);
+    }
+
+    @Test
+    void generatedPickupCommands_neverCopyTheItemsAdjectiveOrNoun() throws Exception {
+        // given: an item that already has an adjective when pickup commands are first generated
+        itemData.getDescriptionData().setAdjective(golden);
+        locationData.getItemContainerData().getItems().add(itemData);
+
+        Word take = new Word("take", Word.Type.VERB);
+        Word drop = new Word("drop", Word.Type.VERB);
+        vocabularyData.setTakeWord(take);
+        vocabularyData.setDropWord(drop);
+
+        view = new ItemEditorView(adventureService, itemService, accessService);
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())));
+
+        Method createPickupCommands = ItemEditorView.class.getDeclaredMethod(
+                "createPickupCommands", Word.class, Word.class, ItemData.class);
+        createPickupCommands.setAccessible(true);
+
+        // when
+        createPickupCommands.invoke(view, take, drop, itemData);
+
+        // then: none of the generated commands' descriptions carry the item's adjective/noun
+        for (CommandChainData chain : itemData.getCommandProviderData().getAvailableCommands().values()) {
+            for (CommandData command : chain.getCommands()) {
+                assertThat(command.getCommandDescription().getAdjective()).isNull();
+                assertThat(command.getCommandDescription().getNoun()).isNull();
+            }
+        }
     }
 
     @Test

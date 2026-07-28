@@ -359,11 +359,13 @@ public class ItemEditorView extends VerticalLayout
         return dropCommandData;
     }
 
+    // Item-scoped commands (take/drop) don't restate the item's adjective/noun: the command
+    // already lives on this specific item, and GenericCommandProvider treats an empty stored
+    // noun as a wildcard, so it matches regardless of the item's current description. This is
+    // what stops the command's identity from silently drifting out of sync when an author
+    // edits the item afterwards.
     private CommandData getRawCommandData(final Word aTakeVerb, final ItemData anItem) {
-        DescriptionData itemDescription = anItem.getDescriptionData();
-        CommandDescriptionData commandDescription = new CommandDescriptionData(aTakeVerb,
-                                                                               itemDescription.getAdjective(),
-                                                                               itemDescription.getNoun());
+        CommandDescriptionData commandDescription = new CommandDescriptionData(aTakeVerb, null, null);
         return new CommandData(commandDescription);
     }
 
