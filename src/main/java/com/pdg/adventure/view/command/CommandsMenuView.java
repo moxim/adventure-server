@@ -214,10 +214,11 @@ public class CommandsMenuView extends VerticalLayout
         grid = buildGrid();
         grid.setEmptyStateText("Create some commands.");
 
-        // Double-click edits the command. Editing is keyed by the command spec; CommandEditorView is
-        // chain-aware and opens the chain (at index 0) for that spec.
+        // Double-click edits the command. Editing is keyed by the command's chain id (a stable
+        // id, not the trigger's verb/adjective/noun) so a save that changes the trigger can't
+        // move the chain to a different map entry or orphan its siblings.
         grid.addItemDoubleClickListener(e ->
-                navigateToCommandEditor(e.getItem().getCommandDescription().getCommandSpecification()));
+                commandProviderData.findChainIdContaining(e.getItem()).ifPresent(this::navigateToCommandEditor));
 
         gridListDataView = fillGrid(commandProviderData);
 
@@ -245,33 +246,41 @@ public class CommandsMenuView extends VerticalLayout
         }
     }
 
+    /**
+     * Test seam: the deletion logic behind the grid's context-menu "Delete" item, callable
+     * directly since there's no way to simulate a real context-menu click in a browserless test.
+     * Removes the command from whichever chain actually contains it (found by id, not by
+     * re-deriving a spec from the command's current description), dropping the chain entry
+     * entirely once it's empty.
+     */
+    void deleteCommand(CommandData aCommand) {
+        commandProviderData.findChainIdContaining(aCommand).ifPresent(chainId -> {
+            CommandChainData chain = commandProviderData.getAvailableCommands().get(chainId);
+            chain.getCommands().remove(aCommand);
+            if (chain.getCommands().isEmpty()) {
+                commandProviderData.getAvailableCommands().remove(chainId);
+            }
+        });
+        gridListDataView.removeItem(aCommand);
+        if (itemData != null) {
+            itemService.saveItem(itemData);
+        } else {
+            adventureService.saveLocationData(locationData);
+        }
+        gridListDataView.refreshAll();
+    }
+
     private class CommandContextMenu extends GridContextMenu<CommandData> {
         public CommandContextMenu(Grid<CommandData> target) {
             super(target);
 
             addItem("Edit", e -> e.getItem().ifPresent(command ->
-                    navigateToCommandEditor(command.getCommandDescription().getCommandSpecification())));
+                    commandProviderData.findChainIdContaining(command).ifPresent(
+                            CommandsMenuView.this::navigateToCommandEditor)));
 
             addComponent(new Hr());
 
-            addItem("Delete", e -> e.getItem().ifPresent(command -> {
-                String commandSpec = command.getCommandDescription().getCommandSpecification();
-                CommandChainData chain = commandProviderData.getAvailableCommands().get(commandSpec);
-                if (chain != null) {
-                    chain.getCommands().remove(command);
-                    // Drop the whole spec entry once its chain is empty.
-                    if (chain.getCommands().isEmpty()) {
-                        commandProviderData.getAvailableCommands().remove(commandSpec);
-                    }
-                }
-                gridListDataView.removeItem(command);
-                if (itemData != null) {
-                    itemService.saveItem(itemData);
-                } else {
-                    adventureService.saveLocationData(locationData);
-                }
-                gridListDataView.refreshAll();
-            }));
+            addItem("Delete", e -> e.getItem().ifPresent(CommandsMenuView.this::deleteCommand));
         }
     }
 
