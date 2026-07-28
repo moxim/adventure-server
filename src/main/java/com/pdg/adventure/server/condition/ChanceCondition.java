@@ -34,4 +34,9 @@ public class ChanceCondition extends AbstractCondition {
         }
         return result;
     }
+
+    @Override
+    public boolean isDeterministic() {
+        return false;
+    }
 }

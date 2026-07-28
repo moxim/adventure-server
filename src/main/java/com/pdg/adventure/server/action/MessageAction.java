@@ -22,4 +22,9 @@ public class MessageAction extends AbstractAction {
         result.setResultMessage(message);
         return result;
     }
+
+    @Override
+    public boolean isInformationalOnly() {
+        return true;
+    }
 }

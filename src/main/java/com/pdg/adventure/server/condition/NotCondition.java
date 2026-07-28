@@ -27,4 +27,9 @@ public class NotCondition extends AbstractCondition {
         }
         return result;
     }
+
+    @Override
+    public boolean isDeterministic() {
+        return wrappedCondition.isDeterministic();
+    }
 }

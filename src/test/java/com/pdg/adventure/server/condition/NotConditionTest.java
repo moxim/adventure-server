@@ -101,6 +101,17 @@ class NotConditionTest {
     }
 
     @Test
+    void isDeterministic_delegatesToTheWrappedCondition() {
+        PreCondition deterministicWrapped = mock(PreCondition.class);
+        when(deterministicWrapped.isDeterministic()).thenReturn(true);
+        assertThat(new NotCondition(deterministicWrapped).isDeterministic()).isTrue();
+
+        PreCondition nonDeterministicWrapped = mock(PreCondition.class);
+        when(nonDeterministicWrapped.isDeterministic()).thenReturn(false);
+        assertThat(new NotCondition(nonDeterministicWrapped).isDeterministic()).isFalse();
+    }
+
+    @Test
     void check_shouldClearResultMessageRegardlessOfState() {
         // Given: a wrapped condition that returns a result with a message
         PreCondition wrappedCondition = mock(PreCondition.class);
