@@ -27,10 +27,8 @@ import static com.pdg.adventure.model.Word.Type.NOUN;
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.action.DropActionData;
 import com.pdg.adventure.model.action.MessageActionData;
-import com.pdg.adventure.model.action.RemoveActionData;
 import com.pdg.adventure.model.action.TakeActionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
-import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.model.condition.CarriedConditionData;
 import com.pdg.adventure.model.condition.HereConditionData;
 import com.pdg.adventure.model.condition.NotConditionData;
@@ -337,9 +335,6 @@ public class ItemEditorView extends VerticalLayout
         anItemData.getCommandProviderData().add(dropCommandFailedBecauseNotCarried);
 
         final CommandData dropCommandData = createDropCommandData(aDropVerb, anItemData);
-        RemoveActionData removeActionData = new RemoveActionData();
-        removeActionData.setThingId(anItemData.getId());
-        dropCommandData.getActions().add(removeActionData);
         anItemData.getCommandProviderData().add(dropCommandData);
     }
 
