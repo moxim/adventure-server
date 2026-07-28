@@ -142,11 +142,9 @@ public class ItemUsageTracker {
 
         Map<String, CommandChainData> commands = sourceLocation.getCommandProviderData().getAvailableCommands();
 
-        for (Map.Entry<String, CommandChainData> commandEntry : commands.entrySet()) {
-            String commandSpec = commandEntry.getKey();
-            CommandChainData chain = commandEntry.getValue();
-
-            if (chain != null && chain.getCommands() != null) {
+        for (CommandChainData chain : commands.values()) {
+            if (chain != null && chain.getCommands() != null && !chain.getCommands().isEmpty()) {
+                String commandSpec = chain.getCommands().getFirst().getCommandDescription().getCommandSpecification();
                 scanCommandChainForItemUsage(sourceLocationId, sourceLocationDesc, targetItemId, usages, chain,
                                              commandSpec);
             }

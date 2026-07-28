@@ -14,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.action.MessageActionData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
 
 class MessageUsageTrackerTest {
@@ -62,7 +63,7 @@ class MessageUsageTrackerTest {
         MessageUsageTracker.MessageUsage usage = usages.getFirst();
         assertThat(usage.locationId()).isEqualTo("loc1");
         assertThat(usage.locationDescription()).isEqualTo("Hall");
-        assertThat(usage.commandSpecification()).isEqualTo("get key");
+        assertThat(usage.commandSpecification()).isEqualTo("get key||");
         assertThat(usage.actionType()).isEqualTo("Message Action");
         assertThat(usage.context()).isEqualTo("Action #1");
     }
@@ -127,7 +128,7 @@ class MessageUsageTrackerTest {
         assertThat(usages).hasSize(1);
         assertThat(usages.getFirst().locationDescription()).isNullOrEmpty();
         assertThat(usages.getFirst().locationId()).isEqualTo("loc1");
-        assertThat(usages.getFirst().commandSpecification()).isEqualTo("look around");
+        assertThat(usages.getFirst().commandSpecification()).isEqualTo("look around||");
     }
 
     @Test
@@ -232,14 +233,15 @@ class MessageUsageTrackerTest {
         Map<String, CommandChainData> commands = new HashMap<>();
 
         CommandChainData commandChain = new CommandChainData();
-        CommandData command = new CommandData();
+        CommandData command = new CommandData(new CommandDescriptionData(new Word(commandSpec, Word.Type.VERB), null,
+                                                                          null));
 
         MessageActionData messageAction = new MessageActionData();
         messageAction.setMessageId(messageId);
         command.addAction(messageAction);
 
         commandChain.getCommands().add(command);
-        commands.put(commandSpec, commandChain);
+        commands.put(commandChain.getId(), commandChain);
         commandProvider.setAvailableCommands(commands);
 
         location.setCommandProviderData(commandProvider);
@@ -274,7 +276,7 @@ class MessageUsageTrackerTest {
         command.addAction(followUp2);
 
         commandChain.getCommands().add(command);
-        commands.put("test_command", commandChain);
+        commands.put(commandChain.getId(), commandChain);
         commandProvider.setAvailableCommands(commands);
 
         location.setCommandProviderData(commandProvider);
