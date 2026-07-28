@@ -205,6 +205,24 @@ class CommandExecutorTest {
     }
 
     @Test
+    void ambiguousCommandWithNoNounAsksWhatNotWhich() {
+        // given: two different providers (the location itself, and an item in the pocket)
+        // each offer the same no-noun, no-adjective command
+        GenericCommandDescription jumpCommand = new GenericCommandDescription("jump");
+        location.addCommand(new GenericCommand(jumpCommand, successAction));
+        Item something = new Item(new DescriptionProvider("thing"), true);
+        something.addCommand(new GenericCommand(jumpCommand, successAction));
+        pocket.add(something);
+
+        // when
+        final ExecutionResult result = sut.execute(jumpCommand);
+
+        // then: no noun was given, so the generic template must be used, not "Which  do you..."
+        assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
+        assertThat(result.getResultMessage()).isEqualTo("What do you want to jump?");
+    }
+
+    @Test
     void ambiguousCommandForItemsWithDifferentNamesMustFail() {
         // given
         Item someTree = new Item(new DescriptionProvider("tree"), true);

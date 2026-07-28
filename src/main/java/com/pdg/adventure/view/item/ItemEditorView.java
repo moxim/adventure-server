@@ -262,8 +262,13 @@ public class ItemEditorView extends VerticalLayout
         }
 
         CommandProviderData commandProvider = anItemData.getCommandProviderData();
+        String takeVerbText = wordText(adventureData.getVocabularyData().getTakeWord());
+        String dropVerbText = wordText(adventureData.getVocabularyData().getDropWord());
 
-        // Iterate through all command chains and remove take/drop actions
+        // Iterate through all command chains and remove take/drop actions. Matched by verb
+        // alone, not the full verb/adjective/noun spec: a chain generated before the item's
+        // adjective was set (or changed since) would otherwise no longer match a freshly
+        // rebuilt spec and get left behind as a duplicate instead of being replaced.
         commandProvider.getAvailableCommands().entrySet().removeIf(entry -> {
             CommandChainData commandChain = entry.getValue();
             if (commandChain == null || commandChain.getCommands() == null) {
@@ -275,15 +280,8 @@ public class ItemEditorView extends VerticalLayout
                 if (command.getActions().isEmpty()) {
                     return false;
                 }
-                final CommandData rawTakeCommandData = getRawCommandData(
-                        adventureData.getVocabularyData().getTakeWord(), anItemData);
-                final CommandData rawDropCommandData = getRawCommandData(
-                        adventureData.getVocabularyData().getDropWord(), anItemData);
-                return command.getCommandDescription().getCommandSpecification()
-                              .equals(rawTakeCommandData.getCommandDescription().getCommandSpecification())
-                       ||
-                       command.getCommandDescription().getCommandSpecification()
-                              .equals(rawDropCommandData.getCommandDescription().getCommandSpecification());
+                String verbText = wordText(command.getCommandDescription().getVerb());
+                return verbText.equals(takeVerbText) || verbText.equals(dropVerbText);
             });
 
             // Remove the entire command chain if it's now empty
@@ -367,6 +365,10 @@ public class ItemEditorView extends VerticalLayout
                                                                                itemDescription.getAdjective(),
                                                                                itemDescription.getNoun());
         return new CommandData(commandDescription);
+    }
+
+    private static String wordText(final Word aWord) {
+        return aWord == null || aWord.getText() == null ? "" : aWord.getText();
     }
 
     private void validateSave(ItemViewModel anItemViewModel) {

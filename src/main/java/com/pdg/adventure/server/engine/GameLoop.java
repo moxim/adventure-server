@@ -65,8 +65,10 @@ public class GameLoop {
                 return CommandOutcome.CONTINUE;
             }
 
-            // Continue if the user provided nothing that we understand.
-            if (command.toString().equals("||")) {
+            // Continue if the user provided nothing that we understand. A command needs at
+            // least a verb to be actionable - e.g. a bare noun like "suit" with no verb - so
+            // that alone is unparseable, not merely a command with no matching handler.
+            if (VocabularyData.EMPTY_STRING.equals(command.getVerb())) {
                 gameContext.tell("I don't understand, please rephrase.");
                 return CommandOutcome.CONTINUE;
             }

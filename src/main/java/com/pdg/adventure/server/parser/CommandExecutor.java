@@ -75,8 +75,11 @@ public class CommandExecutor {
             result.setResultMessage("I don't know how to do that.");
             return false;
         } else if (availableCommandChains.size() > 1) {
-            result.setResultMessage("What do you want to %s?".formatted(aVerb));
-            result.setResultMessage("Which %s do you want to %s?".formatted(aNoun, aVerb));
+            if (VocabularyData.EMPTY_STRING.equals(aNoun)) {
+                result.setResultMessage("What do you want to %s?".formatted(aVerb));
+            } else {
+                result.setResultMessage("Which %s do you want to %s?".formatted(aNoun, aVerb));
+            }
             return false;
         }
         return true;

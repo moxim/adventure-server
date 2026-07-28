@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -160,6 +161,39 @@ class ItemEditorViewTest {
         // title reflecting the item's actual description (derived from itemData, which
         // beforeEnter must have found by id in the container) rather than "New Item".
         assertThat(view.getPageTitle()).isEqualTo("Edit Item: A golden sword");
+    }
+
+    @Test
+    void regeneratingPickupCommandsAfterAdjectiveChange_removesStaleNoAdjectiveCommands() throws Exception {
+        // given: an item with no adjective, already carrying auto-generated pickup commands
+        itemData.getDescriptionData().setAdjective(null);
+        locationData.getItemContainerData().getItems().add(itemData);
+
+        Word take = new Word("take", Word.Type.VERB);
+        Word drop = new Word("drop", Word.Type.VERB);
+        vocabularyData.setTakeWord(take);
+        vocabularyData.setDropWord(drop);
+
+        view = new ItemEditorView(adventureService, itemService, accessService);
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
+                new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())));
+
+        Method createPickupCommands = ItemEditorView.class.getDeclaredMethod(
+                "createPickupCommands", Word.class, Word.class, ItemData.class);
+        createPickupCommands.setAccessible(true);
+
+        // when: generated once with no adjective, then the author gives the item an
+        // adjective and regenerates (e.g. by unchecking/rechecking "Can be picked up")
+        createPickupCommands.invoke(view, take, drop, itemData);
+        itemData.getDescriptionData().setAdjective(new Word("golden", Word.Type.ADJECTIVE));
+        createPickupCommands.invoke(view, take, drop, itemData);
+
+        // then: only the adjective-qualified pair remains; the stale no-adjective pair is gone
+        Map<String, CommandChainData> commands = itemData.getCommandProviderData().getAvailableCommands();
+        assertThat(commands).containsKeys("take|golden|sword", "drop|golden|sword");
+        assertThat(commands).doesNotContainKeys("take||sword", "drop||sword");
     }
 
     @Test
