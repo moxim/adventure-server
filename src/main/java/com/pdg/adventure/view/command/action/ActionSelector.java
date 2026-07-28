@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.action.ActionData;
+import com.pdg.adventure.model.action.BreakActionData;
 import com.pdg.adventure.model.action.CreateActionData;
 import com.pdg.adventure.model.action.DecrementVariableActionData;
 import com.pdg.adventure.model.action.DescribeActionData;
@@ -108,6 +109,9 @@ public class ActionSelector extends HorizontalLayout {
         types.add(new ActionTypeDescriptor("Set Variable", "Set a named variable to a specific value",
                                            () -> new SetVariableActionData(null, null)));
         types.add(new ActionTypeDescriptor("Quit", "Terminate the game", QuitActionData::new));
+        types.add(new ActionTypeDescriptor("Break",
+                                           "Stop processing this command chain; other chains are unaffected",
+                                           BreakActionData::new));
 
         return types;
     }

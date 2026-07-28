@@ -70,6 +70,9 @@ public class GenericCommand implements Command {
             if (msg != null && !msg.isBlank()) {
                 messages.add(msg);
             }
+            if (action.isBreak()) {
+                break;              // stop this command's own action list here
+            }
         }
         result.setResultMessage(String.join(System.lineSeparator(), messages));
         return result;                     // SUCCESS, all action messages joined

@@ -21,6 +21,12 @@ class GenericCommandChainTest {
         return a;
     }
 
+    private static Action breakAction(String message) {
+        Action a = action(message);
+        when(a.isBreak()).thenReturn(true);
+        return a;
+    }
+
     private static PreCondition precondition(ExecutionResult.State state) {
         PreCondition p = mock(PreCondition.class);
         when(p.check()).thenReturn(new CommandExecutionResult(state));
@@ -118,5 +124,43 @@ class GenericCommandChainTest {
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
         assertThat(result.getResultMessage())
                 .isEqualTo("jump_sea_ok" + System.lineSeparator() + "jump_sea_also_here");
+    }
+
+    @Test
+    void breakAction_stopsProcessingFurtherCommandsInTheChain() {
+        GenericCommandChain chain = new GenericCommandChain();
+        GenericCommand first = new GenericCommand(mock(CommandDescription.class));
+        first.addAction(action("first"));
+        first.addAction(breakAction("also-first"));
+        chain.addCommand(first);
+        chain.addCommand(command(null, "never runs"));
+
+        ExecutionResult result = chain.execute();
+
+        assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
+        assertThat(result.getResultMessage())
+                .isEqualTo("first" + System.lineSeparator() + "also-first");
+    }
+
+    @Test
+    void breakAction_onlyStopsTheChainItRanIn_notOtherChains() {
+        // "other command chains" simply means CommandExecutor selects and runs exactly one
+        // chain per player command - BREAK's effect is local to this one chain.execute() call
+        // and never leaks into a second, independently-executed chain.
+        GenericCommandChain firstChain = new GenericCommandChain();
+        GenericCommand broken = new GenericCommand(mock(CommandDescription.class));
+        broken.addAction(action("chain-one"));
+        broken.addAction(breakAction("chain-one-break"));
+        firstChain.addCommand(broken);
+
+        GenericCommandChain secondChain = new GenericCommandChain();
+        secondChain.addCommand(command(null, "chain-two"));
+
+        ExecutionResult firstResult = firstChain.execute();
+        ExecutionResult secondResult = secondChain.execute();
+
+        assertThat(firstResult.getResultMessage())
+                .isEqualTo("chain-one" + System.lineSeparator() + "chain-one-break");
+        assertThat(secondResult.getResultMessage()).isEqualTo("chain-two");
     }
 }

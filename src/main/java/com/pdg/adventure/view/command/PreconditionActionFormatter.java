@@ -11,6 +11,7 @@ import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.action.ActionData;
+import com.pdg.adventure.model.action.BreakActionData;
 import com.pdg.adventure.model.action.CreateActionData;
 import com.pdg.adventure.model.action.DecrementVariableActionData;
 import com.pdg.adventure.model.action.DescribeActionData;
@@ -156,6 +157,9 @@ public class PreconditionActionFormatter {
         }
         if (a instanceof QuitActionData) {
             return "QUIT";
+        }
+        if (a instanceof BreakActionData) {
+            return "BREAK";
         }
         return a.getActionName().replace("ActionData", "").toUpperCase(Locale.ROOT);
     }

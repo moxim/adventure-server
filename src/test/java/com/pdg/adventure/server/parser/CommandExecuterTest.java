@@ -12,6 +12,7 @@ import com.pdg.adventure.api.Action;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.api.PreCondition;
+import com.pdg.adventure.server.action.BreakAction;
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.condition.CarriedCondition;
@@ -545,11 +546,40 @@ class CommandExecutorTest {
                 .isEqualTo("jetty_jump_sea_no_suit" + System.lineSeparator() + "jump_sea_also_here");
     }
 
+    @Test
+    void breakAction_suppressesLaterCommandsInTheSameChain_throughTheRealExecutor() {
+        // An author wants the WORN branch's move to be the *only* thing that happens - no
+        // "also here" flavour alongside it - by adding a BreakAction after the move. This must
+        // hold end-to-end through CommandExecutor.execute(), not just at the chain level.
+        GameContext gameContext = new GameContext();
+        gameContext.setPocket(pocket);
+        gameContext.setCurrentLocation(location);
+        MessagesHolder messages = new MessagesHolder();
+
+        Item neopreneSuit = new Item(new DescriptionProvider("neoprene", "suit"), true);
+        neopreneSuit.setIsWearable(true);
+        neopreneSuit.setIsWorn(true);
+        pocket.add(neopreneSuit);
+
+        addJumpChains(gameContext, messages, neopreneSuit, sea, true);
+
+        ExecutionResult result = sut.execute(new GenericCommandDescription("jump", "sea"));
+
+        assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
+        assertThat(gameContext.getCurrentLocation()).isEqualTo(sea);
+        assertThat(result.getResultMessage()).contains("jump_sea_ok").doesNotContain("jump_sea_also_here");
+    }
+
     private final Location sea = new Location(new DescriptionProvider("sea"),
             new GenericContainer(new DescriptionProvider("seaPocket"), 5));
 
     private void addJumpChains(GameContext aGameContext, MessagesHolder aMessages, Item aNeopreneSuit,
                                Location aSea) {
+        addJumpChains(aGameContext, aMessages, aNeopreneSuit, aSea, false);
+    }
+
+    private void addJumpChains(GameContext aGameContext, MessagesHolder aMessages, Item aNeopreneSuit,
+                               Location aSea, boolean aBreakAfterTheMove) {
         GenericCommandDescription bareJumpSpec = new GenericCommandDescription("jump");
         location.addCommand(new GenericCommand(bareJumpSpec, new MessageAction("jetty_jump", aMessages)));
 
@@ -558,6 +588,9 @@ class CommandExecutorTest {
         jumpSeaOk.addPreCondition(new WornCondition(aNeopreneSuit));
         jumpSeaOk.addPreCondition(new PlayerAtCondition(location, aGameContext));
         jumpSeaOk.addAction(new MovePlayerAction(aSea, aMessages, aGameContext));
+        if (aBreakAfterTheMove) {
+            jumpSeaOk.addAction(new BreakAction(aMessages));
+        }
         location.addCommand(jumpSeaOk);
 
         GenericCommand jumpSeaNoSuit = new GenericCommand(jumpSeaSpec,

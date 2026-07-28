@@ -118,6 +118,11 @@ class PreconditionActionFormatterActionsTest {
     }
 
     @Test
+    void breakAction() {
+        assertThat(formatter.formatAction(new BreakActionData())).isEqualTo("BREAK");
+    }
+
+    @Test
     void nullActionIsRenderedSafely() {
         assertThat(formatter.formatAction(null)).isEqualTo("?");
     }

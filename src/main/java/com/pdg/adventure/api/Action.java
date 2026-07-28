@@ -13,4 +13,11 @@ public interface Action extends Serializable {
     default boolean isInformationalOnly() {
         return false;
     }
+
+    // true only for BreakAction - marks a command whose execution must stop the enclosing
+    // command chain from processing any further commands (but not other chains, or actions
+    // that ran before this one within the same command).
+    default boolean isBreak() {
+        return false;
+    }
 }
