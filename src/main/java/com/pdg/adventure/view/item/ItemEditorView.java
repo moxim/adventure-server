@@ -335,6 +335,7 @@ public class ItemEditorView extends VerticalLayout
         anItemData.getCommandProviderData().add(dropCommandFailedBecauseNotCarried);
 
         final CommandData dropCommandData = createDropCommandData(aDropVerb, anItemData);
+        dropCommandData.getPreConditions().add(carriedCondition);
         anItemData.getCommandProviderData().add(dropCommandData);
     }
 
