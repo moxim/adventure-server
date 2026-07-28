@@ -27,10 +27,8 @@ import static com.pdg.adventure.model.Word.Type.NOUN;
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.action.DropActionData;
 import com.pdg.adventure.model.action.MessageActionData;
-import com.pdg.adventure.model.action.RemoveActionData;
 import com.pdg.adventure.model.action.TakeActionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
-import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.model.condition.CarriedConditionData;
 import com.pdg.adventure.model.condition.HereConditionData;
 import com.pdg.adventure.model.condition.NotConditionData;
@@ -262,8 +260,13 @@ public class ItemEditorView extends VerticalLayout
         }
 
         CommandProviderData commandProvider = anItemData.getCommandProviderData();
+        String takeVerbText = wordText(adventureData.getVocabularyData().getTakeWord());
+        String dropVerbText = wordText(adventureData.getVocabularyData().getDropWord());
 
-        // Iterate through all command chains and remove take/drop actions
+        // Iterate through all command chains and remove take/drop actions. Matched by verb
+        // alone, not the full verb/adjective/noun spec: a chain generated before the item's
+        // adjective was set (or changed since) would otherwise no longer match a freshly
+        // rebuilt spec and get left behind as a duplicate instead of being replaced.
         commandProvider.getAvailableCommands().entrySet().removeIf(entry -> {
             CommandChainData commandChain = entry.getValue();
             if (commandChain == null || commandChain.getCommands() == null) {
@@ -275,15 +278,8 @@ public class ItemEditorView extends VerticalLayout
                 if (command.getActions().isEmpty()) {
                     return false;
                 }
-                final CommandData rawTakeCommandData = getRawCommandData(
-                        adventureData.getVocabularyData().getTakeWord(), anItemData);
-                final CommandData rawDropCommandData = getRawCommandData(
-                        adventureData.getVocabularyData().getDropWord(), anItemData);
-                return command.getCommandDescription().getCommandSpecification()
-                              .equals(rawTakeCommandData.getCommandDescription().getCommandSpecification())
-                       ||
-                       command.getCommandDescription().getCommandSpecification()
-                              .equals(rawDropCommandData.getCommandDescription().getCommandSpecification());
+                String verbText = wordText(command.getCommandDescription().getVerb());
+                return verbText.equals(takeVerbText) || verbText.equals(dropVerbText);
             });
 
             // Remove the entire command chain if it's now empty
@@ -339,9 +335,7 @@ public class ItemEditorView extends VerticalLayout
         anItemData.getCommandProviderData().add(dropCommandFailedBecauseNotCarried);
 
         final CommandData dropCommandData = createDropCommandData(aDropVerb, anItemData);
-        RemoveActionData removeActionData = new RemoveActionData();
-        removeActionData.setThingId(anItemData.getId());
-        dropCommandData.getActions().add(removeActionData);
+        dropCommandData.getPreConditions().add(carriedCondition);
         anItemData.getCommandProviderData().add(dropCommandData);
     }
 
@@ -361,12 +355,18 @@ public class ItemEditorView extends VerticalLayout
         return dropCommandData;
     }
 
+    // Item-scoped commands (take/drop) don't restate the item's adjective/noun: the command
+    // already lives on this specific item, and GenericCommandProvider treats an empty stored
+    // noun as a wildcard, so it matches regardless of the item's current description. This is
+    // what stops the command's identity from silently drifting out of sync when an author
+    // edits the item afterwards.
     private CommandData getRawCommandData(final Word aTakeVerb, final ItemData anItem) {
-        DescriptionData itemDescription = anItem.getDescriptionData();
-        CommandDescriptionData commandDescription = new CommandDescriptionData(aTakeVerb,
-                                                                               itemDescription.getAdjective(),
-                                                                               itemDescription.getNoun());
+        CommandDescriptionData commandDescription = new CommandDescriptionData(aTakeVerb, null, null);
         return new CommandData(commandDescription);
+    }
+
+    private static String wordText(final Word aWord) {
+        return aWord == null || aWord.getText() == null ? "" : aWord.getText();
     }
 
     private void validateSave(ItemViewModel anItemViewModel) {

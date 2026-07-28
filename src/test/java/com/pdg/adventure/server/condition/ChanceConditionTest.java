@@ -42,4 +42,11 @@ class ChanceConditionTest {
 
         assertThat(TestSupporter.conditionToBoolean(sut)).isTrue();
     }
+
+    @Test
+    void isNotDeterministic() {
+        ChanceCondition sut = new ChanceCondition(50, () -> 50);
+
+        assertThat(sut.isDeterministic()).isFalse();
+    }
 }

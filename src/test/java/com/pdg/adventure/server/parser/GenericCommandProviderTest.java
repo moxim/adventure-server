@@ -181,6 +181,52 @@ class GenericCommandProviderTest {
     }
 
     @Test
+    void emptyStoredNounMatchesAnyQueriedNoun() {
+        GenericCommandProvider provider = new GenericCommandProvider();
+        Action noop = new Action() {
+            @Override
+            public ExecutionResult execute() {
+                return new CommandExecutionResult(ExecutionResult.State.SUCCESS);
+            }
+
+            @Override
+            public String getActionName() {
+                return "noop";
+            }
+        };
+        GenericCommandDescription itemScoped = new GenericCommandDescription("get", "", "");
+        provider.addCommand(new GenericCommand(itemScoped, noop));
+
+        List<CommandChain> matches = provider.getMatchingCommandChain(
+                new GenericCommandDescription("get", "", "suit"));
+
+        assertThat(matches).hasSize(1);
+    }
+
+    @Test
+    void nonEmptyStoredNounStillRequiresExactMatch() {
+        GenericCommandProvider provider = new GenericCommandProvider();
+        Action noop = new Action() {
+            @Override
+            public ExecutionResult execute() {
+                return new CommandExecutionResult(ExecutionResult.State.SUCCESS);
+            }
+
+            @Override
+            public String getActionName() {
+                return "noop";
+            }
+        };
+        GenericCommandDescription doorScoped = new GenericCommandDescription("open", "", "door");
+        provider.addCommand(new GenericCommand(doorScoped, noop));
+
+        List<CommandChain> matches = provider.getMatchingCommandChain(
+                new GenericCommandDescription("open", "", "window"));
+
+        assertThat(matches).isEmpty();
+    }
+
+    @Test
     void matchingMatrixBehaviour() {
         GenericCommandProvider provider = new GenericCommandProvider();
 

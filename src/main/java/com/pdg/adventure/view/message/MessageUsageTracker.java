@@ -72,11 +72,9 @@ public class MessageUsageTracker {
                                                     final List<MessageUsage> usages) {
         Map<String, CommandChainData> commands = location.getCommandProviderData().getAvailableCommands();
 
-        for (Map.Entry<String, CommandChainData> commandEntry : commands.entrySet()) {
-            String commandSpec = commandEntry.getKey();
-            CommandChainData chain = commandEntry.getValue();
-
-            if (chain != null && chain.getCommands() != null) {
+        for (CommandChainData chain : commands.values()) {
+            if (chain != null && chain.getCommands() != null && !chain.getCommands().isEmpty()) {
+                String commandSpec = chain.getCommands().getFirst().getCommandDescription().getCommandSpecification();
                 addUsagesInCommands(messageId, locationEntry, chain, locationDesc, commandSpec, usages);
             }
         }

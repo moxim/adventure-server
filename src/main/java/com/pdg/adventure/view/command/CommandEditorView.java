@@ -14,11 +14,9 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.*;
 import jakarta.annotation.security.RolesAllowed;
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
 import java.util.Optional;
 
 import static com.pdg.adventure.model.Word.Type.*;
@@ -238,9 +236,6 @@ public class CommandEditorView extends VerticalLayout
                     adventureService.saveLocationData(locationData);
                 }
 
-                // Update commandId to the new specification (in case it changed)
-                commandId = cvm.getData().getCommandSpecification();
-
                 // Reload the command chain from the saved data
                 currentCommandChain = commandProviderData.getAvailableCommands().get(commandId);
 
@@ -268,57 +263,31 @@ public class CommandEditorView extends VerticalLayout
     }
 
     private CommandData swivelTheSaveButton() {
-        // Use the commandDescriptionData that was updated via the binder
         final CommandDescriptionData updatedCommandDescription = cvm.getData();
-        final String newSpecification = updatedCommandDescription.getCommandSpecification();
 
-        final Map<String, CommandChainData> availableCommandsHelper = commandProviderData.getAvailableCommands();
-
-        // If editing an existing command and the specification has changed, remove the old entry
-        if (commandId != null && !commandId.isEmpty() && !commandId.equals(newSpecification)) {
-            availableCommandsHelper.remove(commandId);
-        }
-
-        // Determine if we're editing an existing command or creating a new one
-        boolean isEditingExistingCommand = commandId != null && !commandId.isEmpty() &&
-                                           commandId.equals(newSpecification);
-
-        final CommandData command = getEditingCommandData(isEditingExistingCommand, updatedCommandDescription);
+        CommandData command = (commandData != null) ? commandData : new CommandData();
+        command.setCommandDescription(updatedCommandDescription);
 
         // Persist the preconditions and actions from the editor
         preconditionActionEditor.saveToCommand(command);
 
-        final CommandChainData commandChainData = availableCommandsHelper.get(newSpecification);
-        if (commandChainData == null) {
-            // New command - create new chain
-            final CommandChainData chainData = new CommandChainData();
-            chainData.getCommands().add(command);
-            availableCommandsHelper.put(newSpecification, chainData);
-        } else if (!isEditingExistingCommand) {
-            // Command specification already exists and we're adding a new variant (not editing existing).
-            // Commands with the same description are chained together; the chain executes until one
-            // with met preconditions succeeds.
-            commandChainData.getCommands().add(command);
-        }
-        // If isEditingExistingCommand is true, the command is already in the chain and updated in place.
-        // The menu grid reflects all of the above on return: navigateBack() re-runs CommandsMenuView.setData().
+        CommandChainData chainData = (commandId != null && !commandId.isEmpty())
+                ? commandProviderData.getAvailableCommands().get(commandId)
+                : null;
 
-        return command;
-    }
-
-    private @NonNull CommandData getEditingCommandData(final boolean isEditingExistingCommand,
-                                                final CommandDescriptionData updatedCommandDescription) {
-        CommandData command;
-        if (isEditingExistingCommand && commandData != null) {
-            // We're editing an existing command with the same specification - update it in place
-            command = commandData;
-            command.setCommandDescription(updatedCommandDescription);
+        if (chainData != null) {
+            // Editing a command whose chain we already know: it stays there, in place - the
+            // chain's id never changes just because the trigger description did, so siblings
+            // sharing this chain are never dropped by a save that changes verb/adjective/noun.
+            if (!chainData.getCommands().contains(command)) {
+                chainData.getCommands().add(command);
+            }
         } else {
-            // We're creating a new command or the specification changed
-            command = new CommandData();
-//            command.setId(UUID.randomUUID().toString()); // Ensure unique ID for grid
-            command.setCommandDescription(updatedCommandDescription);
+            // Brand-new command: joins an existing chain with a matching trigger, or starts one.
+            commandProviderData.add(command);
         }
+
+        commandId = commandProviderData.findChainIdContaining(command).orElse(commandId);
         return command;
     }
 
@@ -356,17 +325,12 @@ public class CommandEditorView extends VerticalLayout
             }
         }
         final Optional<String> optionalCommandId = event.getRouteParameters().get(RouteIds.COMMAND_ID.getValue());
-        if (optionalCommandId.isPresent()) {
-            // Cold-load (bookmark/refresh) navigation delivers this route parameter still
-            // percent-encoded (e.g. "jump%7C%7Csea"); in-app navigate() preserves the raw
-            // pipe-delimited value (e.g. "jump||sea"), which may itself contain '%' or '+'
-            // characters from vocabulary text. AdventureRouteResolver.decodeRouteParam performs
-            // percent-only decoding with graceful fallback for both cases.
-            commandId = AdventureRouteResolver.decodeRouteParam(optionalCommandId.get());
-            pageTitle = "Edit Command: " + ViewSupporter.formatDescription(new CommandDescriptionData(commandId));
-        } else {
-            pageTitle = "New Command";
-        }
+        // Cold-load (bookmark/refresh) navigation can deliver this route parameter percent-
+        // encoded; in-app navigate() preserves the raw value. AdventureRouteResolver
+        // .decodeRouteParam performs percent-only decoding with graceful fallback for both.
+        // commandId is a chain's own stable id (opaque), not anything derived from its
+        // trigger - pageTitle is set from the actual resolved chain, in populate() below.
+        commandId = optionalCommandId.map(AdventureRouteResolver::decodeRouteParam).orElse(null);
         if (resolvedItem.isPresent()) {
             setData(resolvedAdventure.get(), resolvedLocation.get(), resolvedItem.get());
         } else {
@@ -410,21 +374,21 @@ public class CommandEditorView extends VerticalLayout
             preconditionAndActionHolder.add(preconditionActionEditor);
         }
 
-        // Find existing command or create new one
+        // Find existing command or create new one. commandId is a chain's own stable id, not
+        // anything derived from its trigger, so there's no fallback parse-as-spec path anymore.
         CommandDescriptionData commandDescriptionData;
         if (commandId != null && !commandId.isEmpty()) {
-            // Look up existing command by specification (commandId contains the spec like "go|north|")
             CommandChainData commandChain = commandProviderData.getAvailableCommands().get(commandId);
             if (commandChain != null && !commandChain.getCommands().isEmpty()) {
-                // Get the command description from the first command in the chain
                 commandDescriptionData = commandChain.getCommands().getFirst().getCommandDescription();
+                pageTitle = "Edit Command: " + ViewSupporter.formatDescription(commandDescriptionData);
             } else {
-                // Command not found, create new one with the specification
-                commandDescriptionData = new CommandDescriptionData(commandId);
+                commandDescriptionData = new CommandDescriptionData();
+                pageTitle = "New Command";
             }
         } else {
-            // Creating a new command
             commandDescriptionData = new CommandDescriptionData();
+            pageTitle = "New Command";
         }
 
         VocabularyData vocabularyData = adventureData.getVocabularyData();
@@ -494,11 +458,23 @@ public class CommandEditorView extends VerticalLayout
 
         // Update the grid to reflect the deletion
         if (currentCommandChain.getCommands().isEmpty()) {
-            // No more commands in the chain
+            // No more commands in the chain: drop the chain entry itself (mirrors
+            // CommandsMenuView.deleteCommand) so a later Save can't silently resurrect it by
+            // reusing the now-empty chain still found via commandId. Also reset the trigger
+            // fields to blank, so the required-verb validation keeps Save disabled until the
+            // author deliberately picks a new trigger - otherwise Save stays clickable with the
+            // deleted command's old verb/adjective/noun still selected and would create a
+            // fresh, content-free command under that same trigger instead of doing nothing.
+            if (commandId != null) {
+                commandProviderData.getAvailableCommands().remove(commandId);
+            }
             commandChainGrid.setDataProvider(new ListDataProvider<>(java.util.Collections.emptyList()));
             commandData = null;
+            commandId = null;
+            currentCommandChain = null;
             selectedCommandIndex = -1;
-            // Clear the editor by loading an empty command
+            cvm = new CommandViewModel(new CommandDescriptionData());
+            binder.readBean(cvm);
             preconditionActionEditor.setCommand(new CommandData());
         } else {
             // Refresh the grid with remaining commands

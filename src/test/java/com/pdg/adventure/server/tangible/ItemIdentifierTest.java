@@ -97,6 +97,27 @@ class ItemIdentifierTest {
     }
 
     @Test
+    void ambiguousItems_whenOnlyOneHasNoAdjective_stillFindsBothForAnUnqualifiedQuery() {
+        // given: one item has a real adjective ("neoprene suit"), the other has none ("suit") -
+        // reproduces the demo adventure's actual neoprene suit / swim suit shape. A bare,
+        // unqualified query (no adjective typed) must not silently narrow to just the
+        // no-adjective item merely because "" happens to equal its own empty adjective; an
+        // empty query adjective means "no filter", so it must find both.
+        String noun = "suit";
+        Item neopreneSuit = new Item(new DescriptionProvider("neoprene", noun), true);
+        container.add(neopreneSuit);
+        Item swimSuit = new Item(new DescriptionProvider(noun), true);
+        container.add(swimSuit);
+        GenericCommandDescription commandDescription = new GenericCommandDescription("", "", noun);
+
+        // when
+        List<Containable> items = ItemIdentifier.findItems(container, commandDescription);
+
+        // then
+        assertThat(items).contains(neopreneSuit, swimSuit).size().isEqualTo(2);
+    }
+
+    @Test
     void findSpecificItem() {
         // given
         String noun = "ring";

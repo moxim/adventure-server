@@ -41,6 +41,7 @@ class GameLoopTest {
         vocabulary.createNewWord("quit", Word.Type.VERB);
         vocabulary.createNewWord("describe", Word.Type.VERB);
         vocabulary.createNewWord("take", Word.Type.VERB); // recognised, but wired to nothing
+        vocabulary.createNewWord("suit", Word.Type.NOUN); // recognised noun, no verb given in some tests
 
         Workflow workflow = gameContext.setUpWorkflows();
         new CommandFactory(new MessagesHolder(), gameContext, new VocabularyData()).setUpWorkflowCommands(workflow);
@@ -78,5 +79,16 @@ class GameLoopTest {
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
         assertThat(told.toString()).contains("I don't know how to do that.");
+    }
+
+    @Test
+    void bareNounWithNoVerb_tellsPleaseRephrase_notIDontKnowHow() {
+        // "suit" is a recognised noun but no verb was given, so this must be treated the
+        // same as unparseable input, not as a command that merely fails to find a match.
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("suit");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString()).contains("I don't understand, please rephrase.");
+        assertThat(told.toString()).doesNotContain("I don't know how to do that.");
     }
 }

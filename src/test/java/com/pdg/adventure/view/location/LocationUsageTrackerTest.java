@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.action.MovePlayerActionData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
 
 class LocationUsageTrackerTest {
@@ -133,7 +134,7 @@ class LocationUsageTrackerTest {
         assertThat(usage.getUsageType()).isEqualTo("Move Action");
         assertThat(usage.getSourceLocationId()).isEqualTo("hall");
         assertThat(usage.getSourceLocationDescription()).isEqualTo("Hall");
-        assertThat(usage.getCommandSpecification()).isEqualTo("use trap door");
+        assertThat(usage.getCommandSpecification()).isEqualTo("use trap door||");
         assertThat(usage.getContext()).isEqualTo("Action #1");
     }
 
@@ -177,6 +178,28 @@ class LocationUsageTrackerTest {
         assertThat(usages).hasSize(3);
         assertThat(usages).extracting(LocationUsageTracker.LocationUsage::getUsageType)
                           .containsExactlyInAnyOrder("Starting Location", "Direction", "Move Action");
+    }
+
+    @Test
+    void findLocationUsages_shouldUseTheChainsOwnSpec_notTheMapsUlidKey() {
+        // Given: the command provider map is keyed by the chain's stable id (as production
+        // code does), not by its command's spec text
+        String targetLocationId = "dungeon";
+        LocationData hallLocation = createLocationWithMoveAction("hall", "Hall", "use trap door", targetLocationId);
+        CommandProviderData commandProvider = hallLocation.getCommandProviderData();
+        Map<String, CommandChainData> byUlid = new HashMap<>();
+        CommandChainData chain = commandProvider.getAvailableCommands().values().iterator().next();
+        byUlid.put(chain.getId(), chain);
+        commandProvider.setAvailableCommands(byUlid);
+        adventureData.getLocationData().put("hall", hallLocation);
+
+        // When
+        List<LocationUsageTracker.LocationUsage> usages = LocationUsageTracker.findLocationUsages(adventureData,
+                                                                                                  targetLocationId);
+
+        // Then: the displayed command spec is the readable trigger text, not the raw ULID key
+        assertThat(usages).hasSize(1);
+        assertThat(usages.getFirst().getCommandSpecification()).isEqualTo("use trap door||");
     }
 
     @Test
@@ -378,14 +401,15 @@ class LocationUsageTrackerTest {
         Map<String, CommandChainData> commands = new HashMap<>();
 
         CommandChainData commandChain = new CommandChainData();
-        CommandData command = new CommandData();
+        CommandData command = new CommandData(new CommandDescriptionData(new Word(commandSpec, Word.Type.VERB), null,
+                                                                          null));
 
         MovePlayerActionData moveAction = new MovePlayerActionData();
         moveAction.setLocationId(targetLocationId);
         command.addAction(moveAction);
 
         commandChain.getCommands().add(command);
-        commands.put(commandSpec, commandChain);
+        commands.put(commandChain.getId(), commandChain);
         commandProvider.setAvailableCommands(commands);
 
         location.setCommandProviderData(commandProvider);
@@ -407,7 +431,8 @@ class LocationUsageTrackerTest {
         Map<String, CommandChainData> commands = new HashMap<>();
 
         CommandChainData commandChain = new CommandChainData();
-        CommandData command = new CommandData();
+        CommandData command = new CommandData(new CommandDescriptionData(new Word(commandSpec, Word.Type.VERB), null,
+                                                                          null));
 
         // Action #1: not the target move action (dummy)
         command.addAction(new MovePlayerActionData()); // dummy action
@@ -418,7 +443,7 @@ class LocationUsageTrackerTest {
         command.addAction(followUpMove);
 
         commandChain.getCommands().add(command);
-        commands.put(commandSpec, commandChain);
+        commands.put(commandChain.getId(), commandChain);
         commandProvider.setAvailableCommands(commands);
 
         location.setCommandProviderData(commandProvider);

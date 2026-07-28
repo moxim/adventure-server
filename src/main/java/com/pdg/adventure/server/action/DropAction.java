@@ -18,6 +18,7 @@ public class DropAction extends AbstractAction {
 
     @Override
     public ExecutionResult execute() {
+        item.setIsWorn(false);
         return new MoveItemAction(item, containerProvider.get(), messagesHolder).execute();
     }
 }

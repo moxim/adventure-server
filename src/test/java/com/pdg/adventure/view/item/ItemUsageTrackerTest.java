@@ -9,13 +9,20 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.CommandChainData;
+import com.pdg.adventure.model.CommandData;
+import com.pdg.adventure.model.CommandProviderData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.Word;
+import com.pdg.adventure.model.action.TakeActionData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
 
 /**
@@ -133,6 +140,40 @@ class ItemUsageTrackerTest {
         // Then
         assertThat(usages).hasSize(1);
         assertThat(usages.getFirst().getSourceLocationId()).isEqualTo("loc1");
+    }
+
+    @Test
+    void findItemUsages_shouldUseTheChainsOwnSpec_notTheMapsUlidKey() {
+        // Given: the command provider map is keyed by the chain's stable id (as production
+        // code does), not by its command's spec text
+        String itemId = "golden_key";
+        LocationData location = new LocationData();
+        location.setId("loc1");
+        DescriptionData descData = new DescriptionData();
+        descData.setShortDescription("Hall");
+        location.setDescriptionData(descData);
+
+        CommandChainData chain = new CommandChainData();
+        Word take = new Word("take", Word.Type.VERB);
+        CommandData command = new CommandData(new CommandDescriptionData(take, null, null));
+        TakeActionData takeAction = new TakeActionData();
+        takeAction.setThingId(itemId);
+        command.addAction(takeAction);
+        chain.getCommands().add(command);
+
+        CommandProviderData commandProvider = new CommandProviderData();
+        Map<String, CommandChainData> byUlid = new HashMap<>();
+        byUlid.put(chain.getId(), chain);
+        commandProvider.setAvailableCommands(byUlid);
+        location.setCommandProviderData(commandProvider);
+        adventureData.getLocationData().put("loc1", location);
+
+        // When
+        List<ItemUsageTracker.ItemUsage> usages = ItemUsageTracker.findItemUsages(adventureData, itemId);
+
+        // Then: the displayed command spec is the readable trigger text, not the raw ULID key
+        assertThat(usages).hasSize(1);
+        assertThat(usages.getFirst().getCommandSpecification()).isEqualTo("take||");
     }
 
     @Test

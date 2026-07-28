@@ -204,11 +204,9 @@ public class LocationUsageTracker {
     private static void checkCommandChains(final String sourceLocationId, final String sourceLocationDesc,
                                            final String targetLocationId, final List<LocationUsage> usages,
                                            final Map<String, CommandChainData> commands) {
-        for (Map.Entry<String, CommandChainData> commandEntry : commands.entrySet()) {
-            String commandSpec = commandEntry.getKey();
-            CommandChainData chain = commandEntry.getValue();
-
-            if (chain != null && chain.getCommands() != null) {
+        for (CommandChainData chain : commands.values()) {
+            if (chain != null && chain.getCommands() != null && !chain.getCommands().isEmpty()) {
+                String commandSpec = chain.getCommands().getFirst().getCommandDescription().getCommandSpecification();
                 for (CommandData command : chain.getCommands()) {
                     checkCommand(sourceLocationId, sourceLocationDesc, targetLocationId, usages, command, commandSpec);
                 }

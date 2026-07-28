@@ -45,9 +45,15 @@ public class ItemIdentifier {
     private static <T extends Containable> List<Containable> addItemsByName(List<T> aListOfItems, String aNoun,
                                                                             String anAdjective) {
         final List<Containable> matchingItems = new ArrayList<>();
-        for (T item : aListOfItems) {
-            if (item.getNoun().equals(aNoun) && item.getAdjective().equals(anAdjective)) {
-                matchingItems.add(item);
+        // an empty query adjective means "unspecified", not "exactly matches items that also
+        // have no adjective" - skip straight to the noun-only pass so an item with a real
+        // adjective isn't silently hidden just because another item sharing its noun happens to
+        // have none (e.g. "a neoprene suit" vs "a swim suit", queried as plain "suit").
+        if (!VocabularyData.EMPTY_STRING.equals(anAdjective)) {
+            for (T item : aListOfItems) {
+                if (item.getNoun().equals(aNoun) && item.getAdjective().equals(anAdjective)) {
+                    matchingItems.add(item);
+                }
             }
         }
         if (matchingItems.isEmpty()) {

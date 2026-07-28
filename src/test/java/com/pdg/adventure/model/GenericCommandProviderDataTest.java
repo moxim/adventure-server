@@ -28,8 +28,11 @@ class GenericCommandProviderDataTest {
         assertThat(sut.getId()).isEqualTo("id_1");
         final Map<String, CommandChainData> availableCommands = sut.getAvailableCommands();
         assertThat(availableCommands.size()).isEqualTo(1);
-        assertThat(availableCommands.get(cmdDesc.getCommandSpecification())).isNotNull();
-        assertThat(availableCommands.get(cmdDesc.getCommandSpecification()).getCommands()).hasSize(1);
+        // The map is keyed by each chain's own stable id now, not the spec string - look the
+        // chain up by matching its first command's trigger instead of a direct key lookup.
+        CommandChainData chain = chainMatching(availableCommands, cmdDesc.getCommandSpecification());
+        assertThat(chain).isNotNull();
+        assertThat(chain.getCommands()).hasSize(1);
     }
 
     @Test
@@ -40,17 +43,27 @@ class GenericCommandProviderDataTest {
         assertThat(availableCommands.size()).isEqualTo(2);
         final CommandDescriptionData commandDescriptionData =
                 TestSupporter.createCommandDescriptionData(commandId, vocabularyData);
-        final String commandSpec = commandDescriptionData.getCommandSpecification();
-        assertThat(availableCommands.get(commandSpec)).isNotNull();
+        assertThat(chainMatching(availableCommands, commandDescriptionData.getCommandSpecification())).isNotNull();
         CommandDescriptionData localCommandChain = TestSupporter.createCommandDescriptionData(localCommandId,
                                                                                               vocabularyData);
 
-        assertThat(availableCommands.get(localCommandChain.getCommandSpecification())).isNotNull();
-        assertThat(availableCommands.get(localCommandChain.getCommandSpecification()).getCommands()).hasSize(1);
+        CommandChainData localChain = chainMatching(availableCommands, localCommandChain.getCommandSpecification());
+        assertThat(localChain).isNotNull();
+        assertThat(localChain.getCommands()).hasSize(1);
 
         sut.add(TestSupporter.createCommand(localCommandId, vocabularyData));
         assertThat(availableCommands.size()).isEqualTo(2);
 
-        assertThat(availableCommands.get(localCommandChain.getCommandSpecification()).getCommands()).hasSize(2);
+        assertThat(chainMatching(availableCommands, localCommandChain.getCommandSpecification()).getCommands())
+                .hasSize(2);
+    }
+
+    private static CommandChainData chainMatching(Map<String, CommandChainData> availableCommands, String spec) {
+        return availableCommands.values().stream()
+                .filter(chain -> !chain.getCommands().isEmpty()
+                        && chain.getCommands().getFirst().getCommandDescription().getCommandSpecification()
+                                 .equals(spec))
+                .findFirst()
+                .orElse(null);
     }
 }

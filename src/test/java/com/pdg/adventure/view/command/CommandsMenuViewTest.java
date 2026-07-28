@@ -13,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -182,5 +183,55 @@ class CommandsMenuViewTest {
         org.assertj.core.api.Assertions.assertThatCode(this::enterLocationScoped)
                 .doesNotThrowAnyException();
         assertThat(chain.getCommands()).hasSize(2);
+    }
+
+    @Test
+    void deletingOneCommandFromAMultiCommandChain_keepsItsSiblingAndTheChain() {
+        // given: two commands sharing one chain, added the way production code actually does it
+        Word go = vocabularyData.getWords().stream()
+                .filter(w -> "go".equals(w.getText())).findFirst().orElseThrow();
+        Word north = vocabularyData.getWords().stream()
+                .filter(w -> "north".equals(w.getText())).findFirst().orElseThrow();
+
+        CommandData first = new CommandData(new CommandDescriptionData(go, null, north));
+        first.setActions(List.of(new MessageActionData()));
+        CommandData second = new CommandData(new CommandDescriptionData(go, null, north));
+        second.setActions(List.of(new MessageActionData()));
+        commandProviderData.add(first);
+        commandProviderData.add(second);
+        String chainId = commandProviderData.findChainIdContaining(first).orElseThrow();
+
+        view = new CommandsMenuView(adventureService, itemService, accessService);
+        enterLocationScoped();
+
+        // when
+        view.deleteCommand(second);
+
+        // then: the chain survives with its sibling, still under the same id
+        CommandChainData chain = commandProviderData.getAvailableCommands().get(chainId);
+        assertThat(chain).isNotNull();
+        assertThat(chain.getCommands()).containsExactly(first);
+    }
+
+    @Test
+    void deletingTheLastCommandInAChain_removesTheChainEntirely() {
+        Word go = vocabularyData.getWords().stream()
+                .filter(w -> "go".equals(w.getText())).findFirst().orElseThrow();
+        Word north = vocabularyData.getWords().stream()
+                .filter(w -> "north".equals(w.getText())).findFirst().orElseThrow();
+
+        CommandData only = new CommandData(new CommandDescriptionData(go, null, north));
+        only.setActions(List.of(new MessageActionData()));
+        commandProviderData.add(only);
+        String chainId = commandProviderData.findChainIdContaining(only).orElseThrow();
+
+        view = new CommandsMenuView(adventureService, itemService, accessService);
+        enterLocationScoped();
+
+        // when
+        view.deleteCommand(only);
+
+        // then
+        assertThat(commandProviderData.getAvailableCommands()).doesNotContainKey(chainId);
     }
 }

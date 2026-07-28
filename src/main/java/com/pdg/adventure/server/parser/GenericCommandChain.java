@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.pdg.adventure.api.Action;
 import com.pdg.adventure.api.Command;
 import com.pdg.adventure.api.CommandChain;
 import com.pdg.adventure.api.ExecutionResult;
@@ -51,6 +52,9 @@ public class GenericCommandChain implements CommandChain {
                 if (msg != null && !msg.isBlank()) {
                     messages.add(msg);
                 }
+                if (containsBreak(command)) {
+                    break;          // stop this chain here; other chains are unaffected
+                }
             }
         }
         ExecutionResult result = new CommandExecutionResult();
@@ -61,5 +65,9 @@ public class GenericCommandChain implements CommandChain {
             result.setResultMessage(last.getResultMessage());  // surface last failure; empty → "You can't do that."
         }
         return result;
+    }
+
+    private static boolean containsBreak(Command aCommand) {
+        return aCommand.getActions().stream().anyMatch(Action::isBreak);
     }
 }
