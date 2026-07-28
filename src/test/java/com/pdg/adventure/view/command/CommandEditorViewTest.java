@@ -12,6 +12,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -184,19 +186,20 @@ class CommandEditorViewTest {
         commandWithAction.setCommandDescription(commandDescription);
         commandWithAction.addAction(moveAction);
         commandProviderData.add(commandWithAction);
-
-        String spec = commandDescription.getCommandSpecification();
+        String chainId = commandProviderData.findChainIdContaining(commandWithAction).orElseThrow();
 
         view = new CommandEditorView(adventureService, itemService, accessService);
 
-        assertThatCode(() -> enterWithCommandId(spec))
+        assertThatCode(() -> enterWithCommandId(chainId))
                 .doesNotThrowAnyException();
+        // and: the existing chain was actually found and loaded, not silently treated as new
+        assertThat(view.getPageTitle()).startsWith("Edit Command:");
     }
 
     @Test
     void commandChainGridLabels_useFriendlyText_notInternalClassNames() {
         // given: a command whose first action is a Message and first precondition is Worn,
-        // placed in the "go||north" chain so setData() loads it and builds the formatter.
+        // added to the provider so setData() loads it by its chain id and builds the formatter.
         Word go = vocabularyData.getWords().stream()
                 .filter(w -> "go".equals(w.getText())).findFirst().orElseThrow();
         Word north = vocabularyData.getWords().stream()
@@ -216,9 +219,10 @@ class CommandEditorViewTest {
         command.addAction(message);
         command.getPreConditions().add(worn);
         commandProviderData.add(command);
+        String chainId = commandProviderData.findChainIdContaining(command).orElseThrow();
 
         view = new CommandEditorView(adventureService, itemService, accessService);
-        enterWithCommandId(description.getCommandSpecification());
+        enterWithCommandId(chainId);
 
         // when
         String actionLabel = view.firstActionLabel(command);
@@ -227,5 +231,43 @@ class CommandEditorViewTest {
         // then: the grid shows human-readable text, never internal *Data class names
         assertThat(actionLabel).doesNotContain("ActionData").startsWith("MESSAGE");
         assertThat(preconditionLabel).doesNotContain("ConditionData").startsWith("WORN");
+    }
+
+    @Test
+    void editingOneCommandsTriggerInAMultiCommandChain_keepsItsSiblings() throws Exception {
+        // given: two commands sharing one chain (same verb/noun -> same chain on add())
+        Word go = vocabularyData.getWords().stream()
+                .filter(w -> "go".equals(w.getText())).findFirst().orElseThrow();
+        Word north = vocabularyData.getWords().stream()
+                .filter(w -> "north".equals(w.getText())).findFirst().orElseThrow();
+        Word take = vocabularyData.getWords().stream()
+                .filter(w -> "take".equals(w.getText())).findFirst().orElseThrow();
+
+        CommandData first = new CommandData(new CommandDescriptionData(go, null, north));
+        first.setActions(java.util.List.of(new MessageActionData()));
+        CommandData second = new CommandData(new CommandDescriptionData(go, null, north));
+        second.setActions(java.util.List.of(new MessageActionData()));
+        commandProviderData.add(first);
+        commandProviderData.add(second);
+        String chainId = commandProviderData.findChainIdContaining(first).orElseThrow();
+
+        view = new CommandEditorView(adventureService, itemService, accessService);
+        enterWithCommandId(chainId); // loads the chain; selects `first` (index 0) into the editor
+
+        // when: the selected command's verb is changed (as if the user re-picked it) and saved
+        Field cvmField = CommandEditorView.class.getDeclaredField("cvm");
+        cvmField.setAccessible(true);
+        CommandViewModel cvm = (CommandViewModel) cvmField.get(view);
+        cvm.setVerb(take);
+
+        Method swivelTheSaveButton = CommandEditorView.class.getDeclaredMethod("swivelTheSaveButton");
+        swivelTheSaveButton.setAccessible(true);
+        swivelTheSaveButton.invoke(view);
+
+        // then: both commands are still in the SAME chain - the sibling wasn't dropped
+        CommandChainData chain = commandProviderData.getAvailableCommands().get(chainId);
+        assertThat(chain).isNotNull();
+        assertThat(chain.getCommands()).hasSize(2);
+        assertThat(chain.getCommands()).contains(second);
     }
 }
