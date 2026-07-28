@@ -77,8 +77,11 @@ public class GenericCommandProvider implements CommandProvider {
             String itemAdjective = itemCommand.getAdjective();
             String itemNoun = itemCommand.getNoun();
 
-            // noun must match exactly
-            if (!Objects.equals(itemNoun, noun)) {
+            // noun must match exactly, unless the stored command has no noun of its own -
+            // that's an item-scoped command (its trigger's noun is implicit in which item it
+            // lives on, already resolved upstream by ItemIdentifier before we get here).
+            boolean nounMatches = Objects.equals(itemNoun, noun) || VocabularyData.EMPTY_STRING.equals(itemNoun);
+            if (!nounMatches) {
                 continue;
             }
 
