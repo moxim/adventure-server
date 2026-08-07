@@ -114,7 +114,7 @@ Callers navigate via literal path strings from the static
 affects outbound link generation. The view's own `beforeEnter` resolves
 which of the three origins sent it here (from the path prefix and the
 query parameter) and uses that to decide both its `HasDynamicTitle` value
-("Test: …" vs "Playing: …") and where its **Back** button returns to.
+("Running: …" for authors, "Playing: …" for players) and where its **Back** button returns to.
 
 ## Layouts
 
@@ -327,7 +327,7 @@ editing many commands at once.
 | `ActionEditorComponent` | Abstract base for all per-action sub-editors. |
 | `AbstractSingleItemActionEditor<T extends ActionData>` | Generic abstract mid-layer for the 8 editors that need one `ItemData` selector (title, description, label, placeholder, error text customised per subclass). |
 | `ActionSelector` | A combo-box of supported `Action` kinds. Picking one swaps in the matching editor. |
-| `ActionEditorFactory` | `createEditor(ActionData, AdventureData)` — the stable entry point every call site uses. Delegates lookup to `ActionEditorRegistry` (package-private); covers all 15 authorable action types. |
+| `ActionEditorFactory` | `createEditor(ActionData, AdventureData)` — the stable entry point every call site uses. Delegates lookup to `ActionEditorRegistry` (package-private); covers all 16 authorable action types. |
 | `ActionEditorRegistry` | One-time classpath scan (`ClassPathScanningCandidateComponentProvider`) for `@AutoRegisterActionEditor`-annotated `ActionEditorComponent`s, keyed by the `ActionData` subtype resolved from each editor's generic type argument. Replaced a hand-maintained `switch` statement — adding a new action editor means writing the class and annotating it, not touching the factory. Reflectively picks a `(ActionData)` or `(ActionData, AdventureData)` constructor to instantiate. |
 | `MessageActionEditor` | Inline text field for the message body. |
 | `MoveItemActionEditor` | Item selector (uses `ViewSupporter.collectAllItems`). |
@@ -344,6 +344,7 @@ editing many commands at once.
 | `IncrementVariableActionEditor` | Variable name text field. |
 | `DecrementVariableActionEditor` | Variable name text field. |
 | `SetVariableActionEditor` | Variable name + value text fields. |
+| `BreakActionEditor` | No extra input (stops command chain execution immediately). |
 
 ### Condition editor factory
 

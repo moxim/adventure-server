@@ -183,10 +183,15 @@ DO fields:
 ### CommandProviderData / CommandChainData
 
 A `CommandProviderData` is a `Map<String, CommandChainData>` where the key is a
-canonical command-spec string (`"verb,adjective,noun"`, joined with
-`CommandDescription.COMMAND_SEPARATOR`). A `CommandChainData` holds the ordered
-list of `CommandData` that all match that key — the engine evaluates them in
-order until one's PreConditions pass.
+**stable ULID chain ID** (not a derived command-spec string). This ensures that
+command identity persists across edits to the verb, adjective, or noun descriptions.
+A `CommandChainData` holds the ordered list of `CommandData` that all match that
+chain — the engine evaluates them in order until one's PreConditions pass.
+
+When matching commands at runtime, `GenericCommandProvider` filters chains by the
+parsed `CommandDescription` (verb, adjective, noun) after retrieving them from the
+map, and supports **empty noun wildcard matching** where a noun-less command can be
+authored to apply to any item (e.g., a single `examine` command for all pickables).
 
 ### Item (BO) / ItemData (DO)
 
