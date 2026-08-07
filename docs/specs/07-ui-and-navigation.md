@@ -114,7 +114,7 @@ Callers navigate via literal path strings from the static
 affects outbound link generation. The view's own `beforeEnter` resolves
 which of the three origins sent it here (from the path prefix and the
 query parameter) and uses that to decide both its `HasDynamicTitle` value
-("Test: …" vs "Playing: …") and where its **Back** button returns to.
+("Running: …" for authors, "Playing: …" for players) and where its **Back** button returns to.
 
 ## Layouts
 
