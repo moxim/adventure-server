@@ -162,9 +162,9 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     `AdventureAccessService.createAdventure`, `@Transactional` over the JPA write).
   - Editing navigates to `/author/adventures/:adventureId/edit`. Title, notes,
     starting-location reference, and other top-level metadata can be modified.
-    This editor's button bar is Back/Test/Save (not the four-button
+    This editor's button bar is Back/Run Adventure/Save (not the four-button
     Cancel/Reset/Back/Save contract used elsewhere — see
-    [§ Editor navigation contract](#editor-navigation-contract)); **Test**
+    [§ Editor navigation contract](#editor-navigation-contract)); **Run Adventure**
     launches `AdventureRunView` in place and is gated on the adventure
     being saved, unchanged since save, and having at least one location.
   - Deleting an adventure (right-click a row → **Delete** on
@@ -240,7 +240,10 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     row in the Command Chain grid.
   - Action sub-editors are pluggable via an annotation-driven registry
     (`@AutoRegisterActionEditor`, discovered by `ActionEditorRegistry`) /
-    `ActionSelector`; all 15 authorable action types have editors (see
+    `ActionSelector`; all 15 authorable action types have editors including
+    Message, Describe, Take, Drop, Wear, Remove, MovePlayer, Inventory, Quit,
+    LoadAdventure, SetVariable, IncrementVariable, DecrementVariable, Create,
+    Destroy, and Break (see
     [`07-ui-and-navigation.md` § Action editor factory](07-ui-and-navigation.md#action-editor-factory)).
   - Condition sub-editors are pluggable the same way
     (`@AutoRegisterConditionEditor` / `ConditionEditorRegistry`) /
@@ -330,9 +333,9 @@ The in-browser play surface is implemented: `AdventureRunView`, backed by
 (`server/engine/`), drives the same `GameLoop` / `GameContext` the CLI
 runner (`AdventureClient` / `MiniAdventure`) uses. It is reached three
 ways — a player's "Run Adventure" here, an author's "Run Adventure" from
-`/author/adventures`, or an author's "Test" from `AdventureEditorView` —
+`/author/adventures`, or an author's "Run Adventure" from `AdventureEditorView` —
 all landing on the identical view; only the **Back** destination and the
-page title ("Playing: …" vs "Test: …") differ by origin.
+page title ("Playing: …" vs "Running: …") differ by origin.
 
 - **As** a PLAYER
 - **I want** to type natural verb-noun commands and see the game respond

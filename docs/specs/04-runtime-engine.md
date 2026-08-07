@@ -11,7 +11,7 @@ selectable in the authoring UI (see
 [`07-ui-and-navigation.md` § Action editor factory](07-ui-and-navigation.md#action-editor-factory));
 `LoadAdventureAction` is engine-managed rather than author-placed, and
 `NotCondition` is applied structurally via a per-row **Negate** toggle
-instead of being one of the 10 selectable kinds.
+instead of being one of the 11 selectable kinds.
 
 The data shapes that back this chapter are documented in
 [`03-domain-model.md`](03-domain-model.md). The persistence path that loads them
@@ -233,7 +233,7 @@ the same kind to behave equivalently.
 | `MessageAction(text)` | Emit a literal text as SUCCESS. |
 | `DescribeAction(supplier)` | Emit `supplier.get()` (used for thing & location descriptions). AI augmentation is wired but commented out. |
 | `TakeAction(item, pocket, msgs)` | Move `item` into the pocket via `MoveItemAction`. Used by the `get` command. |
-| `DropAction(item, container, msgs)` | Move `item` into the supplied container via `MoveItemAction`. Used by the `drop` commands. |
+| `DropAction(item, container, msgs)` | Move `item` into the supplied container via `MoveItemAction`, and automatically remove it from its parent container. Used by the `drop` commands. |
 | `MoveItemAction(item, dest, msgs)` | The primitive: remove the item from its parent if any, add it to `dest` if not full. Emits `messages[-9]` (success) or `messages[-8]` (full). |
 | `WearAction(wearable, msgs)` | If `isWearable && !isWorn`, set `isWorn=true`. Otherwise emit `messages[-6]`. |
 | `RemoveAction(wearable, msgs)` | Inverse of `WearAction`; clears `isWorn`. |
@@ -246,6 +246,7 @@ the same kind to behave equivalently.
 | `DecrementVariableAction(name, vars, msgs)` | Same, `-1`. |
 | `CreateAction(thing, containerSupplier, msgs)` | Add `thing` to the supplied container; on success emits `messages[-12]`. Authorable via the "Create Item" action editor. |
 | `DestroyAction(thing, msgs)` | Remove `thing` from its current parent container; on success emits `messages[-11]`. Authorable via the "Destroy" action editor. |
+| `BreakAction(msgs)` | Stop execution of the current command chain immediately and return the supplied message as SUCCESS. Used to short-circuit multi-action chains when a condition is met. Authorable via the "Break" action editor. |
 
 `ExamineFallbackAction` (in `server/parser/`) is the synthetic action used by
 `CommandHandler.getMatchingCommandChain` when no authored command matches the

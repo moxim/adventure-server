@@ -188,7 +188,7 @@ Every routed view belongs to one of four buckets:
 | `@RolesAllowed("ROLE_ADMIN")` | `AdminDashboardView`, `UserManagementView`, `AdventureAssignmentView`. |
 | `@RolesAllowed("ROLE_AUTHOR")` | All `*EditorView` / `*MenuView` for adventure / location / item / direction / command / message / vocabulary, plus `AuthorDashboardView`, `LocationMapView`, `SpecialWordsView`, `WorkflowEditorView`. |
 | `@RolesAllowed("ROLE_PLAYER")` | `PlayerLibraryView`. |
-| `@RolesAllowed({"ROLE_AUTHOR", "ROLE_PLAYER"})` | `AdventureRunView` — the one view that doesn't fit the single-bucket pattern above. It's reached by authors ("Test" / "Run Adventure") and players ("Run Adventure") alike, at two route templates (`author/adventures/:id/test`, `player/library/:id/run`) mapped to the same class; it resolves which role reached it from the URL prefix, not from a separate role check. |
+| `@RolesAllowed({"ROLE_AUTHOR", "ROLE_PLAYER"})` | `AdventureRunView` — the one view that doesn't fit the single-bucket pattern above. It's reached by authors ("Run Adventure") and players ("Run Adventure") alike, at two route templates (`author/adventures/:id/run`, `player/library/:id/run`) mapped to the same class; it resolves which role reached it from the URL prefix, not from a separate role check. |
 
 The role hierarchy means an ADMIN passes every check transitively; an
 AUTHOR passes PLAYER checks; a PLAYER fails AUTHOR/ADMIN checks.

@@ -402,7 +402,7 @@ Before declaring the rebuild done, walk this list:
       then editing each one again, all work without errors and respect
       the BACK / SAVE / RESET / CANCEL contract.
 - [ ] Running `MiniAdventure` against the saved adventure plays through.
-- [ ] Clicking **Test** on that adventure (once saved and non-empty) opens
+- [ ] Clicking **Run Adventure** on that adventure (once saved and non-empty) opens
       `AdventureRunView` and plays through the same way in the browser;
       **Run Adventure** from the adventures list and from a player's
       library both reach the identical view.
