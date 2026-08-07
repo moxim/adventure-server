@@ -227,6 +227,40 @@ public class ViewSupporter {
         return restrictToLength(shortDescription, MAX_TEXT_IN_GRID);
     }
 
+    public static String getDescriptionText(DescriptionData aDescriptionData) {
+        String shortDescription = aDescriptionData.getShortDescription();
+        if (!shortDescription.isEmpty()) {
+            return shortDescription;
+        }
+        return aDescriptionData.getSafeAdjective() + " " + aDescriptionData.getSafeNoun();
+    }
+
+    public static String getDescriptionText(CommandDescriptionData aCommandDescriptionData) {
+        StringBuilder result = new StringBuilder();
+
+        String verb = getWordText(aCommandDescriptionData.getVerb());
+        String adjective = getWordText(aCommandDescriptionData.getAdjective());
+        String noun = getWordText(aCommandDescriptionData.getNoun());
+
+        if (!verb.isEmpty()) {
+            result.append(verb);
+        }
+        if (!adjective.isEmpty()) {
+            if (result.length() > 0) {
+                result.append(" ");
+            }
+            result.append(adjective);
+        }
+        if (!noun.isEmpty()) {
+            if (result.length() > 0) {
+                result.append(" ");
+            }
+            result.append(noun);
+        }
+
+        return result.toString();
+    }
+
     private static String restrictToLength(String aText, int maxLength) {
         if (aText.length() <= maxLength) {
             return aText;

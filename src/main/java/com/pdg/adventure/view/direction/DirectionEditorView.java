@@ -274,7 +274,7 @@ public class DirectionEditorView extends VerticalLayout
         optionalDirectionId.ifPresent(id -> directionId = id);
         setData(resolvedLocation.get(), resolvedAdventure.get());
         pageTitle = optionalDirectionId.isPresent()
-                ? "Edit Direction: " + ViewSupporter.formatDescription(directionData.getDescriptionData())
+                ? "Edit Direction: " + ViewSupporter.getDescriptionText(directionData.getDescriptionData())
                 : "New Direction";
     }
 

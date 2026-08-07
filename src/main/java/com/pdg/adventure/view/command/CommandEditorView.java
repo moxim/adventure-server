@@ -381,7 +381,7 @@ public class CommandEditorView extends VerticalLayout
             CommandChainData commandChain = commandProviderData.getAvailableCommands().get(commandId);
             if (commandChain != null && !commandChain.getCommands().isEmpty()) {
                 commandDescriptionData = commandChain.getCommands().getFirst().getCommandDescription();
-                pageTitle = "Edit Command: " + ViewSupporter.formatDescription(commandDescriptionData);
+                pageTitle = "Edit Command: " + ViewSupporter.getDescriptionText(commandDescriptionData);
             } else {
                 commandDescriptionData = new CommandDescriptionData();
                 pageTitle = "New Command";
