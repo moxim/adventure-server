@@ -236,7 +236,7 @@ public class LocationEditorView extends VerticalLayout
         optionalLocationId.ifPresent(id -> locationId = id);
         setData(resolvedAdventure.get());
         pageTitle = optionalLocationId.isPresent()
-                ? "Edit Location: " + ViewSupporter.formatDescription(locationData)
+                ? "Edit Location: " + ViewSupporter.getDescriptionText(locationData.getDescriptionData())
                 : "New Location";
     }
 

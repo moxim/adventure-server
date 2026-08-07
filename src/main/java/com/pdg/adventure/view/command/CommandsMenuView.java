@@ -175,10 +175,10 @@ public class CommandsMenuView extends VerticalLayout
             if (resolvedItem.isEmpty()) {
                 return;
             }
-            pageTitle = "Commands for " + ViewSupporter.formatDescription(resolvedItem.get());
+            pageTitle = "Commands for " + ViewSupporter.getDescriptionText(resolvedItem.get().getDescriptionData());
             setData(resolvedAdventure.get(), resolvedLocation.get(), resolvedItem.get());
         } else {
-            pageTitle = "Commands for " + ViewSupporter.formatDescription(resolvedLocation.get());
+            pageTitle = "Commands for " + ViewSupporter.getDescriptionText(resolvedLocation.get().getDescriptionData());
             setData(resolvedAdventure.get(), resolvedLocation.get());
         }
     }

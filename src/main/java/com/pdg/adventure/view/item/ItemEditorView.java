@@ -426,7 +426,7 @@ public class ItemEditorView extends VerticalLayout
         optionalItemId.ifPresent(id -> itemId = id);
         setData(resolvedAdventure.get(), resolvedLocation.get());
         pageTitle = optionalItemId.isPresent()
-                ? "Edit Item: " + ViewSupporter.formatDescription(itemData)
+                ? "Edit Item: " + ViewSupporter.getDescriptionText(itemData.getDescriptionData())
                 : "New Item";
     }
 
