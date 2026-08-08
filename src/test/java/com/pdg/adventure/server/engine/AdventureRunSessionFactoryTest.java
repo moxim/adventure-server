@@ -101,6 +101,24 @@ class AdventureRunSessionFactoryTest {
     }
 
     @Test
+    void start_compoundCommand_runsBothSubCommandsThroughTheRealSeededVocabulary() {
+        // "and" must be seeded by the real registerBaseVerbs() production path, not just by a
+        // hand-built test Vocabulary - this is the browser/"Run Adventure" entry point.
+        AdventureData adventureData = adventureWithOneLocation("adv-1", "loc-1");
+        when(adventureService.findAdventureById("adv-1")).thenReturn(Optional.of(adventureData));
+        when(startLocation.getId()).thenReturn("loc-1");
+        when(startLocation.getLongDescription()).thenReturn("A grand throne room.");
+        Adventure adventure = adventureBoundTo(startLocation, "loc-1");
+        when(adventureMapper.mapToBO(adventureData)).thenReturn(adventure);
+
+        AdventureRunSession session = factory.start(adventureData);
+        RunResult result = session.submit("describe and inventory");
+
+        assertThat(result.lines()).anySatisfy(line -> assertThat(line).contains("A grand throne room."));
+        assertThat(result.lines()).anySatisfy(line -> assertThat(line).contains("You carry:"));
+    }
+
+    @Test
     void start_adventureNotFound_throwsIllegalStateException() {
         AdventureData adventureData = new AdventureData();
         adventureData.setId("missing-adv");

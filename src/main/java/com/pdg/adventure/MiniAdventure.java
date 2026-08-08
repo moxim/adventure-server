@@ -154,6 +154,8 @@ public class MiniAdventure {
         aVocabulary.createNewWord("help", Word.Type.VERB);
         aVocabulary.createNewWord("inventory", Word.Type.VERB);
         aVocabulary.createSynonym("i", "inventory");
+        aVocabulary.createNewWord("and", Word.Type.CONJUNCTION);
+        aVocabulary.createSynonym("then", "and");
         aVocabulary.createNewWord("default", Word.Type.NOUN);
 
         addAdventureIdsToNouns();

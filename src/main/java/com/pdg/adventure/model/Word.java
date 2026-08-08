@@ -41,6 +41,7 @@ public class Word extends DatedData {
     public enum Type {
         VERB,
         NOUN,
-        ADJECTIVE
+        ADJECTIVE,
+        CONJUNCTION
     }
 }
