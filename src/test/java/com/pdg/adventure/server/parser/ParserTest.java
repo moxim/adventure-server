@@ -163,6 +163,21 @@ class ParserTest {
     }
 
     @Test
+    void handle_verbInference_persistsAcrossSeparateHandleCalls() {
+        // given
+        Parser parser = new Parser(vocabularyWithTakeDropSwordAndShield());
+        parser.handle("take sword");
+
+        // when
+        CommandSequence sequence = parser.handle("shield");
+
+        // then
+        assertThat(sequence.commands()).hasSize(1);
+        assertThat(sequence.commands().getFirst().getVerb()).isEqualTo("take");
+        assertThat(sequence.commands().getFirst().getNoun()).isEqualTo("shield");
+    }
+
+    @Test
     void handle_it_withNoAntecedent_throwsUnresolvedReferenceException() {
         // given
         Parser parser = new Parser(vocabularyWithBackReferenceWords());
