@@ -21,6 +21,8 @@ public class TakeAction extends AbstractAction {
 
     @Override
     public ExecutionResult execute() {
-        return new MoveItemAction(item, containerProvider.get(), messagesHolder).execute();
+        ExecutionResult result = new MoveItemAction(item, containerProvider.get(), messagesHolder).execute();
+        result.setResultMessage("You now carry " + item.getEnrichedBasicDescription() + ".");
+        return result;
     }
 }
