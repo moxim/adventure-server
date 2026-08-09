@@ -9,12 +9,16 @@ import java.util.Scanner;
 
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.exception.UnresolvedReferenceException;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 public class Parser {
     private static final String SENTENCE_TERMINATOR = ".";
 
     private final Vocabulary vocabulary;
+    private String lastVerb = VocabularyData.EMPTY_STRING;
+    private String lastNoun = VocabularyData.EMPTY_STRING;
+    private String lastAdjective = VocabularyData.EMPTY_STRING;
 
     public Parser(Vocabulary aVocabulary) {
         vocabulary = aVocabulary;
@@ -43,7 +47,7 @@ public class Parser {
 
                 if (isSeparator) {
                     if (currentHasContent) {
-                        commands.add(toDescription(currentSentence));
+                        commands.add(closeSentence(currentSentence));
                         currentSentence = new SimpleSentence();
                         currentHasContent = false;
                     }
@@ -62,7 +66,7 @@ public class Parser {
         // must still yield exactly one (possibly empty) command, matching the pre-existing
         // single-command contract GameLoop's bare-verb check relies on.
         if (currentHasContent || commands.isEmpty()) {
-            commands.add(toDescription(currentSentence));
+            commands.add(closeSentence(currentSentence));
         }
         return new CommandSequence(commands);
     }
@@ -78,11 +82,38 @@ public class Parser {
         return new GenericCommandDescription(aSentence.getVerb(), aSentence.getAdjective(), aSentence.getNoun());
     }
 
+    // Closes one sub-command: infers a missing verb from the last one seen, builds the
+    // GenericCommandDescription, then updates the back-reference state from what was actually
+    // parsed - regardless of whether GameLoop later succeeds in executing it, since Parser has
+    // no visibility into execution outcomes.
+    private GenericCommandDescription closeSentence(SimpleSentence aSentence) {
+        if (aSentence.getVerb().isEmpty() && !aSentence.getNoun().isEmpty() && !lastVerb.isEmpty()) {
+            aSentence.setVerb(lastVerb);
+        }
+        GenericCommandDescription description = toDescription(aSentence);
+        if (!description.getVerb().isEmpty()) {
+            lastVerb = description.getVerb();
+        }
+        if (!description.getNoun().isEmpty()) {
+            lastNoun = description.getNoun();
+            lastAdjective = description.getAdjective();
+        }
+        return description;
+    }
+
     private void populate(SimpleSentence aSentence, Word aWord) {
         switch (aWord.getType()) {
             case NOUN -> aSentence.setNoun(aWord.getText());
             case VERB -> aSentence.setVerb(aWord.getText());
             case ADJECTIVE -> aSentence.setAdjective(aWord.getText());
+            case PRONOUN -> {
+                if (lastNoun.isEmpty()) {
+                    throw new UnresolvedReferenceException(
+                            "I don't know what '" + aWord.getText() + "' refers to.");
+                }
+                aSentence.setNoun(lastNoun);
+                aSentence.setAdjective(lastAdjective);
+            }
             default -> throw new IllegalArgumentException("Unknown word type " + aWord.getType());
         }
     }

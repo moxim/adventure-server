@@ -10,6 +10,7 @@ import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.exception.QuitException;
 import com.pdg.adventure.server.exception.ReloadAdventureException;
+import com.pdg.adventure.server.exception.UnresolvedReferenceException;
 import com.pdg.adventure.server.parser.CommandExecutor;
 import com.pdg.adventure.server.parser.CommandSequence;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
@@ -65,6 +66,9 @@ public class GameLoop {
         } catch (QuitException anException) {
             gameContext.tell(anException.getMessage());
             return CommandOutcome.QUIT;
+        } catch (UnresolvedReferenceException anException) {
+            gameContext.tell(anException.getMessage());
+            return CommandOutcome.CONTINUE;
         } catch (ReloadAdventureException e) {
             throw e;
         } catch (RuntimeException anException) {

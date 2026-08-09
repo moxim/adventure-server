@@ -52,6 +52,7 @@ class GameLoopTest {
         vocabulary.createNewWord("help", Word.Type.VERB);
         vocabulary.createNewWord("and", Word.Type.CONJUNCTION);
         vocabulary.createSynonym("then", "and");
+        vocabulary.createNewWord("it", Word.Type.PRONOUN);
 
         workflow = gameContext.setUpWorkflows();
         new CommandFactory(new MessagesHolder(), gameContext, new VocabularyData()).setUpWorkflowCommands(workflow);
@@ -179,5 +180,47 @@ class GameLoopTest {
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
         assertThat(told.toString()).contains("A dark, damp cellar.").contains("A rusty key.");
         assertThat(told.toString()).doesNotContain("I don't know how to do that.");
+    }
+
+    @Test
+    void it_withNoAntecedentInTheSession_tellsASpecificMessage() {
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("take it");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString()).contains("I don't know what 'it' refers to.");
+    }
+
+    @Test
+    void and_verbInference_bareNounSecondSubCommandUsesFirstSubCommandsVerb() {
+        vocabulary.createNewWord("examine", Word.Type.VERB);
+        vocabulary.createNewWord("sword", Word.Type.NOUN);
+        vocabulary.createNewWord("shield", Word.Type.NOUN);
+        gameContext.getCurrentLocation().addCommand(new GenericCommand(
+                new GenericCommandDescription("examine", "sword"),
+                new MessageAction("A sharp sword.", new MessagesHolder())));
+        gameContext.getCurrentLocation().addCommand(new GenericCommand(
+                new GenericCommandDescription("examine", "shield"),
+                new MessageAction("A sturdy shield.", new MessagesHolder())));
+
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("examine sword and shield");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString()).contains("A sharp sword.").contains("A sturdy shield.");
+    }
+
+    @Test
+    void it_resolvesAcrossSeparateTurns_evenIfThePrecedingSubCommandFailed() {
+        vocabulary.createNewWord("wear", Word.Type.VERB);
+        gameContext.getCurrentLocation().addCommand(new GenericCommand(
+                new GenericCommandDescription("wear", "suit"),
+                new MessageAction("You put on the suit.", new MessagesHolder())));
+
+        GameLoop.CommandOutcome firstOutcome = gameLoop.processCommand("take suit");
+        GameLoop.CommandOutcome secondOutcome = gameLoop.processCommand("wear it");
+
+        assertThat(firstOutcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString()).contains("I don't know how to do that.");
+        assertThat(secondOutcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString()).contains("You put on the suit.");
     }
 }

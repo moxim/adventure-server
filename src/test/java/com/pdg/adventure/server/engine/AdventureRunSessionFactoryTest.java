@@ -25,6 +25,7 @@ import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.mapper.WorkflowMapper;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
+import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
@@ -48,6 +49,7 @@ class AdventureRunSessionFactoryTest {
 
     private GameContext gameContext;
     private AdventureRunSessionFactory factory;
+    private Vocabulary vocabulary;
 
     @BeforeEach
     void setUp() {
@@ -56,7 +58,8 @@ class AdventureRunSessionFactoryTest {
         lenient().when(adventureConfig.allLocations()).thenReturn(new HashMap<>());
         lenient().when(adventureConfig.allItems()).thenReturn(new HashMap<>());
         lenient().when(adventureConfig.allContainers()).thenReturn(new HashMap<>());
-        lenient().when(adventureConfig.allWords()).thenReturn(new Vocabulary());
+        vocabulary = new Vocabulary();
+        lenient().when(adventureConfig.allWords()).thenReturn(vocabulary);
         factory = new AdventureRunSessionFactory(adventureService, adventureMapper, workflowMapper, adventureConfig,
                                                   gameContext);
     }
@@ -116,6 +119,19 @@ class AdventureRunSessionFactoryTest {
 
         assertThat(result.lines()).anySatisfy(line -> assertThat(line).contains("A grand throne room."));
         assertThat(result.lines()).anySatisfy(line -> assertThat(line).contains("You carry:"));
+    }
+
+    @Test
+    void start_seedsPronounIt_throughTheRealRegisterBaseVerbsPath() {
+        AdventureData adventureData = adventureWithOneLocation("adv-1", "loc-1");
+        when(adventureService.findAdventureById("adv-1")).thenReturn(Optional.of(adventureData));
+        when(startLocation.getId()).thenReturn("loc-1");
+        Adventure adventure = adventureBoundTo(startLocation, "loc-1");
+        when(adventureMapper.mapToBO(adventureData)).thenReturn(adventure);
+
+        factory.start(adventureData);
+
+        assertThat(vocabulary.getType("it")).isEqualTo(Word.Type.PRONOUN);
     }
 
     @Test
