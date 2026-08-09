@@ -3,8 +3,10 @@ package com.pdg.adventure.server.parser;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.exception.UnresolvedReferenceException;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 class ParserTest {
@@ -129,6 +131,111 @@ class ParserTest {
         assertThat(command.getNoun()).isEmpty();
     }
 
+    @Test
+    void handle_bareNounSecondSubCommand_infersVerbFromFirstSubCommand() {
+        // given
+        Parser parser = new Parser(vocabularyWithTakeDropSwordAndShield());
+
+        // when
+        CommandSequence sequence = parser.handle("take sword and shield");
+
+        // then
+        assertThat(sequence.commands()).hasSize(2);
+        assertThat(sequence.commands().get(0).getVerb()).isEqualTo("take");
+        assertThat(sequence.commands().get(0).getNoun()).isEqualTo("sword");
+        assertThat(sequence.commands().get(1).getVerb()).isEqualTo("take");
+        assertThat(sequence.commands().get(1).getNoun()).isEqualTo("shield");
+    }
+
+    @Test
+    void handle_explicitVerbInSecondSubCommand_isNotOverriddenByInference() {
+        // given
+        Parser parser = new Parser(vocabularyWithTakeDropSwordAndShield());
+
+        // when
+        CommandSequence sequence = parser.handle("take sword and drop shield");
+
+        // then
+        assertThat(sequence.commands()).hasSize(2);
+        assertThat(sequence.commands().get(0).getVerb()).isEqualTo("take");
+        assertThat(sequence.commands().get(1).getVerb()).isEqualTo("drop");
+        assertThat(sequence.commands().get(1).getNoun()).isEqualTo("shield");
+    }
+
+    @Test
+    void handle_verbInference_persistsAcrossSeparateHandleCalls() {
+        // given
+        Parser parser = new Parser(vocabularyWithTakeDropSwordAndShield());
+        parser.handle("take sword");
+
+        // when
+        CommandSequence sequence = parser.handle("shield");
+
+        // then
+        assertThat(sequence.commands()).hasSize(1);
+        assertThat(sequence.commands().getFirst().getVerb()).isEqualTo("take");
+        assertThat(sequence.commands().getFirst().getNoun()).isEqualTo("shield");
+    }
+
+    @Test
+    void handle_it_withNoAntecedent_throwsUnresolvedReferenceException() {
+        // given
+        Parser parser = new Parser(vocabularyWithBackReferenceWords());
+
+        // when / then
+        assertThatThrownBy(() -> parser.handle("wear it"))
+                .isInstanceOf(UnresolvedReferenceException.class)
+                .hasMessage("I don't know what 'it' refers to.");
+    }
+
+    @Test
+    void handle_it_resolvesToTheLastMentionedNoun_matchingTheWorkedExample() {
+        // given
+        Parser parser = new Parser(vocabularyWithBackReferenceWords());
+
+        // when
+        CommandSequence sequence = parser.handle("take sword and shield and wear it");
+
+        // then
+        assertThat(sequence.commands()).hasSize(3);
+        assertThat(sequence.commands().get(0).getVerb()).isEqualTo("take");
+        assertThat(sequence.commands().get(0).getNoun()).isEqualTo("sword");
+        assertThat(sequence.commands().get(1).getVerb()).isEqualTo("take");
+        assertThat(sequence.commands().get(1).getNoun()).isEqualTo("shield");
+        assertThat(sequence.commands().get(2).getVerb()).isEqualTo("wear");
+        assertThat(sequence.commands().get(2).getNoun()).isEqualTo("shield");
+    }
+
+    @Test
+    void handle_it_carriesTheAdjectiveOfTheLastMentionedNoun() {
+        // given
+        Parser parser = new Parser(vocabularyWithBackReferenceWords());
+
+        // when
+        CommandSequence sequence = parser.handle("take golden sword and wear it");
+
+        // then
+        assertThat(sequence.commands()).hasSize(2);
+        assertThat(sequence.commands().get(1).getVerb()).isEqualTo("wear");
+        assertThat(sequence.commands().get(1).getAdjective()).isEqualTo("golden");
+        assertThat(sequence.commands().get(1).getNoun()).isEqualTo("sword");
+    }
+
+    @Test
+    void handle_it_resolvesAcrossSeparateHandleCalls() {
+        // given
+        Parser parser = new Parser(vocabularyWithBackReferenceWords());
+        parser.handle("take sword");
+
+        // when
+        CommandSequence sequence = parser.handle("wear it");
+
+        // then
+        assertThat(sequence.commands()).hasSize(1);
+        assertThat(sequence.commands().getFirst().getVerb()).isEqualTo("wear");
+        assertThat(sequence.commands().getFirst().getNoun()).isEqualTo("sword");
+    }
+
     private static Vocabulary vocabularyWithTakeSwordAndKillOgre() {
         Vocabulary vocabulary = new Vocabulary();
         vocabulary.createNewWord("take", Word.Type.VERB);
@@ -137,6 +244,28 @@ class ParserTest {
         vocabulary.createSynonym("then", "and");
         vocabulary.createNewWord("kill", Word.Type.VERB);
         vocabulary.createNewWord("ogre", Word.Type.NOUN);
+        return vocabulary;
+    }
+
+    private static Vocabulary vocabularyWithTakeDropSwordAndShield() {
+        Vocabulary vocabulary = new Vocabulary();
+        vocabulary.createNewWord("take", Word.Type.VERB);
+        vocabulary.createNewWord("drop", Word.Type.VERB);
+        vocabulary.createNewWord("sword", Word.Type.NOUN);
+        vocabulary.createNewWord("shield", Word.Type.NOUN);
+        vocabulary.createNewWord("and", Word.Type.CONJUNCTION);
+        return vocabulary;
+    }
+
+    private static Vocabulary vocabularyWithBackReferenceWords() {
+        Vocabulary vocabulary = new Vocabulary();
+        vocabulary.createNewWord("take", Word.Type.VERB);
+        vocabulary.createNewWord("wear", Word.Type.VERB);
+        vocabulary.createNewWord("golden", Word.Type.ADJECTIVE);
+        vocabulary.createNewWord("sword", Word.Type.NOUN);
+        vocabulary.createNewWord("shield", Word.Type.NOUN);
+        vocabulary.createNewWord("and", Word.Type.CONJUNCTION);
+        vocabulary.createNewWord("it", Word.Type.PRONOUN);
         return vocabulary;
     }
 }

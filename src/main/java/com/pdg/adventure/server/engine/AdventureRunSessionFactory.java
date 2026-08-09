@@ -94,5 +94,6 @@ public class AdventureRunSessionFactory {
         aVocabulary.createSynonym("i", "inventory");
         aVocabulary.createNewWord("and", Word.Type.CONJUNCTION);
         aVocabulary.createSynonym("then", "and");
+        aVocabulary.createNewWord("it", Word.Type.PRONOUN);
     }
 }

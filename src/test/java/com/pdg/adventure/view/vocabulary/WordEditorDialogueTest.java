@@ -357,7 +357,17 @@ class WordEditorDialogueTest {
     }
 
     @Test
-    @DisplayName("Test 6b: Duplicate word detection - prevents duplicate word text")
+    @DisplayName("Test 6b: Type selector - excludes PRONOUN, a reserved built-in-only type")
+    void typeSelector_excludesPronoun() {
+        // PRONOUN ("it") is seeded system-wide (MiniAdventure/AdventureRunSessionFactory),
+        // not author-authored - an author must never be able to hand-create one via this picker.
+        assertThat(typeSelector.getListDataView().getItems()).doesNotContain(Word.Type.PRONOUN);
+        assertThat(typeSelector.getListDataView().getItems())
+                .contains(Word.Type.VERB, Word.Type.NOUN, Word.Type.ADJECTIVE);
+    }
+
+    @Test
+    @DisplayName("Test 6c: Duplicate word detection - prevents duplicate word text")
     void vocabularyOperations_shouldDetectDuplicateWords() {
         // given: existing word
         vocabularyData.createWord("sword", Word.Type.NOUN);
