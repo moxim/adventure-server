@@ -191,6 +191,8 @@ public class WordEditorDialogue {
         Collections.addAll(typeList, Word.Type.values());
         // CONJUNCTION ("and"/"then") is a reserved, system-seeded type - never author-authorable.
         typeList.remove(Word.Type.CONJUNCTION);
+        // PRONOUN ("it") is likewise reserved and system-seeded - never author-authorable.
+        typeList.remove(Word.Type.PRONOUN);
         typeSelector.addValueChangeListener(_ -> validateAndUpdateSaveButton());
         typeSelector.setItems(typeList);
         typeSelector.setRenderer(new ComponentRenderer<Component, Word.Type>(wordType -> new Text(wordType.name())));
