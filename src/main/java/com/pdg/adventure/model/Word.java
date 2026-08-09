@@ -42,6 +42,7 @@ public class Word extends DatedData {
         VERB,
         NOUN,
         ADJECTIVE,
-        CONJUNCTION
+        CONJUNCTION,
+        PRONOUN
     }
 }

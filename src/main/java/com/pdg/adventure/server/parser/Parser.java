@@ -9,6 +9,7 @@ import java.util.Scanner;
 
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.exception.UnresolvedReferenceException;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 public class Parser {
@@ -105,6 +106,14 @@ public class Parser {
             case NOUN -> aSentence.setNoun(aWord.getText());
             case VERB -> aSentence.setVerb(aWord.getText());
             case ADJECTIVE -> aSentence.setAdjective(aWord.getText());
+            case PRONOUN -> {
+                if (lastNoun.isEmpty()) {
+                    throw new UnresolvedReferenceException(
+                            "I don't know what '" + aWord.getText() + "' refers to.");
+                }
+                aSentence.setNoun(lastNoun);
+                aSentence.setAdjective(lastAdjective);
+            }
             default -> throw new IllegalArgumentException("Unknown word type " + aWord.getType());
         }
     }
