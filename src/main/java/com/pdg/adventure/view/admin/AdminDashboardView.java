@@ -2,6 +2,7 @@ package com.pdg.adventure.view.admin;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
@@ -9,6 +10,7 @@ import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 
 @Route(value = "admin/dashboard", layout = AdventuresMainLayout.class)
 @RolesAllowed("ROLE_ADMIN")
+@PageTitle("Admin Dashboard")
 public class AdminDashboardView extends VerticalLayout {
 
     public AdminDashboardView() {
