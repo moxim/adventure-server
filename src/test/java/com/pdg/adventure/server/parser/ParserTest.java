@@ -129,6 +129,37 @@ class ParserTest {
         assertThat(command.getNoun()).isEmpty();
     }
 
+    @Test
+    void handle_bareNounSecondSubCommand_infersVerbFromFirstSubCommand() {
+        // given
+        Parser parser = new Parser(vocabularyWithTakeDropSwordAndShield());
+
+        // when
+        CommandSequence sequence = parser.handle("take sword and shield");
+
+        // then
+        assertThat(sequence.commands()).hasSize(2);
+        assertThat(sequence.commands().get(0).getVerb()).isEqualTo("take");
+        assertThat(sequence.commands().get(0).getNoun()).isEqualTo("sword");
+        assertThat(sequence.commands().get(1).getVerb()).isEqualTo("take");
+        assertThat(sequence.commands().get(1).getNoun()).isEqualTo("shield");
+    }
+
+    @Test
+    void handle_explicitVerbInSecondSubCommand_isNotOverriddenByInference() {
+        // given
+        Parser parser = new Parser(vocabularyWithTakeDropSwordAndShield());
+
+        // when
+        CommandSequence sequence = parser.handle("take sword and drop shield");
+
+        // then
+        assertThat(sequence.commands()).hasSize(2);
+        assertThat(sequence.commands().get(0).getVerb()).isEqualTo("take");
+        assertThat(sequence.commands().get(1).getVerb()).isEqualTo("drop");
+        assertThat(sequence.commands().get(1).getNoun()).isEqualTo("shield");
+    }
+
     private static Vocabulary vocabularyWithTakeSwordAndKillOgre() {
         Vocabulary vocabulary = new Vocabulary();
         vocabulary.createNewWord("take", Word.Type.VERB);
@@ -137,6 +168,16 @@ class ParserTest {
         vocabulary.createSynonym("then", "and");
         vocabulary.createNewWord("kill", Word.Type.VERB);
         vocabulary.createNewWord("ogre", Word.Type.NOUN);
+        return vocabulary;
+    }
+
+    private static Vocabulary vocabularyWithTakeDropSwordAndShield() {
+        Vocabulary vocabulary = new Vocabulary();
+        vocabulary.createNewWord("take", Word.Type.VERB);
+        vocabulary.createNewWord("drop", Word.Type.VERB);
+        vocabulary.createNewWord("sword", Word.Type.NOUN);
+        vocabulary.createNewWord("shield", Word.Type.NOUN);
+        vocabulary.createNewWord("and", Word.Type.CONJUNCTION);
         return vocabulary;
     }
 }
