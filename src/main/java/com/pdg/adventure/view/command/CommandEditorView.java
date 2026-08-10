@@ -178,7 +178,7 @@ public class CommandEditorView extends VerticalLayout
         resetButton = resetBackSaveView.getReset();
         resetButton.setEnabled(false);
         Button cancelButton = resetBackSaveView.getCancel();
-        cancelButton.setEnabled(false);
+        cancelButton.setEnabled(true);
 
         backButton.addClickListener(_ -> navigateBack());
         saveButton.addClickListener(_ -> validateSave(commandProviderData));

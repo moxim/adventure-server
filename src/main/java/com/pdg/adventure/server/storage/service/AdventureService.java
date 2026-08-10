@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -121,6 +122,27 @@ public class AdventureService {
 //        for (Map.Entry<String, Word> entry : allWords.entrySet()) {
 //            vocabulary.addSynonymForWord(entry.getKey(), allWords.get(entry.getKey()));
 //        }
+        ensureSystemMessagesUsable(anAdventureData);
+    }
+
+    /**
+     * A lazy {@code @DBRef} Map whose referenced documents were deleted out-of-band (e.g. the
+     * systemMessages collection dropped directly in the database, leaving this adventure's stored
+     * DBRef pointers referencing nothing) throws when Spring Data's lazy-loading proxy tries to
+     * resolve it on first access - anywhere, including cascade-save on an unrelated field. Detected
+     * right after load so every consumer (the System Messages view, or cascade-save triggered by
+     * editing Vocabulary/Locations/etc. on this same adventure) sees a clean, empty map instead of
+     * the corrupted proxy; SystemMessageKey.seedMissingInto repopulates it with defaults on next use.
+     */
+    private void ensureSystemMessagesUsable(AdventureData anAdventureData) {
+        try {
+            anAdventureData.getSystemMessages().size();
+        } catch (RuntimeException e) {
+            LOG.warn("System messages for adventure {} could not be resolved (referenced documents "
+                     + "likely deleted directly in the database) - resetting to an empty map",
+                     anAdventureData.getId(), e);
+            anAdventureData.setSystemMessages(new HashMap<>());
+        }
     }
 
     public List<AdventureData> getAdventures() {
@@ -149,7 +171,7 @@ public class AdventureService {
     }
 
     public void deleteAdventure(String anId) {
-        LOG.info("Deleting adventure: {}", anId);
+        LOG.debug("Deleting adventure: {}", anId);
 
         // Load the adventure first to ensure cascade delete can access all relationships
         Optional<AdventureData> adventureOpt = adventureRepository.findById(anId);
@@ -159,11 +181,11 @@ public class AdventureService {
 
             // Perform cascade delete on all @CascadeDelete annotated fields
             // (messages, locations, items, vocabulary, words)
-            LOG.info("Performing cascade delete for adventure: {}", anId);
+            LOG.debug("Performing cascade delete for adventure: {}", anId);
             cascadeDeleteHelper.cascadeDelete(adventure);
 
             // Now delete the adventure itself
-            LOG.info("Deleting adventure document: {}", anId);
+            LOG.debug("Deleting adventure document: {}", anId);
             adventureRepository.delete(adventure);
             LOG.info("Adventure deleted successfully: {}", anId);
         } else {

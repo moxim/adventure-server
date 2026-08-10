@@ -106,7 +106,11 @@ public class WordEditorDialogue {
         }
 
         Dialog dialog = new Dialog();
-        dialog.setModality(ModalityMode.VISUAL);
+        // STRICT (not the default VISUAL) so Flow marks the background view's components inert
+        // while this dialog is open - VISUAL only draws a curtain, it doesn't stop a global
+        // Key.ESCAPE click-shortcut elsewhere on the page (e.g. VocabularyMenuView's Back button)
+        // from also firing on the same keypress that closes this dialog.
+        dialog.setModality(ModalityMode.STRICT);
         dialog.setDraggable(true);
         dialog.getHeader().add(createDialogHeader(anEditType));
         dialog.getFooter().add(createDialogFooter(dialog)); // footer first, or saveButton is null
@@ -376,7 +380,10 @@ public class WordEditorDialogue {
     private void showSynonymCascadeDialog(Dialog parentDialog, Word editedWord, Word newRoot,
                                            List<Word> affectedWords) {
         Dialog cascadeDialog = new Dialog();
-        cascadeDialog.setModality(ModalityMode.VISUAL);
+        // Same STRICT-modality fix as the parent dialog (see open()) - otherwise a stray ESC
+        // here (which deliberately does nothing to this dialog, per setCloseOnEsc(false) below)
+        // would still fire VocabularyMenuView's background Back-button shortcut.
+        cascadeDialog.setModality(ModalityMode.STRICT);
         cascadeDialog.setDraggable(true);
         cascadeDialog.setCloseOnEsc(false);
         cascadeDialog.setCloseOnOutsideClick(false);

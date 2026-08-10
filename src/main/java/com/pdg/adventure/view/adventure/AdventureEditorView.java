@@ -27,6 +27,7 @@ import com.pdg.adventure.view.message.MessagesMenuView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
+import com.pdg.adventure.view.systemmessage.SystemMessagesView;
 import com.pdg.adventure.view.vocabulary.VocabularyMenuView;
 import com.pdg.adventure.view.workflow.WorkflowEditorView;
 
@@ -91,6 +92,14 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
+        Button editSystemMessagesButton = new Button("Manage System Messages", _ -> {
+            if (binder.writeBeanIfValid(adventureData)) {
+                UI.getCurrent().navigate(SystemMessagesView.class,
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                            adventureData.getId())));
+            }
+        });
+
         Button workflowButton = new Button("Manage Workflow", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(WorkflowEditorView.class,
@@ -121,7 +130,7 @@ public class AdventureEditorView extends VerticalLayout
         setPadding(true);
 
         final HorizontalLayout editRow = new HorizontalLayout(editVocabularyButton, editMessagesButton, editItemsButton,
-                                                              editLocationsButton, workflowButton);
+                                                              editLocationsButton, editSystemMessagesButton, workflowButton);
 
         Button backButton = new Button("Back", _ -> UI.getCurrent().navigate(AdventuresMenuView.class));
         backButton.addClickShortcut(Key.ESCAPE);

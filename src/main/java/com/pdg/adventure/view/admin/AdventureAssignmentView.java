@@ -5,7 +5,6 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
@@ -49,8 +48,6 @@ public class AdventureAssignmentView extends VerticalLayout {
 
         setSizeFull();
         setPadding(true);
-
-        add(new H2("Adventure Assignments"));
 
         SplitLayout splitLayout = new SplitLayout(buildAdventurePanel(), buildDetailPanel());
         splitLayout.setSizeFull();

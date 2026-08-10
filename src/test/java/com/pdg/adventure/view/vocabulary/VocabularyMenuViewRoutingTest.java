@@ -1,7 +1,10 @@
 package com.pdg.adventure.view.vocabulary;
 
 import com.vaadin.browserless.BrowserlessTest;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -78,6 +81,25 @@ class VocabularyMenuViewRoutingTest extends BrowserlessTest {
 
         Grid<?> grid = find(Grid.class, view).single();
         assertThat(test(grid).size()).isEqualTo(1);
+    }
+
+    @Test
+    void createWordButton_opensDialogWithStrictModality_soBackButtonEscDoesNotFireBehindIt() {
+        // Regression test: the word-editor Dialog previously defaulted to ModalityMode.VISUAL,
+        // which doesn't mark this view's components inert - pressing ESC to close the dialog also
+        // fired this view's own global Key.ESCAPE Back-button shortcut, navigating away in the
+        // background. STRICT modality is what makes Flow suppress that background shortcut.
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setVocabularyData(new VocabularyData());
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+        view.beforeEnter(eventWithAdventureId("adv-1"));
+
+        test(find(Button.class, view).withText("Create Word").single()).click();
+
+        Dialog dialog = find(Dialog.class).single();
+        assertThat(dialog.getModality()).isEqualTo(ModalityMode.STRICT);
     }
 
     @Test

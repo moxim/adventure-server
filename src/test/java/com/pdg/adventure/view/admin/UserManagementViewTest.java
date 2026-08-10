@@ -1,6 +1,7 @@
 package com.pdg.adventure.view.admin;
 
 import com.vaadin.browserless.BrowserlessTest;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -69,6 +70,15 @@ class UserManagementViewTest extends BrowserlessTest {
         List<Button> deleteButtons = find(Button.class, dialog).withText("Delete").all();
         boolean anyVisible = deleteButtons.stream().anyMatch(Button::isVisible);
         assertThat(anyVisible).as("Delete button visible in CREATE dialog").isFalse();
+    }
+
+    @Test
+    @DisplayName("The user dialog uses STRICT modality so a future page-level ESC shortcut can't fire behind it")
+    void userDialog_usesStrictModality() {
+        test(find(Button.class, view).withText("Add New User").single()).click();
+
+        Dialog dialog = find(Dialog.class).single();
+        assertThat(dialog.getModality()).isEqualTo(ModalityMode.STRICT);
     }
 
     @Test

@@ -39,6 +39,11 @@ public class AdventureData extends DatedData {
     @CascadeDelete
     private Map<String, MessageData> messages;
 
+    @DBRef(lazy = true)
+    @CascadeSave
+    @CascadeDelete
+    private Map<String, SystemMessageData> systemMessages;
+
     private String notes = ""; // to outline a story or whatever
 
     private WorkflowData workflowData = new WorkflowData();
@@ -52,6 +57,7 @@ public class AdventureData extends DatedData {
         playerPocket = new ItemContainerData("your pocket");
         locationData = new HashMap<>();
         messages = new HashMap<>();
+        systemMessages = new HashMap<>();
         currentLocationId = "";
         title = "";
     }
