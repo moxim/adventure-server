@@ -1,6 +1,7 @@
 package com.pdg.adventure.view.systemmessage;
 
 import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -105,6 +106,10 @@ public class SystemMessagesView extends VerticalLayout implements HasDynamicTitl
 
     private void openEditDialog(SystemMessageEntry aRow) {
         Dialog dialog = new Dialog();
+        // STRICT (not the default VISUAL) so Flow marks this view's components inert while the
+        // dialog is open - otherwise the Back button's global Key.ESCAPE shortcut fires alongside
+        // the dialog's own close, navigating away in the background instead of just closing it.
+        dialog.setModality(ModalityMode.STRICT);
         dialog.setHeaderTitle("Edit System Message: " + aRow.id());
         dialog.setWidth("600px");
 
@@ -120,6 +125,7 @@ public class SystemMessagesView extends VerticalLayout implements HasDynamicTitl
 
         Button saveBtn = new Button("Save", e -> save(aRow.id(), textArea.getValue(), dialog));
         Button cancelBtn = new Button("Cancel", e -> dialog.close());
+        cancelBtn.addClickShortcut(Key.ESCAPE);
 
         dialog.add(new VerticalLayout(originalSpan, contextSpan, textArea, new HorizontalLayout(saveBtn, cancelBtn)));
         dialog.open();

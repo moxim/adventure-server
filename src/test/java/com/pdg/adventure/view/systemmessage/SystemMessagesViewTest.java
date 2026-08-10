@@ -1,6 +1,7 @@
 package com.pdg.adventure.view.systemmessage;
 
 import com.vaadin.browserless.BrowserlessTest;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -139,6 +140,22 @@ class SystemMessagesViewTest extends BrowserlessTest {
         assertThat(find(TextArea.class, dialog).single().getValue())
                 .isEqualTo(SystemMessageKey.CANNOT_WEAR.defaultText());
         assertThat(find(Button.class, dialog).withText("Delete").all()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("The edit dialog uses STRICT modality so ESC can't also trigger the background Back button")
+    void editDialog_usesStrictModality() {
+        // Regression test: this dialog previously left modality unset (defaults to VISUAL), which
+        // doesn't mark the view inert - pressing ESC to close the dialog also fired the Back
+        // button's global Key.ESCAPE shortcut, navigating to AdventureEditorView in the background
+        // while the dialog itself stayed open.
+        enterWithAdventure();
+
+        int wearRowIndex = gridIndexOf(SystemMessageKey.CANNOT_WEAR.id());
+        test(find(Grid.class, view).single()).doubleClickRow(wearRowIndex);
+
+        Dialog dialog = find(Dialog.class).single();
+        assertThat(dialog.getModality()).isEqualTo(ModalityMode.STRICT);
     }
 
     @Test

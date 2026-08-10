@@ -1,5 +1,6 @@
 package com.pdg.adventure.view.admin;
 
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
@@ -60,6 +61,10 @@ public class UserManagementView extends VerticalLayout {
 
     private void openUserForm(UserData user) {
         Dialog dialog = new Dialog();
+        // STRICT (not the default VISUAL) so a future global Key.ESCAPE shortcut added to this
+        // view (e.g. a Back button) can't fire alongside this dialog's own close - see the same
+        // fix applied to SystemMessagesView/WordEditorDialogue for the mechanism.
+        dialog.setModality(ModalityMode.STRICT);
         dialog.setHeaderTitle(user.getId() == null ? "Create User" : "Edit User");
 
         TextField usernameField = new TextField("Username");
