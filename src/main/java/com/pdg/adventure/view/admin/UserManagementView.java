@@ -7,13 +7,13 @@ import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
@@ -25,6 +25,7 @@ import com.pdg.adventure.view.support.ViewSupporter;
 
 @Route(value = "admin/users", layout = AdventuresMainLayout.class)
 @RolesAllowed("ROLE_ADMIN") // Only Admins can access this
+@PageTitle("User Management")
 public class UserManagementView extends VerticalLayout {
 
     private final transient UserService userService;
@@ -32,8 +33,6 @@ public class UserManagementView extends VerticalLayout {
 
     public UserManagementView(UserService userService) {
         this.userService = userService;
-
-        add(new H2("User Management"));
 
         configureGrid();
         updateList();
