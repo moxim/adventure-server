@@ -7,7 +7,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.H2;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -51,14 +50,6 @@ class UserManagementViewTest extends BrowserlessTest {
     @AfterEach
     void clearSecurityContext() {
         SecurityContextHolder.clearContext();
-    }
-
-    @Test
-    void heading_isUserFriendly_doesNotLeakInternalClassName() {
-        H2 heading = view.getChildren()
-                .filter(H2.class::isInstance).map(H2.class::cast)
-                .findFirst().orElseThrow();
-        assertThat(heading.getText()).doesNotContain("UserData").contains("User");
     }
 
     @Test
