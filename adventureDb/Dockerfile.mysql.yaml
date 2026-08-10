@@ -2,9 +2,9 @@ version: '3.8'
 
 services:
   mysql-db:
-    image: mysql:9.6.0
+    image: mysql:9.7.2
     container_name: adventure-mysql
-    restart: unless-stopped
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root_secret_password
       MYSQL_DATABASE: adventure_db       # The database name
