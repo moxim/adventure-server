@@ -1,5 +1,6 @@
 package com.pdg.adventure.view.admin;
 
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -132,7 +133,10 @@ public class UserManagementView extends VerticalLayout {
             deleteBtn.setTooltipText("You cannot delete your own account.");
         }
 
-        dialog.add(new VerticalLayout(usernameField, passwordField, rolesBox, enabledBox, new HorizontalLayout(saveBtn, deleteBtn)));
+        Button cancelBtn = new Button("Cancel", e -> dialog.close());
+        cancelBtn.addClickShortcut(Key.ESCAPE);
+
+        dialog.add(new VerticalLayout(usernameField, passwordField, rolesBox, enabledBox, new HorizontalLayout(cancelBtn, saveBtn, deleteBtn)));
         dialog.open();
     }
 }
