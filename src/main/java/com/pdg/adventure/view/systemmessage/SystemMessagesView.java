@@ -18,7 +18,6 @@ import jakarta.annotation.security.RolesAllowed;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
@@ -70,9 +69,7 @@ public class SystemMessagesView extends VerticalLayout implements HasDynamicTitl
 
     private void configureGrid() {
         grid.addColumn(SystemMessageEntry::id).setHeader("Key").setAutoWidth(true).setFlexGrow(0);
-        grid.addColumn(SystemMessageEntry::defaultText).setHeader("Original (English)").setFlexGrow(2);
-        grid.addColumn(SystemMessageEntry::text).setHeader("Current Text").setFlexGrow(2);
-        grid.addColumn(row -> row.isEdited() ? "Yes" : "").setHeader("Edited").setAutoWidth(true).setFlexGrow(0);
+        grid.addColumn(SystemMessageEntry::text).setHeader("Current Text").setFlexGrow(1);
         grid.addItemDoubleClickListener(event -> openEditDialog(event.getItem()));
         ViewSupporter.setSize(grid);
     }
@@ -89,18 +86,16 @@ public class SystemMessagesView extends VerticalLayout implements HasDynamicTitl
     private void setData(AdventureData anAdventureData) {
         adventureData = anAdventureData;
         pageTitle = "System Messages for " + adventureData.getTitle();
-        // Covers both a brand new adventure and one that predates a newly-added catalog key -
-        // never touches an already-present (possibly admin-edited) entry.
-        SystemMessageKey.seedMissingInto(adventureData.getSystemMessages(), adventureData.getId());
         updateList();
     }
 
+    // Storage is sparse - an adventure only has a row for a key once it's been edited away from
+    // the default, so the grid is always synthesized from the full catalog rather than from
+    // whatever happens to be persisted; a missing row just means "still the default".
     private void updateList() {
-        Map<String, SystemMessageData> byKey = adventureData.getSystemMessages();
+        Map<String, SystemMessageData> overrides = adventureData.getSystemMessages();
         grid.setItems(Arrays.stream(SystemMessageKey.values())
-                .map(key -> byKey.get(key.id()))
-                .filter(Objects::nonNull)
-                .map(SystemMessageEntry::from)
+                .map(key -> SystemMessageEntry.forKey(key, overrides.get(key.id())))
                 .toList());
     }
 
@@ -134,9 +129,17 @@ public class SystemMessagesView extends VerticalLayout implements HasDynamicTitl
     private void save(String anId, String aNewText, Dialog aDialog) {
         try {
             validate(anId, aNewText);
-            SystemMessageData message = adventureData.getSystemMessages().get(anId);
-            message.setText(aNewText);
-            message.touch();
+            Map<String, SystemMessageData> overrides = adventureData.getSystemMessages();
+            SystemMessageData message = overrides.get(anId);
+            if (message == null) {
+                // First time this adventure has customized this key - create its own override
+                // row now; until this point no row existed for it at all (sparse storage).
+                message = new SystemMessageData(adventureData.getId(), anId, aNewText);
+                overrides.put(anId, message);
+            } else {
+                message.setText(aNewText);
+                message.touch();
+            }
             adventureService.saveAdventureData(adventureData);
 
             Notification notification = Notification.show("Message updated", 2000, Notification.Position.BOTTOM_START);

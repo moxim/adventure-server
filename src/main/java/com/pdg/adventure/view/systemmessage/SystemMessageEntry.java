@@ -1,22 +1,17 @@
 package com.pdg.adventure.view.systemmessage;
 
-import java.time.Instant;
-
 import com.pdg.adventure.model.SystemMessageData;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
 
-/** Grid/dialog read-model joining one adventure's persisted {@link SystemMessageData} row with its catalog metadata. */
-record SystemMessageEntry(String id, String defaultText, String sourceLocation, String description, String text,
-                          Instant updatedAt) {
+/**
+ * Grid/dialog read-model for one catalog key in one adventure. Storage is sparse - anOverride is
+ * null when the adventure has never customized this key, in which case text falls back to the
+ * key's own default.
+ */
+record SystemMessageEntry(String id, String defaultText, String sourceLocation, String description, String text) {
 
-    static SystemMessageEntry from(SystemMessageData aData) {
-        SystemMessageKey key = SystemMessageKey.fromId(aData.getKey())
-                .orElseThrow(() -> new IllegalStateException("Unknown system message key: " + aData.getKey()));
-        return new SystemMessageEntry(key.id(), key.defaultText(), key.sourceLocation(), key.description(),
-                                      aData.getText(), aData.getUpdatedAt());
-    }
-
-    boolean isEdited() {
-        return !text.equals(defaultText);
+    static SystemMessageEntry forKey(SystemMessageKey aKey, SystemMessageData anOverride) {
+        String text = anOverride != null ? anOverride.getText() : aKey.defaultText();
+        return new SystemMessageEntry(aKey.id(), aKey.defaultText(), aKey.sourceLocation(), aKey.description(), text);
     }
 }

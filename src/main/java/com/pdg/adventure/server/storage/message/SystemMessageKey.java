@@ -1,18 +1,21 @@
 package com.pdg.adventure.server.storage.message;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Optional;
 
-import com.pdg.adventure.model.SystemMessageData;
 import com.pdg.adventure.server.support.PlaceholderSpec;
 
 /**
  * The fixed catalog of built-in, engine-level messages available for translation/wording edits
  * under "Manage System Messages". This enum is the single source of truth for each message's
- * default (English) text, source location, and translator-facing description - {@link
- * com.pdg.adventure.model.SystemMessageData} stores only the mutable, admin-editable text plus
- * timestamps, so a later typo fix here can never desync from what's already been seeded.
+ * default (English) text, source location, and translator-facing description.
+ * <p>
+ * Storage is sparse per adventure: an adventure only has a persisted {@link
+ * com.pdg.adventure.model.SystemMessageData} row for a key once an author has actually edited it
+ * away from the default. A key with no row for a given adventure simply reads as {@link
+ * #defaultText()} - several adventures can therefore "share" an unmodified message without any
+ * shared or cross-adventure document ever existing; each adventure's own edits live only in its
+ * own {@code AdventureData.systemMessages} map.
  * <p>
  * Ids for entries that already exist in {@code MessagesHolder}'s negative-ID convention are kept
  * verbatim, so a future engine-rewiring phase can swap {@code MessagesHolder.getMessage(id)} for a
@@ -138,17 +141,5 @@ public enum SystemMessageKey {
 
     public static Optional<SystemMessageKey> fromId(String anId) {
         return Arrays.stream(values()).filter(key -> key.id.equals(anId)).findFirst();
-    }
-
-    /**
-     * Inserts a default-text {@link SystemMessageData} for every catalog key missing from
-     * aSystemMessages, leaving any already-present entry (including an admin's saved edit)
-     * untouched. Safe to call every time a system-messages screen loads - covers both a brand new
-     * adventure (empty map) and an existing one that predates a newly-added catalog key.
-     */
-    public static void seedMissingInto(Map<String, SystemMessageData> aSystemMessages, String anAdventureId) {
-        for (SystemMessageKey key : values()) {
-            aSystemMessages.computeIfAbsent(key.id(), id -> new SystemMessageData(anAdventureId, id, key.defaultText()));
-        }
     }
 }

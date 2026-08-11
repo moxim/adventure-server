@@ -136,7 +136,11 @@ public class AdventureService {
      */
     private void ensureSystemMessagesUsable(AdventureData anAdventureData) {
         try {
-            anAdventureData.getSystemMessages().size();
+            if (anAdventureData.getSystemMessages().isEmpty()) {
+                LOG.debug("System messages for adventure {} loaded successfully", anAdventureData.getId());
+            } else {
+                LOG.debug("System messages for adventure {} are empty", anAdventureData.getId());
+            }
         } catch (RuntimeException e) {
             LOG.warn("System messages for adventure {} could not be resolved (referenced documents "
                      + "likely deleted directly in the database) - resetting to an empty map",

@@ -2,14 +2,10 @@ package com.pdg.adventure.server.storage.message;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
-import com.pdg.adventure.model.SystemMessageData;
 
 class SystemMessageKeyTest {
 
@@ -48,31 +44,5 @@ class SystemMessageKeyTest {
     @Test
     void descriptiveKeys_useEnumNameAsId() {
         assertThat(SystemMessageKey.HELP_TEXT.id()).isEqualTo("HELP_TEXT");
-    }
-
-    @Test
-    void seedMissingInto_populatesAllKeysIntoAnEmptyMap() {
-        Map<String, SystemMessageData> systemMessages = new HashMap<>();
-
-        SystemMessageKey.seedMissingInto(systemMessages, "adventure-1");
-
-        assertThat(systemMessages).hasSize(36);
-        SystemMessageData wear = systemMessages.get(SystemMessageKey.CANNOT_WEAR.id());
-        assertThat(wear.getAdventureId()).isEqualTo("adventure-1");
-        assertThat(wear.getKey()).isEqualTo(SystemMessageKey.CANNOT_WEAR.id());
-        assertThat(wear.getText()).isEqualTo(SystemMessageKey.CANNOT_WEAR.defaultText());
-    }
-
-    @Test
-    void seedMissingInto_neverOverwritesAnAlreadyPresentEntry() {
-        Map<String, SystemMessageData> systemMessages = new HashMap<>();
-        SystemMessageData editedWearMessage = new SystemMessageData("adventure-1", SystemMessageKey.CANNOT_WEAR.id(),
-                                                                    "Du kannst %s nicht tragen.");
-        systemMessages.put(SystemMessageKey.CANNOT_WEAR.id(), editedWearMessage);
-
-        SystemMessageKey.seedMissingInto(systemMessages, "adventure-1");
-
-        assertThat(systemMessages.get(SystemMessageKey.CANNOT_WEAR.id())).isSameAs(editedWearMessage);
-        assertThat(systemMessages).hasSize(36);
     }
 }

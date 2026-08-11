@@ -54,7 +54,8 @@ class SystemMessagesViewTest extends BrowserlessTest {
         adventureData = new AdventureData();
         adventureData.setId("adv-1");
         adventureData.setTitle("Test Adventure");
-        // Left empty on purpose - beforeEnter's seedMissingInto call must top it up to all 36.
+        // Left empty on purpose - storage is sparse, so an adventure with no customizations at
+        // all has an empty systemMessages map; the grid must still show all 36 catalog rows.
 
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
@@ -81,23 +82,30 @@ class SystemMessagesViewTest extends BrowserlessTest {
     }
 
     @Test
-    @DisplayName("Entering the view seeds every missing catalog key into the adventure's (empty) system messages map")
-    void beforeEnter_seedsMissingSystemMessages() {
+    @DisplayName("Entering the view does NOT materialize rows for unmodified messages - storage stays sparse")
+    void beforeEnter_leavesEmptyMapEmpty_forAnAdventureWithNoCustomizations() {
         enterWithAdventure();
 
-        assertThat(adventureData.getSystemMessages()).hasSize(36);
-        assertThat(adventureData.getSystemMessages().get(SystemMessageKey.CANNOT_WEAR.id()).getText())
-                .isEqualTo(SystemMessageKey.CANNOT_WEAR.defaultText());
+        assertThat(adventureData.getSystemMessages()).as("no rows should be created just by viewing the screen").isEmpty();
     }
 
     @Test
-    @DisplayName("Entering the view never overwrites an already-edited message")
-    void beforeEnter_preservesAlreadyEditedMessage() {
+    @DisplayName("The grid still shows all 36 catalog rows even though none are persisted yet")
+    void grid_showsFullCatalog_regardlessOfHowManyRowsArePersisted() {
+        enterWithAdventure();
+
+        assertThat(test(find(Grid.class, view).single()).size()).isEqualTo(36);
+    }
+
+    @Test
+    @DisplayName("Entering the view never touches an already-customized message, and doesn't materialize the other 35")
+    void beforeEnter_preservesAlreadyEditedMessage_andLeavesEverythingElseSparse() {
         adventureData.getSystemMessages().put(SystemMessageKey.CANNOT_WEAR.id(),
                 new SystemMessageData("adv-1", SystemMessageKey.CANNOT_WEAR.id(), "Du kannst %s nicht tragen."));
 
         enterWithAdventure();
 
+        assertThat(adventureData.getSystemMessages()).hasSize(1);
         assertThat(adventureData.getSystemMessages().get(SystemMessageKey.CANNOT_WEAR.id()).getText())
                 .isEqualTo("Du kannst %s nicht tragen.");
     }
@@ -159,9 +167,10 @@ class SystemMessagesViewTest extends BrowserlessTest {
     }
 
     @Test
-    @DisplayName("Saving a valid edit mutates the adventure's system messages and persists via AdventureService")
-    void save_validEdit_mutatesAdventureDataAndSaves() {
+    @DisplayName("Saving a valid edit for a previously-unmodified message creates its first override row (sparse insert)")
+    void save_validEdit_insertsFirstOverrideRow_mutatesAdventureDataAndSaves() {
         enterWithAdventure();
+        assertThat(adventureData.getSystemMessages()).as("nothing customized yet").isEmpty();
 
         int wearRowIndex = gridIndexOf(SystemMessageKey.CANNOT_WEAR.id());
         test(find(Grid.class, view).single()).doubleClickRow(wearRowIndex);
@@ -170,10 +179,31 @@ class SystemMessagesViewTest extends BrowserlessTest {
         textArea.setValue("Du kannst %s nicht tragen.");
         test(find(Button.class, dialog).withText("Save").single()).click();
 
+        // Exactly one row now exists - the other 35 unmodified keys are still not persisted.
+        assertThat(adventureData.getSystemMessages()).hasSize(1);
         assertThat(adventureData.getSystemMessages().get(SystemMessageKey.CANNOT_WEAR.id()).getText())
                 .isEqualTo("Du kannst %s nicht tragen.");
         verify(adventureService).saveAdventureData(adventureData);
         assertThat(find(Dialog.class).all()).as("dialog closed after a successful save").isEmpty();
+    }
+
+    @Test
+    @DisplayName("Saving a second edit for an already-customized message updates the existing row instead of duplicating it")
+    void save_validEdit_updatesExistingOverrideRow_whenOneAlreadyExists() {
+        adventureData.getSystemMessages().put(SystemMessageKey.CANNOT_WEAR.id(),
+                new SystemMessageData("adv-1", SystemMessageKey.CANNOT_WEAR.id(), "Du kannst %s nicht tragen."));
+        enterWithAdventure();
+
+        int wearRowIndex = gridIndexOf(SystemMessageKey.CANNOT_WEAR.id());
+        test(find(Grid.class, view).single()).doubleClickRow(wearRowIndex);
+        Dialog dialog = find(Dialog.class).single();
+        TextArea textArea = find(TextArea.class, dialog).single();
+        textArea.setValue("Sie können %s nicht tragen.");
+        test(find(Button.class, dialog).withText("Save").single()).click();
+
+        assertThat(adventureData.getSystemMessages()).hasSize(1);
+        assertThat(adventureData.getSystemMessages().get(SystemMessageKey.CANNOT_WEAR.id()).getText())
+                .isEqualTo("Sie können %s nicht tragen.");
     }
 
     @Test
