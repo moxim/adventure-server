@@ -40,11 +40,11 @@ import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.support.FlashNotifier;
 import com.pdg.adventure.view.support.RouteIds;
 
-class WorkflowEditorViewRoutingTest extends BrowserlessTest {
+class ResponsesEditorViewRoutingTest extends BrowserlessTest {
 
     private AdventureService adventureService;
     private AdventureAccessService accessService;
-    private WorkflowEditorView view;
+    private ResponsesEditorView view;
 
     @BeforeEach
     void setUp() {
@@ -55,7 +55,7 @@ class WorkflowEditorViewRoutingTest extends BrowserlessTest {
         testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
-        view = new WorkflowEditorView(adventureService, accessService);
+        view = new ResponsesEditorView(adventureService, accessService);
         UI.getCurrent().add(view);
     }
 
@@ -71,32 +71,63 @@ class WorkflowEditorViewRoutingTest extends BrowserlessTest {
         return event;
     }
 
-    private static AdventureData adventureWithOneWorkflowCommand() {
+    private static AdventureData adventureWithOneResponse() {
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
         adventure.setTitle("The Demo");
         adventure.setLocationData(new HashMap<>());
         WorkflowData workflowData = new WorkflowData();
-        workflowData.getCommands().add(new CommandData(new CommandDescriptionData("shiver||")));
+        workflowData.getInterceptorCommands().add(new CommandData(new CommandDescriptionData("shiver||")));
         adventure.setWorkflowData(workflowData);
         return adventure;
     }
 
     @SuppressWarnings("unchecked")
-    private Grid<CommandData> grid(WorkflowEditorView view) {
+    private Grid<CommandData> grid(ResponsesEditorView view) {
         return (Grid<CommandData>) (Grid<?>) find(Grid.class, view).single();
     }
 
     @Test
-    void beforeEnter_validAdventureId_populatesGridFromWorkflowData() {
-        AdventureData adventure = adventureWithOneWorkflowCommand();
+    void beforeEnter_validAdventureId_populatesGridFromInterceptorCommands() {
+        AdventureData adventure = adventureWithOneResponse();
         when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
                 .thenReturn(Optional.of(adventure));
 
         view.beforeEnter(eventWithAdventureId("adv-1"));
 
-        assertThat(view.getPageTitle()).isEqualTo("Workflow for The Demo");
+        assertThat(view.getPageTitle()).isEqualTo("Responses for The Demo");
         assertThat(test(grid(view)).size()).isEqualTo(1);
+    }
+
+    @Test
+    void beforeEnter_doesNotTouchPreCommands() {
+        AdventureData adventure = adventureWithOneResponse();
+        adventure.getWorkflowData().getCommands().add(new CommandData(new CommandDescriptionData("wait||")));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithAdventureId("adv-1"));
+
+        assertThat(test(grid(view)).size()).isEqualTo(1);
+        assertThat(adventure.getWorkflowData().getCommands()).hasSize(1);
+    }
+
+    @Test
+    void beforeEnter_gridShowsResponsesInAlphabeticalVerbOrder_regardlessOfInsertionOrder() {
+        AdventureData adventure = adventureWithOneResponse();
+        adventure.getWorkflowData().getInterceptorCommands()
+                 .addFirst(new CommandData(new CommandDescriptionData("zebra||")));
+        adventure.getWorkflowData().getInterceptorCommands()
+                 .addFirst(new CommandData(new CommandDescriptionData("apple||")));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithAdventureId("adv-1"));
+
+        var gridTester = test(grid(view));
+        assertThat(List.of(gridTester.getRow(0), gridTester.getRow(1), gridTester.getRow(2)))
+                .extracting(cmd -> cmd.getCommandDescription().getSafeVerb().getText())
+                .containsExactly("apple", "shiver", "zebra");
     }
 
     @Test
@@ -114,24 +145,8 @@ class WorkflowEditorViewRoutingTest extends BrowserlessTest {
     }
 
     @Test
-    void beforeEnter_gridShowsCommandsInAlphabeticalVerbOrder_regardlessOfInsertionOrder() {
-        AdventureData adventure = adventureWithOneWorkflowCommand();
-        adventure.getWorkflowData().getCommands().addFirst(new CommandData(new CommandDescriptionData("zebra||")));
-        adventure.getWorkflowData().getCommands().addFirst(new CommandData(new CommandDescriptionData("apple||")));
-        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
-                .thenReturn(Optional.of(adventure));
-
-        view.beforeEnter(eventWithAdventureId("adv-1"));
-
-        var gridTester = test(grid(view));
-        assertThat(List.of(gridTester.getRow(0), gridTester.getRow(1), gridTester.getRow(2)))
-                .extracting(cmd -> cmd.getCommandDescription().getSafeVerb().getText())
-                .containsExactly("apple", "shiver", "zebra");
-    }
-
-    @Test
     void beforeEnter_populatesVocabularyPickers_fromAdventureVocabulary() {
-        AdventureData adventure = adventureWithOneWorkflowCommand();
+        AdventureData adventure = adventureWithOneResponse();
         VocabularyData vocabulary = new VocabularyData();
         vocabulary.createWord("shiver", Word.Type.VERB);
         adventure.setVocabularyData(vocabulary);
@@ -146,15 +161,15 @@ class WorkflowEditorViewRoutingTest extends BrowserlessTest {
     }
 
     @Test
-    void newCommandButton_startsWithDeleteDisabledAndSaveDisabled() {
-        AdventureData adventure = adventureWithOneWorkflowCommand();
+    void newResponseButton_startsWithDeleteDisabledAndSaveDisabled() {
+        AdventureData adventure = adventureWithOneResponse();
         when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
                 .thenReturn(Optional.of(adventure));
         view.beforeEnter(eventWithAdventureId("adv-1"));
 
-        Button newCommandButton = find(Button.class, view).withText("New Command").single();
-        Button deleteButton = find(Button.class, view).withText("Delete Command").single();
-        Button saveButton = find(Button.class, view).withText("Save Command").single();
+        Button newCommandButton = find(Button.class, view).withText("New Response").single();
+        Button deleteButton = find(Button.class, view).withText("Delete Response").single();
+        Button saveButton = find(Button.class, view).withText("Save Response").single();
 
         assertThat(deleteButton.isEnabled()).isFalse();
         assertThat(saveButton.isEnabled()).isFalse();
@@ -166,35 +181,35 @@ class WorkflowEditorViewRoutingTest extends BrowserlessTest {
     }
 
     @Test
-    void selectingExistingCommand_enablesDeleteButton() {
-        AdventureData adventure = adventureWithOneWorkflowCommand();
+    void selectingExistingResponse_enablesDeleteButton() {
+        AdventureData adventure = adventureWithOneResponse();
         when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
                 .thenReturn(Optional.of(adventure));
         view.beforeEnter(eventWithAdventureId("adv-1"));
-        CommandData existing = adventure.getWorkflowData().getCommands().getFirst();
+        CommandData existing = adventure.getWorkflowData().getInterceptorCommands().getFirst();
 
         grid(view).select(existing);
 
-        Button deleteButton = find(Button.class, view).withText("Delete Command").single();
+        Button deleteButton = find(Button.class, view).withText("Delete Response").single();
         assertThat(deleteButton.isEnabled()).isTrue();
     }
 
     @Test
-    void deletingSelectedCommand_removesFromWorkflowDataAndPersistsAdventure() {
-        AdventureData adventure = adventureWithOneWorkflowCommand();
+    void deletingSelectedResponse_removesFromInterceptorCommandsAndPersistsAdventure() {
+        AdventureData adventure = adventureWithOneResponse();
         when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
                 .thenReturn(Optional.of(adventure));
         view.beforeEnter(eventWithAdventureId("adv-1"));
-        CommandData existing = adventure.getWorkflowData().getCommands().getFirst();
+        CommandData existing = adventure.getWorkflowData().getInterceptorCommands().getFirst();
         grid(view).select(existing);
 
-        Button deleteButton = find(Button.class, view).withText("Delete Command").single();
+        Button deleteButton = find(Button.class, view).withText("Delete Response").single();
         test(deleteButton).click();
 
         ConfirmDialog confirm = find(ConfirmDialog.class).single();
         test(confirm).confirm();
 
         verify(adventureService).saveAdventureData(adventure);
-        assertThat(adventure.getWorkflowData().getCommands()).isEmpty();
+        assertThat(adventure.getWorkflowData().getInterceptorCommands()).isEmpty();
     }
 }

@@ -8,4 +8,5 @@ import java.util.List;
 @Data
 public class WorkflowData {
     private List<CommandData> commands = new ArrayList<>();
+    private List<CommandData> interceptorCommands = new ArrayList<>();
 }

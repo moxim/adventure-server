@@ -20,6 +20,7 @@ import com.vaadin.flow.router.*;
 import jakarta.annotation.security.RolesAllowed;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +48,19 @@ import com.pdg.adventure.view.support.ViewSupporter;
 @RolesAllowed("ROLE_AUTHOR")
 public class CommandsMenuView extends VerticalLayout
         implements HasDynamicTitle, BeforeEnterObserver {
+
+    // Grid presentation order: alphabetical by verb, then adjective, then noun - matches the
+    // Verb/Adjective/Noun column order. Purely cosmetic: CommandExecutor doesn't pick by list
+    // position (it fully disambiguates or asks the player to clarify), so this has no effect on
+    // which command actually fires.
+    private static final Comparator<CommandData> ALPHABETICAL = Comparator
+            .comparing((CommandData cmd) -> ViewSupporter.getWordText(cmd.getCommandDescription().getVerb()),
+                       String.CASE_INSENSITIVE_ORDER)
+            .thenComparing(cmd -> ViewSupporter.getWordText(cmd.getCommandDescription().getAdjective()),
+                            String.CASE_INSENSITIVE_ORDER)
+            .thenComparing(cmd -> ViewSupporter.getWordText(cmd.getCommandDescription().getNoun()),
+                            String.CASE_INSENSITIVE_ORDER);
+
     private final transient AdventureService adventureService;
     private final transient ItemService itemService;
     private final transient AdventureAccessService accessService;
@@ -188,6 +202,7 @@ public class CommandsMenuView extends VerticalLayout
         for (CommandChainData chain : aCommandProviderData.getAvailableCommands().values()) {
             rows.addAll(chain.getCommands());
         }
+        rows.sort(ALPHABETICAL);
         return grid.setItems(rows);
     }
 
