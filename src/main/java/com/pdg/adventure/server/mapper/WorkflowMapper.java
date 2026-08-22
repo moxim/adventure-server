@@ -28,5 +28,10 @@ public class WorkflowMapper {
             CommandDescription description = command.getDescription();
             aWorkflow.addPreCommand((GenericCommandDescription) description, command);
         }
+        for (CommandData commandData : aWorkflowData.getInterceptorCommands()) {
+            Command command = commandMapper.mapToBO(commandData);
+            CommandDescription description = command.getDescription();
+            aWorkflow.addInterceptorCommand((GenericCommandDescription) description, command);
+        }
     }
 }

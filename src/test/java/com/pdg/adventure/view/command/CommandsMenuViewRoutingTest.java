@@ -107,6 +107,43 @@ class CommandsMenuViewRoutingTest extends BrowserlessTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
+    void beforeEnter_locationScoped_gridShowsCommandsInAlphabeticalVerbOrder_regardlessOfMapOrder() {
+        CommandData zebraCommand = new CommandData();
+        zebraCommand.setCommandDescription(new CommandDescriptionData("zebra||"));
+        CommandChainData zebraChain = new CommandChainData();
+        zebraChain.setCommands(List.of(zebraCommand));
+
+        CommandData appleCommand = new CommandData();
+        appleCommand.setCommandDescription(new CommandDescriptionData("apple||"));
+        CommandChainData appleChain = new CommandChainData();
+        appleChain.setCommands(List.of(appleCommand));
+
+        CommandProviderData provider = new CommandProviderData();
+        provider.setAvailableCommands(Map.of("zebra||", zebraChain, "apple||", appleChain));
+
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        location.getDescriptionData().setShortDescription("the dunes");
+        location.setCommandProviderData(provider);
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of("loc-1", location));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1")));
+
+        Grid<CommandData> grid = (Grid<CommandData>) (Grid<?>) find(Grid.class, view).single();
+        var gridTester = test(grid);
+        assertThat(List.of(gridTester.getRow(0), gridTester.getRow(1)))
+                .extracting(cmd -> cmd.getCommandDescription().getSafeVerb().getText())
+                .containsExactly("apple", "zebra");
+    }
+
+    @Test
     void beforeEnter_itemScoped_validIds_populatesGridFromItemCommands() {
         ItemData item = new ItemData();
         item.setId("item-1");

@@ -29,6 +29,7 @@ import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 import com.pdg.adventure.view.systemmessage.SystemMessagesView;
 import com.pdg.adventure.view.vocabulary.VocabularyMenuView;
+import com.pdg.adventure.view.workflow.ResponsesEditorView;
 import com.pdg.adventure.view.workflow.WorkflowEditorView;
 
 @Route(value = "author/adventures/:adventureId/edit", layout = AdventuresMainLayout.class)
@@ -100,13 +101,24 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button workflowButton = new Button("Manage Workflow", _ -> {
+        Button workflowButton = new Button("Manage Processes", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(WorkflowEditorView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                                             adventureData.getId())));
             }
         });
+
+        Button responsesButton = new Button("Manage Responses", _ -> {
+            if (binder.writeBeanIfValid(adventureData)) {
+                UI.getCurrent().navigate(ResponsesEditorView.class,
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                            adventureData.getId())));
+            }
+        });
+
+        Button backButton = new Button("Back", _ -> UI.getCurrent().navigate(AdventuresMenuView.class));
+        backButton.addClickShortcut(Key.ESCAPE);
 
         saveButton.setEnabled(false);
         saveButton.addClickListener(_ -> validateSave(adventureData));
@@ -129,11 +141,18 @@ public class AdventureEditorView extends VerticalLayout
         setMargin(true);
         setPadding(true);
 
-        final HorizontalLayout editRow = new HorizontalLayout(editVocabularyButton, editMessagesButton, editItemsButton,
-                                                              editLocationsButton, editSystemMessagesButton, workflowButton);
+        final VerticalLayout messagesLayout = new VerticalLayout(editMessagesButton, editSystemMessagesButton);
+        final VerticalLayout workflowLayout = new VerticalLayout(workflowButton, responsesButton);
+        final VerticalLayout itemsLayout = new VerticalLayout(editItemsButton);
+        final VerticalLayout locationsLayout = new VerticalLayout(editLocationsButton);
+        final VerticalLayout vocabularyLayout = new VerticalLayout(editVocabularyButton);
+        final HorizontalLayout editRow = new HorizontalLayout(vocabularyLayout,
+                                                              messagesLayout,
+                                                              locationsLayout,
+                                                              itemsLayout,
+                                                              workflowLayout
+        );
 
-        Button backButton = new Button("Back", _ -> UI.getCurrent().navigate(AdventuresMenuView.class));
-        backButton.addClickShortcut(Key.ESCAPE);
         final HorizontalLayout testSaveRow = new HorizontalLayout(backButton, testButton, saveButton);
 
         add(titleStartRow, longDescription, editRow, testSaveRow);

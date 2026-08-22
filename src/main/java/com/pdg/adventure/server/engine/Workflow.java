@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.engine;
 
+import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -10,6 +11,15 @@ import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 
 public class Workflow {
+
+    // Iteration order for preCommands each turn: alphabetical by verb, then adjective, then noun -
+    // independent of the TreeMap's own key ordering (which sorts by the "verb|adjective|noun"
+    // description string and, because '|' sorts after letters, would rank e.g. "go" after "goto").
+    private static final Comparator<CommandDescription> ALPHABETICAL = Comparator
+            .comparing(CommandDescription::getVerb, String.CASE_INSENSITIVE_ORDER)
+            .thenComparing(CommandDescription::getAdjective, String.CASE_INSENSITIVE_ORDER)
+            .thenComparing(CommandDescription::getNoun, String.CASE_INSENSITIVE_ORDER);
+
     private final Map<CommandDescription, Command> preCommands;
     private final Map<CommandDescription, Command> interceptorCommands;
     private final GameContext gameContext;
@@ -50,9 +60,11 @@ public class Workflow {
     }
 
     private void process(Map<CommandDescription, Command> commands) {
-        for (Map.Entry<CommandDescription, Command> commandEntry : commands.entrySet()) {
-            ExecutionResult result = commandEntry.getValue().execute();
-            gameContext.tell(result.getResultMessage());
-        }
+        commands.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey(ALPHABETICAL))
+                .forEach(commandEntry -> {
+                    ExecutionResult result = commandEntry.getValue().execute();
+                    gameContext.tell(result.getResultMessage());
+                });
     }
 }
