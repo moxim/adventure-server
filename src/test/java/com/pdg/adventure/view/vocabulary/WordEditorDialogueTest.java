@@ -349,7 +349,7 @@ class WordEditorDialogueTest {
     @Test
     @DisplayName("Test 6a: Type selector - excludes CONJUNCTION, a reserved built-in-only type")
     void typeSelector_excludesConjunction() {
-        // CONJUNCTION ("and"/"then") is seeded system-wide (MiniAdventure/AdventureRunSessionFactory),
+        // CONJUNCTION ("and"/"then") is seeded system-wide (AdventureRunSessionFactory),
         // not author-authored - an author must never be able to hand-create one via this picker.
         assertThat(typeSelector.getListDataView().getItems()).doesNotContain(Word.Type.CONJUNCTION);
         assertThat(typeSelector.getListDataView().getItems())
@@ -359,7 +359,7 @@ class WordEditorDialogueTest {
     @Test
     @DisplayName("Test 6b: Type selector - excludes PRONOUN, a reserved built-in-only type")
     void typeSelector_excludesPronoun() {
-        // PRONOUN ("it") is seeded system-wide (MiniAdventure/AdventureRunSessionFactory),
+        // PRONOUN ("it") is seeded system-wide (AdventureRunSessionFactory),
         // not author-authored - an author must never be able to hand-create one via this picker.
         assertThat(typeSelector.getListDataView().getItems()).doesNotContain(Word.Type.PRONOUN);
         assertThat(typeSelector.getListDataView().getItems())

@@ -330,8 +330,7 @@ hierarchy).
 
 The in-browser play surface is implemented: `AdventureRunView`, backed by
 `AdventureRunSession` / `AdventureRunSessionFactory`
-(`server/engine/`), drives the same `GameLoop` / `GameContext` the CLI
-runner (`AdventureClient` / `MiniAdventure`) uses. It is reached three
+(`server/engine/`), and drives `GameLoop` / `GameContext`. It is reached three
 ways — a player's "Run Adventure" here, an author's "Run Adventure" from
 `/author/adventures`, or an author's "Run Adventure" from `AdventureEditorView` —
 all landing on the identical view; only the **Back** destination and the
@@ -370,8 +369,7 @@ page title ("Playing: …" vs "Running: …") differ by origin.
 > `AdventureRunSessionFactory` reuses the same process-wide
 > `GameContext`/`AdventureConfig` singleton beans the console runner uses
 > (no per-session engine isolation), so at most one run session is
-> meaningfully active at a time across the whole server — the same
-> constraint `MiniAdventure` already has on the console. Concurrent
+> meaningfully active at a time across the whole server. Concurrent
 > Test/Run sessions (two authors testing at once, or two browser tabs)
 > will interfere with each other. See
 > [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps).

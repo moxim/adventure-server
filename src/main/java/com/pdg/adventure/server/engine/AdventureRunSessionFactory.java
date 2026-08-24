@@ -15,8 +15,7 @@ import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 /**
- * Bootstraps a browser-playable game session for a single, already-saved adventure — the
- * plain-web-app equivalent of what MiniAdventure/AdventureClient assemble for the console.
+ * Bootstraps a browser-playable game session for a single, already-saved adventure.
  * Serves both the author's "Test" flow and a player's "Run Adventure" flow; access control
  * (who may load which adventure) is handled by the caller via AdventureAccessService, not here.
  * Reuses the same process-wide GameContext/AdventureConfig singletons the console engine uses
@@ -63,7 +62,7 @@ public class AdventureRunSessionFactory {
 
     // LoadAdventureAction signals success by throwing ReloadAdventureException and failure (bad
     // id, adventure not found, no locations) by returning normally — inverted from what you'd
-    // expect. AdventureClient.run() relies on the same inversion.
+    // expect.
     private void loadIntoSharedEngine(AdventureData anAdventureData) {
         LoadAdventureAction loadAdventureAction = new LoadAdventureAction(adventureService, adventureMapper,
                                                                           adventureConfig, gameContext);
@@ -77,8 +76,7 @@ public class AdventureRunSessionFactory {
                         .formatted(anAdventureData.getId()));
     }
 
-    // Mirrors MiniAdventure.createSpecialWords(Vocabulary), minus addAdventureIdsToNouns() and
-    // the cross-adventure "load X" workflow wiring — a run session is scoped to one adventure.
+    // A run session is scoped to one adventure.
     private void registerBaseVerbs(Vocabulary aVocabulary) {
         aVocabulary.createNewWord("quit", Word.Type.VERB);
         aVocabulary.createSynonym("exit", "quit");

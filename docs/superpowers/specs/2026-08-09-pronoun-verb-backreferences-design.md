@@ -46,4 +46,4 @@ One `Parser` instance already lives for the whole `AdventureRunSession` (constru
 - `ParserTest`: worked example (`"take sword and shield and wear it"` → 3 commands); verb inference within one line; `lastVerb`/`lastNoun`/`lastAdjective` persistence across separate `handle()` calls; adjective+noun paired resolution; explicit verb not overridden by inference; `UnresolvedReferenceException` when "it" has no antecedent.
 - `GameLoopTest`: unresolved-pronoun message end-to-end (`CONTINUE`, not `ERROR`); a failed sub-command still updates pronoun state for a later command in the same session.
 - `WordEditorDialogueTest`: `PRONOUN` excluded from the type picker, mirroring the existing `CONJUNCTION` exclusion test.
-- `MiniAdventureTest`/`AdventureRunSessionFactoryTest` (whichever already covers `createSpecialWords`/`registerBaseVerbs`): assert "it" is seeded as `PRONOUN`, mirroring existing "and"/"then" coverage.
+- `AdventureRunSessionFactoryTest` (which already covers `createSpecialWords`/`registerBaseVerbs`): assert "it" is seeded as `PRONOUN`, mirroring existing "and"/"then" coverage.

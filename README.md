@@ -20,6 +20,4 @@ This project is still under development. But here are some of the features that 
 2. Define the vocabulary
 3. Add rooms
 4. Define the room connections (exits)
-
-There is also a simple game engine that can be used to play your game. You can find it in 
-the `AdventureClient` class.
+5. Testrun your adventure

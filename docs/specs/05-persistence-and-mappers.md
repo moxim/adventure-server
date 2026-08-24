@@ -350,8 +350,6 @@ per concrete `*ActionData` / `*ConditionData`.
   `adventureMapper.mapToBO(adventureService.findAdventureById(id).get())`.
 - **Save in editor views.** The Vaadin views work mostly in DO-space (binding
   to `*Data` or `*ViewModel`); mapping to BO is reserved for runtime play.
-- **CLI run.** `AdventureClient` / `MiniAdventure` route everything through
-  the mapper layer.
 
 ### Mapper-style guidelines (canonical)
 

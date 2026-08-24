@@ -301,8 +301,6 @@ re-deriving it.
 There are no `*IT.java` files today. Three "integration"-style tests run
 inside the regular Surefire pass with full Spring context:
 
-- `MiniAdventureTest` — drives the engine end-to-end against an in-memory
-  embedded MongoDB.
 - `AdventureBuilderTest` — exercises the builder flows.
 - `ApplicationTest` — Spring Boot startup smoke test.
 
