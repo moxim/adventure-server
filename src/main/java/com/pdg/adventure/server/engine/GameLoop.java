@@ -15,6 +15,7 @@ import com.pdg.adventure.server.parser.CommandExecutor;
 import com.pdg.adventure.server.parser.CommandSequence;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.Parser;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 
 public class GameLoop {
     private static final Logger LOG = LoggerFactory.getLogger(GameLoop.class);
@@ -99,7 +100,7 @@ public class GameLoop {
         // least a verb to be actionable - e.g. a bare noun like "suit" with no verb - so
         // that alone is unparseable, not merely a command with no matching handler.
         if (VocabularyData.EMPTY_STRING.equals(command.getVerb())) {
-            gameContext.tell("I don't understand, please rephrase.");
+            gameContext.tell(SystemMessageKey.SM6.defaultText());
             // TODO: Review needed — an unparseable sub-command isn't literally a "failure" of a
             //  real command, but the user's "stop at first failure" requirement didn't cover this
             //  case explicitly. Treating it as a stop condition here, consistent with the rest of

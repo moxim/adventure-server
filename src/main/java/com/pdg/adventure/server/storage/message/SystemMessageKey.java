@@ -89,8 +89,6 @@ public enum SystemMessageKey {
             "Generic fallback shown when a command fails with no specific message."),
     CANNOT_UNDERSTAND_DEFAULT("-2", "I don't understand, please rephrase.", "MiniAdventureContent",
             "Generic fallback shown when input can't be parsed at all."),
-    OK_DEFAULT("0", "OK.", "MiniAdventureContent",
-            "Generic fallback shown when a command succeeds with no specific message."),
 
     CANNOT_WEAR("-6", "You can't wear %s.", "WearAction",
             "Shown when wearing an item fails. %s = the item."),
@@ -178,8 +176,6 @@ public enum SystemMessageKey {
     private final String defaultText;
     private final String sourceLocation;
     private final String description;
-
-    private static final String DEFAULT_RANDOM_MESSAGE = "is selected randomly unless flag 42 is set to be a valid nmessage number.";
 
     SystemMessageKey(int anId, String aDefaultText, String aDescription) {
         this(Integer.toString(anId), aDefaultText, "PAW", aDescription);
