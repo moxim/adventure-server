@@ -25,7 +25,7 @@ public class ActionListEditor extends VerticalLayout {
         rowsLayout.setSpacing(true);
 
         ActionSelector selector = new ActionSelector(adventureData);
-        selector.setEditorSelectedListener(editor -> { addRow(editor); notifyChange(); });
+        selector.setEditorSelectedListener(editor -> { addRow(editor, true); notifyChange(); });
 
         setPadding(false);
         add(rowsLayout, selector);
@@ -35,7 +35,8 @@ public class ActionListEditor extends VerticalLayout {
         rowsLayout.removeAll();
         if (actions == null) return;
         for (ActionData data : actions) {
-            addRow(ActionEditorFactory.createEditor(data, adventureData));  // programmatic load: no notifyChange
+            // programmatic load: no notifyChange, and rows stay folded
+            addRow(ActionEditorFactory.createEditor(data, adventureData), false);
         }
     }
 
@@ -54,8 +55,8 @@ public class ActionListEditor extends VerticalLayout {
                 .allMatch(ActionRow::validate);
     }
 
-    private void addRow(ActionEditorComponent editor) {
-        ActionRow row = new ActionRow(editor);
+    private void addRow(ActionEditorComponent editor, boolean opened) {
+        ActionRow row = new ActionRow(editor, opened);
         row.setOnRemove(() -> { rowsLayout.remove(row); notifyChange(); });
         row.setOnMoveUp(() -> moveRow(row, -1));
         row.setOnMoveDown(() -> moveRow(row, 1));

@@ -18,9 +18,10 @@ public class ActionRow extends Details {
     @Setter
     private transient Runnable onMoveDown;
 
-    public ActionRow(ActionEditorComponent anEditor) {
+    public ActionRow(ActionEditorComponent anEditor, boolean opened) {
         editor = anEditor;
         refreshSummary();
+        setOpened(opened);
 
         Button upButton = new Button("Up");
         upButton.addThemeVariants(ButtonVariant.LUMO_SMALL);

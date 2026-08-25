@@ -26,7 +26,7 @@ class ConditionRowTest {
 
     @Test
     void toConditionData_withNegateUnchecked_returnsLeafData() {
-        ConditionRow row = new ConditionRow(editor, false);
+        ConditionRow row = new ConditionRow(editor, false, false);
         PreConditionData result = row.toConditionData();
         assertThat(result).isSameAs(editor.getConditionData());
         assertThat(result).isNotInstanceOf(NotConditionData.class);
@@ -34,7 +34,7 @@ class ConditionRowTest {
 
     @Test
     void toConditionData_withNegateChecked_returnsNotConditionDataWrappingLeaf() {
-        ConditionRow row = new ConditionRow(editor, true);
+        ConditionRow row = new ConditionRow(editor, true, false);
         PreConditionData result = row.toConditionData();
         assertThat(result).isInstanceOf(NotConditionData.class);
         assertThat(((NotConditionData) result).getPreCondition()).isSameAs(editor.getConditionData());
@@ -42,20 +42,20 @@ class ConditionRowTest {
 
     @Test
     void constructor_buildsUI() {
-        ConditionRow row = new ConditionRow(editor, false);
+        ConditionRow row = new ConditionRow(editor, false, false);
         assertThat(row.getChildren().count()).isGreaterThan(0);
     }
 
     @Test
     void setOnRemove_acceptsCallback() {
-        ConditionRow row = new ConditionRow(editor, false);
+        ConditionRow row = new ConditionRow(editor, false, false);
         row.setOnRemove(() -> {});
         assertThat(row).isNotNull();
     }
 
     @Test
     void setOnChange_firesWhenNegateCheckboxToggles() {
-        ConditionRow row = new ConditionRow(editor, false);
+        ConditionRow row = new ConditionRow(editor, false, false);
         boolean[] fired = {false};
         row.setOnChange(() -> fired[0] = true);
 
@@ -66,7 +66,7 @@ class ConditionRowTest {
 
     @Test
     void upButton_firesOnMoveUp() {
-        ConditionRow row = new ConditionRow(editor, false);
+        ConditionRow row = new ConditionRow(editor, false, false);
         boolean[] fired = {false};
         row.setOnMoveUp(() -> fired[0] = true);
 
@@ -77,7 +77,7 @@ class ConditionRowTest {
 
     @Test
     void downButton_firesOnMoveDown() {
-        ConditionRow row = new ConditionRow(editor, false);
+        ConditionRow row = new ConditionRow(editor, false, false);
         boolean[] fired = {false};
         row.setOnMoveDown(() -> fired[0] = true);
 
@@ -123,14 +123,14 @@ class ConditionRowTest {
         ConditionEditorComponent filledEditor = new EqualsConditionEditor(eqData);
         filledEditor.initialize();
 
-        ConditionRow row = new ConditionRow(filledEditor, false);
+        ConditionRow row = new ConditionRow(filledEditor, false, false);
 
         assertThat(row.getSummaryText()).contains("Equals").contains("score");
     }
 
     @Test
     void constructor_withEmptyEditor_summaryShowsTypeNameAndNone() {
-        ConditionRow row = new ConditionRow(editor, false);
+        ConditionRow row = new ConditionRow(editor, false, false);
         assertThat(row.getSummaryText()).isEqualTo("Equals: (none)");
     }
 }

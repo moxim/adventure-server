@@ -15,7 +15,7 @@ class ActionRowTest {
         SetVariableActionEditor editor = new SetVariableActionEditor(data);
         editor.initialize();
 
-        ActionRow row = new ActionRow(editor);
+        ActionRow row = new ActionRow(editor, false);
 
         assertThat(row.getSummaryText()).isEqualTo("SetVariable: score = 10");
     }
@@ -26,7 +26,7 @@ class ActionRowTest {
         SetVariableActionEditor editor = new SetVariableActionEditor(data);
         editor.initialize();
 
-        ActionRow row = new ActionRow(editor);
+        ActionRow row = new ActionRow(editor, false);
 
         assertThat(row.getSummaryText()).isEqualTo("SetVariable: (none)");
     }
@@ -37,7 +37,7 @@ class ActionRowTest {
         QuitActionEditor editor = new QuitActionEditor(data);
         editor.initialize();
 
-        ActionRow row = new ActionRow(editor);
+        ActionRow row = new ActionRow(editor, false);
 
         assertThat(row.getSummaryText()).isEqualTo("Quit");
     }
