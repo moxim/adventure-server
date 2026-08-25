@@ -288,7 +288,7 @@ and
    pickers.
 5. Add the JSON test fixtures: `OneLocation.json`, `QuickAdventure.json`,
    `Vocab.json`.
-6. Add `MiniAdventureTest` / `AdventureBuilderTest` /
+6. Add `AdventureBuilderTest` /
    `ApplicationTest` for end-to-end coverage with embedded MongoDB.
 7. **Do not** introduce `BaseDTO.java` or `BaseRecord.java` PoC test
    classes — they were dead code in the previous repo and should not be
@@ -320,8 +320,6 @@ on a schedule and fails on HIGH/CRITICAL CVEs.
 3. Verify post-login redirect lands on `/admin/dashboard`.
 4. Create an author, sign in as the author, create a tiny adventure,
    add a location, vocabulary, items, a direction, and a command.
-5. Run the CLI: `java -cp target/server-*.jar com.pdg.adventure.MiniAdventure`
-   (or use the `AdventureClient` wrapper) to play through it.
 
 When all steps pass, you have parity with the current server module.
 
@@ -401,7 +399,6 @@ Before declaring the rebuild done, walk this list:
       location, a vocabulary word, an item, a direction, and a command,
       then editing each one again, all work without errors and respect
       the BACK / SAVE / RESET / CANCEL contract.
-- [ ] Running `MiniAdventure` against the saved adventure plays through.
 - [ ] Clicking **Run Adventure** on that adventure (once saved and non-empty) opens
       `AdventureRunView` and plays through the same way in the browser;
       **Run Adventure** from the adventures list and from a player's

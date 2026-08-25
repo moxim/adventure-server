@@ -94,7 +94,7 @@ class SystemMessagesViewTest extends BrowserlessTest {
     void grid_showsFullCatalog_regardlessOfHowManyRowsArePersisted() {
         enterWithAdventure();
 
-        assertThat(test(find(Grid.class, view).single()).size()).isEqualTo(36);
+        assertThat(test(find(Grid.class, view).single()).size()).isEqualTo(88);
     }
 
     @Test

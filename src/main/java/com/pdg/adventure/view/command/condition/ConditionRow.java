@@ -24,13 +24,14 @@ public class ConditionRow extends Details {
     @Setter
     private transient Runnable onMoveDown;
 
-    public ConditionRow(ConditionEditorComponent editor, boolean negate) {
+    public ConditionRow(ConditionEditorComponent editor, boolean negate, boolean opened) {
         this.editor = editor;
         this.virginTypeName = editor.getConditionData().getPreconditionName()
                                      .replace("ConditionData", "");
 
         negateCheckbox = new Checkbox("Negate", negate);
         refreshSummary();
+        setOpened(opened);
         negateCheckbox.addValueChangeListener(e -> {
             refreshSummary();
             if (onChange != null) onChange.run();

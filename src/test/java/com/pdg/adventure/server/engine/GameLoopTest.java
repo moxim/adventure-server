@@ -81,7 +81,7 @@ class GameLoopTest {
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("mumble grumble");
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
-        assertThat(told.toString()).contains("I don't understand, please rephrase.");
+        assertThat(told.toString()).contains("I was not able to understand any of that. Please try again.");
     }
 
     @Test
@@ -99,7 +99,7 @@ class GameLoopTest {
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("suit");
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
-        assertThat(told.toString()).contains("I don't understand, please rephrase.");
+        assertThat(told.toString()).contains("I was not able to understand any of that. Please try again.");
         assertThat(told.toString()).doesNotContain("I don't know how to do that.");
     }
 
@@ -139,7 +139,7 @@ class GameLoopTest {
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("suit and describe");
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
-        assertThat(told.toString()).contains("I don't understand, please rephrase.");
+        assertThat(told.toString()).contains("I was not able to understand any of that. Please try again.");
         assertThat(told.toString()).doesNotContain("A grand throne room.");
     }
 

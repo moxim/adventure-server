@@ -383,9 +383,7 @@ same engine the CLI uses, without touching `GameLoop`/`GameContext` themselves:
    - Returns a `RunResult(List<String> lines, boolean gameOver)`.
 
 **This reuses the process-wide `GameContext`/`AdventureConfig` singleton
-beans** — there is no per-session engine isolation. That is not a new
-limitation introduced by the Vaadin view; it is the same constraint
-`MiniAdventure`'s console loop already had. It just becomes more visible now
+beans** — there is no per-session engine isolation. It is visible now
 that multiple browser users can each trigger a session concurrently. See
 [Known gaps](#known-gaps).
 

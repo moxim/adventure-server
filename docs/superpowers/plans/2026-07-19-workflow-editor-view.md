@@ -15,15 +15,6 @@
 - `RolesAllowed("ROLE_AUTHOR")` on all new author-facing views, matching every existing adventure-scoped view.
 - No new Mongo migration needed — MongoDB is schema-free; a new field on `AdventureData` just defaults via the constructor for pre-existing documents.
 
-## Scope note (read before starting)
-
-`GameContext`/`GameLoop`/`Workflow`/`MiniAdventure` are **demo/legacy-only** code today — confirmed by:
-- `server/src/main/java/com/pdg/adventure/server/Adventure.java:66-70` — the real Vaadin web session's `run()` method has its entire `GameLoop` wiring commented out.
-- `server/src/main/java/com/pdg/adventure/AdventureClient.java:21` — the only Spring Boot entry point that drives `MiniAdventure`/`GameLoop` has `@SpringBootApplication` commented out, so it isn't a live, runnable app today.
-- `server/src/test/java/com/pdg/adventure/MiniAdventureTest.java` is `@Disabled`.
-
-Because of this, this plan does **not** modify `MiniAdventure.java`/`LoadAdventureAction.java`/`AdventureClient.java` to make the demo CLI actually load authored workflow commands at boot — that would be non-trivial bootstrap surgery (the reload loop in `MiniAdventure.run()` unconditionally rebuilds the `Workflow` from scratch after every `ReloadAdventureException`, clobbering anything set up earlier) on code with zero live consumers, for zero observable behavior change. Instead, Task 1's test proves the exact mechanism the goal describes — `WorkflowMapper.populate()` feeding `Workflow.addPreCommand()`, executed via `gameContext.preProcessCommands()`, the identical call `GameLoop.run()` makes — and Task 1 leaves a `// TODO: Review needed` comment at the real seam (`MiniAdventure.run()`, right after `commandFactory.setUpWorkflowCommands(wf)`) for whoever eventually revives that demo entry point.
-
 ---
 
 ### Task 1: WorkflowData model, AdventureData wiring, and the WorkflowMapper engine bridge
@@ -31,7 +22,6 @@ Because of this, this plan does **not** modify `MiniAdventure.java`/`LoadAdventu
 **Files:**
 - Create: `server/src/main/java/com/pdg/adventure/model/WorkflowData.java`
 - Modify: `server/src/main/java/com/pdg/adventure/model/AdventureData.java:44`
-- Modify: `server/src/main/java/com/pdg/adventure/MiniAdventure.java` (TODO comment only)
 - Create: `server/src/main/java/com/pdg/adventure/server/mapper/WorkflowMapper.java`
 - Test: `server/src/test/java/com/pdg/adventure/server/mapper/WorkflowMapperTest.java`
 
@@ -198,31 +188,16 @@ public class WorkflowMapper {
 Run: `mvn test -Dtest=WorkflowMapperTest`
 Expected: PASS
 
-- [ ] **Step 7: Leave a TODO at the real (currently dead) runtime seam**
-
-In `server/src/main/java/com/pdg/adventure/MiniAdventure.java`, in `run()`, immediately after the line `commandFactory.setUpWorkflowCommands(wf);` (currently around line 106), add:
-
-```java
-                // TODO: Review needed — layer authored WorkflowData onto `wf` here via WorkflowMapper
-                //  once this demo entry point loads a specific AdventureData again (see LoadAdventureAction).
-                //  Not wired today: MiniAdventure/GameContext/GameLoop have no live caller (AdventureClient's
-                //  @SpringBootApplication is commented out, and Adventure.run()'s GameLoop wiring is commented
-                //  out too), so there is nothing to regression-test against yet.
-```
-
-Do not change any executable code in `MiniAdventure.java` — comment only.
-
-- [ ] **Step 8: Run the full test suite to confirm nothing else broke**
+- [ ] **Step 7: Run the full test suite to confirm nothing else broke**
 
 Run: `mvn test`
 Expected: PASS (same pass count as before, plus the one new `WorkflowMapperTest`).
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add server/src/main/java/com/pdg/adventure/model/WorkflowData.java \
         server/src/main/java/com/pdg/adventure/model/AdventureData.java \
-        server/src/main/java/com/pdg/adventure/MiniAdventure.java \
         server/src/main/java/com/pdg/adventure/server/mapper/WorkflowMapper.java \
         server/src/test/java/com/pdg/adventure/server/mapper/WorkflowMapperTest.java
 git commit -m "feat: add WorkflowData model and WorkflowMapper engine bridge"

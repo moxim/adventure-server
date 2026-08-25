@@ -559,23 +559,6 @@ to:
     }
 ```
 
-In `MiniAdventure.java`'s `createSpecialWords` (mirrored for consistency — `MiniAdventureTest` is `@Disabled`, so this half has no direct test, matching how "and"/"then" already have none there either), change:
-
-```java
-        aVocabulary.createNewWord("and", Word.Type.CONJUNCTION);
-        aVocabulary.createSynonym("then", "and");
-        aVocabulary.createNewWord("default", Word.Type.NOUN);
-```
-
-to:
-
-```java
-        aVocabulary.createNewWord("and", Word.Type.CONJUNCTION);
-        aVocabulary.createSynonym("then", "and");
-        aVocabulary.createNewWord("it", Word.Type.PRONOUN);
-        aVocabulary.createNewWord("default", Word.Type.NOUN);
-```
-
 - [ ] **Step 5: Run test to verify it passes**
 
 Run: `mvn -Dtest=AdventureRunSessionFactoryTest test`
@@ -589,7 +572,7 @@ Add to `WordEditorDialogueTest.java`, right after the existing `typeSelector_exc
     @Test
     @DisplayName("Test 6b: Type selector - excludes PRONOUN, a reserved built-in-only type")
     void typeSelector_excludesPronoun() {
-        // PRONOUN ("it") is seeded system-wide (MiniAdventure/AdventureRunSessionFactory),
+        // PRONOUN ("it") is seeded system-wide (AdventureRunSessionFactory),
         // not author-authored - an author must never be able to hand-create one via this picker.
         assertThat(typeSelector.getListDataView().getItems()).doesNotContain(Word.Type.PRONOUN);
         assertThat(typeSelector.getListDataView().getItems())
@@ -633,6 +616,6 @@ Expected: PASS — entire suite green, no regressions.
 - [ ] **Step 11: Commit**
 
 ```bash
-git add src/main/java/com/pdg/adventure/MiniAdventure.java src/main/java/com/pdg/adventure/server/engine/AdventureRunSessionFactory.java src/main/java/com/pdg/adventure/view/vocabulary/WordEditorDialogue.java src/test/java/com/pdg/adventure/server/engine/AdventureRunSessionFactoryTest.java src/test/java/com/pdg/adventure/view/vocabulary/WordEditorDialogueTest.java
+git add src/main/java/com/pdg/adventure/server/engine/AdventureRunSessionFactory.java src/main/java/com/pdg/adventure/view/vocabulary/WordEditorDialogue.java src/test/java/com/pdg/adventure/server/engine/AdventureRunSessionFactoryTest.java src/test/java/com/pdg/adventure/view/vocabulary/WordEditorDialogueTest.java
 git commit -m "Seed 'it' as a built-in PRONOUN word; exclude it from the author's type picker"
 ```

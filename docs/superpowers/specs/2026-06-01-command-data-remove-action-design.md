@@ -50,8 +50,7 @@ editor around a single action list.
 - **Usage trackers** `ItemUsageTracker`, `LocationUsageTracker`, `MessageUsageTracker`:
   read `getAction()` (plus `getFollowUpActions()`) to scan for references.
 - **Construction sites**: `new GenericCommand(description, action)` is called at ~30
-  sites (14 in `CommandFactory`, 9 in `MiniAdventureContent`, `MiniAdventure`,
-  `CommandHandler`, and ~8 test classes).
+  sites (14 in `CommandFactory`, `CommandHandler`, and ~8 test classes).
 
 ## 4. Target design
 
@@ -105,7 +104,7 @@ editor around a single action list.
   list element).
 
 ### 4.6 Hand-built adventures + direction/item editors
-- `CommandFactory`, `MiniAdventure`, `MiniAdventureContent`: construction via the retained
+- `CommandFactory`: construction via the retained
   `GenericCommand(desc, action)` overload — **no change required** beyond the
   `addFollowUpAction` → `addAction` rename (3 call sites).
 - `DirectionEditorView`, `ItemEditorView`: replace `commandData.setAction(x)` with
@@ -158,7 +157,7 @@ Empty `actions` no longer NPEs — it simply runs the preconditions and returns 
 - **Slice C — direction/item editor views:** `view/direction/DirectionEditorView.java`,
   `view/item/ItemEditorView.java`, `view/direction/DirectionEditorViewDataIntegrityTest.java`.
 - **Slice D — runtime/test construction sites (rename only):** `addFollowUpAction` →
-  `addAction` in `CommandFactory`, `MiniAdventureContent`; verify `GenericCommand`
+  `addAction` in `CommandFactory`; verify `GenericCommand`
   call sites across `*Test` compile (overload retained means most are untouched).
 
 Exclude `view/login/LoginView.java:20` `setAction("login")` — that is Vaadin's

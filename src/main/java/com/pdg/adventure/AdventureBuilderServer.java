@@ -26,6 +26,5 @@ public class AdventureBuilderServer implements AppShellConfigurator
         SpringApplication.run(AdventureBuilderServer.class, args)
         //        )
         ;
-        //        MiniAdventure.main(args);
     }
 }

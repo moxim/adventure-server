@@ -26,7 +26,7 @@ public class ConditionListEditor extends VerticalLayout {
         rowsLayout.setSpacing(true);
 
         ConditionSelector selector = new ConditionSelector();
-        selector.setConditionSelectedListener(data -> { addRow(data, false); notifyChange(); });
+        selector.setConditionSelectedListener(data -> { addRow(data, false, true); notifyChange(); });
 
         setPadding(false);
         add(rowsLayout, selector);
@@ -38,7 +38,7 @@ public class ConditionListEditor extends VerticalLayout {
         for (PreConditionData data : conditions) {
             boolean negate = data instanceof NotConditionData;
             PreConditionData leaf = negate ? ((NotConditionData) data).getPreCondition() : data;
-            addRow(leaf, negate);
+            addRow(leaf, negate, false);  // programmatic load: rows stay folded
         }
     }
 
@@ -50,9 +50,9 @@ public class ConditionListEditor extends VerticalLayout {
                 .collect(Collectors.toList());
     }
 
-    private void addRow(PreConditionData data, boolean negate) {
+    private void addRow(PreConditionData data, boolean negate, boolean opened) {
         ConditionEditorComponent editor = ConditionEditorFactory.createEditor(data, adventureData);
-        ConditionRow row = new ConditionRow(editor, negate);
+        ConditionRow row = new ConditionRow(editor, negate, opened);
         row.setOnRemove(() -> { rowsLayout.remove(row); notifyChange(); });
         row.setOnChange(this::notifyChange);
         row.setOnMoveUp(() -> moveRow(row, -1));
