@@ -5,6 +5,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -17,6 +18,7 @@ import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Optional;
 
 import static com.pdg.adventure.model.Word.Type.*;
@@ -91,10 +93,26 @@ public class CommandEditorView extends VerticalLayout
         // Create command chain grid
         commandChainGrid = createCommandChainGrid();
 
-        // Add context menu for deleting commands from the chain
+        // Add context menu for reordering and deleting commands from the chain
         GridContextMenu<CommandData> contextMenu = commandChainGrid.addContextMenu();
+        GridMenuItem<CommandData> moveUpItem = contextMenu.addItem("Move Up", event -> {
+            event.getItem().ifPresent(item -> moveCommandInChain(item, -1));
+        });
+        GridMenuItem<CommandData> moveDownItem = contextMenu.addItem("Move Down", event -> {
+            event.getItem().ifPresent(item -> moveCommandInChain(item, 1));
+        });
         contextMenu.addItem("Delete", event -> {
             event.getItem().ifPresent(this::deleteCommandFromChain);
+        });
+        // Grey out Move Up / Move Down at the chain's respective ends
+        contextMenu.setDynamicContentHandler(item -> {
+            if (item == null || currentCommandChain == null) {
+                return false;
+            }
+            int index = currentCommandChain.getCommands().indexOf(item);
+            moveUpItem.setEnabled(index > 0);
+            moveDownItem.setEnabled(index < currentCommandChain.getCommands().size() - 1);
+            return true;
         });
 
         VerticalLayout vl1 = new VerticalLayout();
@@ -442,6 +460,35 @@ public class CommandEditorView extends VerticalLayout
 
         // Show the precondition/action editor for the selected command (or an empty command for the new-command path)
         preconditionActionEditor.setCommand(commandData != null ? commandData : new CommandData());
+    }
+
+    /**
+     * Move a command within the chain by the given offset (-1 for up, +1 for down),
+     * refreshing the grid and keeping the moved command selected.
+     */
+    private void moveCommandInChain(CommandData commandToMove, int delta) {
+        if (currentCommandChain == null) {
+            return;
+        }
+
+        List<CommandData> commands = currentCommandChain.getCommands();
+        int index = commands.indexOf(commandToMove);
+        int newIndex = index + delta;
+        if (index < 0 || newIndex < 0 || newIndex >= commands.size()) {
+            return;
+        }
+
+        commands.remove(index);
+        commands.add(newIndex, commandToMove);
+
+        // Refresh the grid to reflect the new order, keeping the moved command selected
+        commandChainGrid.setDataProvider(new ListDataProvider<>(commands));
+        selectedCommandIndex = newIndex;
+        commandChainGrid.select(commandToMove);
+
+        editorHasChanges = true;
+        updateSaveButtonState();
+        resetButton.setEnabled(true);
     }
 
     /**

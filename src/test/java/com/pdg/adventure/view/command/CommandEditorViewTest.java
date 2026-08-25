@@ -272,6 +272,46 @@ class CommandEditorViewTest {
     }
 
     @Test
+    void movingACommandInAChain_reordersTheChainAndKeepsItSelected() throws Exception {
+        // given: three commands sharing one chain, in order [first, second, third]
+        Word go = vocabularyData.getWords().stream()
+                .filter(w -> "go".equals(w.getText())).findFirst().orElseThrow();
+        Word north = vocabularyData.getWords().stream()
+                .filter(w -> "north".equals(w.getText())).findFirst().orElseThrow();
+
+        CommandData first = new CommandData(new CommandDescriptionData(go, null, north));
+        first.setActions(java.util.List.of(new MessageActionData()));
+        CommandData second = new CommandData(new CommandDescriptionData(go, null, north));
+        second.setActions(java.util.List.of(new MessageActionData()));
+        CommandData third = new CommandData(new CommandDescriptionData(go, null, north));
+        third.setActions(java.util.List.of(new MessageActionData()));
+        commandProviderData.add(first);
+        commandProviderData.add(second);
+        commandProviderData.add(third);
+        String chainId = commandProviderData.findChainIdContaining(first).orElseThrow();
+
+        view = new CommandEditorView(adventureService, itemService, accessService);
+        enterWithCommandId(chainId); // loads the chain; selects `first` (index 0) into the editor
+
+        Method moveCommandInChain = CommandEditorView.class.getDeclaredMethod(
+                "moveCommandInChain", CommandData.class, int.class);
+        moveCommandInChain.setAccessible(true);
+
+        // when: moving `second` up
+        moveCommandInChain.invoke(view, second, -1);
+
+        // then: it swaps places with `first`
+        CommandChainData chain = commandProviderData.getAvailableCommands().get(chainId);
+        assertThat(chain.getCommands()).containsExactly(second, first, third);
+
+        // when: moving the now-first `second` past the boundary (no-op)
+        moveCommandInChain.invoke(view, second, -1);
+
+        // then: the order is unchanged
+        assertThat(chain.getCommands()).containsExactly(second, first, third);
+    }
+
+    @Test
     void deletingTheLastCommandInAChainThenSaving_doesNotResurrectABlankCommand() throws Exception {
         // given: a chain with exactly one command
         Word go = vocabularyData.getWords().stream()
