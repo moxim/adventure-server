@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static com.pdg.adventure.server.storage.message.SystemMessageKey.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -24,6 +25,7 @@ import com.pdg.adventure.server.condition.WornCondition;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
@@ -175,7 +177,7 @@ class CommandExecutorTest {
 
         // then
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
-        assertThat(result.getResultMessage()).isEqualTo("Which %s do you want to %s?"
+        assertThat(result.getResultMessage()).isEqualTo("Which %s should I %s?"
                 .formatted(smallTreeCommand.getNoun(), smallTreeCommand.getVerb()));
     }
 
@@ -226,9 +228,8 @@ class CommandExecutorTest {
         // when
         final ExecutionResult result = sut.execute(jumpCommand);
 
-        // then: no noun was given, so the generic template must be used, not "Which  do you..."
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
-        assertThat(result.getResultMessage()).isEqualTo("What do you want to jump?");
+        assertThat(result.getResultMessage()).isEqualTo(String.format(SM60.defaultText(), "jump"));
     }
 
     @Test
@@ -246,7 +247,7 @@ class CommandExecutorTest {
 
         // then
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
-        assertThat(result.getResultMessage()).isEqualTo("Which tree do you want to climb?");
+        assertThat(result.getResultMessage()).isEqualTo(String.format(SM61.defaultText(), "tree", "climb"));
     }
 
     @Test
@@ -367,7 +368,7 @@ class CommandExecutorTest {
 
         // then
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
-        assertThat(result.getResultMessage()).isEqualTo("Which suit do you want to wave?");
+        assertThat(result.getResultMessage()).isEqualTo(SM61.defaultText().formatted("suit", "wave"));
     }
 
     @Test
@@ -384,7 +385,7 @@ class CommandExecutorTest {
         Item neoprene = new Item(new DescriptionProvider("neoprene", "suit"), true);
         GenericCommandDescription neopreneDropSpec = new GenericCommandDescription("drop", "neoprene", "suit");
         GenericCommand neopreneExcuse = new GenericCommand(neopreneDropSpec,
-                new MessageAction("You don't have the a neoprene suit.", messages));
+                new MessageAction(SM49.defaultText().formatted("suit"), messages));
         neopreneExcuse.addPreCondition(new NotCondition(new CarriedCondition(neoprene, gameContext)));
         neoprene.addCommand(neopreneExcuse);
         GenericCommand neopreneRealDrop = new GenericCommand(neopreneDropSpec,
@@ -405,7 +406,7 @@ class CommandExecutorTest {
         Item swim = new Item(new DescriptionProvider("suit"), true);
         GenericCommandDescription swimDropSpec = new GenericCommandDescription("drop", "suit");
         GenericCommand swimExcuse = new GenericCommand(swimDropSpec,
-                new MessageAction("You are not carrying the a swim suit.", messages));
+                new MessageAction("I don't have the swim suit.", messages));
         swimExcuse.addPreCondition(new NotCondition(new CarriedCondition(swim, gameContext)));
         swim.addCommand(swimExcuse);
         swim.addCommand(new GenericCommand(swimDropSpec, moveAction(swim, "dropped_swim", pocket,
@@ -419,7 +420,7 @@ class CommandExecutorTest {
 
         // then: genuinely ambiguous - both are carried, both have a real drop applicable
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
-        assertThat(result.getResultMessage()).isEqualTo("Which suit do you want to drop?");
+        assertThat(result.getResultMessage()).isEqualTo("Which suit should I drop?");
     }
 
     @Test
@@ -432,11 +433,11 @@ class CommandExecutorTest {
         Item neoprene = new Item(new DescriptionProvider("neoprene", "suit"), true);
         GenericCommandDescription neopreneTakeSpec = new GenericCommandDescription("take", "neoprene", "suit");
         GenericCommand neopreneAlreadyCarried = new GenericCommand(neopreneTakeSpec,
-                new MessageAction("You already have the a neoprene suit.", messages));
+                new MessageAction(SystemMessageKey.SM49.defaultText().formatted("neoprene suit."), messages));
         neopreneAlreadyCarried.addPreCondition(new CarriedCondition(neoprene, gameContext));
         neoprene.addCommand(neopreneAlreadyCarried);
         GenericCommand neopreneNotHere = new GenericCommand(neopreneTakeSpec,
-                new MessageAction("The a neoprene suit is not here.", messages));
+                new MessageAction(SystemMessageKey.SM26.defaultText(), messages));
         neopreneNotHere.addPreCondition(new NotCondition(new HereCondition(neoprene, gameContext)));
         neoprene.addCommand(neopreneNotHere);
         GenericCommand neopreneRealTake = new GenericCommand(neopreneTakeSpec,
@@ -447,7 +448,7 @@ class CommandExecutorTest {
         Item swim = new Item(new DescriptionProvider("suit"), true);
         GenericCommandDescription swimTakeSpec = new GenericCommandDescription("take", "suit");
         GenericCommand swimAlreadyCarried = new GenericCommand(swimTakeSpec,
-                new MessageAction("You already carry the a swim suit.", messages));
+                new MessageAction(SM25.defaultText(), messages));
         swimAlreadyCarried.addPreCondition(new CarriedCondition(swim, gameContext));
         swim.addCommand(swimAlreadyCarried);
         GenericCommand swimRealTake = new GenericCommand(swimTakeSpec,
@@ -463,7 +464,7 @@ class CommandExecutorTest {
 
         // then: genuinely ambiguous - neither carried, both here, both have a real take applicable
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
-        assertThat(result.getResultMessage()).isEqualTo("Which suit do you want to take?");
+        assertThat(result.getResultMessage()).isEqualTo("Which suit should I take?");
     }
 
     @Test

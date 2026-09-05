@@ -37,6 +37,12 @@ class ArticleProviderTest {
         String test = ArticleProvider.prependIndefiniteArticle(aPronoun + "thing");
 
         // then
-        assertThat(test).startsWith(aPronoun);
+        assertThat(test).startsWith("a");
+
+        // when
+        test = ArticleProvider.prependDefiniteArticle(aPronoun + "thing");
+
+        // then
+        assertThat(test).startsWith("the");
     }
 }

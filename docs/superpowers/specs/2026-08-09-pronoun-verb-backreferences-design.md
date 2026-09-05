@@ -5,7 +5,7 @@
 The compound-command parser (`Parser.handle()` → `CommandSequence`, landed 2026-08-07) splits input on "and"/"then"/"." into independent sub-commands, but each sub-command is parsed in total isolation — there's no way to refer to an object or action mentioned earlier. Two natural constructions this blocks:
 
 - **Noun back-reference**: `"take sword and shield and wear it"` — "it" should mean "the last thing mentioned" (here: shield).
-- **Elided verb**: `"take sword and shield"` — the second clause ("shield") has no verb of its own today, so it falls through `GameLoop`'s existing bare-noun check ("I don't understand, please rephrase.") instead of being understood as "take shield".
+- **Elided verb**: `"take sword and shield"` — the second clause ("shield") has no verb of its own today, so it falls through `GameLoop`'s existing bare-noun check (SM6 "I don't understand, please rephrase.") instead of being understood as "take shield".
 
 Both are standard parser-IF conveniences and both are naturally expressed as *the parser remembering what was last said*.
 

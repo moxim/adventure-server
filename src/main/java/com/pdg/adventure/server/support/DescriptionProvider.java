@@ -28,14 +28,12 @@ public class DescriptionProvider implements Ided {
     }
 
     public DescriptionProvider(String adjective, String noun) {
-//        validateParameters(noun);
         this.adjective = adjective != null ? adjective : VocabularyData.EMPTY_STRING;
         this.noun = noun;
         this.id = UUID.randomUUID().toString();
     }
 
     public DescriptionProvider(Word adjective, Word noun) {
-//        validateParameters(noun);
         this.adjective = adjective != null && adjective.getText() != null ? adjective.getText() :
                          VocabularyData.EMPTY_STRING;
         this.noun = noun.getText();
@@ -44,11 +42,11 @@ public class DescriptionProvider implements Ided {
 
     public DescriptionProvider(DescriptionData descriptionData) {
         this(
-                descriptionData.getAdjective() != null ? descriptionData.getAdjective().getText() : null,
-                descriptionData.getNoun() != null ? descriptionData.getNoun().getText() : ""
+                descriptionData.getAdjective() != null ? descriptionData.getAdjective().getText() : VocabularyData.EMPTY_STRING,
+                descriptionData.getNoun() != null ? descriptionData.getNoun().getText() : VocabularyData.EMPTY_STRING
         );
-        setShortDescription(descriptionData.getShortDescription() != null ? descriptionData.getShortDescription() : "");
-        setLongDescription(descriptionData.getLongDescription() != null ? descriptionData.getLongDescription() : "");
+        setShortDescription(descriptionData.getShortDescription() != null ? descriptionData.getShortDescription() : VocabularyData.EMPTY_STRING);
+        setLongDescription(descriptionData.getLongDescription() != null ? descriptionData.getLongDescription() : VocabularyData.EMPTY_STRING);
     }
 
     private void validateParameters(String noun) {
@@ -68,6 +66,10 @@ public class DescriptionProvider implements Ided {
             shortDescription = getBasicDescription();
         }
         return shortDescription;
+    }
+    public String getStrippedShortDescription() {
+        String shortDesc = getShortDescription();
+        return ArticleProvider.stripLeadingArticlesAndPronouns(shortDesc);
     }
 
     public String getEnrichedShortDescription(String description) {
@@ -92,6 +94,11 @@ public class DescriptionProvider implements Ided {
             result.append(getShortDescription());
         }
         return result.toString();
+    }
+
+    public String getStrippedBasicDescription() {
+        String basicDesc = getBasicDescription();
+        return ArticleProvider.stripLeadingArticlesAndPronouns(basicDesc);
     }
 
     public String getEnrichedBasicDescription() {

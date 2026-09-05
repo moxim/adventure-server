@@ -7,6 +7,7 @@ import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.api.Wearable;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class WearAction extends AbstractAction {
@@ -23,10 +24,10 @@ public class WearAction extends AbstractAction {
         ExecutionResult result = new CommandExecutionResult();
         if (thing.isWearable() && !thing.isWorn()) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
+            result.setResultMessage(SystemMessageKey.SM37.defaultText().formatted(thing.getEnrichedBasicDescription()));
             thing.setIsWorn(true);
         } else {
-            result.setResultMessage(messagesHolder.getMessage("-6").formatted(
-                    thing.getEnrichedBasicDescription()));
+            result.setResultMessage(SystemMessageKey.SM40.defaultText().formatted(thing.getEnrichedBasicDescription()));
         }
         return result;
     }

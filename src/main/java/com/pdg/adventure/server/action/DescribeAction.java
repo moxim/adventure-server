@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.action;
 
+import lombok.EqualsAndHashCode;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -15,6 +16,7 @@ import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 // TODO: integrate properly with OllamaConfig and use dependency injection
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class DescribeAction extends AbstractAction {
 
     private final transient Supplier<String> target;

@@ -245,7 +245,7 @@ In `GenericCommandChain.java`, replace the entire `execute()` method with:
             result.setExecutionState(ExecutionResult.State.SUCCESS);
             result.setResultMessage(String.join(System.lineSeparator(), messages));
         } else {
-            result.setResultMessage(last.getResultMessage());  // surface last failure; empty → "You can't do that."
+            result.setResultMessage(last.getResultMessage());  // surface last failure; empty → SM8 ("You can't do that.")
         }
         return result;
     }

@@ -7,6 +7,7 @@ import com.pdg.adventure.api.Actionable;
 import com.pdg.adventure.api.PreCondition;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.action.*;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.tangible.Thing;
 import com.pdg.adventure.server.condition.CarriedCondition;
 import com.pdg.adventure.server.condition.HereCondition;
@@ -61,7 +62,7 @@ public class CommandFactory {
     public void setUpTakeCommands(Item anItem) {
         GenericCommandDescription getCommandDescription = new GenericCommandDescription("get", anItem);
         GenericCommand takeFailCommand = new GenericCommand(getCommandDescription, new MessageAction(
-                allMessages.getMessage("-13").formatted(anItem.getEnrichedBasicDescription()), allMessages));
+                SystemMessageKey.SM25.defaultText().formatted(anItem.getEnrichedBasicDescription()), allMessages));
         takeFailCommand.addPreCondition(new CarriedCondition(anItem, gameContext));
         anItem.addCommand(takeFailCommand);
 
@@ -103,9 +104,9 @@ public class CommandFactory {
     public void setUpWorkflowCommands(final Workflow aWorkflow) {
         GenericCommandDescription helpCommandDescription = new GenericCommandDescription("help");
         GenericCommand helpCommand = new GenericCommand(helpCommandDescription, new MessageAction("""
-                                                                                                          Look around, examine items, take or drop items, maybe wear items, enter or leave locations.
-                                                                                                          Or quit.""",
-                                                                                                  allMessages));
+                Look around, examine items, take or drop items, maybe wear items, enter or leave locations.
+                Or quit.""",
+            allMessages));
         aWorkflow.addInterceptorCommand(helpCommandDescription, helpCommand);
 
         GenericCommandDescription inventoryCommandDescription = new GenericCommandDescription("inventory");
@@ -137,7 +138,7 @@ public class CommandFactory {
 
         GenericCommandDescription anyCommandDescription = new GenericCommandDescription("}", "}", "}");
         GenericCommand anyCommand = new GenericCommand(anyCommandDescription,
-                                                       new MessageAction("What now? > ", allMessages));
+                                                       new MessageAction(SystemMessageKey.SM2.defaultText(), allMessages));
         aWorkflow.addPreCommand(anyCommandDescription, anyCommand);
     }
 }

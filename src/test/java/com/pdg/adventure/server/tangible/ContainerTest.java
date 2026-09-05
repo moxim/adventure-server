@@ -72,7 +72,7 @@ class ContainerTest {
         ExecutionResult result = sut.remove(new Item(descriptionProvider, true));
 
         // then
-        assertThat(result.getResultMessage()).contains("There is no");
+        assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
     }
 
     @Test

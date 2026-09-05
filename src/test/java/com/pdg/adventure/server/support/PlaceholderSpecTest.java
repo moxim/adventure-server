@@ -2,24 +2,27 @@ package com.pdg.adventure.server.support;
 
 import org.junit.jupiter.api.Test;
 
+import static com.pdg.adventure.server.storage.message.SystemMessageKey.SM40;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 
 class PlaceholderSpecTest {
 
     @Test
     void of_countsPlainPlaceholder() {
-        assertThat(PlaceholderSpec.of("You can't wear %s.").argumentPositions()).containsExactly(1);
+        assertThat(PlaceholderSpec.of(SM40.defaultText()).argumentPositions()).containsExactly(1);
     }
 
     @Test
     void of_countsPositionalPlaceholders() {
-        assertThat(PlaceholderSpec.of("You put %1$s into %2$s.").argumentPositions()).containsExactly(1, 2);
+        assertThat(PlaceholderSpec.of(SystemMessageKey.SM56.defaultText()).argumentPositions()).containsExactly(1, 2);
     }
 
     @Test
     void of_returnsEmptyForNoPlaceholders() {
-        assertThat(PlaceholderSpec.of("Exits are:").argumentPositions()).isEmpty();
+        assertThat(PlaceholderSpec.of(SystemMessageKey.SM59.defaultText()).argumentPositions()).isEmpty();
     }
 
     @Test
@@ -50,7 +53,7 @@ class PlaceholderSpecTest {
     @Test
     void satisfies_acceptsReorderedPositionalMatch() {
         PlaceholderSpec original = PlaceholderSpec.of("%1$s into %2$s");
-        PlaceholderSpec candidate = PlaceholderSpec.of("%2$s enthaelt %1$s");
+        PlaceholderSpec candidate = PlaceholderSpec.of("%2$s contains %1$s");
         assertThat(candidate.satisfies(original)).isTrue();
     }
 
@@ -70,18 +73,18 @@ class PlaceholderSpecTest {
 
     @Test
     void isValidReplacement_allowsReorderingPositionalArguments() {
-        assertThat(PlaceholderSpec.isValidReplacement("You put %1$s into %2$s.", "%2$s bekommt %1$s hinein."))
+        assertThat(PlaceholderSpec.isValidReplacement(SystemMessageKey.SM56.defaultText(), "%2$s bekommt %1$s hinein."))
                 .isTrue();
     }
 
     @Test
     void isValidReplacement_rejectsWrongPlaceholderCount() {
-        assertThat(PlaceholderSpec.isValidReplacement("You can't wear %s.", "You can't wear that."))
+        assertThat(PlaceholderSpec.isValidReplacement(SystemMessageKey.SM40.defaultText(), "I can't wear that."))
                 .isFalse();
     }
 
     @Test
     void isValidReplacement_returnsFalseInsteadOfThrowingOnMixedStyles() {
-        assertThat(PlaceholderSpec.isValidReplacement("%s", "%s and %1$s")).isFalse();
+        assertThat(PlaceholderSpec.isValidReplacement(SystemMessageKey.SM40.defaultText(), "%s and %1$s")).isFalse();
     }
 }

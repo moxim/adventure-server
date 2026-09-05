@@ -56,6 +56,11 @@ public class Thing implements Actionable {
     }
 
     @Override
+    public String getStrippedBasicDescription() {
+        return descriptionProvider.getStrippedBasicDescription();
+    }
+
+    @Override
     public String getEnrichedBasicDescription() {
         return descriptionProvider.getEnrichedBasicDescription();
     }
@@ -63,6 +68,11 @@ public class Thing implements Actionable {
     @Override
     public String getShortDescription() {
         return descriptionProvider.getShortDescription();
+    }
+
+    @Override
+    public String getStrippedShortDescription() {
+        return descriptionProvider.getStrippedShortDescription();
     }
 
     public void setShortDescription(String aShortDescription) {
@@ -76,7 +86,7 @@ public class Thing implements Actionable {
 
     @Override
     public String getEnrichedShortDescription() {
-        return descriptionProvider.getEnrichedShortDescription(getShortDescription());
+        return descriptionProvider.getEnrichedShortDescription(getStrippedShortDescription());
     }
 
     public void setLongDescription(String aLongDescription) {

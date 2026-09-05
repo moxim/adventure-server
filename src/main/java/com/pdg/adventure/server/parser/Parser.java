@@ -109,7 +109,7 @@ public class Parser {
             case PRONOUN -> {
                 if (lastNoun.isEmpty()) {
                     throw new UnresolvedReferenceException(
-                            "I don't know what '" + aWord.getText() + "' refers to.");
+                        "I don't know what '" + aWord.getText() + "' refers to.");
                 }
                 aSentence.setNoun(lastNoun);
                 aSentence.setAdjective(lastAdjective);

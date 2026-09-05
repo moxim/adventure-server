@@ -1,27 +1,22 @@
 package com.pdg.adventure.server.support;
 
 public class ArticleProvider {
+
     private ArticleProvider() {
         // don't instantiate me
     }
 
+    public static String stripLeadingArticlesAndPronouns(String aText) {
+        return stripLeadingArticles(stripLeadingPronouns(aText));
+    }
+
     public static String prependIndefiniteArticle(String aText) {
-        if (aText == null || aText.isEmpty()) {
-            return aText;
-        }
+        String strippedText = stripLeadingArticles(stripLeadingPronouns(aText));
 
-        if (startsWithPronoun(aText)) {
-            return aText;
-        }
-
-        if (startsWithArticle(aText)) {
-            return aText;
-        }
-
-        final char firstChar = aText.charAt(0);
+        final char firstChar = strippedText.charAt(0);
         return switch (firstChar) {
-            case 'a', 'e', 'i', 'o', 'u' -> "an " + aText;
-            default -> "a " + aText;
+            case 'a', 'e', 'i', 'o', 'u' -> "an " + strippedText;
+            default -> "a " + strippedText;
         };
     }
 
@@ -45,13 +40,28 @@ public class ArticleProvider {
         return false;
     }
 
+    private static String stripLeadingArticles(String aText) {
+        String[] articles = {"a ", "an ", "the ", "some "};
+        for (String article : articles) {
+            if (aText.startsWith(article)) {
+                return aText.substring(article.length());
+            }
+        }
+        return aText;
+    }
+
+    private static String stripLeadingPronouns(String aText) {
+        String[] pronouns = {"my ", "your ", "his ", "her ", "its ", "our ", "their "};
+        for (String pronoun : pronouns) {
+            if (aText.startsWith(pronoun)) {
+                return aText.substring(pronoun.length());
+            }
+        }
+        return aText;
+    }
+
     public static String prependDefiniteArticle(String aText) {
-        if (startsWithArticle(aText)) {
-            return aText;
-        }
-        if (startsWithPronoun(aText)) {
-            return aText;
-        }
-        return "the " + aText;
+        String strippedText = stripLeadingArticles(stripLeadingPronouns(aText));
+        return "the " + strippedText;
     }
 }

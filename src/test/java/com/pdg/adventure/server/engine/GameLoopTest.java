@@ -15,6 +15,7 @@ import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.Parser;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
@@ -73,7 +74,7 @@ class GameLoopTest {
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("quit");
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.QUIT);
-        assertThat(told.toString()).contains("Bye bye.");
+        assertThat(told.toString()).contains(SystemMessageKey.SM14.defaultText());
     }
 
     @Test
@@ -81,7 +82,7 @@ class GameLoopTest {
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("mumble grumble");
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
-        assertThat(told.toString()).contains("I was not able to understand any of that. Please try again.");
+        assertThat(told.toString()).contains(SystemMessageKey.SM6.defaultText());
     }
 
     @Test
@@ -89,7 +90,7 @@ class GameLoopTest {
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("take");
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
-        assertThat(told.toString()).contains("I don't know how to do that.");
+        assertThat(told.toString()).contains(SystemMessageKey.SM8.defaultText());
     }
 
     @Test
@@ -99,8 +100,8 @@ class GameLoopTest {
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("suit");
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
-        assertThat(told.toString()).contains("I was not able to understand any of that. Please try again.");
-        assertThat(told.toString()).doesNotContain("I don't know how to do that.");
+        assertThat(told.toString()).contains(SystemMessageKey.SM6.defaultText());
+        assertThat(told.toString()).doesNotContain(SystemMessageKey.SM8.defaultText());
     }
 
     @Test
@@ -127,7 +128,7 @@ class GameLoopTest {
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("take and describe");
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
-        assertThat(told.toString()).contains("I don't know how to do that.");
+        assertThat(told.toString()).contains(SystemMessageKey.SM8.defaultText());
         assertThat(told.toString()).doesNotContain("A grand throne room.");
     }
 
@@ -139,7 +140,7 @@ class GameLoopTest {
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("suit and describe");
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
-        assertThat(told.toString()).contains("I was not able to understand any of that. Please try again.");
+        assertThat(told.toString()).contains(SystemMessageKey.SM6.defaultText());
         assertThat(told.toString()).doesNotContain("A grand throne room.");
     }
 
@@ -148,7 +149,7 @@ class GameLoopTest {
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("describe and quit and help");
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.QUIT);
-        assertThat(told.toString()).contains("A grand throne room.").contains("Bye bye.");
+        assertThat(told.toString()).contains("A grand throne room.").contains(SystemMessageKey.SM14.defaultText());
         assertThat(told.toString()).doesNotContain("Look around, examine items");
     }
 
@@ -179,7 +180,7 @@ class GameLoopTest {
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
         assertThat(told.toString()).contains("A dark, damp cellar.").contains("A rusty key.");
-        assertThat(told.toString()).doesNotContain("I don't know how to do that.");
+        assertThat(told.toString()).doesNotContain(SystemMessageKey.SM8.defaultText());
     }
 
     @Test
@@ -187,7 +188,7 @@ class GameLoopTest {
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("take it");
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
-        assertThat(told.toString()).contains("I don't know what 'it' refers to.");
+        assertThat(told.toString()).contains(SystemMessageKey.SM63.defaultText());
     }
 
     @Test
@@ -213,14 +214,14 @@ class GameLoopTest {
         vocabulary.createNewWord("wear", Word.Type.VERB);
         gameContext.getCurrentLocation().addCommand(new GenericCommand(
                 new GenericCommandDescription("wear", "suit"),
-                new MessageAction("You put on the suit.", new MessagesHolder())));
+                new MessageAction(SystemMessageKey.SM37.defaultText().formatted("suit"), new MessagesHolder())));
 
         GameLoop.CommandOutcome firstOutcome = gameLoop.processCommand("take suit");
         GameLoop.CommandOutcome secondOutcome = gameLoop.processCommand("wear it");
 
         assertThat(firstOutcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
-        assertThat(told.toString()).contains("I don't know how to do that.");
+        assertThat(told.toString()).contains(SystemMessageKey.SM8.defaultText());
         assertThat(secondOutcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
-        assertThat(told.toString()).contains("You put on the suit.");
+        assertThat(told.toString()).contains(SystemMessageKey.SM37.defaultText().formatted("suit"));
     }
 }

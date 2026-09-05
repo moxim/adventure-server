@@ -33,6 +33,7 @@ import com.pdg.adventure.model.condition.CarriedConditionData;
 import com.pdg.adventure.model.condition.HereConditionData;
 import com.pdg.adventure.model.condition.NotConditionData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
@@ -312,16 +313,12 @@ public class ItemEditorView extends VerticalLayout
         final CommandData takeCommandFailedBecauseAlreadyCarried = createTakeCommandData(aTakeVerb, anItemData);
         takeCommandFailedBecauseAlreadyCarried.getPreConditions().add(carriedCondition);
         MessageActionData messageDataBecauseAlreadyCarried = new MessageActionData();
-        messageDataBecauseAlreadyCarried.setMessageId("You already have the %s.".formatted(itemDescription));
+        messageDataBecauseAlreadyCarried.setMessageId(SystemMessageKey.SM25.defaultText().formatted(itemDescription));
         takeCommandFailedBecauseAlreadyCarried.setActions(new ArrayList<>(List.of(messageDataBecauseAlreadyCarried)));
         anItemData.getCommandProviderData().add(takeCommandFailedBecauseAlreadyCarried);
 
-        final CommandData takeCommandFailedBecauseNotHere = createTakeCommandData(aTakeVerb, anItemData);
-        takeCommandFailedBecauseNotHere.getPreConditions().add(notHereCondition);
-        MessageActionData messageDataBecauseNotHere = new MessageActionData();
-        messageDataBecauseNotHere.setMessageId("The %s is not here.".formatted(itemDescription));
-        takeCommandFailedBecauseNotHere.setActions(new ArrayList<>(List.of(messageDataBecauseNotHere)));
-        anItemData.getCommandProviderData().add(takeCommandFailedBecauseNotHere);
+        // no need to check for "not here" on take: if the item is not here,
+        // the engine would never even reach this command (in the item).
 
         final CommandData takeCommandData = createTakeCommandData(aTakeVerb, anItemData);
         takeCommandData.getPreConditions().add(hereCondition);
@@ -330,7 +327,7 @@ public class ItemEditorView extends VerticalLayout
         final CommandData dropCommandFailedBecauseNotCarried = createDropCommandData(aDropVerb, anItemData);
         dropCommandFailedBecauseNotCarried.getPreConditions().add(notCarriedCondition);
         MessageActionData messageDataBecauseNotCarried = new MessageActionData();
-        messageDataBecauseNotCarried.setMessageId("You don't have the %s.".formatted(itemDescription));
+        messageDataBecauseNotCarried.setMessageId(SystemMessageKey.SM28.defaultText().formatted(itemDescription));
         dropCommandFailedBecauseNotCarried.setActions(new ArrayList<>(List.of(messageDataBecauseNotCarried)));
         anItemData.getCommandProviderData().add(dropCommandFailedBecauseNotCarried);
 

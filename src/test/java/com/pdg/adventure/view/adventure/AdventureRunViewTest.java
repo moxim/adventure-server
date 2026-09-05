@@ -23,9 +23,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.security.model.UserData;
@@ -33,6 +31,7 @@ import com.pdg.adventure.server.engine.AdventureRunSession;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
 import com.pdg.adventure.server.engine.AdventureRunSessionFactory;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.view.player.PlayerLibraryView;
 import com.pdg.adventure.view.support.FlashNotifier;
 import com.pdg.adventure.view.support.RouteIds;
@@ -113,20 +112,20 @@ class AdventureRunViewTest extends BrowserlessTest {
     @Test
     void multipleNarratorLinesFromOneTurn_arePooledIntoASingleMessageListItem() {
         when(session.submit("look")).thenReturn(
-                new RunResult(List.of("You carry:", "a rusty key"), false));
+                new RunResult(List.of(SystemMessageKey.SM9.defaultText(), "a rusty key"), false));
 
         enterViaAuthorRoute();
 
         MessageList messageList = find(MessageList.class, view).single();
         assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
-                .containsExactly("You carry:\na rusty key");
+                .containsExactly(SystemMessageKey.SM9.defaultText() + "\na rusty key");
     }
 
     @Test
     void gameOver_disablesTheMessageInput() {
         when(session.submit("look")).thenReturn(new RunResult(List.of("A grand throne room."), false));
         enterViaAuthorRoute();
-        when(session.submit("quit")).thenReturn(new RunResult(List.of("Bye bye."), true));
+        when(session.submit("quit")).thenReturn(new RunResult(List.of(SystemMessageKey.SM14.defaultText()), true));
 
         MessageInput messageInput = find(MessageInput.class, view).single();
         test(messageInput).send("quit");

@@ -7,6 +7,7 @@ import static com.pdg.adventure.server.parser.CommandExecutor.clarifyExecutionOu
 
 import com.pdg.adventure.api.*;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
@@ -66,9 +67,9 @@ public class Location extends Thing implements Visitable, HasLight {
 
         ExecutionResult result = new CommandExecutionResult();
         if (availableCommandChains.isEmpty()) {
-            result.setResultMessage("You can't do that.");
+            result.setResultMessage(SystemMessageKey.SM8.defaultText());
         } else if (availableCommandChains.size() > 1) {
-            result.setResultMessage("What do you want to %s?".formatted(aCommandDescription.getVerb()));
+            result.setResultMessage(SystemMessageKey.SM60.defaultText().formatted(aCommandDescription.getVerb()));
         } else {
             result = availableCommandChains.getFirst().execute();
         }
@@ -97,15 +98,15 @@ public class Location extends Thing implements Visitable, HasLight {
 
         sb.append(System.lineSeparator());
         if (!directions.isEmpty()) {
-            sb.append("Exits are:").append(System.lineSeparator());
+            sb.append(SystemMessageKey.SM59.defaultText()).append(System.lineSeparator());
             sb.append(directions.listContents());
         } else {
-            sb.append("There are no obvious exits.");
+            sb.append(SystemMessageKey.SM62.defaultText()).append(System.lineSeparator());
         }
 
         sb.append(System.lineSeparator());
         if (!itemContainer.isEmpty()) {
-            sb.append("You also see:").append(System.lineSeparator());
+            sb.append(SystemMessageKey.SM1.defaultText()).append(System.lineSeparator());
             sb.append(itemContainer.listContents());
         }
 

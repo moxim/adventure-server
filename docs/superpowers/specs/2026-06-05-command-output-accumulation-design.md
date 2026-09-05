@@ -59,7 +59,7 @@ Two central methods change. Every execution path (the live
 
 ### Out of scope
 
-- **Level 3** — the inter-object *"Which xyz do you want to abc?"* false-duplicate
+- **Level 3** — the inter-object *"Which xyz should I abc?"* false-duplicate
   (one physical object collected as multiple chains via the location's
   `super` + `itemContainer` + `findItems` aggregation). This is a **separate**
   mechanism and gets its own debugging cycle. Genuine disambiguation between
@@ -132,7 +132,7 @@ public ExecutionResult execute() {
         result.setExecutionState(ExecutionResult.State.SUCCESS);
         result.setResultMessage(String.join(System.lineSeparator(), messages));
     } else {
-        result.setResultMessage(last.getResultMessage());  // surface last failure; empty → "You can't do that."
+        result.setResultMessage(last.getResultMessage());  // surface last failure; empty → SM8 ("You can't do that.")
     }
     return result;
 }
@@ -154,8 +154,7 @@ public ExecutionResult execute() {
   `MOVE_PLAYER`) don't add empty lines.
 - **Order:** chain order (top to bottom, as in the grid).
 - **Nothing applies in a chain:** result is FAILURE carrying the last command's
-  message; if empty, the engine's existing `clarifyExecutionOutcome` turns it into
-  `"You can't do that."`.
+  message; if empty, the engine's existing `clarifyExecutionOutcome` turns it into SM8 (`"You can't do that."`).
 
 ## Open decision — failing action within a command
 

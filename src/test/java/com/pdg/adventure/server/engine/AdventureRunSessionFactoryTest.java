@@ -26,6 +26,7 @@ import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.mapper.WorkflowMapper;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
@@ -86,7 +87,6 @@ class AdventureRunSessionFactoryTest {
 
     @Test
     void start_thenInventory_includesTheGenericCarryHeaderMessage() {
-        // InventoryAction looks up MessagesHolder id "-10" ("You carry:") unconditionally.
         // LoadAdventureAction clears allMessages and repopulates only from the adventure's own
         // persisted messages - without also re-seeding this generic, adventure-independent id,
         // the header silently disappears (WearAction/RemoveAction/CreateAction/MoveItemAction/
@@ -100,7 +100,7 @@ class AdventureRunSessionFactoryTest {
         AdventureRunSession session = factory.start(adventureData);
         RunResult result = session.submit("inventory");
 
-        assertThat(result.lines()).contains("You carry:");
+        assertThat(result.lines()).contains(SystemMessageKey.SM9.defaultText());
     }
 
     @Test
@@ -118,7 +118,7 @@ class AdventureRunSessionFactoryTest {
         RunResult result = session.submit("describe and inventory");
 
         assertThat(result.lines()).anySatisfy(line -> assertThat(line).contains("A grand throne room."));
-        assertThat(result.lines()).anySatisfy(line -> assertThat(line).contains("You carry:"));
+        assertThat(result.lines()).anySatisfy(line -> assertThat(line).contains(SystemMessageKey.SM9.defaultText()));
     }
 
     @Test

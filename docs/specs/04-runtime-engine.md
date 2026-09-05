@@ -40,14 +40,14 @@ GameContext.preProcessCommands()        ← Workflow.preCommands run BEFORE inpu
 GameContext.interceptCommands(cmd)      ← Workflow.interceptorCommands (help, inventory, quit, look)
    │   if matched (state != FAILURE) tell(message); next turn
    ▼
-empty input check ("||")                 ← if all three slots empty, "I don't understand, please rephrase."
+empty input check ("||")                 ← if all three slots empty, SM6 ("I don't understand, please rephrase.")
    ▼
 CommandExecutor(pocket, location).execute(cmd)
    ├─ pocket.getMatchingCommandChain(cmd)
    ├─ location.getMatchingCommandChain(cmd)   (which descends into directions and items)
    ├─ filter chains by adjective if given
-   ├─ if 0 matches → "I don't know how to do that."
-   ├─ if >1 matches → "What do you want to <verb>?"
+   ├─ if 0 matches → "I can't do that." (SM8)
+   ├─ if >1 matches → "What should I <verb>?" (SM60)
    └─ if exactly 1 → chain.execute()
    ▼
 ExecutionResult { state, resultMessage, commandHasMatched }
@@ -134,12 +134,12 @@ Every `Thing` and `GenericDirection` composes a `CommandHandler`
    and items).
 3. `reduceCommandChains` — drop any chain whose first command has an adjective
    different from the input's. Empty chains are removed.
-4. If 0 chains remain → return failure with `"I don't know how to do that."`.
-5. If >1 chains remain → return failure with `"What do you want to <verb>?"`.
+4. If 0 chains remain → return failure with `"I can't do that."` (SM8).
+5. If >1 chains remain → return failure with `"What should I <verb>?"` (SM60).
 6. If exactly 1 → execute it.
 7. Empty `resultMessage` is normalised by `clarifyExecutionOutcome`:
-   - SUCCESS empty → `"OK."`
-   - FAILURE empty → `"You can't do that."`
+   - SUCCESS empty → SM15 (`"OK."`)
+   - FAILURE empty → SM8 (`"You can't do that."`)
 
 This is the "guess what the user meant" routine; the message templates are
 deliberately generic so the surrounding game text supplies most of the
@@ -256,8 +256,6 @@ configured examine verb; it has no DO and is never persisted.
 
 - **`MessageAction`** has two forms in practice: a literal string supplied at
   construction (used widely) and a runtime lookup against `MessagesHolder.getMessage(id)`.
-  The negative numeric ids (`"-6"`, `"-8"`, `"-9"`, `"-10"`, `"-13"`) are
-  reserved engine messages for take/drop/wear feedback.
 - **`DescribeAction`** uses a `Supplier<String>` so the description is computed
   at execute time. The current implementation simply returns
   `target.get()`; the commented-out `fillThroughAI(...)` calls Spring AI
@@ -283,9 +281,9 @@ conditions wrap others.
 
 | Condition | Returns SUCCESS when… |
 |-----------|----------------------|
-| `CarriedCondition(item, gc)` | `gc.pocket.contains(item)`. Failure message: `"You don't have a <short>."`. |
-| `WornCondition(wearable)` | `wearable.isWorn() == true`. Failure message: `"You are not wearing <enriched>."`. |
-| `HereCondition(item, gc)` | `gc.currentLocation.contains(item)`. Failure message: `"There is no <noun> here."`. |
+| `CarriedCondition(item, gc)` | `gc.pocket.contains(item)`. Failure message: `"I don't have any of those."` (SM28). |
+| `WornCondition(wearable)` | `wearable.isWorn() == true`. Failure message: `"You are not wearing <enriched>."` (SM50). |
+| `HereCondition(item, gc)` | `gc.currentLocation.contains(item)`. Failure message: `"There is no <noun> here."` (SM26). |
 | `ItemAtCondition(item, location, gc)` | The item is at the named location. |
 | `PlayerAtCondition(location, gc)` | `gc.currentLocation.equals(location)`. |
 | `ChanceCondition(chance)` | A fresh random integer in `[1, 100]` (`new Random().nextInt(100) + 1`, injectable via a package-private constructor for testing) is `<= chance`. Re-rolled on every attempt — a 20% chance is "roughly one in five tries," not "one in five players." No failure message of its own. |

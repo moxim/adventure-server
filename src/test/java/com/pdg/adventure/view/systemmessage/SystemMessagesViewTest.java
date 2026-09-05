@@ -94,19 +94,19 @@ class SystemMessagesViewTest extends BrowserlessTest {
     void grid_showsFullCatalog_regardlessOfHowManyRowsArePersisted() {
         enterWithAdventure();
 
-        assertThat(test(find(Grid.class, view).single()).size()).isEqualTo(88);
+        assertThat(test(find(Grid.class, view).single()).size()).isEqualTo(83);
     }
 
     @Test
     @DisplayName("Entering the view never touches an already-customized message, and doesn't materialize the other 35")
     void beforeEnter_preservesAlreadyEditedMessage_andLeavesEverythingElseSparse() {
-        adventureData.getSystemMessages().put(SystemMessageKey.CANNOT_WEAR.id(),
-                new SystemMessageData("adv-1", SystemMessageKey.CANNOT_WEAR.id(), "Du kannst %s nicht tragen."));
+        adventureData.getSystemMessages().put(SystemMessageKey.SM40.id(),
+                new SystemMessageData("adv-1", SystemMessageKey.SM40.id(), "Du kannst %s nicht tragen."));
 
         enterWithAdventure();
 
         assertThat(adventureData.getSystemMessages()).hasSize(1);
-        assertThat(adventureData.getSystemMessages().get(SystemMessageKey.CANNOT_WEAR.id()).getText())
+        assertThat(adventureData.getSystemMessages().get(SystemMessageKey.SM40.id()).getText())
                 .isEqualTo("Du kannst %s nicht tragen.");
     }
 
@@ -141,12 +141,12 @@ class SystemMessagesViewTest extends BrowserlessTest {
     void doubleClick_opensEditDialogWithCurrentText() {
         enterWithAdventure();
 
-        int wearRowIndex = gridIndexOf(SystemMessageKey.CANNOT_WEAR.id());
+        int wearRowIndex = gridIndexOf(SystemMessageKey.SM40.id());
         test(find(Grid.class, view).single()).doubleClickRow(wearRowIndex);
 
         Dialog dialog = find(Dialog.class).single();
         assertThat(find(TextArea.class, dialog).single().getValue())
-                .isEqualTo(SystemMessageKey.CANNOT_WEAR.defaultText());
+                .isEqualTo(SystemMessageKey.SM40.defaultText());
         assertThat(find(Button.class, dialog).withText("Delete").all()).isEmpty();
     }
 
@@ -159,7 +159,7 @@ class SystemMessagesViewTest extends BrowserlessTest {
         // while the dialog itself stayed open.
         enterWithAdventure();
 
-        int wearRowIndex = gridIndexOf(SystemMessageKey.CANNOT_WEAR.id());
+        int wearRowIndex = gridIndexOf(SystemMessageKey.SM40.id());
         test(find(Grid.class, view).single()).doubleClickRow(wearRowIndex);
 
         Dialog dialog = find(Dialog.class).single();
@@ -172,7 +172,7 @@ class SystemMessagesViewTest extends BrowserlessTest {
         enterWithAdventure();
         assertThat(adventureData.getSystemMessages()).as("nothing customized yet").isEmpty();
 
-        int wearRowIndex = gridIndexOf(SystemMessageKey.CANNOT_WEAR.id());
+        int wearRowIndex = gridIndexOf(SystemMessageKey.SM40.id());
         test(find(Grid.class, view).single()).doubleClickRow(wearRowIndex);
         Dialog dialog = find(Dialog.class).single();
         TextArea textArea = find(TextArea.class, dialog).single();
@@ -181,7 +181,7 @@ class SystemMessagesViewTest extends BrowserlessTest {
 
         // Exactly one row now exists - the other 35 unmodified keys are still not persisted.
         assertThat(adventureData.getSystemMessages()).hasSize(1);
-        assertThat(adventureData.getSystemMessages().get(SystemMessageKey.CANNOT_WEAR.id()).getText())
+        assertThat(adventureData.getSystemMessages().get(SystemMessageKey.SM40.id()).getText())
                 .isEqualTo("Du kannst %s nicht tragen.");
         verify(adventureService).saveAdventureData(adventureData);
         assertThat(find(Dialog.class).all()).as("dialog closed after a successful save").isEmpty();
@@ -190,11 +190,11 @@ class SystemMessagesViewTest extends BrowserlessTest {
     @Test
     @DisplayName("Saving a second edit for an already-customized message updates the existing row instead of duplicating it")
     void save_validEdit_updatesExistingOverrideRow_whenOneAlreadyExists() {
-        adventureData.getSystemMessages().put(SystemMessageKey.CANNOT_WEAR.id(),
-                new SystemMessageData("adv-1", SystemMessageKey.CANNOT_WEAR.id(), "Du kannst %s nicht tragen."));
+        adventureData.getSystemMessages().put(SystemMessageKey.SM40.id(),
+                new SystemMessageData("adv-1", SystemMessageKey.SM40.id(), "Du kannst %s nicht tragen."));
         enterWithAdventure();
 
-        int wearRowIndex = gridIndexOf(SystemMessageKey.CANNOT_WEAR.id());
+        int wearRowIndex = gridIndexOf(SystemMessageKey.SM40.id());
         test(find(Grid.class, view).single()).doubleClickRow(wearRowIndex);
         Dialog dialog = find(Dialog.class).single();
         TextArea textArea = find(TextArea.class, dialog).single();
@@ -202,7 +202,7 @@ class SystemMessagesViewTest extends BrowserlessTest {
         test(find(Button.class, dialog).withText("Save").single()).click();
 
         assertThat(adventureData.getSystemMessages()).hasSize(1);
-        assertThat(adventureData.getSystemMessages().get(SystemMessageKey.CANNOT_WEAR.id()).getText())
+        assertThat(adventureData.getSystemMessages().get(SystemMessageKey.SM40.id()).getText())
                 .isEqualTo("Sie können %s nicht tragen.");
     }
 
@@ -211,7 +211,7 @@ class SystemMessagesViewTest extends BrowserlessTest {
     void save_rejectedEdit_showsErrorAndDoesNotSave() {
         enterWithAdventure();
 
-        int wearRowIndex = gridIndexOf(SystemMessageKey.CANNOT_WEAR.id());
+        int wearRowIndex = gridIndexOf(SystemMessageKey.SM40.id());
         test(find(Grid.class, view).single()).doubleClickRow(wearRowIndex);
         Dialog dialog = find(Dialog.class).single();
         TextArea textArea = find(TextArea.class, dialog).single();
@@ -227,7 +227,7 @@ class SystemMessagesViewTest extends BrowserlessTest {
     void save_rejectsBlankText() {
         enterWithAdventure();
 
-        int doneRowIndex = gridIndexOf(SystemMessageKey.GAMELOOP_DONE.id());
+        int doneRowIndex = gridIndexOf(SystemMessageKey.SM15.id());
         test(find(Grid.class, view).single()).doubleClickRow(doneRowIndex);
         Dialog dialog = find(Dialog.class).single();
         TextArea textArea = find(TextArea.class, dialog).single();
@@ -243,7 +243,7 @@ class SystemMessagesViewTest extends BrowserlessTest {
     void cancel_closesDialogWithoutSaving() {
         enterWithAdventure();
 
-        int wearRowIndex = gridIndexOf(SystemMessageKey.CANNOT_WEAR.id());
+        int wearRowIndex = gridIndexOf(SystemMessageKey.SM40.id());
         test(find(Grid.class, view).single()).doubleClickRow(wearRowIndex);
         Dialog dialog = find(Dialog.class).single();
         test(find(Button.class, dialog).withText("Cancel").single()).click();

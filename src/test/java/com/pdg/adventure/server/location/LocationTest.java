@@ -16,6 +16,7 @@ import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
@@ -100,7 +101,7 @@ class LocationTest {
 
         // then
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
-        assertThat(result.getResultMessage()).isEqualTo("You can't do that.");
+        assertThat(result.getResultMessage()).isEqualTo(SystemMessageKey.SM8.defaultText());
     }
 
     @Test

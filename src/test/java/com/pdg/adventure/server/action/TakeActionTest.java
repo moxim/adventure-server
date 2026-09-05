@@ -24,12 +24,9 @@ class TakeActionTest {
 
     @Test
     void execute_delegatesToMoveItemAction_movingItemToPocket() {
-        when(messagesHolder.getMessage("-9")).thenReturn("You take %s.");
         when(item.getParentContainer()).thenReturn(mock(Container.class));
-        when(item.getEnrichedShortDescription()).thenReturn("the key");
         when(pocket.getSize()).thenReturn(0);
         when(pocket.getMaxSize()).thenReturn(10);
-        when(pocket.getEnrichedBasicDescription()).thenReturn("your pocket");
         when(item.getParentContainer().remove(item)).thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS));
         when(pocket.add(item)).thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS));
 

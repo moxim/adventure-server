@@ -1,12 +1,15 @@
 package com.pdg.adventure.server.action;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.api.Wearable;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class RemoveAction extends AbstractAction {
     @Getter
     private final Wearable thing;
@@ -21,10 +24,12 @@ public class RemoveAction extends AbstractAction {
         ExecutionResult result = new CommandExecutionResult();
         if (thing.isWorn()) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
+            result.setResultMessage(
+                    SystemMessageKey.SM38.defaultText().formatted(thing.getEnrichedBasicDescription()));
             thing.setIsWorn(false);
         } else {
             result.setResultMessage(
-                    messagesHolder.getMessage("-7").formatted(thing.getEnrichedBasicDescription()));
+                    SystemMessageKey.SM41.defaultText().formatted(thing.getEnrichedBasicDescription()));
         }
         return result;
     }
