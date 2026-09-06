@@ -108,20 +108,27 @@ the `UuidIdGenerationMongoEventListener` (HIGHEST_PRECEDENCE), the
 2. Implement the documents in `model/`:
    `AdventureData`, `LocationData`, `ItemData`, `ItemContainerData`,
    `DirectionData`, `CommandData`, `CommandChainData`,
-   `CommandProviderData`, `MessageData`, `VocabularyData`, `Word`, `ThingData`,
+   `CommandProviderData`, `MessageData`, `SystemMessageData` (collection
+   `systemMessages`; unique compound index `(adventureId, key)`),
+   `VocabularyData`, `Word`, `ThingData`,
    `WorkflowData` (a plain embedded field on `AdventureData` — no `@DBRef`,
-   no cascade annotations, unlike its siblings; see
+   no cascade annotations, unlike its siblings; holds `commands` (Processes)
+   and `interceptorCommands` (Responses); see
    [`03-domain-model.md` § Workflow](03-domain-model.md#workflow)).
-   Apply the cascade annotations exactly as documented.
-3. Add the `*ActionData` and `*ConditionData` subclasses under
-   `model/action/` and `model/condition/`.
+   Apply the cascade annotations exactly as documented (incl.
+   `AdventureData.systemMessages`).
+3. Add the `*ActionData` (incl. `BreakActionData`) and `*ConditionData`
+   subclasses under `model/action/` and `model/condition/`.
 4. Add MongoDB repositories under `server/storage/repository/`:
    `AdventureRepository`, `LocationRepository`, `ItemRepository`,
    `MessageRepository`, `WordRepository`, `VocabularyRepository`
    (rename — the current `VocabularyReporitory` typo SHOULD NOT be
-   carried over).
+   carried over). System messages have **no** dedicated repository — they
+   round-trip only via the `AdventureData.systemMessages` `@DBRef` cascade.
 5. Add the storage services: `AdventureService`, `ItemService`,
    `MessageService`. Wire `CascadeDeleteHelper` into `AdventureService.deleteAdventure`.
+   Add `server/storage/message/SystemMessageKey` (the fixed engine-text
+   catalog enum) and `server/support/PlaceholderSpec` (override validation).
 
 ### Step 6 — Business objects
 
@@ -178,42 +185,56 @@ Pay attention to:
 - The `AbstractCondition` / `AbstractVariableCondition` base classes.
 - The exact failure-message wording (used by tests and surfaced to the
   player).
-- Engine messages: `MessagesHolder` reserves the negative-id slots
-  (`-6`, `-8`, `-9`, `-10`, `-13`) for take/drop/wear feedback.
+- Engine messages: `SystemMessageKey` (`server/storage/message/`) is the
+  single source of truth for built-in engine text; actions and conditions
+  call `SystemMessageKey.SMnn.defaultText().formatted(...)`. Per-adventure
+  overrides live sparsely in `AdventureData.systemMessages`
+  (`SystemMessageData`), validated for placeholder parity by `PlaceholderSpec`.
 
 ### Step 9 — Parser and engine
 
 1. Implement `server/parser/`:
-   `Parser`, `CommandHandler` (with `examineFallback` support),
-   `CommandExecutor` (pocket → location → reduce-by-adjective → execute),
-   `CommandMatcher`, `GenericCommand`, `GenericCommandDescription`,
+   `Parser` (line → `CommandSequence` of sub-commands, split on `and`/`then`
+   `CONJUNCTION` words and `.`; missing-verb inference from the previous
+   sub-command; `PRONOUN` `it` → last noun+adjective, else
+   `UnresolvedReferenceException`), `CommandSequence`, `CommandHandler` (with
+   `examineFallback` support), `CommandExecutor` (pocket → location → reduce
+   by adjective → reduce by noun → best-ranked tier → execute; `SM8` / `SM60`
+   / `SM61`), `CommandMatcher`, `GenericCommand`, `GenericCommandDescription`,
    `GenericCommandProvider`, `GenericCommandChain`,
    `CommandExecutionResult`, `ExamineFallbackAction`.
 2. Implement `server/engine/`:
    `GameContext`, `Workflow` (preCommands and interceptorCommands as
-   `TreeMap<CommandDescription, Command>`), `GameLoop`,
-   `ContainerSupplier`, `IO`. Make `GameContext.tell()` route through an
-   injectable `Consumer<String> outputSink` (default `IO::println`, via
-   `GameContext.setOutputSink(...)`) rather than writing straight to
-   `IO` — this is what lets a Vaadin view capture engine output. Note that
-   `GameContext` (and the `AdventureConfig` beans it reaches) are
-   ordinary Spring singletons in the current code: there is no
-   per-session isolation, so only one Test/Run/CLI session is
-   meaningfully active at a time server-wide. Preserve this constraint
-   knowingly, or design it away — see
+   `TreeMap<CommandDescription, Command>`, iterated in alphabetical
+   verb/adjective/noun order), `GameLoop` (`processCommand(String)` runs each
+   sub-command in order, stopping at the first failure), `ContainerSupplier`.
+   Make `GameContext.tell()` route through an injectable
+   `Consumer<String> outputSink` (default `java.lang.IO::println` — JDK 25's
+   built-in `java.lang.IO`; there is **no** custom `IO` class), via
+   `GameContext.setOutputSink(...)` — this is what lets a Vaadin view capture
+   engine output. Note that `GameContext` (and the `AdventureConfig` beans it
+   reaches) are ordinary Spring singletons in the current code: there is no
+   per-session isolation, so only one Test/Run session is meaningfully active
+   at a time server-wide. Preserve this constraint knowingly, or design it
+   away — see
    [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps).
 3. Implement `server/engine/AdventureRunSession.java` and
    `AdventureRunSessionFactory.java` — the turn-based (`submit(String) →
    RunResult(lines, gameOver)`) wrapper a Vaadin view needs around
    `GameLoop`/`GameContext`, described in
    [`04-runtime-engine.md` § AdventureRunSession](04-runtime-engine.md#adventurerunsession-the-in-browser-play-surface).
+   `AdventureRunSessionFactory.registerBaseVerbs` seeds
+   `quit`/`describe`/`help`/`inventory` (+ synonyms) **and** `and`/`then`
+   (`CONJUNCTION`) and `it` (`PRONOUN`) directly on the vocabulary.
 4. Implement `CommandFactory.java` (top-level, in
-   `com.pdg.adventure`): the take/drop/wear/look wiring exactly as
+   `com.pdg.adventure`): the take/drop/wear/look wiring, plus
+   `setUpWorkflowCommands` (built-in `help`/`inventory`/`quit`/`describe`
+   Responses + the `SM2` "What now?" Process prompt), exactly as
    described in
    [`04-runtime-engine.md` § CommandFactory](04-runtime-engine.md#commandfactory-wiring-conventions).
-5. Implement `MiniAdventure.java` and `AdventureClient.java` for CLI play.
-   These remain useful for end-to-end testing alongside the in-browser
-   play surface (Step 11), not superseded by it.
+5. There is **no CLI runner** (`MiniAdventure` / `AdventureClient` were
+   removed; `Adventure.run()` is a vestigial stub). The only play path is
+   `AdventureRunView` → `AdventureRunSession` (Step 11).
 
 ### Step 10 — AI integration (intentional placeholder)
 
@@ -230,8 +251,8 @@ and
 ### Step 11 — Vaadin views
 
 1. Implement `AdventureBuilderServer.java` with `@SpringBootApplication`
-   and `@PWA(name = "Adventure Builder", ...)`. **Do not** ship with
-   `@SpringBootApplication` commented out as the current code does.
+   and `@PWA(name = "Adventure Builder", ...)`, plus a `main` calling
+   `SpringApplication.run(...)` (matches the current code).
 2. Implement the layouts (`AdventureAppLayout`, the per-area
    `*MainLayout`s) per
    [`07-ui-and-navigation.md` § Layouts](07-ui-and-navigation.md#layouts).
@@ -253,17 +274,22 @@ and
      (annotation-driven `*EditorRegistry` discovery, not a hand-maintained
      switch — see
      [`07-ui-and-navigation.md` § Action editor factory](07-ui-and-navigation.md#action-editor-factory)).
-   - Workflow: `WorkflowMainLayout`, `WorkflowEditorView` — reuses the
-     Command editor's `PreconditionActionEditor` component directly, so
-     build it after the Command views above, not in parallel with them.
+   - Workflow: `WorkflowMainLayout`, then `CommandListEditorView` and its
+     two subclasses `WorkflowEditorView` (`…/workflow`, Processes) and
+     `ResponsesEditorView` (`…/responses`, Responses) — they reuse the
+     Command editor's `PreconditionActionEditor`, so build them after the
+     Command views above, not in parallel with them.
    - Message: `MessagesMenuView`, `MessageEditorView`.
-   - Vocabulary: `VocabularyMenuView`, `WordEditorDialogue`,
-     `SpecialWordsView`.
+   - System messages: `SystemMessagesView` (`…/system-messages`,
+     `AdventuresMainLayout`) + `SystemMessageEntry`.
+   - Vocabulary: `VocabularyMenuView`, `WordEditorDialogue` (VERB/NOUN/
+     ADJECTIVE only in the type picker), `SpecialWordsView`.
    - Admin: `UserManagementView`, `AdventureAssignmentView`.
-   - Play surface: `AdventureRunView`, reached three ways (author "Test"
+   - Play surface: `AdventureRunView`, reached three ways (author **Test**
      from `AdventureEditorView`, author/admin "Run Adventure" from
      `AdventuresMenuView`, player "Run Adventure" from
-     `PlayerLibraryView`) — one `@Route` plus one `@RouteAlias`, both
+     `PlayerLibraryView`) — one `@Route` (`…/test`) plus one `@RouteAlias`
+     (`player/library/:id/run`), both
      `@RolesAllowed({"ROLE_AUTHOR", "ROLE_PLAYER"})`, disambiguated at
      runtime by URL prefix and a `?from=menu` query parameter (see
      [`07-ui-and-navigation.md` § Route × role matrix](07-ui-and-navigation.md#route--role-matrix)).
@@ -332,12 +358,11 @@ table with severity and pointer:
 |----------|-----|--------|
 | **Critical** | Hardcoded admin password | [`06-security-and-access-control.md`](06-security-and-access-control.md#known-gaps) — replace with secret-sourced bootstrap. |
 | **Critical** | Hardcoded remember-me key | Same — override via env / secret. |
-| **High** | `CommandMapper` incomplete | [`05-persistence-and-mappers.md`](05-persistence-and-mappers.md#known-gaps) — finish DO ↔ BO for commands, preconditions, actions. |
+| **High** | `CommandMapper.mapToDO` incomplete | [`05-persistence-and-mappers.md`](05-persistence-and-mappers.md#known-gaps) — `mapToBO` is done; finish the DO direction (preconditions). |
 | **High** | `LocationMapper` destination resolution & `ItemContainerMapper` contents | Same. |
 | **High** | `VocabularyReporitory` class-name typo | Same. |
-| **High** | `AdventureBuilderServer` lacks `@SpringBootApplication` | [`01-product-overview.md` § Known gaps](01-product-overview.md#known-gaps). |
-| **Medium** | `GameContext`/`AdventureConfig` are process-wide singletons — no per-session engine isolation | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps) — at most one Test/Run/CLI session is meaningfully active server-wide at a time. |
-| **Medium** | NLP parser approach undecided | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps). |
+| **Medium** | `GameContext`/`AdventureConfig` are process-wide singletons — no per-session engine isolation | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps) — at most one Test/Run session is meaningfully active server-wide at a time. |
+| **Medium** | NLP parser: no prepositions / multi-noun / articles (compound `and`/`then`/`.` and pronoun `it` are now handled) | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps). |
 | **Medium** | Spring AI / Ollama integration commented out, base URL hardcoded | Same. |
 | **Medium** | No per-game save state (variables not persisted); `AdventureRunView` sessions don't wire save/load at all | [`03-domain-model.md` § Known gaps](03-domain-model.md#known-gaps), [`02-functional-requirements.md` § Known gaps](02-functional-requirements.md#known-gaps). |
 | **Medium** | `AmbiguousCommandException` declared but unused | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps). |
@@ -399,10 +424,13 @@ Before declaring the rebuild done, walk this list:
       location, a vocabulary word, an item, a direction, and a command,
       then editing each one again, all work without errors and respect
       the BACK / SAVE / RESET / CANCEL contract.
-- [ ] Clicking **Run Adventure** on that adventure (once saved and non-empty) opens
-      `AdventureRunView` and plays through the same way in the browser;
-      **Run Adventure** from the adventures list and from a player's
-      library both reach the identical view.
+- [ ] Clicking **Test** on that adventure (once saved and non-empty) opens
+      `AdventureRunView` (title `"Test: …"`) and plays through in the browser;
+      **Run Adventure** from the adventures list and from a player's library
+      both reach the identical view (the library one titled `"Playing: …"`).
+- [ ] A typed `take X and drop it.` runs as two sub-commands; **Manage
+      Processes** / **Manage Responses** / **Manage System Messages** all
+      open from the Adventure Editor.
 - [ ] CI workflow on `main` is green.
 - [ ] `find server/docs/specs -name '*.md'` lists this 10-document suite
       and every link inside resolves.
@@ -414,8 +442,9 @@ the relevant chapter. The high-leverage sources to keep open while you
 rebuild are:
 
 - `src/main/java/com/pdg/adventure/CommandFactory.java`
-- `src/main/java/com/pdg/adventure/server/engine/{GameContext,GameLoop,Workflow}.java`
-- `src/main/java/com/pdg/adventure/server/parser/{Parser,CommandHandler,CommandExecutor}.java`
+- `src/main/java/com/pdg/adventure/server/engine/{GameContext,GameLoop,Workflow,AdventureRunSessionFactory}.java`
+- `src/main/java/com/pdg/adventure/server/parser/{Parser,CommandSequence,CommandHandler,CommandExecutor}.java`
+- `src/main/java/com/pdg/adventure/server/storage/message/SystemMessageKey.java`
 - `src/main/java/com/pdg/adventure/server/support/MapperSupporter.java`
 - `src/main/java/com/pdg/adventure/server/annotation/AutoMapperRegistrationProcessor.java`
 - `src/main/java/com/pdg/adventure/server/security/service/AdventureAccessService.java`

@@ -22,19 +22,21 @@ players carry).
 | **Total Items** | Read-only count, for orientation. |
 | **Notes** | A free-text scratchpad. Nothing reads this at play time — it's purely for you, e.g. jotting down plot ideas or a to-do list while you build. |
 
-## The five "Manage" buttons
+## The "Manage" buttons
 
 These are your doors into the rest of the adventure:
 
-![A hub-and-spoke diagram of navigation: the Adventure Editor at the center, with five spokes out to Locations, Items, Vocabulary, Messages, and Workflow, and a Test spoke leading to the play screen — every spoke leads back to the center](../images/diagrams/navigation-map.svg)
+![A hub-and-spoke diagram of navigation: the Adventure Editor at the center, with spokes out to the sub-editors, and a Test spoke leading to the play screen — every spoke leads back to the center](../images/diagrams/navigation-map.svg)
 
 | Button | Takes you to |
 |--------|----------------|
-| **Manage Locations** | [Locations & Exits](05-locations-and-exits.md) |
-| **Manage Items** | [Items](06-items.md) (every item across the whole adventure) |
 | **Manage Vocabulary** | [Vocabulary & Words](07-vocabulary-and-words.md) |
 | **Manage Messages** | [Messages](10-messages.md) |
-| **Manage Workflow** | [Workflow: commands that run everywhere](09-workflow.md) |
+| **Manage System Messages** | [Messages → the built-in engine messages](10-messages.md#editing-the-built-in-system-messages) |
+| **Manage Locations** | [Locations & Exits](05-locations-and-exits.md) |
+| **Manage Items** | [Items](06-items.md) (every item across the whole adventure) |
+| **Manage Processes** | [Workflow → Processes](09-workflow.md#processes-run-every-turn) |
+| **Manage Responses** | [Workflow → Responses](09-workflow.md#responses-intercept-a-typed-command) |
 
 > **Note:** Clicking any of these silently saves valid changes to the fields
 > above first (if your title etc. currently pass validation), so you won't

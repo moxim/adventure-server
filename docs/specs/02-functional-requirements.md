@@ -60,8 +60,10 @@ Unsaved-change handling is implemented in `BaseEditorView.beforeLeave(...)` and
 
 ### Confirmation dialogs
 
-- Deleting an `Adventure`, `Location`, `Item`, `Word`, `Command`, `Direction`,
-  or `Message` MUST require explicit confirmation.
+- Deleting a `Location`, `Item`, `Word`, `Command`, `Message`, or a workflow
+  Process / Response MUST require explicit confirmation. Deleting an
+  `Adventure` or a `Direction` (exit) currently does **not** — see
+  [`07-ui-and-navigation.md` § Known gaps](07-ui-and-navigation.md#known-gaps).
 - Deleting a `Word` that is referenced by any `Command`, `Item`, or `Location`
   MUST be refused with a list of usages (see `WordUsageTracker`,
   `LocationUsageTracker`, `ItemUsageTracker`, `MessageUsageTracker`).
@@ -162,11 +164,13 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     `AdventureAccessService.createAdventure`, `@Transactional` over the JPA write).
   - Editing navigates to `/author/adventures/:adventureId/edit`. Title, notes,
     starting-location reference, and other top-level metadata can be modified.
-    This editor's button bar is Back/Run Adventure/Save (not the four-button
+    This editor's button bar is Back/Test/Save (not the four-button
     Cancel/Reset/Back/Save contract used elsewhere — see
-    [§ Editor navigation contract](#editor-navigation-contract)); **Run Adventure**
-    launches `AdventureRunView` in place and is gated on the adventure
-    being saved, unchanged since save, and having at least one location.
+    [§ Editor navigation contract](#editor-navigation-contract)); **Test**
+    launches `AdventureRunView` in place (route `…/test`) and is gated on the
+    adventure being saved, unchanged since save, and having at least one
+    location. Its own body carries seven "Manage" buttons — Vocabulary,
+    Messages, System Messages, Locations, Items, Processes, Responses.
   - Deleting an adventure (right-click a row → **Delete** on
     `/author/adventures`) removes the `AdventureData` and all owned
     documents (locations, items, vocabulary, messages) via the
@@ -240,10 +244,11 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     row in the Command Chain grid.
   - Action sub-editors are pluggable via an annotation-driven registry
     (`@AutoRegisterActionEditor`, discovered by `ActionEditorRegistry`) /
-    `ActionSelector`; all 15 authorable action types have editors including
-    Message, Describe, Take, Drop, Wear, Remove, MovePlayer, Inventory, Quit,
-    LoadAdventure, SetVariable, IncrementVariable, DecrementVariable, Create,
-    Destroy, and Break (see
+    `ActionSelector`; all 16 authorable action types have editors —
+    Message, Describe, Take, Drop, Wear, Remove, MovePlayer, MoveItem,
+    Inventory, Quit, SetVariable, IncrementVariable, DecrementVariable,
+    Create, Destroy, and Break (`LoadAdventureAction` is engine-managed and
+    has no editor) (see
     [`07-ui-and-navigation.md` § Action editor factory](07-ui-and-navigation.md#action-editor-factory)).
   - Condition sub-editors are pluggable the same way
     (`@AutoRegisterConditionEditor` / `ConditionEditorRegistry`) /
@@ -265,7 +270,8 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
   - `/author/adventures/:adventureId/vocabulary` shows the word list with
     filtering (`WordFilter`).
   - "Create Word" opens `WordEditorDialogue` with text and `Word.Type` (NOUN /
-    ADJECTIVE / VERB).
+    ADJECTIVE / VERB only — `CONJUNCTION` and `PRONOUN` are engine-reserved,
+    seeded automatically, and removed from the picker).
   - A word can be made a synonym of another word; synonyms resolve to the
     canonical form during parsing.
   - When a word is saved with a new synonym, `WordEditorDialogue` detects
@@ -278,31 +284,64 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
   - Deleting a word is refused if any command, item, location, or direction
     references it; the dialog enumerates usages.
 
-### B10. Manage workflow commands
+### B10. Manage workflow: Processes and Responses
 
 - **As** an AUTHOR
-- **I want** to define commands that run automatically every turn,
-  regardless of the player's location
+- **I want** to define commands that apply no matter where the player is —
+  some that run every turn, some that intercept specific typed commands
 - **So that** I can build global mechanics — ambient events, hazards, a
-  win/lose check — without repeating a command on every location
+  win/lose check — and adventure-wide overrides of built-in verbs, without
+  repeating a command on every location
 - **Acceptance:**
-  - `/author/adventures/:adventureId/workflow` (`WorkflowEditorView`)
-    lists the adventure's workflow commands and lets the author create,
-    edit, and delete them. Reached via **Manage Workflow** on
-    `AdventureEditorView`.
-  - Each workflow command is built the same way as a location command:
-    `CommandDescription` + ordered PreConditions + ordered Actions, using
-    the same sub-editor components.
-  - **A workflow command with an unmet precondition is not silent.** If a
-    precondition (or the command) is set up to report a message on
+  - Both editors are built from one shared component,
+    `CommandListEditorView` (grid of commands + a single-command editor),
+    with a **Back / New / Delete / Save** button set. Delete prompts a
+    `ConfirmDialog`. Each command is built the same way as a location
+    command: `CommandDescription` + ordered PreConditions + ordered
+    Actions, using the same sub-editor components. Neither list has a
+    Command Chain concept; each command stands alone.
+  - **Processes** — `/author/adventures/:adventureId/workflow`
+    (`WorkflowEditorView`), reached via **Manage Processes** on
+    `AdventureEditorView`, edits `WorkflowData.commands`. These run
+    automatically every turn, before input is consulted. The verb is
+    **not** required here. **A Process with an unmet precondition is not
+    silent:** if a precondition (or the command) reports a message on
     failure, that message is shown **every turn** the precondition is
-    unmet — it does not skip quietly. The editor's own help text warns of
-    this explicitly.
-  - There is no Command Chain concept for workflow commands; each one
-    stands alone (unlike location commands, which may share a
-    `CommandDescription` across chained variants).
+    unmet. The editor's own help text warns of this explicitly.
+  - **Responses** — `/author/adventures/:adventureId/responses`
+    (`ResponsesEditorView`), reached via **Manage Responses** on
+    `AdventureEditorView`, edits `WorkflowData.interceptorCommands`. A
+    Response fires only when the player's verb (and adjective/noun, if
+    set) matches it exactly, short-circuiting the normal location/item
+    lookup. If its preconditions are unmet it falls through **silently**
+    to normal handling — no message. The verb **is** required. A Response
+    whose verb matches a built-in (help, inventory, quit, look/describe)
+    overrides that built-in for this adventure.
 
-### B11. Inherit player capabilities
+### B11. Manage system messages
+
+- **As** an AUTHOR
+- **I want** to reword or translate the built-in engine messages for one
+  adventure
+- **So that** an adventure can run in another language, or match its own
+  tone, without the messages leaking between adventures
+- **Acceptance:**
+  - `/author/adventures/:adventureId/system-messages` (`SystemMessagesView`),
+    reached via **Manage System Messages** on `AdventureEditorView`, shows
+    a grid of every entry in the fixed `SystemMessageKey` catalog with its
+    current text. Double-click a row to open an edit dialog showing the
+    original English, the translator-facing description and source
+    location, and an editable text area.
+  - Entries can only be **edited** — never created, deleted, or renamed.
+  - Storage is **sparse**: a `SystemMessageData` row (in
+    `AdventureData.systemMessages`) is written only the first time an entry
+    is changed from its default; an unedited entry has no row and reads as
+    `SystemMessageKey.defaultText()`.
+  - Saving validates that the new text uses **exactly** the placeholders
+    (`%s` / `%n$s`) of the original (`PlaceholderSpec`); a mismatch is
+    refused with a `Notification`.
+
+### B12. Inherit player capabilities
 
 AUTHORs can also browse and play adventures they have been granted player
 access to (or, by hierarchy, all adventures); the player flow is described
@@ -331,10 +370,11 @@ hierarchy).
 The in-browser play surface is implemented: `AdventureRunView`, backed by
 `AdventureRunSession` / `AdventureRunSessionFactory`
 (`server/engine/`), and drives `GameLoop` / `GameContext`. It is reached three
-ways — a player's "Run Adventure" here, an author's "Run Adventure" from
-`/author/adventures`, or an author's "Run Adventure" from `AdventureEditorView` —
+ways — a player's "Run Adventure" from a library, an author's "Run Adventure"
+from `/author/adventures`, or an author's **Test** from `AdventureEditorView` —
 all landing on the identical view; only the **Back** destination and the
-page title ("Playing: …" vs "Running: …") differ by origin.
+page title (`"Playing: …"` for the library origin, `"Test: …"` for the two
+author origins) differ by origin.
 
 - **As** a PLAYER
 - **I want** to type natural verb-noun commands and see the game respond
@@ -346,29 +386,36 @@ page title ("Playing: …" vs "Running: …") differ by origin.
     commands, each echoed under the player's own username before the
     response renders.
   - Input runs through `Parser` → `GameLoop.processCommand` →
-    `CommandExecutor` (workflow interceptors first, then pocket/location
-    dispatch), and the resulting messages are appended to the transcript.
+    `CommandExecutor` (Responses first, then pocket/location dispatch).
+    `Parser` splits the line into a `CommandSequence` of sub-commands on
+    `and` / `then` / `.`; `GameLoop` runs them in order and stops at the
+    first that fails or can't be understood. A missing verb is inferred
+    from the previous sub-command, and `it` resolves to the last-mentioned
+    noun (an unresolved `it` tells a message and ends the turn). Resulting
+    messages are appended to the transcript.
   - The core verbs `look` (+ `l`/`desc`/`examine`/`x`), `inventory` (+
-    `i`), `help`, and `quit` (+ `exit`/`bye`) are always available,
-    registered directly by `AdventureRunSessionFactory` — independent of
-    the adventure's own vocabulary/special-word setup. `take`/`get`,
-    `drop`, `wear`, `remove` work only for items the author has actually
-    made containable/wearable.
+    `i`), `help`, `quit` (+ `exit`/`bye`), plus `and` (+ `then`) and `it`,
+    are always available, registered directly by
+    `AdventureRunSessionFactory` — independent of the adventure's own
+    vocabulary/special-word setup. `take`/`get`, `drop`, `wear`, `remove`
+    work only for items the author has actually made
+    containable/wearable.
   - Re-renders the current location whenever the player moves
     (`MovePlayerAction`).
   - On `quit`, the session ends (input disabled, a farewell line shown);
     the player then clicks **Back** to return to the library (or, for an
     author, to wherever they launched from).
   - `save`/`load` are **not** wired in a run session — it is scoped to one
-    adventure, played in one sitting. (The CLI's `load <adventureId>`,
-    which raises `ReloadAdventureException` to restart the loop with a
-    different adventure, remains a console-only capability — see
-    [Known gaps](#known-gaps).)
+    adventure, played in one sitting. Cross-adventure loading exists only
+    as `LoadAdventureAction` (used internally by `AdventureRunSessionFactory`
+    to load the chosen adventure into the shared engine); the former
+    console `load <adventureId>` command was removed with the CLI runner
+    (`MiniAdventure` / `AdventureClient`).
 
 > **Constraint inherited from the engine, not new to this view:**
 > `AdventureRunSessionFactory` reuses the same process-wide
-> `GameContext`/`AdventureConfig` singleton beans the console runner uses
-> (no per-session engine isolation), so at most one run session is
+> `GameContext`/`AdventureConfig` singleton beans (no per-session engine
+> isolation), so at most one run session is
 > meaningfully active at a time across the whole server. Concurrent
 > Test/Run sessions (two authors testing at once, or two browser tabs)
 > will interfere with each other. See
@@ -422,8 +469,10 @@ should be enforced by the implementation, not just by the UI:
 - `src/main/java/com/pdg/adventure/view/vocabulary/*`
 - `src/main/java/com/pdg/adventure/view/player/PlayerLibraryView.java`
 - `src/main/java/com/pdg/adventure/view/adventure/AdventureRunView.java`
-- `src/main/java/com/pdg/adventure/view/workflow/{WorkflowMainLayout,WorkflowEditorView}.java`
+- `src/main/java/com/pdg/adventure/view/workflow/{WorkflowMainLayout,CommandListEditorView,WorkflowEditorView,ResponsesEditorView}.java`
+- `src/main/java/com/pdg/adventure/view/systemmessage/{SystemMessagesView,SystemMessageEntry}.java`
 - `src/main/java/com/pdg/adventure/server/engine/{AdventureRunSession,AdventureRunSessionFactory}.java`
+- `src/main/java/com/pdg/adventure/server/parser/{Parser,CommandSequence}.java`
 - `src/main/java/com/pdg/adventure/server/security/service/AdventureAccessService.java`
 
 ## Known gaps
@@ -431,15 +480,15 @@ should be enforced by the implementation, not just by the UI:
 - **Single active run session, server-wide.** `AdventureRunSessionFactory`
   reuses the process-wide `GameContext`/`AdventureConfig` singletons, so
   only one Test/Run session is meaningfully active at a time across the
-  whole deployment — the same constraint the CLI runner already had, now
-  more visible because multiple browser users can trigger it
-  concurrently. A rebuild SHOULD give each session its own engine state
-  (request- or session-scoped `GameContext`) if concurrent play is a
-  requirement.
+  whole deployment — now visible because multiple browser users can
+  trigger it concurrently. A rebuild SHOULD give each session its own
+  engine state (request- or session-scoped `GameContext`) if concurrent
+  play is a requirement.
 - **No save/load within a run session.** `save`/`load` special-word slots
   exist on `VocabularyData` but are not wired into `AdventureRunView` —
-  a session runs start-to-finish in one sitting. Cross-adventure
-  `load <id>` (via `ReloadAdventureException`) remains console-only.
+  a session runs start-to-finish in one sitting. There is no longer any
+  player-facing cross-adventure load (the CLI's `load <id>` went away with
+  `MiniAdventure`).
 - **AI-augmented descriptions.** Authors cannot yet ask the system to enrich a
   description; `DescribeAction` has the integration code commented out.
 - **Self-service signup.** No public registration view; ADMIN must create users

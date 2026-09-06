@@ -27,14 +27,15 @@ AppShell: AdventureBuilderServer (@PWA Adventure Builder)
    │
    └── AdventureAppLayout (base @PermitAll)
         ├── AdventuresMainLayout — used by adventure / admin / about / dashboards,
-        │                          the Player library, and AdventureRunView (Test/Run)
+        │                          the Player library, AdventureRunView (Test/Run),
+        │                          and SystemMessagesView
         ├── LocationsMainLayout  — used by location / map editors
         ├── ItemsMainLayout      — used by item editors
         ├── DirectionsMainLayout — used by direction editors
         ├── CommandMainLayout    — alternative for commands menu (see route table)
         ├── MessagesMainLayout   — used by message editors
         ├── VocabularyMainLayout — used by vocabulary editors
-        └── WorkflowMainLayout   — used by WorkflowEditorView
+        └── WorkflowMainLayout   — used by WorkflowEditorView and ResponsesEditorView
 ```
 
 The drawer always carries: **About** (all users), **Dashboard** (ADMIN /
@@ -70,7 +71,9 @@ primary route.
 | ↳ alias `author/adventures/new` | `AdventureEditorView` | `AdventuresMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/test` | `AdventureRunView` | `AdventuresMainLayout` | `ROLE_AUTHOR`, `ROLE_PLAYER` |
 | ↳ alias `player/library/:adventureId/run` | `AdventureRunView` | `AdventuresMainLayout` | `ROLE_AUTHOR`, `ROLE_PLAYER` |
-| `author/adventures/:adventureId/workflow` | `WorkflowEditorView` | `WorkflowMainLayout` | `ROLE_AUTHOR` |
+| `author/adventures/:adventureId/workflow` | `WorkflowEditorView` (Processes) | `WorkflowMainLayout` | `ROLE_AUTHOR` |
+| `author/adventures/:adventureId/responses` | `ResponsesEditorView` | `WorkflowMainLayout` | `ROLE_AUTHOR` |
+| `author/adventures/:adventureId/system-messages` | `SystemMessagesView` | `AdventuresMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/locations` | `LocationsMenuView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
 | ↳ alias `author/adventures/locations` | `LocationsMenuView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/locations/:locationId/edit` | `LocationEditorView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
@@ -101,9 +104,10 @@ can reach every route, an author every author + player route, and a player
 only player routes.
 
 **`AdventureRunView`'s three logical origins, two physical routes.** The
-table above shows its `@Route` and `@RouteAlias`, but a third origin —
-`AdventuresMenuView`'s "Run Adventure" button — reuses the *first* route
-template with a `?from=menu` query parameter instead of a third mapping,
+table above shows its `@Route` (`…/test`) and `@RouteAlias` (`player/library/:id/run`),
+but a third origin — `AdventuresMenuView`'s "Run Adventure" button — reuses
+the *first* route template with a `?from=menu` query parameter instead of a
+third mapping,
 because Vaadin's outbound URL generation for class-based `navigate(...)`
 calls can't disambiguate between two templates with an identically-shaped
 `:adventureId` parameter (it always resolves to the primary `@Route`).
@@ -114,7 +118,8 @@ Callers navigate via literal path strings from the static
 affects outbound link generation. The view's own `beforeEnter` resolves
 which of the three origins sent it here (from the path prefix and the
 query parameter) and uses that to decide both its `HasDynamicTitle` value
-("Running: …" for authors, "Playing: …" for players) and where its **Back** button returns to.
+(`"Test: …"` for the two author origins, `"Playing: …"` for the library
+origin) and where its **Back** button returns to.
 
 ## Layouts
 
@@ -142,7 +147,7 @@ themed image:
 | `CommandMainLayout` | `icons/to-do-list.gif` | (none) — note: `CommandsMenuView` currently uses `AdventuresMainLayout` instead |
 | `MessagesMainLayout` | `icons/scroll-with-quill.gif` | (none) |
 | `VocabularyMainLayout` | `icons/grammar.gif` | (none) |
-| `WorkflowMainLayout` | `icons/to-do-list.gif` | (none) — used only by `WorkflowEditorView` |
+| `WorkflowMainLayout` | `icons/to-do-list.gif` | (none) — used by `WorkflowEditorView` (Processes) and `ResponsesEditorView` |
 
 `AdventuresMainLayout.checkIfUserWantsToLeavePage(event, hasChanges)` is the
 shared unsaved-change guard called by every editor's `beforeLeave(...)`.
@@ -312,11 +317,44 @@ the dialogue:
 
 This cascade is `VocabularyData.findWordsBySynonym`'s primary call site.
 
-### Grid inline editing (`GridUnbufferedInlineEditor`)
+### `CommandsMenuView` grid
 
-Used by `CommandsMenuView` to edit a command-description row in place
-without opening a dialog. Provides a small UX win for high-volume tasks like
-editing many commands at once.
+`CommandsMenuView` shows a **read-only** summary grid of the scope's commands
+(verb / adjective / noun / first precondition / first action). Editing is via
+double-click or a right-click **Edit** into `CommandEditorView`; right-click
+**Delete** removes one chain variant. (The former in-place
+`GridUnbufferedInlineEditor` / `SimpleCommandDescription` spec-string editors
+were deleted — commands are now identified by a stable chain id, not a
+derived spec string.)
+
+### Workflow editors: `CommandListEditorView`
+
+`view/workflow/CommandListEditorView` is a single concrete, constructor-
+parameterized class — **not** a `BaseEditorView` subclass — providing a
+grid-of-commands + single-command editor with a **Back / New / Delete /
+Save** button set (Delete prompts a `ConfirmDialog`). Two thin subclasses
+differ only in fixed data (label, page-title prefix, help text, empty-state
+text, `CommandListType`, and which `WorkflowData` list they read/write):
+
+| Subclass | `@Route` | Edits | Verb required? |
+|----------|----------|-------|----------------|
+| `WorkflowEditorView` | `…/workflow` | `WorkflowData.commands` (Processes) | no |
+| `ResponsesEditorView` | `…/responses` | `WorkflowData.interceptorCommands` (Responses) | yes |
+
+Both reuse `PreconditionActionEditor` / `PreconditionActionFormatter` from
+`view/command/`.
+
+### System-messages editor: `SystemMessagesView`
+
+`view/systemmessage/SystemMessagesView` (`…/system-messages`,
+`AdventuresMainLayout`) renders the fixed `SystemMessageKey` catalog as a
+grid (Key / Current Text) synthesized from the enum plus this adventure's
+sparse `SystemMessageData` overrides. Double-click opens an edit `Dialog`
+(`ModalityMode.STRICT`) showing the English original, the translator
+description + source location, and an editable text area. Save validates
+placeholder parity via `PlaceholderSpec` and writes an override row on first
+edit only. No create / delete / rename. `SystemMessageEntry` is the
+grid/dialog read-model record.
 
 ### Action editor factory
 
@@ -409,7 +447,8 @@ swapping the brand image per layout and using `LumoUtility` classes.
 - `src/main/java/com/pdg/adventure/view/author/AuthorDashboardView.java`
 - `src/main/java/com/pdg/adventure/view/player/PlayerLibraryView.java`
 - `src/main/java/com/pdg/adventure/view/adventure/{AdventuresMainLayout,AdventuresMenuView,AdventureEditorView,AdventureRunView}.java`
-- `src/main/java/com/pdg/adventure/view/workflow/{WorkflowMainLayout,WorkflowEditorView}.java`
+- `src/main/java/com/pdg/adventure/view/workflow/{WorkflowMainLayout,CommandListEditorView,WorkflowEditorView,ResponsesEditorView}.java`
+- `src/main/java/com/pdg/adventure/view/systemmessage/{SystemMessagesView,SystemMessageEntry}.java`
 - `src/main/java/com/pdg/adventure/view/location/{LocationsMainLayout,LocationsMenuView,LocationEditorView,LocationMapView,LocationViewModel,LocationDescriptionAdapter,LocationProvider,LocationUsageTracker}.java`
 - `src/main/java/com/pdg/adventure/view/item/*.java`
 - `src/main/java/com/pdg/adventure/view/direction/*.java`

@@ -20,7 +20,7 @@ Both **Create Word** and **Edit Word** open the same dialog:
 | Field | Notes |
 |-------|-------|
 | **Word** | The text itself. |
-| **Type** | A radio choice: Noun, Adjective, or Verb (and related engine types). |
+| **Type** | A radio choice: **Noun**, **Adjective**, or **Verb**. (The engine has two more types — *Conjunction* for `and`/`then`, and *Pronoun* for `it` — but it seeds those itself; they're deliberately left out of this picker, so you never create them.) |
 | **Synonyms** | Optionally point this word at another as its canonical form. The dialog's own hint: *"A synonym has precedence over a type."* — pick a synonym and the word inherits that word's type. |
 
 ### The synonym cascade

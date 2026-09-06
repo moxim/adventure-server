@@ -24,6 +24,7 @@ order, when that command fires.
 | **Describe** | Prints the description of an item or location | The target |
 | **Inventory** | Lists everything the player carries | Nothing — fully automatic |
 | **Quit** | Ends the game session | Nothing — pair it with a **Message** action for a farewell line |
+| **Break** | Stops the rest of this action list — and the rest of the command chain — immediately | Nothing — pair it with a **Message** action if you want it to say something as it stops |
 | **Increment Variable** | Adds an amount to a named variable | Variable name; amount |
 | **Decrement Variable** | Subtracts an amount from a named variable | Variable name; amount |
 | **Set Variable** | Sets a named variable to an exact value | Variable name; value |

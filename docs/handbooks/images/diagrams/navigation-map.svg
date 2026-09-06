@@ -27,7 +27,7 @@
   <text x="598" y="230" font-size="13" fill="#445063">Manage Items</text>
   <text x="598" y="360" font-size="13" fill="#445063">Manage Vocabulary</text>
   <text x="465" y="425" font-size="13" fill="#445063">Manage Messages</text>
-  <text x="120" y="360" font-size="13" fill="#445063">Manage Workflow</text>
+  <text x="112" y="360" font-size="13" fill="#445063">Manage Processes / Responses</text>
   <text x="112" y="230" font-size="13" fill="#6b7686">Test *</text>
 
   <!-- center hub -->
@@ -60,8 +60,8 @@
 
   <g>
     <rect x="62" y="375" width="170" height="70" rx="8" fill="#3d6b8c"/>
-    <text x="147" y="405" text-anchor="middle" font-size="14" fill="#ffffff">Workflow</text>
-    <text x="147" y="423" text-anchor="middle" font-size="14" fill="#ffffff">(global commands)</text>
+    <text x="147" y="405" text-anchor="middle" font-size="14" fill="#ffffff">Processes &amp;</text>
+    <text x="147" y="423" text-anchor="middle" font-size="14" fill="#ffffff">Responses</text>
   </g>
 
   <g>
