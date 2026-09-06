@@ -58,18 +58,6 @@ public class Adventure implements Ided {
         variableProvider = new VariableProvider();
     }
 
-    public void run() {
-        IO.println("Current location: " + currentLocationId);
-        IO.println("Pocket: " + pocket);
-        IO.println("All locations: " + locationMap);
-
-/*
-        GameLoop gameLoop = new GameLoop(new Parser(allWords));
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        gameLoop.run(reader);
-*/
-    }
-
     public void setLocations(List<Location> aLocationList) {
         for (Location location : aLocationList) {
             locationMap.put(location.getId(), location);

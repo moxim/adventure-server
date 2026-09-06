@@ -25,7 +25,7 @@ A single player turn flows through the engine like this:
 input string ("take sword and kill ogre.  drop it.")
    │
    ▼
-GameContext.preProcessCommands()      ← Workflow pre-commands (Processes + the "What now?" prompt)
+GameContext.preProcessCommands()      ← Workflow pre-commands (Processes + the "What now?" (SM2) prompt)
    │                                     run BEFORE input is consulted
    ▼
 Parser.handle(line) → CommandSequence

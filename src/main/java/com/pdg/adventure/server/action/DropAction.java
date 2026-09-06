@@ -24,7 +24,7 @@ public class DropAction extends AbstractAction {
     public ExecutionResult execute() {
         item.setIsWorn(false);
         ExecutionResult result =  new MoveItemAction(item, containerProvider.get(), messagesHolder).execute();
-        result.setResultMessage(SystemMessageKey.SM39.defaultText() + item.getStrippedBasicDescription() + ".");
+        result.setResultMessage(SystemMessageKey.SM39.defaultText().formatted(item.getStrippedBasicDescription()));
         return result;
     }
 }

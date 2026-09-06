@@ -1,7 +1,5 @@
 package com.pdg.adventure.server;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
@@ -10,12 +8,9 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.util.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.pdg.adventure.model.*;
 import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.engine.GameContext;
-import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.testhelper.TestSupporter;
@@ -37,37 +32,6 @@ class AdventureBuilderTest {
     MapperSupporter mapperSupporter;
 
     VocabularyData vocabularyData = new VocabularyData();
-
-    @Test
-    @Disabled
-    void buildAdventure() {
-        String adventureId = "Adventure1";
-        final AdventureData adventureData = createAdventureData(adventureId);
-        Adventure adventure = adventureMapper.mapToBO(adventureData);
-
-        mapperSupporter.getVocabulary().createNewWord("noun_Location3", Word.Type.NOUN);
-
-        assertThat(adventure.getId()).isEqualTo(adventureId);
-        List<Location> locations = adventure.getLocations();
-        assertThat(locations).hasSize(3);
-        boolean found = false;
-        for (Location location : locations) {
-            if (location.getId().equals(adventure.getCurrentLocationId())) {
-                found = true;
-                break;
-            }
-        }
-        assertThat(found).isTrue();
-        assertThat(adventure.getPocket().getId()).isEqualTo(adventureData.getPlayerPocket().getId());
-
-        AdventureData andBack = adventureMapper.mapToDO(adventure);
-        assertThat(andBack.getId()).isEqualTo(adventureId);
-        assertThat(andBack.getLocationData()).size().isEqualTo(3);
-        assertThat(andBack.getCurrentLocationId()).isEqualTo(adventure.getCurrentLocationId());
-        assertThat(andBack.getPlayerPocket().getId()).isEqualTo(adventure.getPocket().getId());
-
-        adventure.run();
-    }
 
     private AdventureData createAdventureData(String adventureId) {
         AdventureData adventureData = new AdventureData(vocabularyData);
