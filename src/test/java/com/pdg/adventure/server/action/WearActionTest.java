@@ -33,7 +33,7 @@ class WearActionTest {
     void execute_alreadyWorn_returnsFailureWithMessage() {
         when(thing.isWearable()).thenReturn(true);
         when(thing.isWorn()).thenReturn(true);
-        when(messagesHolder.getMessage("-6")).thenReturn("You already wear %s.");
+//        when(messagesHolder.getMessage("-6")).thenReturn(SystemMessageKey.SM40.defaultText());
         when(thing.getEnrichedBasicDescription()).thenReturn("the helmet");
 
         ExecutionResult result = new WearAction(thing, messagesHolder).execute();
@@ -46,7 +46,7 @@ class WearActionTest {
     @Test
     void execute_notWearable_returnsFailureWithMessage() {
         when(thing.isWearable()).thenReturn(false);
-        when(messagesHolder.getMessage("-6")).thenReturn("You cannot wear %s.");
+//        when(messagesHolder.getMessage("-6")).thenReturn(SystemMessageKey.SM40.defaultText());
         when(thing.getEnrichedBasicDescription()).thenReturn("the sword");
 
         ExecutionResult result = new WearAction(thing, messagesHolder).execute();

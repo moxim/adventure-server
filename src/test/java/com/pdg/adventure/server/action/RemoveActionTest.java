@@ -31,7 +31,6 @@ class RemoveActionTest {
     @Test
     void execute_itemNotWorn_returnsFailureWithMessage() {
         when(thing.isWorn()).thenReturn(false);
-        when(messagesHolder.getMessage("-7")).thenReturn("You are not wearing %s.");
         when(thing.getEnrichedBasicDescription()).thenReturn("the robe");
 
         ExecutionResult result = new RemoveAction(thing, messagesHolder).execute();

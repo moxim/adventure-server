@@ -34,14 +34,13 @@ class MoveItemActionTest {
     @Test
     void execute_movesItemBetweenContainers() {
         // Given
-        when(messagesHolder.getMessage("-9")).thenReturn("You move %s to %s.");
         moveItemAction = new MoveItemAction(item, destinationContainer, messagesHolder);
 
         when(item.getParentContainer()).thenReturn(sourceContainer);
-        when(item.getEnrichedShortDescription()).thenReturn("a golden key");
+        when(item.getStrippedBasicDescription()).thenReturn("golden key");
         when(destinationContainer.getSize()).thenReturn(5);
         when(destinationContainer.getMaxSize()).thenReturn(10);
-        when(destinationContainer.getEnrichedBasicDescription()).thenReturn("your pocket");
+        when(destinationContainer.getStrippedBasicDescription()).thenReturn("pocket");
 
         ExecutionResult successResult = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
         when(sourceContainer.remove(item)).thenReturn(successResult);
@@ -61,12 +60,11 @@ class MoveItemActionTest {
     @Test
     void execute_returnsFailureWhenContainerFull() {
         // Given
-        when(messagesHolder.getMessage("-8")).thenReturn("%s is full.");
         moveItemAction = new MoveItemAction(item, destinationContainer, messagesHolder);
 
         when(destinationContainer.getSize()).thenReturn(10);
         when(destinationContainer.getMaxSize()).thenReturn(10);
-        when(destinationContainer.getShortDescription()).thenReturn("the chest");
+        when(destinationContainer.getStrippedBasicDescription()).thenReturn("chest");
 
         // When
         ExecutionResult result = moveItemAction.execute();
@@ -82,14 +80,13 @@ class MoveItemActionTest {
     @Test
     void execute_handlesNullParentContainerGracefully() {
         // Given
-        when(messagesHolder.getMessage("-9")).thenReturn("You move %s to %s.");
         moveItemAction = new MoveItemAction(item, destinationContainer, messagesHolder);
 
         when(item.getParentContainer()).thenReturn(null);
-        when(item.getEnrichedShortDescription()).thenReturn("a magic wand");
+        when(item.getStrippedBasicDescription()).thenReturn("magic wand");
         when(destinationContainer.getSize()).thenReturn(3);
         when(destinationContainer.getMaxSize()).thenReturn(10);
-        when(destinationContainer.getEnrichedBasicDescription()).thenReturn("your backpack");
+        when(destinationContainer.getStrippedBasicDescription()).thenReturn("backpack");
 
         ExecutionResult successResult = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
         when(destinationContainer.add(item)).thenReturn(successResult);

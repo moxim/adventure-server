@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SystemMessageKeyTest {
 
     @Test
-    void catalogHasThirtySixEntries() {
-        assertThat(SystemMessageKey.values()).hasSize(88);
+    void catalogHasSixtyFiveEntries() {
+        assertThat(SystemMessageKey.values()).hasSize(65);
     }
 
     @Test
@@ -24,7 +24,7 @@ class SystemMessageKeyTest {
 
     @Test
     void fromId_findsExistingKey() {
-        assertThat(SystemMessageKey.fromId("-6")).contains(SystemMessageKey.CANNOT_WEAR);
+        assertThat(SystemMessageKey.fromId("40")).contains(SystemMessageKey.SM40);
     }
 
     @Test

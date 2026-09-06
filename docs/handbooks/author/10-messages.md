@@ -25,15 +25,30 @@ how many places still use it, so clean those up first.
 | **Preview** | A live preview of the text as you type it. |
 | **Usage** | Lists every place this message is referenced, under a *"Used in N location(s):"* heading — or, if nothing references it yet, *"This message is not currently used anywhere in the adventure."* A quick way to spot dead messages before you clean them up. (On a brand-new, unsaved message, this just says usage info will be available after saving.) |
 
-## Messages you don't have to create
+## Editing the built-in system messages
 
-Adventure Builder ships a handful of built-in fallback messages for common
-situations — trying to wear something that can't be worn, remove something
-you're not wearing, and similar — so those situations have sensible default
-text even in an adventure where you haven't written anything for them
-yourself. These built-ins don't appear in the Messages list above and
-aren't editable there; they're just a safety net so a fresh adventure never
-shows a blank response to a reasonable action.
+Separately from the messages *you* write, Adventure Builder's engine has its
+own fixed set of built-in lines — *"I can't do that."*, *"OK."*, *"I already
+have the %s."*, *"What now?"*, and dozens more — that it uses for common
+situations so a fresh adventure never shows a blank response to a reasonable
+action.
+
+You can't add or remove these, but you **can reword or translate them**, per
+adventure, from the Adventure Editor's **Manage System Messages** button.
+That opens a screen headed *"System Messages for {your title}"* — a grid of
+every built-in message with its **Key** and **Current Text**. Double-click a
+row to edit it. The dialog shows:
+
+- the **original English** text,
+- a short note on what the message is for and where the engine uses it,
+- an editable **Text** box.
+
+| Rule | Why |
+|------|-----|
+| You can only **edit** — no create, delete, or rename. | The catalog is fixed; the engine looks these up by key. |
+| Your edits are **per adventure**. | Two adventures can run in different languages without their wording leaking between them. |
+| The new text must keep the **same placeholders** (`%s` and the like) as the original. | The engine fills those in at runtime (e.g. the item's name); dropping one would break the message. Save is refused with an error if they don't match. |
+| An unedited message has no stored row at all. | It just reads as the default until the first time you change it — so leaving most of them alone costs nothing.|
 
 ## What's next
 

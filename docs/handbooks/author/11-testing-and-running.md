@@ -61,6 +61,22 @@ containable/wearable, and any custom verbs only work where you've built
 [commands](08-commands-actions-and-conditions.md) or
 [exits](05-locations-and-exits.md#exits) for them.
 
+### Chaining commands, and "it"
+
+You can string several commands into one line with **`and`**, **`then`**, or
+a full stop:
+
+```
+take lamp and light it. go north
+```
+
+Each piece runs in order. If one of them fails or isn't understood, the rest
+of the line is abandoned. A piece with no verb of its own borrows the verb
+from the piece before it (`take lamp and sword`), and **`it`** refers to the
+last thing you mentioned (`examine key. take it`). These work in every play
+session regardless of your vocabulary setup — `and`, `then` and `it` are
+always understood.
+
 > **Note:** `save` and `load` are **not** available inside a test/run
 > session. A session here is scoped to one adventure, played start to
 > finish in one sitting — it's meant for trying things out and giving

@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.action;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.util.function.Supplier;
@@ -9,6 +10,7 @@ import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class MovePlayerAction extends AbstractAction {
     @Getter
     private final Location destination;

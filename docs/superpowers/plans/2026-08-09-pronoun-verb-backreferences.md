@@ -460,7 +460,7 @@ This mirrors the real bug report that validated the design: a bare `"wear"` (no 
         GameLoop.CommandOutcome secondOutcome = gameLoop.processCommand("wear it");
 
         assertThat(firstOutcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
-        assertThat(told.toString()).contains("I don't know how to do that.");
+        assertThat(told.toString()).contains(SystemMessagesKey.SM8.defaultText());
         assertThat(secondOutcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
         assertThat(told.toString()).contains("You put on the suit.");
     }

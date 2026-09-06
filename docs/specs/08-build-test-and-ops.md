@@ -155,7 +155,6 @@ Layout is mirrored from `src/main/java`:
 
 ```
 src/test/java/com/pdg/adventure/
-├── MiniAdventureTest.java           ← end-to-end (full Spring context)
 ├── model/                           ← DO unit tests
 │   ├── basic/
 │   │   └── CommandDescriptionDataTest.java
@@ -169,17 +168,21 @@ src/test/java/com/pdg/adventure/
 │   ├── engine/                       ← GameLoopTest, AdventureRunSession(Factory)Test, WearMachineScenarioTest
 │   ├── location/
 │   ├── mapper/                       ← + mapper/action, mapper/condition
-│   ├── parser/
+│   ├── parser/                       ← incl. compound-command / pronoun / verb-inference tests
 │   ├── storage/
+│   │   └── message/                  ← SystemMessageKeyTest
 │   ├── support/
 │   ├── tangible/
 │   ├── vocabulary/
-│   ├── testhelper/                   ← TestSupporter
-│   └── AdventureBuilderTest, ApplicationTest
+│   ├── testhelper/                   ← TestSupporter, MongoTestConfiguration
+│   └── AdventureBuilderTest, ApplicationTest   ← end-to-end / full-context smoke
 └── view/                              ← browserless Vaadin tests
     ├── admin/, adventure/, command/, component/, direction/, error/,
-    │   item/, location/, message/, player/, support/, vocabulary/, workflow/
+    │   item/, location/, message/, player/, support/, systemmessage/,
+    │   vocabulary/, workflow/
 ```
+
+(The former `MiniAdventureTest.java` went away with the CLI runner.)
 
 Test resources live in `src/test/resources/`:
 
@@ -298,7 +301,7 @@ re-deriving it.
 
 ### Integration tests
 
-There are no `*IT.java` files today. Three "integration"-style tests run
+There are no `*IT.java` files today. Two "integration"-style tests run
 inside the regular Surefire pass with full Spring context:
 
 - `AdventureBuilderTest` — exercises the builder flows.

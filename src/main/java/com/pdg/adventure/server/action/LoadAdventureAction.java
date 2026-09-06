@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.action;
 
+import lombok.EqualsAndHashCode;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,14 +16,14 @@ import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.server.Adventure;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.engine.GameContext;
-import com.pdg.adventure.server.tangible.Thing;
 import com.pdg.adventure.server.exception.ReloadAdventureException;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.tangible.Thing;
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class LoadAdventureAction extends AbstractAction {
 
     private static final Logger LOG = LoggerFactory.getLogger(LoadAdventureAction.class);
@@ -72,7 +73,6 @@ public class LoadAdventureAction extends AbstractAction {
         }
 
         adventureConfig.allMessages().clear();
-        registerEngineMessages(adventureConfig.allMessages());
         for (MessageData messageData : adventureData.getMessages().values()) {
             adventureConfig.allMessages().addMessage(messageData.getMessageId(), messageData.getText());
         }
@@ -117,22 +117,6 @@ public class LoadAdventureAction extends AbstractAction {
         gameContext.setWorkflowData(adventureData.getWorkflowData());
 
         throw new ReloadAdventureException("Adventure reloaded, restarting game...");
-    }
-
-    // Generic, adventure-independent outcome messages that Action classes look up by fixed id
-    // (WearAction "-6", RemoveAction "-7", MoveItemAction "-8"/"-9", InventoryAction "-10",
-    // DestroyAction "-11", CreateAction "-12") - authors never define these themselves, so they
-    // must be re-seeded every time allMessages is cleared, regardless of which adventure is
-    // loaded. Mirrors the subset of MiniAdventureContent.setUpMessages() that isn't specific to
-    // the console's built-in demo adventure.
-    private void registerEngineMessages(MessagesHolder aMessagesHolder) {
-        aMessagesHolder.addMessage("-6", "You can't wear %s.");
-        aMessagesHolder.addMessage("-7", "You can't remove %s.");
-        aMessagesHolder.addMessage("-8", "The %s is full.");
-        aMessagesHolder.addMessage("-9", "You put %s into %s.");
-        aMessagesHolder.addMessage("-10", "You carry:");
-        aMessagesHolder.addMessage("-11", "The %s evaporates into thin air.");
-        aMessagesHolder.addMessage("-12", "A %s appears in the %s.");
     }
 
     private void listAdventures() {

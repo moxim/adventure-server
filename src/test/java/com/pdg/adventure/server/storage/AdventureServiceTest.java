@@ -15,6 +15,7 @@ import static org.mockito.Mockito.*;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.SystemMessageData;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.storage.mongo.CascadeDeleteHelper;
 import com.pdg.adventure.server.storage.repository.AdventureRepository;
 import com.pdg.adventure.server.storage.repository.LocationRepository;
@@ -121,7 +122,7 @@ class AdventureServiceTest {
     void findAdventureById_systemMessagesResolveNormally_leftUntouched() {
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
-        adventure.getSystemMessages().put("-6", new SystemMessageData("adv-1", "-6", "You can't wear %s."));
+        adventure.getSystemMessages().put("-6", new SystemMessageData("adv-1", "-6", SystemMessageKey.SM40.defaultText()));
         when(adventureRepository.findById("adv-1")).thenReturn(Optional.of(adventure));
 
         Optional<AdventureData> result = adventureService.findAdventureById("adv-1");

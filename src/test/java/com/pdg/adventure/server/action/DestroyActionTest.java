@@ -25,8 +25,7 @@ class DestroyActionTest {
     void execute_onSuccess_setsResultMessageAndReturnsSuccess() {
         when(thing.getParentContainer()).thenReturn(parentContainer);
         when(parentContainer.remove(thing)).thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS));
-        when(messagesHolder.getMessage("-11")).thenReturn("You destroyed %s.");
-        when(thing.getShortDescription()).thenReturn("the crystal ball");
+        when(thing.getStrippedBasicDescription()).thenReturn("the crystal ball");
 
         ExecutionResult result = new DestroyAction(thing, messagesHolder).execute();
 

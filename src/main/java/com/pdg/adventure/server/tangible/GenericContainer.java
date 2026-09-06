@@ -127,8 +127,6 @@ public class GenericContainer extends Item implements Container {
     public ExecutionResult remove(Containable anItem) {
         ExecutionResult result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
         if (!contents.remove(anItem)) {
-            result.setResultMessage("There is no %s in %s.".formatted(anItem.getShortDescription(),
-                    getEnrichedBasicDescription()));
             result.setExecutionState(ExecutionResult.State.FAILURE);
         }
         return result;
@@ -138,7 +136,6 @@ public class GenericContainer extends Item implements Container {
     public List<CommandChain> getMatchingCommandChain(CommandDescription aCommandDescription) {
         List<CommandChain> result = new ArrayList<>();
         final List<Containable> items = ItemIdentifier.findItems(this, aCommandDescription);
-//        result.addAll(CommandMatcher.getMatchingCommands(getContents(), aCommandDescription));
         result.addAll(CommandMatcher.getMatchingCommands(items, aCommandDescription));
         // the following is needed for any commands that do not apply to items nor directions,
         // but may have been assigned to the location - oh really? this is not a location, but a container.

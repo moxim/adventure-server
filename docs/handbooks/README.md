@@ -32,13 +32,13 @@ itself is one you'll share with players.
 | 1 | [Welcome & the big picture](author/01-welcome.md) | What Adventure Builder is, the three roles, and the vocabulary you'll see throughout the app |
 | 2 | [Signing in](author/02-signing-in.md) | The login screen, what happens after you sign in, and signing out |
 | 3 | [Your Adventures](author/03-your-adventures.md) | The adventure list: creating, opening, deleting, and running your adventures |
-| 4 | [The Adventure Editor](author/04-the-adventure-editor.md) | Your adventure's mission control — title, notes, and the five "Manage" hubs |
+| 4 | [The Adventure Editor](author/04-the-adventure-editor.md) | Your adventure's mission control — title, notes, and the "Manage" hubs into every sub-editor |
 | 5 | [Locations & Exits](author/05-locations-and-exits.md) | Building the rooms of your world and the exits that connect them |
 | 6 | [Items](author/06-items.md) | Things players can see, carry, and wear |
 | 7 | [Vocabulary & Words](author/07-vocabulary-and-words.md) | Teaching your adventure the words it understands |
 | 8 | [Commands, Actions & Conditions](author/08-commands-actions-and-conditions.md) | The heart of gameplay: what happens when a player types something |
-| 9 | [Workflow: commands that run everywhere](author/09-workflow.md) | Global rules that apply no matter where the player is |
-| 10 | [Messages](author/10-messages.md) | Reusable text snippets your commands can print |
+| 9 | [Workflow: Processes & Responses](author/09-workflow.md) | Global rules that apply no matter where the player is — every-turn Processes and command-intercepting Responses |
+| 10 | [Messages](author/10-messages.md) | Reusable text snippets your commands can print, plus editing the built-in engine messages |
 | 11 | [Testing & Running your adventure](author/11-testing-and-running.md) | Playing your adventure from inside the editor, or from your adventure list |
 | 12 | [Tips, gotchas & current limits](author/12-tips-and-current-limits.md) | Honest notes on what's still rough around the edges |
 | A | [Appendix: Action & Condition reference](author/appendix-a-action-and-condition-reference.md) | Every Action and PreCondition type, in one table |

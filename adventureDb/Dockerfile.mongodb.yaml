@@ -1,6 +1,6 @@
 services:
   mongo:
-    image: mongo:8.3.7
+    image: mongo
     container_name: mongodb
     restart: always
     environment:

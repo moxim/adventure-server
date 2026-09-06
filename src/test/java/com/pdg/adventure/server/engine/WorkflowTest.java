@@ -14,6 +14,7 @@ import com.pdg.adventure.api.Command;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 
 class WorkflowTest {
 
@@ -38,20 +39,20 @@ class WorkflowTest {
         assertThat(told).containsExactly("Apple message.", "Middle message.", "Zoo message.");
     }
 
-    // CommandFactory.setUpWorkflowCommands registers a sentinel preCommand keyed ("}", "}", "}")
-    // whose action prints the turn prompt ("What now? > ") - it must keep coming after every
+    // CommandFactory.setUpWorkflowCommands registers a sentinel preCommand keyed ("~", "~", "~")
+    // whose action prints the turn prompt ("What now? > "; SM2) - it must keep coming after every
     // author-authored ambient message each turn, the way the old TreeMap iteration (sorted by the
-    // "verb|adjective|noun" description string, where '|' and '}' both sort above lowercase
+    // "verb|adjective|noun" description string, where '|' and '~' both sort above lowercase
     // letters) already guaranteed. String.CASE_INSENSITIVE_ORDER must preserve that.
     @Test
     void preProcess_stillOrdersTheTurnPromptSentinelLast() {
         addPreCommand(new GenericCommandDescription("zebra"), "Zebra message.");
         addPreCommand(new GenericCommandDescription("apple"), "Apple message.");
-        addPreCommand(new GenericCommandDescription("}", "}", "}"), "What now? > ");
+        addPreCommand(new GenericCommandDescription("~", "~", "~"), SystemMessageKey.SM2.defaultText());
 
         workflow.preProcess();
 
-        assertThat(told).containsExactly("Apple message.", "Zebra message.", "What now? > ");
+        assertThat(told).containsExactly("Apple message.", "Zebra message.", SystemMessageKey.SM2.defaultText());
     }
 
     @Test

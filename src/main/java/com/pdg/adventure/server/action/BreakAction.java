@@ -1,9 +1,12 @@
 package com.pdg.adventure.server.action;
 
+import lombok.EqualsAndHashCode;
+
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class BreakAction extends AbstractAction {
 
     public BreakAction(MessagesHolder aMessagesHolder) {

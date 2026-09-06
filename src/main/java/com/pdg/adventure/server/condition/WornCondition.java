@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.api.Wearable;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class WornCondition extends AbstractCondition {
@@ -23,7 +24,7 @@ public class WornCondition extends AbstractCondition {
         if (thing.isWorn()) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         } else {
-            result.setResultMessage("You are not wearing %s.".formatted(thing.getEnrichedBasicDescription()));
+            result.setResultMessage(SystemMessageKey.SM50.defaultText().formatted(thing.getEnrichedBasicDescription()));
         }
         return result;
     }

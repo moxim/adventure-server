@@ -6,6 +6,7 @@ import lombok.Getter;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.tangible.Item;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
@@ -25,7 +26,7 @@ public class HereCondition extends AbstractCondition {
         if (gameContext.getCurrentLocation().contains(thing)) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         } else {
-            result.setResultMessage("There is no %s here.".formatted(thing.getNoun()));
+            result.setResultMessage(SystemMessageKey.SM26.defaultText().formatted(thing.getNoun()));
         }
         return result;
     }

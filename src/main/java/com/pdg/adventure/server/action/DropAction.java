@@ -1,10 +1,14 @@
 package com.pdg.adventure.server.action;
 
+import lombok.EqualsAndHashCode;
+
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.ContainerSupplier;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.tangible.Item;
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class DropAction extends AbstractAction {
 
     private final Item item;
@@ -20,7 +24,7 @@ public class DropAction extends AbstractAction {
     public ExecutionResult execute() {
         item.setIsWorn(false);
         ExecutionResult result =  new MoveItemAction(item, containerProvider.get(), messagesHolder).execute();
-        result.setResultMessage("You drop " + item.getEnrichedBasicDescription() + ".");
+        result.setResultMessage(SystemMessageKey.SM39.defaultText().formatted(item.getStrippedBasicDescription()));
         return result;
     }
 }

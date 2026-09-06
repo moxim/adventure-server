@@ -43,7 +43,8 @@ of `AdventureData` in MongoDB and also stored as a string column in
 | `items` | `ItemData` | Items, scoped per `(adventureId, locationId)` via compound index. |
 | `vocabularies` | `VocabularyData` | One per adventure. References `Word` documents and the special-word slots. |
 | `words` | `Word` | Vocabulary entries. Synonyms link via `@DBRef`. |
-| `messages` | `MessageData` | Reusable text. Compound unique index on `(adventureId, messageId)`. |
+| `messages` | `MessageData` | Author-authored reusable text. Compound unique index on `(adventureId, messageId)`. |
+| `systemMessages` | `SystemMessageData` | Sparse per-adventure overrides of `SystemMessageKey` catalog entries. Compound unique index on `(adventureId, key)`. |
 
 ### Index conventions
 
@@ -51,9 +52,10 @@ of `AdventureData` in MongoDB and also stored as a string column in
 |-------|------------|---------------|
 | `adventure_location_item_idx` (`ItemData`) | `{adventureId: 1, locationId: 1}` | `ItemData.@CompoundIndex` |
 | `adventure_message_idx` (`MessageData`) | `{adventureId: 1, messageId: 1}` UNIQUE | `MessageData.@CompoundIndex` |
+| `adventure_system_message_idx` (`SystemMessageData`) | `{adventureId: 1, key: 1}` UNIQUE | `SystemMessageData.@CompoundIndex` |
 
 Add additional indexes as queries demand; today the codebase relies on `@Id`
-lookups and these two compounds.
+lookups and these three compounds.
 
 ### Auditing
 
@@ -84,6 +86,7 @@ before saving the parent. This emulates `cascade=PERSIST` from JPA on top of
 | `AdventureData.locationData` (`@DBRef(lazy=false)`) — Map | Saves every location. |
 | `AdventureData.vocabularyData` (`@DBRef(lazy=false), transient`) | Saves the vocabulary. |
 | `AdventureData.messages` (`@DBRef(lazy=true)`) — Map | Saves every message document. |
+| `AdventureData.systemMessages` (`@DBRef(lazy=true)`) — Map | Saves every system-message override document. |
 | `LocationData.itemContainerData` (`@DBRef(lazy=false)`) | Saves the location's container. |
 | `ItemContainerData.items` (`@DBRef(lazy=false)`) — List | Saves every contained item. |
 | `VocabularyData.words` (`@DBRef(lazy=false)`) — Map | Saves every word. |
@@ -105,7 +108,8 @@ delete adventures/<id>
   ├── delete containers/<pocketId>          (and nested items)
   ├── delete locations/<each>                (and each location's container & items)
   ├── delete vocabularies/<id>               (and every word in it)
-  └── delete messages/<each>
+  ├── delete messages/<each>
+  └── delete systemMessages/<each>
 ```
 
 ### Word lifecycle
@@ -334,20 +338,22 @@ registration is performed by **one** `BeanPostProcessor`:
 | `ItemMapper` | `ItemData` ↔ `Item` | |
 | `ItemContainerMapper` | `ItemContainerData` ↔ `GenericContainer` | |
 | `ThingMapper` | `ThingData` ↔ `Thing` | Description + command provider. |
-| `CommandMapper` | `CommandData` ↔ `Command` | Stub today (see Known gaps). |
+| `CommandMapper` | `CommandData` ↔ `Command` | `mapToBO` maps description + actions + preconditions (used by play and by `WorkflowMapper`); `mapToDO` still maps actions only — TODO in source (see Known gaps). |
 | `CommandChainMapper` | `CommandChainData` ↔ `CommandChain` | |
 | `CommandProviderMapper` | `CommandProviderData` ↔ `GenericCommandProvider` | |
 | `CommandDescriptionMapper` | `CommandDescriptionData` ↔ `GenericCommandDescription` | |
 | `DescriptionMapper` | `DescriptionData` ↔ runtime description |  |
+| `WorkflowMapper` | `WorkflowData` → `Workflow` (populate-only) | **Not** a `Mapper<DO,BO>` — `Workflow` needs its owning `GameContext`. `populate(WorkflowData, Workflow)` layers the author's `commands` (Processes) as pre-commands and `interceptorCommands` (Responses) as interceptor commands onto an already-built runtime `Workflow`. |
 
 Plus `server/mapper/action/` and `server/mapper/condition/` with one mapper
-per concrete `*ActionData` / `*ConditionData`.
+per concrete `*ActionData` / `*ConditionData` (incl. `BreakActionMapper`).
 
 ### When mapping happens
 
 - **Boot / play.** `AdventureMapper.mapToBO` is the entry point.
-  `MiniAdventure.setup` calls
-  `adventureMapper.mapToBO(adventureService.findAdventureById(id).get())`.
+  `AdventureRunSessionFactory` (via `LoadAdventureAction`) calls
+  `adventureMapper.mapToBO(adventureService.findAdventureById(id).get())`
+  when starting a Test/Run session.
 - **Save in editor views.** The Vaadin views work mostly in DO-space (binding
   to `*Data` or `*ViewModel`); mapping to BO is reserved for runtime play.
 
@@ -376,7 +382,7 @@ AdventureAccessService.createAdventure(data, currentUser)            ← @Transa
 AdventureService.saveAdventureData(data)
    ↓ (Mongo lifecycle)
    • UuidIdGenerationMongoEventListener fills missing ids
-   • CascadeSaveMongoEventListener saves children: pocket, locations, vocabulary, messages
+   • CascadeSaveMongoEventListener saves children: pocket, locations, vocabulary, messages, systemMessages
    ↓
 AdventureRepository.save(data)
    ↓
@@ -417,7 +423,11 @@ AdventureAccessService deletes AdventureAuthor + AdventurePlayer rows
   `AutoRegisterMapper`, `AutoMapperRegistrationProcessor`.
 - `src/main/java/com/pdg/adventure/server/support/MapperSupporter.java`.
 - `src/main/java/com/pdg/adventure/server/mapper/` (and the `action/`,
-  `condition/` sub-folders).
+  `condition/` sub-folders); note `WorkflowMapper` is a populate-only helper,
+  not a `Mapper<DO,BO>`.
+- `src/main/java/com/pdg/adventure/model/SystemMessageData.java`,
+  `src/main/java/com/pdg/adventure/server/storage/message/SystemMessageKey.java`
+  — the sparse per-adventure engine-text override store.
 - `src/main/java/com/pdg/adventure/api/Mapper.java`.
 
 ## Known gaps
@@ -425,9 +435,9 @@ AdventureAccessService deletes AdventureAuthor + AdventurePlayer rows
 - **`VocabularyReporitory` is misspelled.** The class name and import path
   carry a typo. A rebuild SHOULD fix it (and there are several call-sites to
   update in `AdventureService` etc.).
-- **`CommandMapper` is incomplete.** Persisting and rehydrating commands
-  end-to-end is currently partial; rebuild MUST finish DO ↔ BO conversion of
-  command-description, preconditions, action, and follow-up actions.
+- **`CommandMapper.mapToDO` is incomplete.** `mapToBO` now maps
+  description + actions + preconditions; the reverse (`mapToDO`) still maps
+  actions only (TODO in source). A rebuild MUST finish the DO direction.
 - **`LocationMapper` destination resolution.** Following a direction by id at
   mapping time depends on a shared `MapperSupporter.mappedLocations` cache;
   the intermediate code path is partial (see TODO in `LocationMapper`).
@@ -448,5 +458,6 @@ AdventureAccessService deletes AdventureAuthor + AdventurePlayer rows
   `postProcess` have their bodies commented out. They are placeholders for
   vocabulary normalisation that needs re-implementing once `CommandMapper`
   is finished.
-- **Stray `MongoTestConfiguration`** in `test/.../server/storage/` mocks
-  `MongoTemplate` for some tests; it is not used by the production path.
+- **Stray `MongoTestConfiguration`** in
+  `test/.../server/testhelper/` mocks `MongoTemplate` for some tests; it is
+  not used by the production path.

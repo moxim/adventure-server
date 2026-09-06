@@ -24,12 +24,9 @@ class DropActionTest {
 
     @Test
     void execute_delegatesToMoveItemAction_movingItemToLocation() {
-        when(messagesHolder.getMessage("-9")).thenReturn("You drop %s.");
         when(item.getParentContainer()).thenReturn(mock(Container.class));
-        when(item.getEnrichedShortDescription()).thenReturn("the torch");
         when(locationContainer.getSize()).thenReturn(0);
         when(locationContainer.getMaxSize()).thenReturn(9999);
-        when(locationContainer.getEnrichedBasicDescription()).thenReturn("the cave");
         when(item.getParentContainer().remove(item)).thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS));
         when(locationContainer.add(item)).thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS));
 

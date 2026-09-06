@@ -203,7 +203,7 @@ class ItemEditorViewTest {
         CommandChainData dropChain = commands.values().stream()
                 .filter(chain -> chain.getCommands().getFirst().getCommandDescription().getVerb().getText().equals("drop"))
                 .findFirst().orElseThrow();
-        assertThat(takeChain.getCommands()).hasSize(3);
+        assertThat(takeChain.getCommands()).hasSize(2);
         assertThat(dropChain.getCommands()).hasSize(2);
     }
 

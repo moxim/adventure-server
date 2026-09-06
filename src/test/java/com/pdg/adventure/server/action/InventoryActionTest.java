@@ -16,6 +16,7 @@ import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.ContainerSupplier;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 
 @ExtendWith(MockitoExtension.class)
 class InventoryActionTest {
@@ -25,7 +26,6 @@ class InventoryActionTest {
 
     @Test
     void execute_sendsInventoryHeaderAndContentsToConsumer() {
-        when(messagesHolder.getMessage("-10")).thenReturn("You are carrying:");
         when(pocket.listContents()).thenReturn("- a torch\n- a key");
 
         List<String> captured = new ArrayList<>();
@@ -33,12 +33,11 @@ class InventoryActionTest {
 
         new InventoryAction(consumer, new ContainerSupplier(pocket), messagesHolder).execute();
 
-        assertThat(captured).containsExactly("You are carrying:", "- a torch\n- a key");
+        assertThat(captured).containsExactly(SystemMessageKey.SM9.defaultText(), "- a torch\n- a key");
     }
 
     @Test
     void execute_returnsSuccess() {
-        when(messagesHolder.getMessage("-10")).thenReturn("Inventory:");
         when(pocket.listContents()).thenReturn("");
 
         ExecutionResult result = new InventoryAction(_ -> {}, new ContainerSupplier(pocket), messagesHolder).execute();

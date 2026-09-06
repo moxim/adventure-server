@@ -16,6 +16,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
 import jakarta.annotation.security.RolesAllowed;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -135,9 +136,9 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
     }
 
     private void fillGrid(Set<DirectionData> directionData) {
-        List<DirectionDescriptionAdapter> adapters = directionData.stream()
+        List<DirectionDescriptionAdapter> adapters = new ArrayList<>(directionData.stream()
                 .map(d -> new DirectionDescriptionAdapter(d, adventureData))
-                .toList();
+                .toList());
         directionsDataView = grid.setItems(adapters);
     }
 

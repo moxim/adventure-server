@@ -116,9 +116,9 @@ public class GameLoop {
             gameContext.tell(result.getResultMessage());
         } else {
             if (result.getExecutionState() == ExecutionResult.State.FAILURE) {
-                gameContext.tell("I can't do that.");
+                gameContext.tell(SystemMessageKey.SM8.defaultText());
             } else {
-                gameContext.tell("Done.");
+                gameContext.tell(SystemMessageKey.SM15.defaultText());
             }
         }
         return result.getExecutionState() != ExecutionResult.State.FAILURE;

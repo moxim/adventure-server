@@ -24,9 +24,8 @@ class CreateActionTest {
     @Test
     void execute_onSuccess_addsThingAndSetsResultMessage() {
         when(container.add(thing)).thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS));
-        when(messagesHolder.getMessage("-12")).thenReturn("%s appears in %s.");
-        when(thing.getShortDescription()).thenReturn("a torch");
-        when(container.getShortDescription()).thenReturn("the room");
+        when(thing.getStrippedBasicDescription()).thenReturn("torch");
+        when(container.getStrippedBasicDescription()).thenReturn("room");
 
         ExecutionResult result = new CreateAction(thing, () -> container, messagesHolder).execute();
 

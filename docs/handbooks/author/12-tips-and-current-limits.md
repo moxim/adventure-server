@@ -35,11 +35,13 @@ worth planning around.
   practice this rarely matters because the play screen's core verbs
   (`look`, `inventory`, `help`, `quit`) work automatically regardless. See
   [Chapter 7](07-vocabulary-and-words.md#special-words).
-- **Workflow commands print their failure message every turn, not once.**
-  If a workflow command's precondition is unmet, and that precondition (or
-  the command) is set up to say something about it, expect to see that
-  message every single turn until the condition changes. See
-  [Chapter 9](09-workflow.md).
+- **Workflow *Processes* print their failure message every turn, not once.**
+  If a Process's precondition is unmet, and that precondition (or the
+  command) is set up to say something about it, expect to see that message
+  every single turn until the condition changes. Workflow *Responses* are
+  the opposite — an unmet Response falls through silently. If you want
+  "only speak up when a specific command is typed," build a Response, not a
+  Process. See [Chapter 9](09-workflow.md).
 - **No save/load mid-playtest.** A Test or Run session is one continuous
   sitting; there's nothing to resume later. See
   [Chapter 11](11-testing-and-running.md#what-you-can-type).

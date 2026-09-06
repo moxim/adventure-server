@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.pdg.adventure.api.*;
 import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 
 public class CommandExecutor {
 
@@ -20,12 +21,10 @@ public class CommandExecutor {
     public static ExecutionResult clarifyExecutionOutcome(ExecutionResult result) {
         if (ExecutionResult.State.FAILURE == result.getExecutionState()) {
             if (VocabularyData.EMPTY_STRING.equals(result.getResultMessage())) {
-                result.setResultMessage("You can't do that.");
+                result.setResultMessage(SystemMessageKey.SM8.defaultText());
             }
         } else {
-            if (VocabularyData.EMPTY_STRING.equals(result.getResultMessage())) {
-                result.setResultMessage("OK.");
-            }
+            result.setResultMessage(SystemMessageKey.SM15.defaultText());
         }
 
         return result;
@@ -169,13 +168,13 @@ public class CommandExecutor {
     private boolean commandCanBeExecuted(List<CommandChain> availableCommandChains, ExecutionResult result,
                                          String aNoun, String aVerb) {
         if (availableCommandChains.isEmpty()) {
-            result.setResultMessage("I don't know how to do that.");
+            result.setResultMessage(SystemMessageKey.SM8.defaultText());
             return false;
         } else if (availableCommandChains.size() > 1) {
             if (VocabularyData.EMPTY_STRING.equals(aNoun)) {
-                result.setResultMessage("What do you want to %s?".formatted(aVerb));
+                result.setResultMessage(SystemMessageKey.SM60.defaultText().formatted(aVerb));
             } else {
-                result.setResultMessage("Which %s do you want to %s?".formatted(aNoun, aVerb));
+                result.setResultMessage(SystemMessageKey.SM61.defaultText().formatted(aNoun, aVerb));
             }
             return false;
         }

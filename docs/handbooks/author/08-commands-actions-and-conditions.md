@@ -48,8 +48,12 @@ precondition at all that actually opens it.
 **To add a new variant to an existing chain**, click **Create** from the
 commands list and give the new command the *same* Verb/Adjective/Noun as
 the chain you want to extend, then **Save** — it's appended to that chain
-rather than replacing it. **To remove one variant**, right-click its row in
-the Command Chain grid (inside the editor) and choose **Delete**.
+rather than replacing it. **To reorder or remove variants**, right-click a
+row in the Command Chain grid (inside the editor): **Move Up** / **Move
+Down** change the order the engine tries them in (greyed out at the ends),
+and **Delete** removes that one variant. Order matters — the engine runs the
+*first* variant whose preconditions pass, so put your more specific,
+precondition-gated variants above the catch-all one.
 
 > **Note:** You've already met the Command Chain pattern without knowing
 > it, if you've checked **Can be picked up** on an item — see
@@ -83,10 +87,14 @@ with one of the conditions.
 A second ordered list, added via the **Select Action Type** dropdown — see
 the [Action & Condition reference](appendix-a-action-and-condition-reference.md)
 for the full set (Message, Move Player, Move Item, Take, Drop, Wear,
-Remove, Destroy, Create Item, Describe, Inventory, Quit, Increment/Decrement/Set
-Variable). Same **Up**/**Down**/**Remove** controls as preconditions. All
-actions in the list run in order — this is how one command can both print a
-message *and* move the player *and* update a variable in a single turn.
+Remove, Destroy, Create Item, Describe, Inventory, Quit, Break, and
+Increment/Decrement/Set Variable). Same **Up**/**Down**/**Remove** controls
+as preconditions, and a newly added row opens expanded so you can fill it in
+straight away. All actions in the list run in order — this is how one command
+can both print a message *and* move the player *and* update a variable in a
+single turn. A **Break** action stops the rest of the list (and the rest of
+the command chain) right there — handy for "if this precondition-gated
+variant fired, don't fall through to anything else."
 
 ## Deleting things a command depends on
 
@@ -99,6 +107,6 @@ confirmation — be sure before you use it.
 ## What's next
 
 Commands you build in a location only fire while the player is in that
-location. For rules that should apply *everywhere, every turn* — like a
-health check or an ambient event — see
-[Chapter 9: Workflow](09-workflow.md).
+location. For rules that apply *everywhere* — an ambient event that ticks
+every turn, or an adventure-wide override of a typed command — see
+[Chapter 9: Workflow — Processes & Responses](09-workflow.md).

@@ -75,9 +75,22 @@ and into UI structure in [`07-ui-and-navigation.md`](07-ui-and-navigation.md).
     verb/adjective/noun form a **Command Chain**, tried in order until one
     passes.
   - **Messages** — reusable text snippets emitted by `MessageAction`.
-  - **Workflow** — commands that run automatically every turn regardless of
-    the player's location (see `WorkflowEditorView`), built from the same
-    CommandDescription + PreConditions + Actions shape as location commands.
+  - **System messages** — the fixed catalog of built-in engine text
+    (`SystemMessageKey`), reworded or translated per adventure via
+    `SystemMessagesView` ("Manage System Messages"). Entries can only be
+    edited, never created or deleted; storage is sparse (a row exists only
+    once an entry is changed from its default).
+  - **Workflow** — the adventure's *global* commands, built from the same
+    CommandDescription + PreConditions + Actions shape as location commands,
+    in two kinds:
+    - **Processes** (`WorkflowEditorView`, "Manage Processes") run
+      automatically every turn regardless of the player's location.
+    - **Responses** (`ResponsesEditorView`, "Manage Responses") fire only
+      when the player's verb (and adjective/noun, if set) matches exactly,
+      short-circuiting the normal location/item lookup, and fall through
+      silently when their preconditions are unmet. A Response matching a
+      built-in verb (help, inventory, quit, look/describe) overrides that
+      built-in for the adventure.
 - Visualise the adventure as a location map (`LocationMapView` — currently a
   static placeholder image, not yet driven by the adventure's actual
   locations).
@@ -132,8 +145,12 @@ These are referenced by the current code but not yet wired up. They appear in
   Ollama wiring; the long-term intent is to allow authors to enrich location and
   item descriptions through a configured LLM. The spec describes the integration
   shape; a rebuild MAY ship it as a feature flag.
-- **NLP command parser.** The current parser is vocabulary-token based. The
-  product intends a richer parser eventually; the spec leaves this as a clearly
+- **NLP command parser.** The current parser is vocabulary-token based. It now
+  splits a line into a *sequence* of sub-commands on `and` / `then` /
+  `.`, infers a missing verb from the previous sub-command, and resolves the
+  pronoun `it` to the last-mentioned noun; it still does not handle
+  prepositions ("put X in Y"), multi-noun objects, or articles. The product
+  intends a richer parser eventually; the spec leaves this as a clearly
   pluggable interface.
 - **Module split.** The current `server` module is intended to be carved into
   `backend`, `editor`, `player`, and `api` Maven modules. The spec is written so
@@ -152,15 +169,15 @@ This is the canonical list. Other chapters reference it.
 | **Container** | A `Thing` that owns a list of `Containable`s with a capacity. The player's *pocket* is a container; locations have a container; items can be containers. |
 | **Thing** | Base abstract for every described object: holds a description provider and a map of commands. Both `Location` and `Item` extend it. |
 | **Vocabulary** | The dictionary an adventure understands. A `Vocabulary` wraps a `VocabularyData` and exposes lookup, synonym creation, and the special-word slots. |
-| **Word** | A string + a `Word.Type` (NOUN, ADJECTIVE, VERB) + an optional synonym pointing at the canonical word. |
+| **Word** | A string + a `Word.Type` + an optional synonym pointing at the canonical word. Five types: `NOUN`, `ADJECTIVE`, `VERB` (author-creatable), plus `CONJUNCTION` (`and` / `then`) and `PRONOUN` (`it`) — the last two are engine-reserved, seeded by `AdventureRunSessionFactory`, and excluded from the author's type picker (`WordEditorDialogue`). |
 | **Special words** | The vocabulary entries used by the engine for built-in mechanics: `take`, `drop`, `inventory`, `look`, `examine`, `go`, `help`, `quit`, `save`, `load`. |
 | **Command** | A unit composed of a `CommandDescription` (verb/adjective/noun), a list of `PreCondition`s, and an ordered list of `Action`s (all run in sequence when the command fires). |
 | **Command Chain** | Multiple `Command`s that share one `CommandDescription`; the engine tries them in order and runs the first whose `PreCondition`s all pass. This is how one verb/noun pair can behave differently depending on game state. |
 | **CommandDescription** | A 3-slot tuple `(verb, adjective?, noun?)` produced by the parser and used by the matcher to find a `Command`. |
-| **Action** | A side-effect executed when a Command's PreConditions all pass. Returns an `ExecutionResult`. 16 concrete kinds, 15 of them directly authorable (see [`04-runtime-engine.md`](04-runtime-engine.md#action-catalog)). |
+| **Action** | A side-effect executed when a Command's PreConditions all pass. Returns an `ExecutionResult`. 17 concrete kinds, 16 of them directly authorable — `LoadAdventureAction` is engine-managed (see [`04-runtime-engine.md`](04-runtime-engine.md#action-catalog)). |
 | **PreCondition** | A boolean predicate evaluated in the current `GameContext`; gates an Action. 11 concrete kinds, 10 of them directly selectable — `NotCondition` is applied via a per-row Negate toggle instead (see [`04-runtime-engine.md`](04-runtime-engine.md#precondition-catalog)). |
-| **GameContext** | The runtime carrier: current location, player pocket, message holder, workflow, variable provider, IO. |
-| **Workflow** | A list of *global* commands processed before location-scoped commands. Holds inventory, quit, help, load and any other engine-level Commands. |
+| **GameContext** | The runtime carrier: current location, player pocket, message holder, workflow, variable provider, and an injectable output sink (default `java.lang.IO::println`). |
+| **Workflow** | The engine's holder of an adventure's *global* commands: **Processes** (`preCommands`, run every turn) and **Responses** (`interceptorCommands`, matched against the typed command before location dispatch). The built-in help / inventory / quit / look Responses and the "What now?" (SM2) prompt Process are planted by `CommandFactory.setUpWorkflowCommands`; the author's own are layered on by `WorkflowMapper.populate`. |
 | **Variable** | A named integer/value tracked in the `VariableProvider`; readable/writable by Actions and PreConditions. |
 | **Message** | A reusable text snippet keyed by ID; emitted via `MessageAction`. |
 | **Mapper** | A `Mapper<DO, BO>` bidirectional translator. Auto-registered into `MapperSupporter` by an `@AutoRegisterMapper` annotation processed by a `BeanPostProcessor`. |
@@ -182,8 +199,3 @@ This is the canonical list. Other chapters reference it.
 - The bootstrap admin password (`admin123`) is hardcoded in
   `config/DataInitializer.java:30`. A production rebuild MUST source it from
   configuration. See [`06-security-and-access-control.md`](06-security-and-access-control.md#known-gaps).
-- `AdventureBuilderServer` has its `@SpringBootApplication` annotation
-  commented out (`AdventureBuilderServer.java:12`). The application currently
-  works because of Vaadin's Spring Boot starter; a rebuild SHOULD restore
-  `@SpringBootApplication` for clarity and to enable component scanning of
-  packages outside the auto-discovered set.

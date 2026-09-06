@@ -43,7 +43,7 @@ Explicitly out of scope:
 | [01](01-product-overview.md) | Product overview | What the product is, who uses it, what the ADMIN/AUTHOR/PLAYER roles can do, and the glossary. |
 | [02](02-functional-requirements.md) | Functional requirements | The user stories per role and the editor navigation contract (BACK/SAVE/CANCEL/RESET, unsaved-change handling). |
 | [03](03-domain-model.md) | Domain model | The Adventure aggregate, every business object and persistence document, and how they relate. |
-| [04](04-runtime-engine.md) | Runtime engine | How a typed command becomes a parsed sentence, gets routed through the engine, and is dispatched to an Action. Catalog of all 16 Actions and 12 PreConditions. |
+| [04](04-runtime-engine.md) | Runtime engine | How a typed line becomes a parsed *sequence* of sub-commands (conjunctions, `.`, pronoun `it`), gets routed through the engine, and is dispatched to an Action. Catalog of all 17 Actions and 11 PreConditions. |
 | [05](05-persistence-and-mappers.md) | Persistence & mappers | MongoDB collections, MySQL schema, the cascade-save/delete machinery, and the auto-registered mapper layer. |
 | [06](06-security-and-access-control.md) | Security & access control | Spring Security wiring, role hierarchy, URL guards, login flow, the `AdventureAccessService` rules, and seeded users. |
 | [07](07-ui-and-navigation.md) | UI & navigation | The full Vaadin view tree, the `@Route` × role matrix, layouts, reusable components, and the view-model pattern. |
@@ -83,10 +83,11 @@ This list is just the most-cross-referenced terms.
 | **Direction** | An exit from a location; resolved by a verb-noun command. |
 | **Vocabulary** | The set of `Word`s an adventure understands, plus the canonical *special verbs* (take, drop, look, etc.). |
 | **Command** | A vocabulary-described trigger that, when matched, runs an `Action` after passing all `PreCondition`s. |
-| **Action** | An executable side-effect (move player, take item, set variable, …). 16 concrete kinds today. |
-| **PreCondition** | A boolean predicate gating an Action (carried, here, worn, variable comparisons, and/or/not composites). 12 concrete kinds today. |
+| **Action** | An executable side-effect (move player, take item, set variable, break the chain, …). 17 concrete kinds today; 16 are author-placeable (`LoadAdventureAction` is engine-managed). |
+| **PreCondition** | A boolean predicate gating an Action (carried, here, worn, variable comparisons, `not` composite). 11 concrete kinds today; 10 are author-selectable (`NotCondition` is applied via a per-row Negate toggle). |
 | **Mapper** | A bidirectional translator between a `*Data` document and a business object. Auto-registered via `@AutoRegisterMapper`. |
-| **Workflow** | The engine subsystem that runs *global* commands (inventory, quit, help, load) before location-scoped commands. |
+| **Workflow** | The engine subsystem holding an adventure's *global* commands: **Processes** (run every turn, before input is consulted) and **Responses** (matched against the typed command, ahead of location/item dispatch — help, inventory, quit, look, plus any the author adds). Authored via `WorkflowEditorView` / `ResponsesEditorView`. |
+| **System message** | One entry in the fixed engine-text catalog (`SystemMessageKey`), reworded/translated per adventure via `SystemMessagesView`. Distinct from an author-authored **Message**. |
 
 ## Cross-cutting non-goals
 

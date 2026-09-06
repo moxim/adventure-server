@@ -3,6 +3,8 @@ package com.pdg.adventure.server.condition;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+import static com.pdg.adventure.server.storage.message.SystemMessageKey.SM28;
+
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
@@ -26,7 +28,7 @@ public class CarriedCondition extends AbstractCondition {
         if (gameContext.getPocket().contains(item)) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         } else {
-            result.setResultMessage("You don't have a %s.".formatted(item.getShortDescription()));
+            result.setResultMessage(SM28.defaultText());
         }
         return result;
     }

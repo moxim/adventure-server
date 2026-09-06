@@ -6,12 +6,16 @@ public interface Describable extends Ided {
     String getNoun();
 
     String getBasicDescription();
-
+    default String getStrippedBasicDescription() {
+        return getBasicDescription();
+    }
     String getEnrichedBasicDescription();
 
     String getShortDescription();
+    default String getStrippedShortDescription() {
+        return getShortDescription();
+    }
+    String getEnrichedShortDescription();
 
     String getLongDescription();
-
-    String getEnrichedShortDescription();
 }

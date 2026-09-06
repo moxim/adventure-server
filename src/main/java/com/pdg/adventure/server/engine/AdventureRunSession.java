@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.pdg.adventure.server.exception.ReloadAdventureException;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 
 /**
  * A single interactive play session, driving the shared GameLoop/GameContext singleton one
@@ -13,8 +14,6 @@ import com.pdg.adventure.server.exception.ReloadAdventureException;
  * description.
  */
 public class AdventureRunSession {
-
-    private static final String PROMPT = "What now? > ";
 
     private final GameLoop gameLoop;
     private final GameContext gameContext;
@@ -31,7 +30,7 @@ public class AdventureRunSession {
         }
         List<String> lines = new ArrayList<>();
         gameContext.setOutputSink(line -> {
-            if (line != null && !line.isBlank() && !PROMPT.equals(line)) {
+            if (line != null && !line.isBlank() && !SystemMessageKey.SM2.defaultText().equals(line)) {
                 lines.add(line);
             }
         });

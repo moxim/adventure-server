@@ -77,6 +77,9 @@ BasicData            (Ided; has @Id String id assigned to ULID)
 └── DatedData
     └── MessageData       (+adventureId, messageId, text, category, tags, translations, notes)
 └── DatedData
+    └── SystemMessageData (+adventureId, key, text — one editable override of a
+                            SystemMessageKey catalog entry; see "System messages" below)
+└── DatedData
     └── Word              (text, type, synonym)
 └── BasicData
     └── DirectionData     (+descriptionData, destinationId, destinationMustBeMentioned, commandData)
@@ -84,9 +87,10 @@ BasicData            (Ided; has @Id String id assigned to ULID)
     └── CommandData       (+commandDescription, preConditions, actions: List<ActionData>)
 └── BasicData
     └── CommandChainData  (+commands: List<CommandData>)
-   (WorkflowData           +commands: List<CommandData> — a plain embedded field on
-                            AdventureData, not part of the BasicData hierarchy; see
-                            "Workflow" below)
+   (WorkflowData           +commands: List<CommandData> (Processes)
+                           +interceptorCommands: List<CommandData> (Responses)
+                            — a plain embedded field on AdventureData, not part of
+                            the BasicData hierarchy; see "Workflow" below)
 └── BasicData
     └── CommandProviderData (+availableCommands: Map<String, CommandChainData>)
 └── BasicDescriptionData
@@ -125,11 +129,13 @@ Fields:
 | `locationData` | `@DBRef(lazy=false) Map<String, LocationData>` | All locations, keyed by id. Cascade save & delete. |
 | `currentLocationId` | `String` | Resolves into `locationData`. |
 | `vocabularyData` | `@DBRef(lazy=false, transient) VocabularyData` | The adventure's vocabulary. Cascade save & delete. |
-| `messages` | `@DBRef(lazy=true) Map<String, MessageData>` | Reusable text. Cascade save & delete. |
+| `messages` | `@DBRef(lazy=true) Map<String, MessageData>` | Author-authored reusable text. Cascade save & delete. |
+| `systemMessages` | `@DBRef(lazy=true) Map<String, SystemMessageData>` | Sparse per-adventure overrides of engine text; keyed by `SystemMessageKey.id()`. Cascade save & delete. A key with no entry reads as its catalog default. See [§ System messages](#system-messages) below. |
 | `notes` | `String` | Free-text outline; not used at runtime. Surfaced as a quick preview in `AdventuresMenuView`'s right-click context menu. |
-| `workflowData` | `WorkflowData`, default `new WorkflowData()` | The adventure's global commands. Plain embedded field — no `@DBRef`, no cascade annotations (unlike every other nested collection above); it round-trips as part of the `AdventureData` document itself. See [§ Workflow](#workflow) below. |
+| `workflowData` | `WorkflowData`, default `new WorkflowData()` | The adventure's global commands — **Processes** (`commands`) and **Responses** (`interceptorCommands`). Plain embedded field — no `@DBRef`, no cascade annotations (unlike every other nested collection above); it round-trips as part of the `AdventureData` document itself. See [§ Workflow](#workflow) below. |
 
-Constructors initialise empty maps and an empty `ItemContainerData("your pocket")`.
+Constructors initialise empty maps (including `systemMessages`) and an empty
+`ItemContainerData("your pocket")`.
 
 ## Locations and the world
 
@@ -236,7 +242,7 @@ both DO and BO.
 | Field | Type | Notes |
 |-------|------|-------|
 | `text` | `String` | Lower-cased on construction. |
-| `type` | `Word.Type` | `VERB` / `NOUN` / `ADJECTIVE`. |
+| `type` | `Word.Type` | `VERB` / `NOUN` / `ADJECTIVE` / `CONJUNCTION` / `PRONOUN`. The last two are engine-reserved: `CONJUNCTION` (`and`, and its synonym `then`) marks a sub-command boundary in the parser; `PRONOUN` (`it`) resolves to the last-mentioned noun+adjective. Both are seeded by `AdventureRunSessionFactory` and are removed from `WordEditorDialogue`'s type picker, so authors never create them. |
 | `synonym` | `@DBRef Word` | Optional reference to a canonical word. |
 
 When constructed from another word with the *synonym* constructor, the new word
@@ -303,19 +309,33 @@ subclass and not its own MongoDB collection:
 
 ```java
 public class WorkflowData {
-    private List<CommandData> commands = new ArrayList<>();
+    private List<CommandData> commands = new ArrayList<>();             // Processes
+    private List<CommandData> interceptorCommands = new ArrayList<>();  // Responses
 }
 ```
 
 It lives as a plain embedded field on `AdventureData.workflowData` (see the
 field table above) and holds the adventure's *global* commands — built from
-the identical `CommandData` shape as location/item commands, but run every
-turn regardless of the player's location rather than being scoped to one
-`Thing`. At runtime, `WorkflowMapper.populate(WorkflowData, Workflow)` layers
-these onto the engine's `Workflow` (`server/engine/Workflow.java`) as
-pre-commands after `GameContext.setUpWorkflows()` — see
-[`04-runtime-engine.md` § Workflow](04-runtime-engine.md#workflow-pre-commands-and-interceptors).
-Authored via `WorkflowEditorView` (`author/adventures/:adventureId/workflow`).
+the identical `CommandData` shape as location/item commands, but not scoped
+to one `Thing`. Two independent lists:
+
+- **`commands` — Processes.** Run automatically every turn, before input is
+  consulted. The verb is not required.
+- **`interceptorCommands` — Responses.** Matched against the parsed command
+  ahead of pocket/location dispatch; when one matches exactly it
+  short-circuits normal lookup, and when its preconditions fail it falls
+  through silently. The verb is required.
+
+At runtime, `WorkflowMapper.populate(WorkflowData, Workflow)` layers `commands`
+onto the engine `Workflow` (`server/engine/Workflow.java`) as pre-commands and
+`interceptorCommands` as interceptor commands, after
+`GameContext.setUpWorkflows()` and on top of the built-ins planted by
+`CommandFactory.setUpWorkflowCommands` — see
+[`04-runtime-engine.md` § Workflow](04-runtime-engine.md#workflow-processes-and-responses).
+Authored via `WorkflowEditorView` (`author/adventures/:adventureId/workflow`,
+Processes) and `ResponsesEditorView`
+(`author/adventures/:adventureId/responses`, Responses), both built on the
+shared `CommandListEditorView`.
 
 ## Messages, variables, IO
 
@@ -339,6 +359,32 @@ Compound unique index on `(adventureId, messageId)`.
 `server/storage/message/MessagesHolder.java` is the runtime cache of messages
 keyed by message id. `MessageAction` looks up text here.
 
+### System messages
+
+Two collaborating types back the "Manage System Messages" screen:
+
+- **`server/storage/message/SystemMessageKey.java`** — a Java `enum`, the
+  fixed catalog of built-in engine text. Each constant carries an id (kept
+  verbatim for entries that already used `MessagesHolder`'s
+  negative-id convention, so a future engine rewiring needs no id remap), a
+  default English `text`, a source location, and a translator-facing
+  description. Helpers: `defaultText()`, `id()`, `sourceLocation()`,
+  `description()`, `fromId(String)`. Engine code that used to hold raw
+  literals now calls `SystemMessageKey.SMnn.defaultText().formatted(...)` —
+  see [`04-runtime-engine.md`](04-runtime-engine.md#action-catalog).
+- **`model/SystemMessageData.java`** — `@Document(collection = "systemMessages")`,
+  extends `DatedData`, compound-unique index on `(adventureId, key)`. Stores
+  only the mutable text for one `(adventureId, key)` pair. Storage is
+  **sparse**: a row is written the first time an adventure edits a key away
+  from its default; an unedited key has no row. Held in
+  `AdventureData.systemMessages` (`@DBRef`, cascade save & delete).
+
+`server/support/PlaceholderSpec.java` validates that an edited override keeps
+exactly the `%s` / `%n$s` argument positions of the catalog default, so a
+reworded message can't trigger a `MissingFormatArgumentException` at runtime.
+The catalog is fixed — the screen can edit an entry but never create, delete,
+or rename one.
+
 ### VariableProvider / Variable
 
 `server/support/VariableProvider.java`, `Variable.java`. Holds named
@@ -361,6 +407,8 @@ this chapter only documents the storage shape.
 | `MovePlayerActionData`, `MoveItemActionData` | spatial actions |
 | `MessageActionData` | text emission |
 | `InventoryActionData` | print pocket |
+| `QuitActionData` | end the session (`QuitAction`) |
+| `BreakActionData` | stop the rest of the current command chain / action list (`BreakAction`) |
 | `SetVariableActionData`, `IncrementVariableActionData`, `DecrementVariableActionData` | variable mutations |
 
 Plus a runtime-only `LoadAdventureAction` (no DO; engine-managed).
@@ -395,7 +443,8 @@ Adventure (BO)
 ├── MessagesHolder       (runtime cache of MessageData)
 ├── VariableProvider     (named runtime variables)
 ├── pocket: Container    (the player's GenericContainer)
-├── Workflow             (global CommandChains, from AdventureData.workflowData)
+├── Workflow             (Processes + Responses, from AdventureData.workflowData)
+├── (system messages)    (SystemMessageData overrides of the SystemMessageKey catalog)
 └── locationMap: Map<String, Location>
      └── Location  (Thing + directions + items + lumen)
           ├── ItemContainer
@@ -439,16 +488,17 @@ Cross-store
   `BasicDescriptionData`, `DescriptionData`, `CommandDescriptionData`.
 - `src/main/java/com/pdg/adventure/model/` — `AdventureData`, `LocationData`,
   `ItemData`, `ItemContainerData`, `DirectionData`, `CommandData`,
-  `CommandChainData`, `CommandProviderData`, `MessageData`, `VocabularyData`,
-  `Word`, `ThingData`.
-- `src/main/java/com/pdg/adventure/model/action/` — every `*ActionData`.
+  `CommandChainData`, `CommandProviderData`, `MessageData`,
+  `SystemMessageData`, `WorkflowData`, `VocabularyData`, `Word`, `ThingData`.
+- `src/main/java/com/pdg/adventure/model/action/` — every `*ActionData`
+  (incl. `BreakActionData`).
 - `src/main/java/com/pdg/adventure/model/condition/` — every `*ConditionData`.
 - `src/main/java/com/pdg/adventure/server/Adventure.java`,
   `server/location/{Location,GenericDirection}.java`,
   `server/tangible/{Thing,Item,GenericContainer,ItemIdentifier}.java`,
   `server/vocabulary/Vocabulary.java`,
-  `server/storage/message/MessagesHolder.java`,
-  `server/support/{Variable,VariableProvider,DescriptionProvider,ArticleProvider}.java`.
+  `server/storage/message/{MessagesHolder,SystemMessageKey}.java`,
+  `server/support/{Variable,VariableProvider,DescriptionProvider,ArticleProvider,PlaceholderSpec}.java`.
 - `src/main/java/com/pdg/adventure/security/model/` — `UserData`, `Role`,
   `AdventureAuthor`, `AdventurePlayer`, `AdventurePlayerId`.
 
