@@ -175,7 +175,7 @@ src/test/java/com/pdg/adventure/
 │   ├── tangible/
 │   ├── vocabulary/
 │   ├── testhelper/                   ← TestSupporter, MongoTestConfiguration
-│   └── AdventureBuilderTest, ApplicationTest   ← end-to-end / full-context smoke
+│   └── AdventureBuilderTest   ← end-to-end / full-context smoke
 └── view/                              ← browserless Vaadin tests
     ├── admin/, adventure/, command/, component/, direction/, error/,
     │   item/, location/, message/, player/, support/, systemmessage/,
@@ -304,8 +304,7 @@ re-deriving it.
 There are no `*IT.java` files today. Two "integration"-style tests run
 inside the regular Surefire pass with full Spring context:
 
-- `AdventureBuilderTest` — exercises the builder flows.
-- `ApplicationTest` — Spring Boot startup smoke test.
+- `AdventureBuilderTest` — exercises the builder flows.\
 
 If the project later introduces true `*IT.java` tests, the `it` profile
 (see above) is the right harness: it starts and stops the application
