@@ -86,7 +86,7 @@ This list is just the most-cross-referenced terms.
 | **Action** | An executable side-effect (move player, take item, set variable, break the chain, …). 17 concrete kinds today; 16 are author-placeable (`LoadAdventureAction` is engine-managed). |
 | **PreCondition** | A boolean predicate gating an Action (carried, here, worn, variable comparisons, `not` composite). 11 concrete kinds today; 10 are author-selectable (`NotCondition` is applied via a per-row Negate toggle). |
 | **Mapper** | A bidirectional translator between a `*Data` document and a business object. Auto-registered via `@AutoRegisterMapper`. |
-| **Workflow** | The engine subsystem holding an adventure's *global* commands: **Processes** (run every turn, before input is consulted) and **Responses** (matched against the typed command, ahead of location/item dispatch — help, inventory, quit, look, plus any the author adds). Authored via `WorkflowEditorView` / `ResponsesEditorView`. |
+| **Workflow** | The engine subsystem holding an adventure's *global* commands: **Processes** (run before every parsed sub-command) and **Responses** (a *fallback* tried only when no location/item command matched the typed verb — help, inventory, quit, look, plus any the author adds). Authored via `WorkflowEditorView` / `ResponsesEditorView`. |
 | **System message** | One entry in the fixed engine-text catalog (`SystemMessageKey`), reworded/translated per adventure via `SystemMessagesView`. Distinct from an author-authored **Message**. |
 
 ## Cross-cutting non-goals

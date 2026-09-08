@@ -38,7 +38,7 @@ class WorkflowMapperTest {
     }
 
     @Test
-    void populate_addsMappedCommandsAsWorkflowPreCommands_soPreProcessCommandsExecutesThem() {
+    void populate_addsMappedCommandsAsWorkflowProcesses_soRunProcessesExecutesThem() {
         // Given: an authored CommandData in a WorkflowData
         CommandData commandData = new CommandData(new CommandDescriptionData("shiver||"));
         WorkflowData workflowData = new WorkflowData();
@@ -56,17 +56,17 @@ class WorkflowMapperTest {
         // When: populating the runtime workflow from the authored data
         workflowMapper.populate(workflowData, workflow);
 
-        // Then: gameContext.preProcessCommands() - the exact call GameLoop.run() makes each turn
-        // at GameLoop.java:36 - now executes the authored command.
-        gameContext.preProcessCommands();
+        // Then: gameContext.runProcesses() - the call GameLoop.processCommand() makes before
+        // each parsed sub-command - now executes the authored command.
+        gameContext.runProcesses();
 
         verify(commandMapper).mapToBO(commandData);
         verify(command).execute();
     }
 
     @Test
-    void populate_addsMappedCommandsAsWorkflowInterceptorCommands_soInterceptCommandsExecutesThem() {
-        // Given: an authored CommandData in a WorkflowData's interceptor list
+    void populate_addsMappedCommandsAsWorkflowResponses_soRespondToExecutesThem() {
+        // Given: an authored CommandData in a WorkflowData's response list
         CommandData commandData = new CommandData(new CommandDescriptionData("shiver||"));
         WorkflowData workflowData = new WorkflowData();
         workflowData.getInterceptorCommands().add(commandData);
@@ -83,16 +83,16 @@ class WorkflowMapperTest {
         // When: populating the runtime workflow from the authored data
         workflowMapper.populate(workflowData, workflow);
 
-        // Then: gameContext.interceptCommands(...) - the exact call GameLoop.runOneCommandSucceeded()
-        // makes each turn at GameLoop.java:92 - now finds and executes the authored command.
-        ExecutionResult result = gameContext.interceptCommands(runtimeDescription);
+        // Then: gameContext.respondTo(...) - the fallback lookup GameLoop.runOneCommandSucceeded()
+        // does when nothing local matched the verb - now finds and executes the authored command.
+        ExecutionResult result = gameContext.respondTo(runtimeDescription);
 
         verify(commandMapper).mapToBO(commandData);
         verify(command).execute();
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
     }
 
-    // Workflow.interceptCommands() looks the runtime command up in a TreeMap keyed by
+    // Workflow.respondTo() looks the runtime command up in a TreeMap keyed by
     // CommandDescription.compareTo(), i.e. by GenericCommandDescription.getDescription() string
     // equality - so an authored response only ever fires if CommandDescriptionMapper produces the
     // exact same verb/adjective/noun shape the Parser hands runOneCommandSucceeded() each turn. The
@@ -101,7 +101,7 @@ class WorkflowMapperTest {
     // (adjective/noun left unset -> null Words) actually matches the Parser's verb + "" + "" shape
     // (see SimpleSentence's EMPTY_STRING defaults in Parser.java), not verb + null + null.
     @Test
-    void populate_authoredVerbOnlyInterceptor_matchesParserStyleDescriptionAtRuntime() {
+    void populate_authoredVerbOnlyResponse_matchesParserStyleDescriptionAtRuntime() {
         CommandDescriptionMapper realDescriptionMapper = new CommandDescriptionMapper(null);
         CommandMapper realCommandMapper = new CommandMapper(null, realDescriptionMapper);
         WorkflowMapper realWorkflowMapper = new WorkflowMapper(realCommandMapper);
@@ -118,7 +118,7 @@ class WorkflowMapperTest {
         realWorkflowMapper.populate(workflowData, workflow);
 
         GenericCommandDescription parserStyleDescription = new GenericCommandDescription("shiver", "", "");
-        ExecutionResult result = gameContext.interceptCommands(parserStyleDescription);
+        ExecutionResult result = gameContext.respondTo(parserStyleDescription);
 
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
     }

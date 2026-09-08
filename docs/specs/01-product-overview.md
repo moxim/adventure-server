@@ -84,13 +84,15 @@ and into UI structure in [`07-ui-and-navigation.md`](07-ui-and-navigation.md).
     CommandDescription + PreConditions + Actions shape as location commands,
     in two kinds:
     - **Processes** (`WorkflowEditorView`, "Manage Processes") run
-      automatically every turn regardless of the player's location.
-    - **Responses** (`ResponsesEditorView`, "Manage Responses") fire only
-      when the player's verb (and adjective/noun, if set) matches exactly,
-      short-circuiting the normal location/item lookup, and fall through
-      silently when their preconditions are unmet. A Response matching a
-      built-in verb (help, inventory, quit, look/describe) overrides that
-      built-in for the adventure.
+      automatically before every parsed sub-command, regardless of the
+      player's location.
+    - **Responses** (`ResponsesEditorView`, "Manage Responses") are a
+      *fallback*: one fires only when the player's verb (and adjective/noun,
+      if set) matches exactly **and** no location or pocket command handled
+      that verb. A Response matching a built-in verb (help, inventory, quit,
+      look/describe) still overrides that built-in for the adventure;
+      a Response sharing a verb with an authored location/item command now
+      loses to it.
 - Visualise the adventure as a location map (`LocationMapView` — currently a
   static placeholder image, not yet driven by the adventure's actual
   locations).
@@ -177,7 +179,7 @@ This is the canonical list. Other chapters reference it.
 | **Action** | A side-effect executed when a Command's PreConditions all pass. Returns an `ExecutionResult`. 17 concrete kinds, 16 of them directly authorable — `LoadAdventureAction` is engine-managed (see [`04-runtime-engine.md`](04-runtime-engine.md#action-catalog)). |
 | **PreCondition** | A boolean predicate evaluated in the current `GameContext`; gates an Action. 11 concrete kinds, 10 of them directly selectable — `NotCondition` is applied via a per-row Negate toggle instead (see [`04-runtime-engine.md`](04-runtime-engine.md#precondition-catalog)). |
 | **GameContext** | The runtime carrier: current location, player pocket, message holder, workflow, variable provider, and an injectable output sink (default `java.lang.IO::println`). |
-| **Workflow** | The engine's holder of an adventure's *global* commands: **Processes** (`preCommands`, run every turn) and **Responses** (`interceptorCommands`, matched against the typed command before location dispatch). The built-in help / inventory / quit / look Responses and the "What now?" (SM2) prompt Process are planted by `CommandFactory.setUpWorkflowCommands`; the author's own are layered on by `WorkflowMapper.populate`. |
+| **Workflow** | The engine's holder of an adventure's *global* commands: **Processes** (the `processes` table, run before every parsed sub-command) and **Responses** (the `responses` table, tried as a *fallback* only when no location/pocket command matched the typed verb). The built-in help / inventory / quit / look Responses and the "What now?" (SM2) prompt Process are planted by `CommandFactory.setUpWorkflowCommands`; the author's own are layered on by `WorkflowMapper.populate`. |
 | **Variable** | A named integer/value tracked in the `VariableProvider`; readable/writable by Actions and PreConditions. |
 | **Message** | A reusable text snippet keyed by ID; emitted via `MessageAction`. |
 | **Mapper** | A `Mapper<DO, BO>` bidirectional translator. Auto-registered into `MapperSupporter` by an `@AutoRegisterMapper` annotation processed by a `BeanPostProcessor`. |

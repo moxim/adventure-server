@@ -14,7 +14,7 @@ Both are standard parser-IF conveniences and both are naturally expressed as *th
 ### 1. New word type: `Word.Type.PRONOUN`, seeded word "it"
 
 - Add `PRONOUN` to the `Word.Type` enum, alongside `VERB`/`NOUN`/`ADJECTIVE`/`CONJUNCTION`.
-- Seed `"it"` as a built-in `PRONOUN` word in `MiniAdventure.createSpecialWords()` and `AdventureRunSessionFactory.registerBaseVerbs()`, next to the existing `"and"`/`"then"` seeding. Same treatment as those: no author CRUD, no vocabulary-menu visibility (that speculative feature was designed and then explicitly reverted in the prior session — out of scope here).
+- Seed `"it"` as a built-in `PRONOUN` word in `AdventureRunSessionFactory.registerBaseVerbs()`, next to the existing `"and"`/`"then"` seeding. Same treatment as those: no author CRUD, no vocabulary-menu visibility (that speculative feature was designed and then explicitly reverted in the prior session — out of scope here).
 - Exclude `PRONOUN` from `WordEditorDialogue`'s type picker, same as `CONJUNCTION` is today.
 
 ### 2. Parser gains session-scoped memory: `lastVerb`, `lastNoun`, `lastAdjective`

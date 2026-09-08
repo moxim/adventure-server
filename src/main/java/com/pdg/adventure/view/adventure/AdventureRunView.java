@@ -142,9 +142,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             return;
         }
 
-        RunResult opening = session.submit("look");
-        renderNarratorLines(opening.lines());
-        messageInput.setEnabled(!opening.gameOver());
+        handleInput("look");
     }
 
     private static Origin resolveOrigin(Location location) {
@@ -162,6 +160,10 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         String input = event.getValue();
         messageList.addItem(new MessageListItem(input, Instant.now(), ViewSupporter.getCurrentUser().getUsername()));
 
+        handleInput(input);
+    }
+
+    private void handleInput(final String input) {
         RunResult result = session.submit(input);
         renderNarratorLines(result.lines());
         messageInput.setEnabled(!result.gameOver());

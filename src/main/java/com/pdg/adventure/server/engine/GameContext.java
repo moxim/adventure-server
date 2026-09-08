@@ -71,11 +71,11 @@ public class GameContext {
         return workflow;
     }
 
-    public void preProcessCommands() {
-        workflow.preProcess();
+    public void runProcesses() {
+        workflow.runProcesses();
     }
 
-    public ExecutionResult interceptCommands(CommandDescription aCommand) {
-        return workflow.interceptCommands(aCommand);
+    public ExecutionResult respondTo(CommandDescription aCommand) {
+        return workflow.respondTo(aCommand);
     }
 }

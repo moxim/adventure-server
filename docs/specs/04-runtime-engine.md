@@ -25,9 +25,6 @@ A single player turn flows through the engine like this:
 input string ("take sword and kill ogre.  drop it.")
    │
    ▼
-GameContext.preProcessCommands()      ← Workflow pre-commands (Processes + the "What now?" (SM2) prompt)
-   │                                     run BEFORE input is consulted
-   ▼
 Parser.handle(line) → CommandSequence
    ├─ withSpacedTerminators: split "." into its own token
    ├─ tokenise (Scanner, lowercase); unknown tokens skipped
@@ -41,22 +38,44 @@ List<GenericCommandDescription>       ← one per conjunction/period-separated s
    │
    ▼  for each sub-command, in order (stop at the first that fails):
    │
-   ├─ GameContext.interceptCommands(cmd)  ← Workflow interceptor commands = Responses
-   │      (built-ins: help, inventory, quit, describe, "describe here")
-   │      if state != FAILURE → tell(message); this sub-command succeeded
+   ├─ GameContext.runProcesses()         ← Workflow Processes (+ the "What now?" (SM2) prompt)
+   │                                        run once BEFORE each sub-command,
+   │                                        not once per typed line
    ├─ empty-verb check → SM6 ("I was not able to understand any of that…"); stop the sequence
-   └─ CommandExecutor(pocket, location).execute(cmd)
-        ├─ pocket.getMatchingCommandChain(cmd)  +  location.getMatchingCommandChain(cmd)
-        ├─ reduceCommandChains: drop empty → reduce by adjective → reduce by noun
-        │                       → keep only the best-ranked tier
-        ├─ 0 chains  → SM8 ("I can't do that.")
-        ├─ >1 chains → SM60 (no noun: "What should I <verb>?") or SM61 (with noun)
-        └─ exactly 1 → chain.execute()
+   ├─ CommandExecutor(pocket, location).execute(cmd)      ← LOCAL dispatch, tried first
+   │      ├─ pocket.getMatchingCommandChain(cmd)  +  location.getMatchingCommandChain(cmd)
+   │      ├─ reduceCommandChains: drop empty → reduce by adjective → reduce by noun
+   │      │                       → keep only the best-ranked tier
+   │      ├─ 0 chains  → FAILURE, message = SM8 ("I can't do that.")
+   │      ├─ >1 chains → FAILURE, SM60 ("What should I <verb>?") / SM61 (input noun given)
+   │      └─ exactly 1 → chain.execute()  (SUCCESS if any command in the chain applied, else FAILURE)
+   ├─ FALLBACK — only if local dispatch returned FAILURE whose message == SM8.defaultText()
+   │      (i.e. nothing local matched the verb at all — both the gate here and the
+   │       0-chains path use SM8.defaultText(), so an author-edited SM8 can't break it):
+   │      └─ GameContext.respondTo(cmd)  ← Workflow Responses table
+   │             (built-ins: help, inventory, quit, describe, "describe here")
+   │             exact (verb,adjective,noun) match; non-FAILURE ends the sub-command
    ▼
-per sub-command: GameContext.tell(resultMessage)
-   (empty message is normalised in GameLoop.runOneCommandSucceeded:
-    FAILURE → SM8, non-FAILURE → SM15 "OK.")
+per sub-command, in GameLoop.runOneCommandSucceeded:
+   non-FAILURE → tell(resultMessage); continue the sequence
+   FAILURE     → tell(resultMessage) if non-empty, else tell(SM8); stop the sequence
 ```
+
+Ordering note: `CommandExecutor` (the current location + the player's pocket)
+is consulted **first**; Workflow **Responses** are a *fallback* reached only
+when no local command chain matched the verb at all — `CommandExecutor`
+returned `FAILURE` whose message equals `SystemMessageKey.SM8.defaultText()`
+(*"I can't do that."*), the sentinel the 0-chains path writes. Both the
+0-chains write and `GameLoop`'s gate use `.defaultText()`, so an author who
+edits `SM8` in their catalog does not disturb the fallback. A local command that
+*does* match — even one that then fails its preconditions, or is ambiguous
+(`SM60`/`SM61`) — is reported as-is and the Response is never tried. The
+built-in `help` / `inventory` / `quit` / `describe` Responses still work
+because no location or item normally defines those verbs; but an authored
+**location or item** command now *shadows* a Workflow Response that shares
+its `(verb, adjective, noun)` — previously the Response always pre-empted
+local dispatch. (Earlier revisions ran Responses before local dispatch, and
+the Process pass sat above `Parser.handle` and fired once per typed line.)
 
 `QuitException`, `ReloadAdventureException` and `UnresolvedReferenceException`
 short-circuit:
@@ -71,9 +90,13 @@ short-circuit:
   [§ AdventureRunSession](#adventurerunsession-the-in-browser-play-surface)).
 - Any other `RuntimeException` is logged at ERROR and returns `ERROR`.
 
-`GameLoop.processCommand(String)` is the canonical per-line entry point;
-`GameLoop.run(BufferedReader)` wraps it in a read loop but has no production
-caller today (the CLI runner was removed).
+`GameLoop.processCommand(String)` is the **only** per-line entry point. The
+former `GameLoop.run(BufferedReader)` console read-loop has been deleted with
+the CLI runner; `processCommand` now calls `GameContext.runProcesses()`
+itself — once for **each** parsed sub-command of the line — rather than
+relying on the caller to do it first. A conjunction-joined turn
+("take x and drop y") therefore runs every Workflow Process once per
+sub-command.
 
 ## Core API contracts
 
@@ -90,7 +113,7 @@ The engine talks in terms of small interfaces in `com.pdg.adventure.api`:
 | `Actionable` | The combination of `HasCommands` and ability to apply a command directly (used for the player's pocket and the current location). |
 | `Containable` / `Container` | Items live in containers; containers expose `add`, `remove`, `contains`, `listContents`, `getMatchingCommandChain` (descends into children). |
 | `Visitable` | Implemented by `Location`; tracks `timesVisited` and `lumen`. |
-| `ExecutionResult` | `{ State (SUCCESS / FAILURE), String resultMessage, boolean commandHasMatched }`. |
+| `ExecutionResult` | `{ State, String resultMessage, boolean commandHasMatched }`. `State` is declared `FAILURE, SUCCESS` (a commented-out `UNSPECIFIED` placeholder sits first, reserved for a future tri-state; nothing depends on the ordinal order today). Every `PreCondition`, the `Wear`/`Remove` actions, `GenericCommandChain.execute` and `Location.applyCommand` now set the state **explicitly on both the pass and fail branch** instead of leaning on `CommandExecutionResult`'s `FAILURE` default — a readability/robustness pass with no behavioural change. |
 
 ## The Parser
 
@@ -179,11 +202,19 @@ Every `Thing` and `GenericDirection` composes a `CommandHandler`
 4. 0 chains → failure, `SystemMessageKey.SM8` (*"I can't do that."*).
 5. >1 chains → failure; `SM60` (*"What should I &lt;verb&gt;?"*, no input
    noun) or `SM61` (input noun given), each `String.format`-filled.
-6. exactly 1 → `chain.execute()`, returned as-is.
+6. exactly 1 → `chain.execute()`, returned as-is (no `clarifyExecutionOutcome`
+   on this path). `GenericCommandChain.execute` returns `SUCCESS` if **any**
+   command in the chain applied — joining only the non-blank result messages
+   of the commands that succeeded — otherwise `FAILURE` carrying the last
+   command's failure message.
 7. On the 0/>1 paths only, `clarifyExecutionOutcome` fills an empty
-   `resultMessage` (FAILURE → SM8). Empty-message normalisation for the
-   single-match happy path now lives in `GameLoop.runOneCommandSucceeded`
-   (FAILURE → SM8, non-FAILURE → `SM15` *"OK."*).
+   `resultMessage` (FAILURE → SM8; its `SUCCESS → SM15 "OK."` branch is
+   unreachable, since those paths always carry `FAILURE`). The single-match
+   path is no longer normalised: `GameLoop.runOneCommandSucceeded` returns
+   early for any non-FAILURE result and tells its message verbatim, so a
+   successful command whose actions produced no text now prints a **blank
+   line** where the old `GameLoop` tail would have substituted `SM15
+   "OK."`. An *empty* FAILURE message is still replaced with `SM8`.
 
 The message templates are deliberately generic so the surrounding game text
 supplies most of the narrative.
@@ -194,18 +225,22 @@ The `Workflow` (`server/engine/Workflow.java`) holds two
 `TreeMap<CommandDescription, Command>`s. The domain names for the *authored*
 entries in each are **Processes** and **Responses**
 ([`03-domain-model.md` § Workflow](03-domain-model.md#workflow)); the engine
-names for the maps are `preCommands` and `interceptorCommands`.
+names for the maps are `processes` and `responses`.
 
-- **`preCommands` (Processes + the prompt)** — every entry executed at the
-  *start* of every turn, before input is read, in a deterministic order:
-  alphabetical by verb, then adjective, then noun (an explicit
-  `Comparator`, not the `TreeMap`'s own key ordering). `CommandFactory`
-  plants one built-in: a `MessageAction(SystemMessageKey.SM2)` — *"What
-  now?"* — keyed `("}", "}", "}")` so it sorts last and never collides with
-  a real command. The author's Processes are layered on by
+- **`processes` (Processes + the prompt)** — every entry executed once
+  *before each parsed sub-command* (`GameLoop.processCommand` calls
+  `GameContext.runProcesses()` at the top of its per-sub-command
+  loop), in a deterministic order: alphabetical by verb, then adjective,
+  then noun (an explicit `Comparator`, not the `TreeMap`'s own key
+  ordering). `CommandFactory` plants one built-in: a
+  `MessageAction(SystemMessageKey.SM2)` — *"What now?"* — keyed
+  `("~", "~", "~")` so it sorts last and never collides with a real
+  command. The author's Processes are layered on by
   `WorkflowMapper.populate`.
-- **`interceptorCommands` (Responses)** — consulted *after* parsing each
-  sub-command but *before* pocket/location dispatch. Match by exact
+- **`responses` (Responses)** — consulted only as a *fallback*,
+  after `CommandExecutor` (pocket + current location) has been tried and
+  returned `FAILURE` with the `SM8` sentinel text — i.e. only when nothing
+  local matched the sub-command's verb at all. Match by exact
   `CommandDescription`. `CommandFactory` plants these built-ins:
 
 | Verb | Default Response behaviour |
@@ -216,13 +251,24 @@ names for the maps are `preCommands` and `interceptorCommands`.
 | `describe` (and `describe here`) | `DescribeAction` printing the current location's long description. |
 
   The author's Responses are layered on by `WorkflowMapper.populate`; one
-  whose verb matches a built-in **replaces** it for that adventure. There is
-  no built-in `load` Response — cross-adventure loading is done only by
+  whose verb matches a built-in **replaces** it for that adventure (still
+  true — no location or item defines these verbs, so local dispatch fails
+  with `SM8` and the fallback reaches the Response). There is no built-in
+  `load` Response — cross-adventure loading is done only by
   `AdventureRunSessionFactory` via `LoadAdventureAction`.
 
-A Response that succeeds (`state != FAILURE`) ends that sub-command with its
-message; failure (the default `CommandExecutionResult`) lets the dispatcher
-fall through to pocket/location matching.
+Because Responses are now a post-`CommandExecutor` fallback rather than an
+interceptor, an authored **location or item** command that shares a
+Response's `(verb, adjective, noun)` wins over that Response (local dispatch
+succeeds, or fails with a *specific* message, so the fallback is never
+reached). A Response is consulted only for verbs with no local handler; when
+it is reached, a non-FAILURE result ends the sub-command, and a FAILURE
+result (including the default empty `CommandExecutionResult` when no Response
+matched) falls through to `GameLoop`'s FAILURE handling (its message if any,
+else `SM8`). The runtime map is named `responses` and its lookup is
+`Workflow.respondTo(cmd)` / `GameContext.respondTo(cmd)`. (The *persisted*
+model field on `WorkflowData` keeps its older name `interceptorCommands` — a
+document-schema rename is a separate migration.)
 
 ## CommandFactory: wiring conventions
 
@@ -276,11 +322,20 @@ emits the thing's long description.
 ### Workflow
 
 `setUpWorkflowCommands(workflow)` adds `help`, `inventory`, `quit`,
-`describe` and `describe here` as **interceptor commands (Responses)**, plus a
-`MessageAction(SystemMessageKey.SM2)` — *"What now?"* — as a **pre-command
-(Process)** keyed `("}", "}", "}")`. The author's own Processes and Responses
-are layered on afterwards by `WorkflowMapper.populate` (see
+`describe` and `describe here` as **Responses** (`workflow.addResponse`), plus a
+`MessageAction(SystemMessageKey.SM2)` — *"What now?"* — as a **Process**
+(`workflow.addProcess`) keyed `("~", "~", "~")`. The author's own Processes and
+Responses are layered on afterwards by `WorkflowMapper.populate` (see
 [§ Workflow: Processes and Responses](#workflow-processes-and-responses)).
+
+The built-in `describe` / `describe here` Response wraps a `DescribeAction`
+that forces the **full first-visit** long description: it reads the current
+`Location`'s `timesVisited`, temporarily sets it to `0` (so
+`Location.getLongDescription()` returns `super.getLongDescription()` rather
+than the abbreviated re-visit form), reads the description, then **restores
+the real count**. An explicit `look` therefore no longer resets the
+location's visit counter — earlier code restored it to `0`, which made every
+subsequent auto-describe on re-entry behave as a first visit.
 
 ## Action catalog
 
@@ -301,8 +356,8 @@ author-placeable:
 | `TakeAction(item, pocket, msgs)` | Move `item` into the pocket via `MoveItemAction`; emits `SM36` (taken) / `SM26` (not here). Used by the `get` command. |
 | `DropAction(item, container, msgs)` | Move `item` into the supplied container via `MoveItemAction`, and automatically remove it from its parent container; emits `SM39` + the item description. Used by the `drop` commands. |
 | `MoveItemAction(item, dest, msgs)` | The primitive: remove the item from its parent if any, add it to `dest` if not full. Emits `SM54` (moved) / `SM55` (full) / `SM56` (can't). |
-| `WearAction(wearable, msgs)` | If `isWearable && !isWorn`, set `isWorn=true`; emits `SM37` (worn) / `SM40` (can't wear). |
-| `RemoveAction(wearable, msgs)` | Inverse of `WearAction`; clears `isWorn`; emits `SM38` / `SM41`. |
+| `WearAction(wearable, msgs)` | If `isWearable && !isWorn`, set `isWorn=true`, `SUCCESS` + `SM37`; else `FAILURE` + `SM40`. Interpolates `thing.getStrippedBasicDescription()` (article-less — the `SMnn` texts already carry *"the %s"*). |
+| `RemoveAction(wearable, msgs)` | Inverse of `WearAction`; clears `isWorn`; `SUCCESS` + `SM38` / `FAILURE` + `SM41`. Also interpolates the *stripped* (article-less) description. |
 | `MovePlayerAction(destination, msgs, gameContext)` | Set `gameContext.currentLocation = destination`, run `DescribeAction(destination::getLongDescription)`, increment `timesVisited`. |
 | `InventoryAction(consumer, pocketSupplier, msgs)` | Print the carried-items header (`SM9`) followed by `pocket.listContents()`. |
 | `QuitAction(msgs)` | Throw `QuitException` carrying the supplied bye message. |
@@ -351,7 +406,7 @@ conditions wrap others.
 | Condition | Returns SUCCESS when… |
 |-----------|----------------------|
 | `CarriedCondition(item, gc)` | `gc.pocket.contains(item)`. Failure message SM28 (default text `"I don't have one of those."`). |
-| `WornCondition(wearable)` | `wearable.isWorn() == true`. Failure message SM50 (default text `"I'm not wearing the %s."`). |
+| `WornCondition(wearable)` | `wearable.isWorn() == true`. Failure message SM50 (default text `"I'm not wearing the %s."`), filled with `getStrippedBasicDescription()` (article-less). |
 | `HereCondition(item, gc)` | `gc.currentLocation.contains(item)`. Failure message SM26 (default text `"There isn't one of those here."`). |
 | `ItemAtCondition(item, location, gc)` | The item is at the named location. |
 | `PlayerAtCondition(location, gc)` | `gc.currentLocation.equals(location)`. |
@@ -395,11 +450,15 @@ logic is expressed as separate Command Chain variants (see
   `java.lang.IO::println` (JDK 25's built-in `java.lang.IO`, implicitly
   imported). Passing `null` restores the default.
 - `setUpWorkflows()` — instantiates a fresh `Workflow`.
-- `preProcessCommands()` / `interceptCommands(cmd)` — delegate to the workflow.
+- `runProcesses()` / `respondTo(cmd)` — delegate to the workflow.
 
-`Workflow.preProcess` walks all preCommands **in alphabetical (verb, adjective,
-noun) order** and tells each result. Interceptors are dispatched on exact
-command-description match.
+`Workflow.runProcesses()` walks all `processes` **in alphabetical (verb,
+adjective, noun) order** and tells each result; `GameLoop.processCommand`
+invokes it once per parsed sub-command. `Workflow.respondTo(cmd)` looks up an
+exact `CommandDescription` match in `responses` and returns its `execute()`
+result, or a default `FAILURE` `CommandExecutionResult` when nothing matches —
+`GameLoop` calls this only after `CommandExecutor` has failed with the `SM8`
+sentinel.
 
 There is **no CLI runner** anymore — `MiniAdventure` and `AdventureClient`
 were deleted, and there is no custom `IO` class (`Adventure.run()` survives
@@ -433,12 +492,16 @@ engine, without touching `GameLoop`/`GameContext` directly:
      (§ [Workflow](03-domain-model.md#workflow)) are layered on top of the
      built-in ones.
    - Returns an `AdventureRunSession` wrapping a fresh `GameLoop`. The
-     caller must still call `session.submit("look")` to render the opening
-     room — the factory does not do this itself.
+     caller must still submit the opening `look` to render the starting
+     room — the factory does not do this itself. `AdventureRunView` does it
+     via its own `handleInput("look")` (the same path a typed command
+     takes).
 2. `AdventureRunSession.submit(String input)`:
    - Installs a capturing `Consumer<String>` via `gameContext.setOutputSink(...)`,
-     runs `gameContext.preProcessCommands()` then `gameLoop.processCommand(input)`,
-     collects the non-blank/non-prompt lines, and **always** clears the sink
+     runs `gameLoop.processCommand(input)` (which now fires
+     `gameContext.runProcesses()` itself, once per parsed
+     sub-command — `submit` no longer calls it), collects the
+     non-blank/non-prompt lines, and **always** clears the sink
      (`setOutputSink(null)`) in a `finally` block before returning.
    - Returns a `RunResult(List<String> lines, boolean gameOver)`.
 

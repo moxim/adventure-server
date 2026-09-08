@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Let an author attach `Command`s to an Adventure's Workflow through a new `WorkflowEditorView`, and prove those commands actually execute at runtime through `gameContext.preProcessCommands()` (the call `GameLoop.run()` makes each turn, `server/src/main/java/com/pdg/adventure/server/engine/GameLoop.java:36`).
+**Goal:** Let an author attach `Command`s to an Adventure's Workflow through a new `WorkflowEditorView`, and prove those commands actually execute at runtime through `gameContext.runProcesses()` (the call `GameLoop.processCommand()` makes before each parsed sub-command).
 
-**Architecture:** Add a `WorkflowData` model (a `List<CommandData>`) embedded directly in `AdventureData`, mirroring how `CommandProviderData`/`CommandChainData` are already embedded (no `@DBRef`, no separate Mongo collection). A new `WorkflowMapper` bridges persisted `WorkflowData` onto an already-constructed runtime `Workflow` (via its existing `addPreCommand`), reusing the existing `CommandMapper` for the actual `CommandData → Command` conversion. A new `WorkflowEditorView` (single Vaadin view, adventure-scoped) lets an author list, add, edit and delete these commands, reusing the existing `PreconditionActionEditor`/`VocabularyPickerField` components rather than duplicating `CommandEditorView`'s Location/Item-chain machinery. The existing (currently disabled) "Manage Workflow" button on `AdventureEditorView` is wired to it.
+**Architecture:** Add a `WorkflowData` model (a `List<CommandData>`) embedded directly in `AdventureData`, mirroring how `CommandProviderData`/`CommandChainData` are already embedded (no `@DBRef`, no separate Mongo collection). A new `WorkflowMapper` bridges persisted `WorkflowData` onto an already-constructed runtime `Workflow` (via its `addProcess`/`addResponse`), reusing the existing `CommandMapper` for the actual `CommandData → Command` conversion. A new `WorkflowEditorView` (single Vaadin view, adventure-scoped) lets an author list, add, edit and delete these commands, reusing the existing `PreconditionActionEditor`/`VocabularyPickerField` components rather than duplicating `CommandEditorView`'s Location/Item-chain machinery. The existing (currently disabled) "Manage Workflow" button on `AdventureEditorView` is wired to it.
 
 **Tech Stack:** Spring Boot, Vaadin Flow, MongoDB (Spring Data), Lombok, JUnit 5 + Mockito + AssertJ, `com.vaadin.browserless.BrowserlessTest` for UI-unit tests.
 
@@ -26,7 +26,7 @@
 - Test: `server/src/test/java/com/pdg/adventure/server/mapper/WorkflowMapperTest.java`
 
 **Interfaces:**
-- Consumes: `CommandMapper.mapToBO(CommandData): Command` (existing, `server/src/main/java/com/pdg/adventure/server/mapper/CommandMapper.java:30`); `Workflow.addPreCommand(GenericCommandDescription, Command): void` and `GameContext.setUpWorkflows(): Workflow` / `GameContext.preProcessCommands(): void` (existing, unchanged).
+- Consumes: `CommandMapper.mapToBO(CommandData): Command` (existing, `server/src/main/java/com/pdg/adventure/server/mapper/CommandMapper.java:30`); `Workflow.addProcess(GenericCommandDescription, Command): void` and `GameContext.setUpWorkflows(): Workflow` / `GameContext.runProcesses(): void` (existing, unchanged).
 - Produces: `WorkflowData` (new model, `getCommands(): List<CommandData>`), `WorkflowMapper.populate(WorkflowData, Workflow): void` — later tasks call this type but this plan does not wire it into any runtime bootstrap (see Scope note above); it exists to be exercised directly by its own test and to be available as the authoring-to-runtime bridge if/when the demo entry point is revived.
 
 - [ ] **Step 1: Create the `WorkflowData` model**
@@ -109,7 +109,7 @@ class WorkflowMapperTest {
     }
 
     @Test
-    void populate_addsMappedCommandsAsWorkflowPreCommands_soPreProcessCommandsExecutesThem() {
+    void populate_addsMappedCommandsAsWorkflowProcesses_soRunProcessesExecutesThem() {
         // Given: an authored CommandData in a WorkflowData
         CommandData commandData = new CommandData(new CommandDescriptionData("shiver||"));
         WorkflowData workflowData = new WorkflowData();
@@ -127,9 +127,9 @@ class WorkflowMapperTest {
         // When: populating the runtime workflow from the authored data
         workflowMapper.populate(workflowData, workflow);
 
-        // Then: gameContext.preProcessCommands() - the exact call GameLoop.run() makes each turn
-        // at GameLoop.java:36 - now executes the authored command.
-        gameContext.preProcessCommands();
+        // Then: gameContext.runProcesses() - the exact call GameLoop.processCommand()
+        // makes before each parsed sub-command - now executes the authored command.
+        gameContext.runProcesses();
 
         verify(commandMapper).mapToBO(commandData);
         verify(command).execute();
@@ -175,7 +175,7 @@ public class WorkflowMapper {
         for (CommandData commandData : aWorkflowData.getCommands()) {
             Command command = commandMapper.mapToBO(commandData);
             CommandDescription description = command.getDescription();
-            aWorkflow.addPreCommand((GenericCommandDescription) description, command);
+            aWorkflow.addProcess((GenericCommandDescription) description, command);
         }
     }
 }
@@ -559,7 +559,7 @@ public class WorkflowEditorView extends VerticalLayout
         setUpBinding();
 
         Span helpText = new Span("Workflow commands run automatically every turn, in "
-                + "gameContext.preProcessCommands() - they are not triggered by matching player input. "
+                + "gameContext.runProcesses() - they are not triggered by matching player input. "
                 + "Verb/Adjective/Noun just label the command. Add preconditions to control when it fires; "
                 + "an unmet precondition still shows its message every turn, it does not silently skip.");
         helpText.getStyle().set("font-style", "italic").set("color", "var(--lumo-secondary-text-color)");

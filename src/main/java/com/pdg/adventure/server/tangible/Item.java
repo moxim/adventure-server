@@ -3,6 +3,7 @@ package com.pdg.adventure.server.tangible;
 import com.pdg.adventure.api.Containable;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.Wearable;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.support.DescriptionProvider;
 
 public class Item extends Thing implements Containable, Wearable {
@@ -45,7 +46,25 @@ public class Item extends Thing implements Containable, Wearable {
     public String getShortDescription() {
         String result = super.getShortDescription();
         if (isWorn) {
-            result = result + " (worn)";
+            result = result + SystemMessageKey.SM10.defaultText();
+        }
+        return result;
+    }
+
+    @Override
+    public String getLongDescription() {
+        String result = super.getLongDescription();
+        if (isWorn) {
+            result = result + SystemMessageKey.SM10.defaultText();
+        }
+        return result;
+    }
+
+    @Override
+    public String getEnrichedShortDescription() {
+        String result = super.getEnrichedShortDescription();
+        if (isWorn) {
+            result = result + SystemMessageKey.SM10.defaultText();
         }
         return result;
     }

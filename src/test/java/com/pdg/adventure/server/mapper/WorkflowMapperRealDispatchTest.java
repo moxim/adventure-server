@@ -24,8 +24,8 @@ import com.pdg.adventure.server.support.MapperSupporter;
  * Exercises the full, real mapper-dispatch chain that WorkflowMapperTest and LoadAdventureActionTest
  * each mock away: authored WorkflowData -> real CommandMapper.mapToBO -> real
  * MapperSupporter.getMapper(MessageActionData.class) -> the auto-registered MessageActionMapper ->
- * a runtime Command executed by gameContext.preProcessCommands(), the exact call GameLoop.run() makes
- * at the top of every turn.
+ * a runtime Command executed by gameContext.runProcesses(), the exact call
+ * GameLoop.processCommand() makes before each parsed sub-command.
  */
 class WorkflowMapperRealDispatchTest {
 
@@ -65,7 +65,7 @@ class WorkflowMapperRealDispatchTest {
         ByteArrayOutputStream capturedOut = new ByteArrayOutputStream();
         System.setOut(new PrintStream(capturedOut));
         try {
-            gameContext.preProcessCommands();
+            gameContext.runProcesses();
         } finally {
             System.setOut(originalOut);
         }

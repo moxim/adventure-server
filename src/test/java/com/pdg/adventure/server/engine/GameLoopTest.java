@@ -168,7 +168,7 @@ class GameLoopTest {
                                              new MessageAction("A rusty key.", messages)));
 
         GenericCommandDescription descendDescription = new GenericCommandDescription("descend");
-        workflow.addInterceptorCommand(descendDescription,
+        workflow.addResponse(descendDescription,
                                        new GenericCommand(descendDescription,
                                                           new MovePlayerAction(cellar, messages, gameContext)));
 

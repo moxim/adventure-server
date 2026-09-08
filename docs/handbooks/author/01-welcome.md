@@ -43,7 +43,7 @@ each time.
 | **PreCondition** | A yes/no check a command runs before it fires — "is the player carrying the key?" |
 | **Message** | A reusable piece of text, referenced by an id, that a command can print. |
 | **System message** | One of the game engine's built-in lines ("I can't do that.", "OK.", …). You can't add or remove these, but you can reword or translate them per adventure. |
-| **Workflow** | Global commands, not tied to one location — split into **Processes** (run every turn) and **Responses** (intercept a specific typed command). |
+| **Workflow** | Global commands, not tied to one location — split into **Processes** (run every turn) and **Responses** (a fallback for a specific typed command that nothing local handles). |
 
 If a term shows up in this handbook that isn't in this table, it'll be
 explained where it's first used.

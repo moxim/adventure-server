@@ -67,8 +67,10 @@ public class Location extends Thing implements Visitable, HasLight {
 
         ExecutionResult result = new CommandExecutionResult();
         if (availableCommandChains.isEmpty()) {
+            result.setExecutionState(ExecutionResult.State.FAILURE);
             result.setResultMessage(SystemMessageKey.SM8.defaultText());
         } else if (availableCommandChains.size() > 1) {
+            result.setExecutionState(ExecutionResult.State.FAILURE);
             result.setResultMessage(SystemMessageKey.SM60.defaultText().formatted(aCommandDescription.getVerb()));
         } else {
             result = availableCommandChains.getFirst().execute();

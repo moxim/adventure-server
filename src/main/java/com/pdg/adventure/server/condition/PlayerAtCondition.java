@@ -25,6 +25,8 @@ public class PlayerAtCondition extends AbstractCondition {
         ExecutionResult result = new CommandExecutionResult();
         if (gameContext.getCurrentLocation().equals(location)) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
+        } else {
+            result.setExecutionState(ExecutionResult.State.FAILURE);
         }
         return result;
     }

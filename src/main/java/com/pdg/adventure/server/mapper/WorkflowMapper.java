@@ -26,12 +26,12 @@ public class WorkflowMapper {
         for (CommandData commandData : aWorkflowData.getCommands()) {
             Command command = commandMapper.mapToBO(commandData);
             CommandDescription description = command.getDescription();
-            aWorkflow.addPreCommand((GenericCommandDescription) description, command);
+            aWorkflow.addProcess((GenericCommandDescription) description, command);
         }
         for (CommandData commandData : aWorkflowData.getInterceptorCommands()) {
             Command command = commandMapper.mapToBO(commandData);
             CommandDescription description = command.getDescription();
-            aWorkflow.addInterceptorCommand((GenericCommandDescription) description, command);
+            aWorkflow.addResponse((GenericCommandDescription) description, command);
         }
     }
 }

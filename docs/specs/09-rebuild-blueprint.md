@@ -204,9 +204,10 @@ Pay attention to:
    `GenericCommandProvider`, `GenericCommandChain`,
    `CommandExecutionResult`, `ExamineFallbackAction`.
 2. Implement `server/engine/`:
-   `GameContext`, `Workflow` (preCommands and interceptorCommands as
+   `GameContext`, `Workflow` (the `processes` and `responses` tables as
    `TreeMap<CommandDescription, Command>`, iterated in alphabetical
-   verb/adjective/noun order), `GameLoop` (`processCommand(String)` runs each
+   verb/adjective/noun order; `runProcesses()` runs the first, `respondTo(cmd)`
+   looks up the second), `GameLoop` (`processCommand(String)` runs each
    sub-command in order, stopping at the first failure), `ContainerSupplier`.
    Make `GameContext.tell()` route through an injectable
    `Consumer<String> outputSink` (default `java.lang.IO::println` — JDK 25's
@@ -232,9 +233,6 @@ Pay attention to:
    Responses + the `SM2` "What now?" Process prompt), exactly as
    described in
    [`04-runtime-engine.md` § CommandFactory](04-runtime-engine.md#commandfactory-wiring-conventions).
-5. There is **no CLI runner** (`MiniAdventure` / `AdventureClient` were
-   removed; `Adventure.run()` is a vestigial stub). The only play path is
-   `AdventureRunView` → `AdventureRunSession` (Step 11).
 
 ### Step 10 — AI integration (intentional placeholder)
 
@@ -314,8 +312,7 @@ and
    pickers.
 5. Add the JSON test fixtures: `OneLocation.json`, `QuickAdventure.json`,
    `Vocab.json`.
-6. Add `AdventureBuilderTest` /
-   `ApplicationTest` for end-to-end coverage with embedded MongoDB.
+6. Add `AdventureBuilderTest` for end-to-end coverage with embedded MongoDB.
 7. **Do not** introduce `BaseDTO.java` or `BaseRecord.java` PoC test
    classes — they were dead code in the previous repo and should not be
    carried over.

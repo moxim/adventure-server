@@ -35,13 +35,22 @@ worth planning around.
   practice this rarely matters because the play screen's core verbs
   (`look`, `inventory`, `help`, `quit`) work automatically regardless. See
   [Chapter 7](07-vocabulary-and-words.md#special-words).
-- **Workflow *Processes* print their failure message every turn, not once.**
-  If a Process's precondition is unmet, and that precondition (or the
-  command) is set up to say something about it, expect to see that message
-  every single turn until the condition changes. Workflow *Responses* are
-  the opposite — an unmet Response falls through silently. If you want
+- **Workflow *Processes* print their failure message every turn, not once
+  — and run once per command, not once per line.** If a Process's
+  precondition is unmet, and that precondition (or the command) is set up to
+  say something about it, expect to see that message every turn until the
+  condition changes. Also note a Process runs once for *each* command in a
+  turn, so `take key and open door` runs every Process twice. If you want
   "only speak up when a specific command is typed," build a Response, not a
   Process. See [Chapter 9](09-workflow.md).
+- **A Workflow *Response* is a fallback, not an override of your own
+  commands.** A Response fires only when the typed verb matches it exactly
+  *and* nothing in the current location or the player's pocket handles that
+  verb. If you give a location or an item a command with the same
+  verb/adjective/noun as one of your Responses, the local command wins and
+  the Response won't fire there. (Built-ins like `look` / `help` still get
+  replaced by a same-verb Response, because nothing local defines them.)
+  See [Chapter 9](09-workflow.md).
 - **No save/load mid-playtest.** A Test or Run session is one continuous
   sitting; there's nothing to resume later. See
   [Chapter 11](11-testing-and-running.md#what-you-can-type).

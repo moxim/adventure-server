@@ -288,7 +288,8 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
 
 - **As** an AUTHOR
 - **I want** to define commands that apply no matter where the player is —
-  some that run every turn, some that intercept specific typed commands
+  some that run every turn, some that answer specific typed commands nothing
+  local handles
 - **So that** I can build global mechanics — ambient events, hazards, a
   win/lose check — and adventure-wide overrides of built-in verbs, without
   repeating a command on every location
@@ -303,20 +304,23 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
   - **Processes** — `/author/adventures/:adventureId/workflow`
     (`WorkflowEditorView`), reached via **Manage Processes** on
     `AdventureEditorView`, edits `WorkflowData.commands`. These run
-    automatically every turn, before input is consulted. The verb is
-    **not** required here. **A Process with an unmet precondition is not
-    silent:** if a precondition (or the command) reports a message on
-    failure, that message is shown **every turn** the precondition is
-    unmet. The editor's own help text warns of this explicitly.
+    automatically before **each parsed sub-command** (so a conjunction-joined
+    turn runs them more than once), before that sub-command is dispatched.
+    The verb is **not** required here. **A Process with an unmet
+    precondition is not silent:** if a precondition (or the command) reports
+    a message on failure, that message is shown **every time** the
+    precondition is unmet. The editor's own help text warns of this
+    explicitly.
   - **Responses** — `/author/adventures/:adventureId/responses`
     (`ResponsesEditorView`), reached via **Manage Responses** on
     `AdventureEditorView`, edits `WorkflowData.interceptorCommands`. A
-    Response fires only when the player's verb (and adjective/noun, if
-    set) matches it exactly, short-circuiting the normal location/item
-    lookup. If its preconditions are unmet it falls through **silently**
-    to normal handling — no message. The verb **is** required. A Response
-    whose verb matches a built-in (help, inventory, quit, look/describe)
-    overrides that built-in for this adventure.
+    Response is tried only as a **fallback** — when the player's verb (and
+    adjective/noun, if set) matches it exactly **and** nothing in the
+    current location or the player's pocket handled that verb. A location or
+    item command sharing the same verb/adjective/noun therefore **wins over**
+    the Response. The verb **is** required. A Response whose verb matches a
+    built-in (help, inventory, quit, look/describe) still overrides that
+    built-in, since no location or item defines those verbs.
 
 ### B11. Manage system messages
 
@@ -386,10 +390,12 @@ author origins) differ by origin.
     commands, each echoed under the player's own username before the
     response renders.
   - Input runs through `Parser` → `GameLoop.processCommand` →
-    `CommandExecutor` (Responses first, then pocket/location dispatch).
-    `Parser` splits the line into a `CommandSequence` of sub-commands on
-    `and` / `then` / `.`; `GameLoop` runs them in order and stops at the
-    first that fails or can't be understood. A missing verb is inferred
+    `CommandExecutor` (pocket/location dispatch first; Workflow Responses
+    only as a fallback for a verb nothing local handled). `Parser` splits
+    the line into a `CommandSequence` of sub-commands on `and` / `then` /
+    `.`; `GameLoop` runs them in order — firing the Workflow Processes
+    before each — and stops at the first that fails or can't be understood.
+    A missing verb is inferred
     from the previous sub-command, and `it` resolves to the last-mentioned
     noun (an unresolved `it` tells a message and ends the turn). Resulting
     messages are appended to the transcript.

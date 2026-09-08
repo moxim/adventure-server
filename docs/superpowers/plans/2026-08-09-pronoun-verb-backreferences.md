@@ -13,7 +13,7 @@
 - Spec: `docs/superpowers/specs/2026-08-09-pronoun-verb-backreferences-design.md` — this plan implements that design exactly; if anything here conflicts with it, the spec wins and the plan is wrong.
 - The unresolved-pronoun message must be exactly `"I don't know what 'it' refers to."` (approved wording from design review).
 - No author-facing CRUD or vocabulary-menu visibility for built-in words — that was a separate feature, designed and then explicitly reverted by the user in a prior session. Do not resurrect it.
-- Follow the existing "and"/"then" precedent throughout: `PRONOUN` is a reserved, system-seeded `Word.Type`, seeded identically in both `MiniAdventure.createSpecialWords()` and `AdventureRunSessionFactory.registerBaseVerbs()`, and excluded from `WordEditorDialogue`'s type picker.
+- Follow the existing "and"/"then" precedent throughout: `PRONOUN` is a reserved, system-seeded `Word.Type`, seeded identically in `AdventureRunSessionFactory.registerBaseVerbs()`, and excluded from `WordEditorDialogue`'s type picker.
 - TDD: every behavioral change gets a failing test first. A few confirmation tests in this plan are expected to pass immediately because an earlier task's change already provides the behavior — those are called out explicitly as such; they are not exempt from being written, just from driving new production code.
 - Run `mvn test` (or the module-scoped equivalent already used in this repo) after every task; do not move to the next task with a red suite.
 
@@ -481,7 +481,6 @@ git commit -m "GameLoop reports a specific message when 'it' has no antecedent"
 ### Task 4: Seed "it" as a built-in word; exclude PRONOUN from the author's type picker
 
 **Files:**
-- Modify: `src/main/java/com/pdg/adventure/MiniAdventure.java`
 - Modify: `src/main/java/com/pdg/adventure/server/engine/AdventureRunSessionFactory.java`
 - Modify: `src/main/java/com/pdg/adventure/view/vocabulary/WordEditorDialogue.java`
 - Test: `src/test/java/com/pdg/adventure/server/engine/AdventureRunSessionFactoryTest.java`
