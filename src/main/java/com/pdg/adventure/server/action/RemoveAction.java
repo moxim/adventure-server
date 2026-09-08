@@ -25,11 +25,12 @@ public class RemoveAction extends AbstractAction {
         if (thing.isWorn()) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
             result.setResultMessage(
-                    SystemMessageKey.SM38.defaultText().formatted(thing.getEnrichedBasicDescription()));
+                    SystemMessageKey.SM38.defaultText().formatted(thing.getStrippedBasicDescription()));
             thing.setIsWorn(false);
         } else {
+            result.setExecutionState(ExecutionResult.State.FAILURE);
             result.setResultMessage(
-                    SystemMessageKey.SM41.defaultText().formatted(thing.getEnrichedBasicDescription()));
+                    SystemMessageKey.SM41.defaultText().formatted(thing.getStrippedBasicDescription()));
         }
         return result;
     }

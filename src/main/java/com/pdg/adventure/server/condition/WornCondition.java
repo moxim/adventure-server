@@ -24,7 +24,8 @@ public class WornCondition extends AbstractCondition {
         if (thing.isWorn()) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         } else {
-            result.setResultMessage(SystemMessageKey.SM50.defaultText().formatted(thing.getEnrichedBasicDescription()));
+            result.setExecutionState(ExecutionResult.State.FAILURE);
+            result.setResultMessage(SystemMessageKey.SM50.defaultText().formatted(thing.getStrippedBasicDescription()));
         }
         return result;
     }

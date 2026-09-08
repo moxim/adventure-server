@@ -4,7 +4,8 @@ import java.io.Serializable;
 
 public interface ExecutionResult extends Serializable {
     enum State {
-        SUCCESS, FAILURE
+//        UNSPECIFIED,
+        FAILURE, SUCCESS;
     }
 
     State getExecutionState();

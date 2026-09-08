@@ -62,6 +62,7 @@ public class GenericCommandChain implements CommandChain {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
             result.setResultMessage(String.join(System.lineSeparator(), messages));
         } else {
+            result.setExecutionState(ExecutionResult.State.FAILURE);
             result.setResultMessage(last.getResultMessage());  // surface last failure; empty → SM8 ("I can't do that.")
         }
         return result;

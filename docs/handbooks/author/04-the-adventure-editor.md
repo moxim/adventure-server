@@ -36,7 +36,7 @@ These are your doors into the rest of the adventure:
 | **Manage Locations** | [Locations & Exits](05-locations-and-exits.md) |
 | **Manage Items** | [Items](06-items.md) (every item across the whole adventure) |
 | **Manage Processes** | [Workflow → Processes](09-workflow.md#processes-run-every-turn) |
-| **Manage Responses** | [Workflow → Responses](09-workflow.md#responses-intercept-a-typed-command) |
+| **Manage Responses** | [Workflow → Responses](09-workflow.md#responses-a-fallback-for-a-typed-command) |
 
 > **Note:** Clicking any of these silently saves valid changes to the fields
 > above first (if your title etc. currently pass validation), so you won't

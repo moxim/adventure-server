@@ -7,8 +7,8 @@ differently:
 
 | Kind | When it runs | If its preconditions aren't met |
 |------|--------------|--------------------------------|
-| **Process** | Automatically, **every turn**, before location commands | Still runs — and any message it's set up to show appears **every turn** |
-| **Response** | Only when the player types a command that **matches it exactly** | Falls through **silently** to normal handling — nothing is shown |
+| **Process** | Automatically, before **every command** the engine handles — and each part of an `and` / `then` sentence counts as its own command | Still runs — and any message it's set up to show appears **every time** |
+| **Response** | Only when the player types a command that **matches it exactly** *and* nothing in the current location or the player's pocket already handles that verb | The turn just fails for that verb (*"I can't do that"*, unless a precondition supplies its own message) |
 
 Both are reached from the [Adventure Editor](04-the-adventure-editor.md):
 **Manage Processes** and **Manage Responses**. Both screens look and work
@@ -39,6 +39,11 @@ recurring hazard, a running score or turn check, a condition that ends the
 game the moment it becomes true. The **Verb** is *not* required here (a
 Process doesn't need to match typed input — it just runs).
 
+> **One turn, several runs.** Processes run once *per command*, not once per
+> line typed. If the player types `take key and open door`, that's two
+> commands, so every Process runs twice that turn. Keep that in mind for a
+> Process that counts turns or changes a score.
+
 That second sentence of the reminder is the single most common surprise:
 
 > **Note:** A Process whose preconditions **fail** is not silent. If one of
@@ -49,30 +54,37 @@ That second sentence of the reminder is the single most common surprise:
 > want "only say something when a specific command is typed," you want a
 > **Response**, not a Process.
 
-## Responses: intercept a typed command
+## Responses: a fallback for a typed command
 
 **Manage Responses** opens the screen headed *"Responses for {your title}"*,
 with its own reminder:
 
-> *"A response fires only when the player's verb (and adjective/noun, if set)
-> matches exactly, short-circuiting the normal location/item lookup. If its
-> preconditions aren't met, it falls through silently to normal handling —
-> no message is shown. Matching a built-in verb (help, inventory, quit,
-> look/describe) overrides that built-in for this adventure."*
+> *"A response is a fallback: it fires only when the player's verb (and
+> adjective/noun, if set) matches exactly and nothing in the current
+> location or the player's pocket already handles that verb. The verb is
+> required. Matching a built-in verb (help, inventory, quit, look/describe)
+> still overrides that built-in for this adventure."*
 
-Use Responses for adventure-wide command overrides: a custom `help` text, a
-`pray` verb that works anywhere, a `score` command. The **Verb** *is*
-required. When the player types something that matches a Response's
-verb (and adjective/noun, if you set them):
+Use Responses for adventure-wide commands that nothing else defines: a
+custom `help` text, a `pray` verb that works anywhere, a `score` command.
+The **Verb** *is* required. When the player types something that matches a
+Response's verb (and adjective/noun, if you set them):
 
-- If the Response's preconditions pass, it runs and that's the whole turn —
-  the normal "look in this location / on this item" search never happens.
-- If they don't pass, nothing is shown and the game falls through to normal
-  handling as if the Response weren't there.
+- The engine first looks for a command on the current location or on an item
+  in the room / the player's pocket. If it finds one, that's the turn — the
+  Response is **not** consulted.
+- Only if nothing local matches that verb does the Response get its turn. If
+  its preconditions pass, it runs. If they don't, the turn fails for that
+  verb (*"I can't do that"*, or whatever message a failing precondition
+  carries).
 
-Because a Response short-circuits normal lookup, giving one the same verb as
-a built-in (**help**, **inventory**, **quit**, **look**/**describe**)
-**replaces** that built-in for your adventure.
+So a Response only "wins" a verb that no location or item command claims.
+Built-in **help** / **inventory** / **quit** / **look**/**describe** have no
+location or item commands behind them, so a Response with one of those verbs
+still **replaces** the built-in for your adventure. But if *you* give a
+location or an item a command with the same verb/adjective/noun as one of
+your Responses, that local command now wins and the Response won't fire
+there.
 
 ## What's next
 

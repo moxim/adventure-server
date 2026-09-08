@@ -27,6 +27,8 @@ public class GreaterThanCondition extends AbstractVariableCondition {
         var envVal = extractVariableValue(variableName);
         if (envVal > value) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
+        } else {
+            result.setExecutionState(ExecutionResult.State.FAILURE);
         }
         return result;
     }

@@ -26,6 +26,8 @@ public class ItemAtCondition extends AbstractCondition {
         ExecutionResult result = new CommandExecutionResult();
         if (location.contains(thing)) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
+        } else {
+            result.setExecutionState(ExecutionResult.State.FAILURE);
         }
         return result;
     }

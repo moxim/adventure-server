@@ -26,6 +26,8 @@ public class EqualsCondition extends AbstractVariableCondition {
         final Variable envVariable = getVariable(variableName);
         if (envVariable.value().equals(value)) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
+        } else {
+            result.setExecutionState(ExecutionResult.State.FAILURE);
         }
         return result;
     }

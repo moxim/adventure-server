@@ -31,6 +31,8 @@ public class ChanceCondition extends AbstractCondition {
         int roll = randomSource.getAsInt();
         if (roll <= chance.intValue()) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
+        } else {
+            result.setExecutionState(ExecutionResult.State.FAILURE);
         }
         return result;
     }

@@ -23,7 +23,7 @@ public class CommandExecutor {
             if (VocabularyData.EMPTY_STRING.equals(result.getResultMessage())) {
                 result.setResultMessage(SystemMessageKey.SM8.defaultText());
             }
-        } else {
+        } else if (ExecutionResult.State.SUCCESS == result.getExecutionState()) {
             result.setResultMessage(SystemMessageKey.SM15.defaultText());
         }
 

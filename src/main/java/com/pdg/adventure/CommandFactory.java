@@ -58,8 +58,8 @@ public class CommandFactory {
         aWorkflow.addInterceptorCommand(quitCommandDescription, quitCommand);
 
         Action lookLocationAction = new DescribeAction(() -> {
-            long timesVisited = 0;
-            gameContext.getCurrentLocation().setTimesVisited(timesVisited);
+            long timesVisited = gameContext.getCurrentLocation().getTimesVisited();
+            gameContext.getCurrentLocation().setTimesVisited(0);
             String result = gameContext.getCurrentLocation().getLongDescription();
             gameContext.getCurrentLocation().setTimesVisited(timesVisited++);
             return result;

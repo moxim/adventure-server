@@ -10,8 +10,8 @@ import com.pdg.adventure.server.storage.message.SystemMessageKey;
  * A single interactive play session, driving the shared GameLoop/GameContext singleton one
  * command at a time. Used both when an author clicks "Test" on their own adventure and when a
  * player clicks "Run Adventure" on one they're assigned to. Only created by
- * {@link AdventureRunSessionFactory#start}, which has already primed it with the opening room
- * description.
+ * {@link AdventureRunSessionFactory#start}; the caller (AdventureRunView) still submits the
+ * opening "look" to render the starting room.
  */
 public class AdventureRunSession {
 
@@ -35,7 +35,6 @@ public class AdventureRunSession {
             }
         });
         try {
-            gameContext.preProcessCommands();
             GameLoop.CommandOutcome outcome = gameLoop.processCommand(rawInput);
             gameOver = outcome != GameLoop.CommandOutcome.CONTINUE;
         } catch (ReloadAdventureException unexpected) {

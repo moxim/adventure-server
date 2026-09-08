@@ -182,8 +182,6 @@ src/test/java/com/pdg/adventure/
     │   vocabulary/, workflow/
 ```
 
-(The former `MiniAdventureTest.java` went away with the CLI runner.)
-
 Test resources live in `src/test/resources/`:
 
 | File | Purpose |

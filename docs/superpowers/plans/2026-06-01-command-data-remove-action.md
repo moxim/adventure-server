@@ -34,7 +34,7 @@ git worktree add .git/wt/cmd-refactor refactor/command-data-remove-action  # or 
 - Slice A: `view/command/action/ActionListEditor.java` (new), `view/command/action/ActionRow.java` (new), `view/command/PreconditionActionEditor.java`, `view/command/CommandEditorView.java`, `view/command/condition/ConditionListEditor.java` (onChange hook), `test/.../view/command/PreconditionActionEditorTest.java`.
 - Slice B: `view/item/ItemUsageTracker.java`, `view/location/LocationUsageTracker.java`, `view/message/MessageUsageTracker.java`, `test/.../view/location/LocationUsageTrackerTest.java`, `test/.../view/message/MessageUsageTrackerTest.java`.
 - Slice C: `view/direction/DirectionEditorView.java`, `view/item/ItemEditorView.java`, `test/.../view/direction/DirectionEditorViewDataIntegrityTest.java`.
-- Slice D: `CommandFactory.java`, `MiniAdventureContent.java` (and a verifying grep across all `*Test` construction sites).
+- Slice D: `CommandFactory.java`, `MiniAdventureContent.java` *(this hand-built demo class was later removed together with the CLI runner)* (and a verifying grep across all `*Test` construction sites).
 
 ---
 
@@ -751,11 +751,11 @@ public class PreconditionActionEditor extends VerticalLayout {
 
 **Files:**
 - Modify: `src/main/java/com/pdg/adventure/CommandFactory.java`
-- Modify: `src/main/java/com/pdg/adventure/MiniAdventureContent.java`
+- Modify: `src/main/java/com/pdg/adventure/MiniAdventureContent.java` *(since removed with the CLI runner — the sweep below no longer applies to it)*
 
 - [ ] **Step 1:** Rename BO `addFollowUpAction` → `addAction` at:
   - `CommandFactory.java:84` `dropAndRemoveCommand.addFollowUpAction(new RemoveAction(...))` → `.addAction(...)`
-  - `MiniAdventureContent.java:282–284` three `cutSuccessfully.addFollowUpAction(...)` → `.addAction(...)`
+  - `MiniAdventureContent.java:282–284` three `cutSuccessfully.addFollowUpAction(...)` → `.addAction(...)` *(class later deleted)*
 
 - [ ] **Step 2:** Verify no other callers of the renamed BO methods remain:
   ```bash

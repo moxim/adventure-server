@@ -13,10 +13,10 @@ public class ResponsesEditorView extends CommandListEditorView {
 
     public ResponsesEditorView(AdventureService anAdventureService, AdventureAccessService anAccessService) {
         super(anAdventureService, anAccessService, "Response", "Responses for ",
-              "A response fires only when the player's verb (and adjective/noun, if set) matches exactly, " +
-              "short-circuiting the normal location/item lookup. If its preconditions aren't met, it falls " +
-              "through silently to normal handling - no message is shown. Matching a built-in verb " +
-              "(help, inventory, quit, look/describe) overrides that built-in for this adventure.",
+              "A response is a fallback: it fires only when the player's verb (and adjective/noun, if set) " +
+              "matches exactly and nothing in the current location or the player's pocket already handles " +
+              "that verb. The verb is required. Matching a built-in verb (help, inventory, quit, " +
+              "look/describe) still overrides that built-in for this adventure.",
               "No responses yet. Create one to get started.",
               CommandListType.RESPONSE,
               WorkflowData::getInterceptorCommands);

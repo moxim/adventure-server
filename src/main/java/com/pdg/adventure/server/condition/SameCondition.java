@@ -30,6 +30,8 @@ public class SameCondition extends AbstractVariableCondition {
         final Variable variable2 = variableProvider.get(variableNameTwo);
         if (variable1.value().equals(variable2.value())) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
+        } else {
+            result.setExecutionState(ExecutionResult.State.FAILURE);
         }
 
         return result;

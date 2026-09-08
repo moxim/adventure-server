@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Let an author attach `Command`s to an Adventure's Workflow through a new `WorkflowEditorView`, and prove those commands actually execute at runtime through `gameContext.preProcessCommands()` (the call `GameLoop.run()` makes each turn, `server/src/main/java/com/pdg/adventure/server/engine/GameLoop.java:36`).
+**Goal:** Let an author attach `Command`s to an Adventure's Workflow through a new `WorkflowEditorView`, and prove those commands actually execute at runtime through `gameContext.preProcessCommands()` (the call `GameLoop.processCommand()` makes before each parsed sub-command).
 
 **Architecture:** Add a `WorkflowData` model (a `List<CommandData>`) embedded directly in `AdventureData`, mirroring how `CommandProviderData`/`CommandChainData` are already embedded (no `@DBRef`, no separate Mongo collection). A new `WorkflowMapper` bridges persisted `WorkflowData` onto an already-constructed runtime `Workflow` (via its existing `addPreCommand`), reusing the existing `CommandMapper` for the actual `CommandData → Command` conversion. A new `WorkflowEditorView` (single Vaadin view, adventure-scoped) lets an author list, add, edit and delete these commands, reusing the existing `PreconditionActionEditor`/`VocabularyPickerField` components rather than duplicating `CommandEditorView`'s Location/Item-chain machinery. The existing (currently disabled) "Manage Workflow" button on `AdventureEditorView` is wired to it.
 
@@ -127,8 +127,8 @@ class WorkflowMapperTest {
         // When: populating the runtime workflow from the authored data
         workflowMapper.populate(workflowData, workflow);
 
-        // Then: gameContext.preProcessCommands() - the exact call GameLoop.run() makes each turn
-        // at GameLoop.java:36 - now executes the authored command.
+        // Then: gameContext.preProcessCommands() - the exact call GameLoop.processCommand()
+        // makes before each parsed sub-command - now executes the authored command.
         gameContext.preProcessCommands();
 
         verify(commandMapper).mapToBO(commandData);

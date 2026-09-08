@@ -26,6 +26,7 @@ public class HereCondition extends AbstractCondition {
         if (gameContext.getCurrentLocation().contains(thing)) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         } else {
+            result.setExecutionState(ExecutionResult.State.FAILURE);
             result.setResultMessage(SystemMessageKey.SM26.defaultText().formatted(thing.getNoun()));
         }
         return result;

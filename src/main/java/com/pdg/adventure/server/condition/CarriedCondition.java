@@ -28,6 +28,7 @@ public class CarriedCondition extends AbstractCondition {
         if (gameContext.getPocket().contains(item)) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         } else {
+            result.setExecutionState(ExecutionResult.State.FAILURE);
             result.setResultMessage(SM28.defaultText());
         }
         return result;

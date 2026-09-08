@@ -213,7 +213,7 @@ DO fields beyond `ThingData`:
 | `isContainable` | `boolean` | Can be placed in a container. |
 | `parentContainerId` | `String` | Current parent. Empty/null when in a location. |
 | `isWearable` | `boolean` | Can be worn. |
-| `isWorn` | `boolean` | Is currently worn. Implies carried. |
+| `isWorn` | `boolean` | Is currently worn. Implies carried. While worn, the item's short, long **and** enriched-short descriptions get the `SystemMessageKey.SM10` marker (default `" (worn)"`) appended by `Item`. |
 
 Items are stored in their **own collection** (not embedded in locations) so
 that ownership transfer is a single document update.
@@ -319,12 +319,14 @@ field table above) and holds the adventure's *global* commands — built from
 the identical `CommandData` shape as location/item commands, but not scoped
 to one `Thing`. Two independent lists:
 
-- **`commands` — Processes.** Run automatically every turn, before input is
-  consulted. The verb is not required.
-- **`interceptorCommands` — Responses.** Matched against the parsed command
-  ahead of pocket/location dispatch; when one matches exactly it
-  short-circuits normal lookup, and when its preconditions fail it falls
-  through silently. The verb is required.
+- **`commands` — Processes.** Run automatically before **each parsed
+  sub-command** of a turn, before that sub-command is dispatched. The verb
+  is not required.
+- **`interceptorCommands` — Responses.** Tried only as a **fallback**, after
+  pocket/location dispatch has failed to match the verb at all (the engine
+  keeps the historical `interceptor` name for the field). An exact
+  `(verb, adjective, noun)` match that a location or item command also
+  carries loses to that local command. The verb is required.
 
 At runtime, `WorkflowMapper.populate(WorkflowData, Workflow)` layers `commands`
 onto the engine `Workflow` (`server/engine/Workflow.java`) as pre-commands and

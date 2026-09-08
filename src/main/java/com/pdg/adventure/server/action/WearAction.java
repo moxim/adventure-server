@@ -24,10 +24,11 @@ public class WearAction extends AbstractAction {
         ExecutionResult result = new CommandExecutionResult();
         if (thing.isWearable() && !thing.isWorn()) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
-            result.setResultMessage(SystemMessageKey.SM37.defaultText().formatted(thing.getEnrichedBasicDescription()));
+            result.setResultMessage(SystemMessageKey.SM37.defaultText().formatted(thing.getStrippedBasicDescription()));
             thing.setIsWorn(true);
         } else {
-            result.setResultMessage(SystemMessageKey.SM40.defaultText().formatted(thing.getEnrichedBasicDescription()));
+            result.setExecutionState(ExecutionResult.State.FAILURE);
+            result.setResultMessage(SystemMessageKey.SM40.defaultText().formatted(thing.getStrippedBasicDescription()));
         }
         return result;
     }
