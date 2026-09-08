@@ -43,7 +43,7 @@ public class CommandFactory {
                 Look around, examine items, take or drop items, maybe wear items, enter or leave locations.
                 Or quit.""",
             allMessages));
-        aWorkflow.addInterceptorCommand(helpCommandDescription, helpCommand);
+        aWorkflow.addResponse(helpCommandDescription, helpCommand);
 
         GenericCommandDescription inventoryCommandDescription = new GenericCommandDescription("inventory");
         GenericCommand inventoryCommand = new GenericCommand(inventoryCommandDescription,
@@ -51,11 +51,11 @@ public class CommandFactory {
                                                                                  new ContainerSupplier(
                                                                                          gameContext::getPocket),
                                                                                  allMessages));
-        aWorkflow.addInterceptorCommand(inventoryCommandDescription, inventoryCommand);
+        aWorkflow.addResponse(inventoryCommandDescription, inventoryCommand);
 
         GenericCommandDescription quitCommandDescription = new GenericCommandDescription("quit");
         GenericCommand quitCommand = new GenericCommand(quitCommandDescription, new QuitAction(allMessages));
-        aWorkflow.addInterceptorCommand(quitCommandDescription, quitCommand);
+        aWorkflow.addResponse(quitCommandDescription, quitCommand);
 
         Action lookLocationAction = new DescribeAction(() -> {
             long timesVisited = gameContext.getCurrentLocation().getTimesVisited();
@@ -66,15 +66,15 @@ public class CommandFactory {
         }, allMessages);
         GenericCommandDescription lookCommandDescription = new GenericCommandDescription("describe");
         GenericCommand lookCommand = new GenericCommand(lookCommandDescription, lookLocationAction);
-        aWorkflow.addInterceptorCommand(lookCommandDescription, lookCommand);
+        aWorkflow.addResponse(lookCommandDescription, lookCommand);
 
         GenericCommandDescription lookCommandDescription2 = new GenericCommandDescription("describe", "here");
         GenericCommand lookCommand2 = new GenericCommand(lookCommandDescription2, lookLocationAction);
-        aWorkflow.addInterceptorCommand(lookCommandDescription2, lookCommand2);
+        aWorkflow.addResponse(lookCommandDescription2, lookCommand2);
 
         GenericCommandDescription anyCommandDescription = new GenericCommandDescription("~", "~", "~");
         GenericCommand anyCommand = new GenericCommand(anyCommandDescription,
                                                        new MessageAction(SystemMessageKey.SM2.defaultText(), allMessages));
-        aWorkflow.addPreCommand(anyCommandDescription, anyCommand);
+        aWorkflow.addProcess(anyCommandDescription, anyCommand);
     }
 }

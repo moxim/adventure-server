@@ -204,9 +204,10 @@ Pay attention to:
    `GenericCommandProvider`, `GenericCommandChain`,
    `CommandExecutionResult`, `ExamineFallbackAction`.
 2. Implement `server/engine/`:
-   `GameContext`, `Workflow` (preCommands and interceptorCommands as
+   `GameContext`, `Workflow` (the `processes` and `responses` tables as
    `TreeMap<CommandDescription, Command>`, iterated in alphabetical
-   verb/adjective/noun order), `GameLoop` (`processCommand(String)` runs each
+   verb/adjective/noun order; `runProcesses()` runs the first, `respondTo(cmd)`
+   looks up the second), `GameLoop` (`processCommand(String)` runs each
    sub-command in order, stopping at the first failure), `ContainerSupplier`.
    Make `GameContext.tell()` route through an injectable
    `Consumer<String> outputSink` (default `java.lang.IO::println` — JDK 25's

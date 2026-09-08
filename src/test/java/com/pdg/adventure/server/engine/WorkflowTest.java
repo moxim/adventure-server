@@ -29,46 +29,46 @@ class WorkflowTest {
     }
 
     @Test
-    void preProcess_executesPreCommandsInAlphabeticalVerbOrder_regardlessOfInsertionOrder() {
-        addPreCommand(new GenericCommandDescription("zoo"), "Zoo message.");
-        addPreCommand(new GenericCommandDescription("apple"), "Apple message.");
-        addPreCommand(new GenericCommandDescription("middle"), "Middle message.");
+    void runProcesses_executesProcessesInAlphabeticalVerbOrder_regardlessOfInsertionOrder() {
+        addProcess(new GenericCommandDescription("zoo"), "Zoo message.");
+        addProcess(new GenericCommandDescription("apple"), "Apple message.");
+        addProcess(new GenericCommandDescription("middle"), "Middle message.");
 
-        workflow.preProcess();
+        workflow.runProcesses();
 
         assertThat(told).containsExactly("Apple message.", "Middle message.", "Zoo message.");
     }
 
-    // CommandFactory.setUpWorkflowCommands registers a sentinel preCommand keyed ("~", "~", "~")
+    // CommandFactory.setUpWorkflowCommands registers a sentinel Process keyed ("~", "~", "~")
     // whose action prints the turn prompt ("What now? > "; SM2) - it must keep coming after every
     // author-authored ambient message each turn, the way the old TreeMap iteration (sorted by the
     // "verb|adjective|noun" description string, where '|' and '~' both sort above lowercase
     // letters) already guaranteed. String.CASE_INSENSITIVE_ORDER must preserve that.
     @Test
-    void preProcess_stillOrdersTheTurnPromptSentinelLast() {
-        addPreCommand(new GenericCommandDescription("zebra"), "Zebra message.");
-        addPreCommand(new GenericCommandDescription("apple"), "Apple message.");
-        addPreCommand(new GenericCommandDescription("~", "~", "~"), SystemMessageKey.SM2.defaultText());
+    void runProcesses_stillOrdersTheTurnPromptSentinelLast() {
+        addProcess(new GenericCommandDescription("zebra"), "Zebra message.");
+        addProcess(new GenericCommandDescription("apple"), "Apple message.");
+        addProcess(new GenericCommandDescription("~", "~", "~"), SystemMessageKey.SM2.defaultText());
 
-        workflow.preProcess();
+        workflow.runProcesses();
 
         assertThat(told).containsExactly("Apple message.", "Zebra message.", SystemMessageKey.SM2.defaultText());
     }
 
     @Test
-    void preProcess_ordersSameVerbCommandsByAdjectiveThenNoun() {
-        addPreCommand(new GenericCommandDescription("look", "big", "door"), "Big door.");
-        addPreCommand(new GenericCommandDescription("look", "big", "chest"), "Big chest.");
-        addPreCommand(new GenericCommandDescription("look", "small", "box"), "Small box.");
+    void runProcesses_ordersSameVerbProcessesByAdjectiveThenNoun() {
+        addProcess(new GenericCommandDescription("look", "big", "door"), "Big door.");
+        addProcess(new GenericCommandDescription("look", "big", "chest"), "Big chest.");
+        addProcess(new GenericCommandDescription("look", "small", "box"), "Small box.");
 
-        workflow.preProcess();
+        workflow.runProcesses();
 
         assertThat(told).containsExactly("Big chest.", "Big door.", "Small box.");
     }
 
-    private void addPreCommand(GenericCommandDescription aDescription, String aMessage) {
+    private void addProcess(GenericCommandDescription aDescription, String aMessage) {
         Command command = mock(Command.class);
         when(command.execute()).thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS, aMessage));
-        workflow.addPreCommand(aDescription, command);
+        workflow.addProcess(aDescription, command);
     }
 }

@@ -38,8 +38,8 @@ List<GenericCommandDescription>       ← one per conjunction/period-separated s
    │
    ▼  for each sub-command, in order (stop at the first that fails):
    │
-   ├─ GameContext.preProcessCommands()   ← Workflow pre-commands (Processes + the "What now?"
-   │                                        (SM2) prompt) run once BEFORE each sub-command,
+   ├─ GameContext.runProcesses()         ← Workflow Processes (+ the "What now?" (SM2) prompt)
+   │                                        run once BEFORE each sub-command,
    │                                        not once per typed line
    ├─ empty-verb check → SM6 ("I was not able to understand any of that…"); stop the sequence
    ├─ CommandExecutor(pocket, location).execute(cmd)      ← LOCAL dispatch, tried first
@@ -52,7 +52,7 @@ List<GenericCommandDescription>       ← one per conjunction/period-separated s
    ├─ FALLBACK — only if local dispatch returned FAILURE whose message == SM8.defaultText()
    │      (i.e. nothing local matched the verb at all — both the gate here and the
    │       0-chains path use SM8.defaultText(), so an author-edited SM8 can't break it):
-   │      └─ GameContext.interceptCommands(cmd)  ← Workflow interceptor commands = Responses
+   │      └─ GameContext.respondTo(cmd)  ← Workflow Responses table
    │             (built-ins: help, inventory, quit, describe, "describe here")
    │             exact (verb,adjective,noun) match; non-FAILURE ends the sub-command
    ▼
@@ -74,9 +74,8 @@ built-in `help` / `inventory` / `quit` / `describe` Responses still work
 because no location or item normally defines those verbs; but an authored
 **location or item** command now *shadows* a Workflow Response that shares
 its `(verb, adjective, noun)` — previously the Response always pre-empted
-local dispatch. (Earlier revisions ran Responses before local dispatch; the
-old `GameContext.preProcessCommands()` sat above `Parser.handle` and fired
-once per typed line.)
+local dispatch. (Earlier revisions ran Responses before local dispatch, and
+the Process pass sat above `Parser.handle` and fired once per typed line.)
 
 `QuitException`, `ReloadAdventureException` and `UnresolvedReferenceException`
 short-circuit:
@@ -93,7 +92,7 @@ short-circuit:
 
 `GameLoop.processCommand(String)` is the **only** per-line entry point. The
 former `GameLoop.run(BufferedReader)` console read-loop has been deleted with
-the CLI runner; `processCommand` now calls `GameContext.preProcessCommands()`
+the CLI runner; `processCommand` now calls `GameContext.runProcesses()`
 itself — once for **each** parsed sub-command of the line — rather than
 relying on the caller to do it first. A conjunction-joined turn
 ("take x and drop y") therefore runs every Workflow Process once per
@@ -226,11 +225,11 @@ The `Workflow` (`server/engine/Workflow.java`) holds two
 `TreeMap<CommandDescription, Command>`s. The domain names for the *authored*
 entries in each are **Processes** and **Responses**
 ([`03-domain-model.md` § Workflow](03-domain-model.md#workflow)); the engine
-names for the maps are `preCommands` and `interceptorCommands`.
+names for the maps are `processes` and `responses`.
 
-- **`preCommands` (Processes + the prompt)** — every entry executed once
+- **`processes` (Processes + the prompt)** — every entry executed once
   *before each parsed sub-command* (`GameLoop.processCommand` calls
-  `GameContext.preProcessCommands()` at the top of its per-sub-command
+  `GameContext.runProcesses()` at the top of its per-sub-command
   loop), in a deterministic order: alphabetical by verb, then adjective,
   then noun (an explicit `Comparator`, not the `TreeMap`'s own key
   ordering). `CommandFactory` plants one built-in: a
@@ -238,7 +237,7 @@ names for the maps are `preCommands` and `interceptorCommands`.
   `("~", "~", "~")` so it sorts last and never collides with a real
   command. The author's Processes are layered on by
   `WorkflowMapper.populate`.
-- **`interceptorCommands` (Responses)** — consulted only as a *fallback*,
+- **`responses` (Responses)** — consulted only as a *fallback*,
   after `CommandExecutor` (pocket + current location) has been tried and
   returned `FAILURE` with the `SM8` sentinel text — i.e. only when nothing
   local matched the sub-command's verb at all. Match by exact
@@ -266,8 +265,10 @@ reached). A Response is consulted only for verbs with no local handler; when
 it is reached, a non-FAILURE result ends the sub-command, and a FAILURE
 result (including the default empty `CommandExecutionResult` when no Response
 matched) falls through to `GameLoop`'s FAILURE handling (its message if any,
-else `SM8`). The map field keeps its historical name `interceptorCommands` /
-`interceptCommands()` even though it no longer intercepts.
+else `SM8`). The runtime map is named `responses` and its lookup is
+`Workflow.respondTo(cmd)` / `GameContext.respondTo(cmd)`. (The *persisted*
+model field on `WorkflowData` keeps its older name `interceptorCommands` — a
+document-schema rename is a separate migration.)
 
 ## CommandFactory: wiring conventions
 
@@ -321,10 +322,10 @@ emits the thing's long description.
 ### Workflow
 
 `setUpWorkflowCommands(workflow)` adds `help`, `inventory`, `quit`,
-`describe` and `describe here` as **interceptor commands (Responses)**, plus a
-`MessageAction(SystemMessageKey.SM2)` — *"What now?"* — as a **pre-command
-(Process)** keyed `("~", "~", "~")`. The author's own Processes and Responses
-are layered on afterwards by `WorkflowMapper.populate` (see
+`describe` and `describe here` as **Responses** (`workflow.addResponse`), plus a
+`MessageAction(SystemMessageKey.SM2)` — *"What now?"* — as a **Process**
+(`workflow.addProcess`) keyed `("~", "~", "~")`. The author's own Processes and
+Responses are layered on afterwards by `WorkflowMapper.populate` (see
 [§ Workflow: Processes and Responses](#workflow-processes-and-responses)).
 
 The built-in `describe` / `describe here` Response wraps a `DescribeAction`
@@ -449,14 +450,15 @@ logic is expressed as separate Command Chain variants (see
   `java.lang.IO::println` (JDK 25's built-in `java.lang.IO`, implicitly
   imported). Passing `null` restores the default.
 - `setUpWorkflows()` — instantiates a fresh `Workflow`.
-- `preProcessCommands()` / `interceptCommands(cmd)` — delegate to the workflow.
+- `runProcesses()` / `respondTo(cmd)` — delegate to the workflow.
 
-`Workflow.preProcess` walks all preCommands **in alphabetical (verb, adjective,
-noun) order** and tells each result; `GameLoop.processCommand` invokes it once
-per parsed sub-command. `Workflow.interceptCommands(cmd)` looks up an exact
-`CommandDescription` match and returns its `execute()` result, or a default
-`FAILURE` `CommandExecutionResult` when nothing matches — `GameLoop` calls
-this only after `CommandExecutor` has failed with the `SM8` sentinel.
+`Workflow.runProcesses()` walks all `processes` **in alphabetical (verb,
+adjective, noun) order** and tells each result; `GameLoop.processCommand`
+invokes it once per parsed sub-command. `Workflow.respondTo(cmd)` looks up an
+exact `CommandDescription` match in `responses` and returns its `execute()`
+result, or a default `FAILURE` `CommandExecutionResult` when nothing matches —
+`GameLoop` calls this only after `CommandExecutor` has failed with the `SM8`
+sentinel.
 
 There is **no CLI runner** anymore — `MiniAdventure` and `AdventureClient`
 were deleted, and there is no custom `IO` class (`Adventure.run()` survives
@@ -497,7 +499,7 @@ engine, without touching `GameLoop`/`GameContext` directly:
 2. `AdventureRunSession.submit(String input)`:
    - Installs a capturing `Consumer<String>` via `gameContext.setOutputSink(...)`,
      runs `gameLoop.processCommand(input)` (which now fires
-     `gameContext.preProcessCommands()` itself, once per parsed
+     `gameContext.runProcesses()` itself, once per parsed
      sub-command — `submit` no longer calls it), collects the
      non-blank/non-prompt lines, and **always** clears the sink
      (`setOutputSink(null)`) in a `finally` block before returning.

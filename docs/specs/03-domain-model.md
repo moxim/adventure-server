@@ -323,14 +323,15 @@ to one `Thing`. Two independent lists:
   sub-command** of a turn, before that sub-command is dispatched. The verb
   is not required.
 - **`interceptorCommands` — Responses.** Tried only as a **fallback**, after
-  pocket/location dispatch has failed to match the verb at all (the engine
-  keeps the historical `interceptor` name for the field). An exact
+  pocket/location dispatch has failed to match the verb at all. An exact
   `(verb, adjective, noun)` match that a location or item command also
-  carries loses to that local command. The verb is required.
+  carries loses to that local command. The verb is required. (This
+  *persisted* field name predates the engine rename — the runtime table is
+  now `Workflow.responses`.)
 
 At runtime, `WorkflowMapper.populate(WorkflowData, Workflow)` layers `commands`
-onto the engine `Workflow` (`server/engine/Workflow.java`) as pre-commands and
-`interceptorCommands` as interceptor commands, after
+onto the engine `Workflow` (`server/engine/Workflow.java`) via `addProcess`
+and `interceptorCommands` via `addResponse`, after
 `GameContext.setUpWorkflows()` and on top of the built-ins planted by
 `CommandFactory.setUpWorkflowCommands` — see
 [`04-runtime-engine.md` § Workflow](04-runtime-engine.md#workflow-processes-and-responses).

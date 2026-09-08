@@ -343,7 +343,7 @@ registration is performed by **one** `BeanPostProcessor`:
 | `CommandProviderMapper` | `CommandProviderData` ↔ `GenericCommandProvider` | |
 | `CommandDescriptionMapper` | `CommandDescriptionData` ↔ `GenericCommandDescription` | |
 | `DescriptionMapper` | `DescriptionData` ↔ runtime description |  |
-| `WorkflowMapper` | `WorkflowData` → `Workflow` (populate-only) | **Not** a `Mapper<DO,BO>` — `Workflow` needs its owning `GameContext`. `populate(WorkflowData, Workflow)` layers the author's `commands` (Processes) as pre-commands and `interceptorCommands` (Responses) as interceptor commands onto an already-built runtime `Workflow`. |
+| `WorkflowMapper` | `WorkflowData` → `Workflow` (populate-only) | **Not** a `Mapper<DO,BO>` — `Workflow` needs its owning `GameContext`. `populate(WorkflowData, Workflow)` layers the author's `commands` (Processes) via `Workflow.addProcess` and `interceptorCommands` (Responses) via `Workflow.addResponse` onto an already-built runtime `Workflow`. |
 
 Plus `server/mapper/action/` and `server/mapper/condition/` with one mapper
 per concrete `*ActionData` / `*ConditionData` (incl. `BreakActionMapper`).

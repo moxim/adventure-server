@@ -29,17 +29,17 @@ public class GameLoop {
 
     /**
      * Runs one already-obtained line of input through the engine: parses it into a sequence of
-     * sub-commands and, for each in turn, fires the author's workflow pre-commands
-     * (gameContext.preProcessCommands()) and then dispatches the sub-command, stopping at the
+     * sub-commands and, for each in turn, runs the author's workflow Processes
+     * (gameContext.runProcesses()) and then dispatches the sub-command, stopping at the
      * first that fails. This is the only entry point; the former run(BufferedReader) console
-     * loop was removed with the CLI runner, and preProcessCommands() is now called here rather
+     * loop was removed with the CLI runner, and runProcesses() is now called here rather
      * than by the caller.
      */
     public CommandOutcome processCommand(String anInput) {
         try {
             CommandSequence sequence = parser.handle(anInput);
             for (GenericCommandDescription command : sequence.commands()) {
-                gameContext.preProcessCommands();
+                gameContext.runProcesses();
                 if (!runOneCommandSucceeded(command)) {
                     break; // stop the sequence at the first sub-command that failed
                 }
@@ -63,7 +63,7 @@ public class GameLoop {
      * Runs one already-parsed sub-command of a (possibly conjunction-joined) turn: tries the
      * current location/pocket commands first (CommandExecutor) and, only if nothing local
      * matched the verb at all (FAILURE carrying the SM8 sentinel), falls back to the workflow
-     * interceptor (Response) commands; then tells the result. Re-reads
+     * Responses (gameContext.respondTo()); then tells the result. Re-reads
      * gameContext.getCurrentLocation()/getPocket() rather than reusing a value captured once
      * for the whole turn, because an earlier sub-command in the same sequence (e.g. "go north")
      * may have moved the player, and this sub-command must see that new location.
@@ -84,9 +84,10 @@ public class GameLoop {
         CommandExecutor commandExecuter = new CommandExecutor(gameContext.getPocket(), gameContext.getCurrentLocation());
         ExecutionResult result = commandExecuter.execute(command);
 
-        // Check commands that are independent of locations, like inventory, save, quit aso.
+        // Nothing local handled this verb - fall back to the workflow Responses (inventory, quit,
+        // help, and any the author added).
         if (result.getExecutionState() == ExecutionResult.State.FAILURE && result.getResultMessage().equals(SystemMessageKey.SM8.defaultText())) {
-            result = gameContext.interceptCommands(command);
+            result = gameContext.respondTo(command);
         }
 
         if (result.getExecutionState() != ExecutionResult.State.FAILURE) {
