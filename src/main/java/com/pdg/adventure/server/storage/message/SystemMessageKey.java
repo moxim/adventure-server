@@ -25,7 +25,6 @@ import com.pdg.adventure.server.support.PlaceholderSpec;
  */
 public enum SystemMessageKey {
 
-
     SM0(0, "It's too dark to see.", "is used instead of the location description when it is dark."),
     SM1(1, "I can also see:", "is printed by LISTOBJ if at least one object is present."),
     SM2(2, "What now?", "is selected randomly unless flag 42 is set to be a valid message number."),
@@ -91,7 +90,7 @@ public enum SystemMessageKey {
          "is printed when the player tries to take an item that isn't in a container."),
     SM53(53, "nothing.", "is the message for LISTAT action if no objects found."),
     SM54(54, "The %s is full.", "is printed when the player tries to put an item into a container that is full."),
-    SM55(55, "I can't take the %s out of the %s.",
+    SM55(55, "I can't take the %1s out of the %2s.",
          "is printed when the player tries to take an item out of a container that is not allowed."),
     SM56(56, "I put the %1$s into the %2$s.", "is printed when the player puts an item into a container."),
     SM57(57, "The %s evaporates into thin air.", "is printed when an item disappears."),
@@ -101,6 +100,10 @@ public enum SystemMessageKey {
     SM61(61, "Which %1$s should I %2$s?", "is printed when a verb+noun still matches multiple commands."),
     SM62(62, "There are no obvious exits.", "is printed when a location has no exits to list."),
     SM63(63, "I don't know what 'it' refers to.", "is printed when a pronoun (it, them, ...) has no prior noun to refer to."),
+    SM64(64, "The %1$s is already in the %2$s.",
+         "is printed when the player tries to put an item into a container that already contains it."),
+    SM65(65, "I can't put the %1s into the %2s.",
+         "is printed when the player tries to put an item into a container that is not allowed."),
 
     // Currently never registered for a real adventure - CommandFactory looks this id up
     // unconditionally, which NPEs outside the console demo. A live bug, outside this feature's
