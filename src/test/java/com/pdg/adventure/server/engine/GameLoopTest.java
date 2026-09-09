@@ -3,6 +3,8 @@ package com.pdg.adventure.server.engine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.CommandFactory;
@@ -67,6 +69,33 @@ class GameLoopTest {
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
         assertThat(told.toString()).contains("A grand throne room.");
+    }
+
+    @Test
+    void describe_onARevisitedLocation_stillTellsTheLongDescription() {
+        // The player has been here before (timesVisited >= 1). Walking in again shows the
+        // short description, but an explicit "describe" must always show the long one.
+        DescriptionProvider cellarDescription = new DescriptionProvider("dark", "cellar");
+        cellarDescription.setShortDescription("The dark cellar.");
+        cellarDescription.setLongDescription("A dank cellar reeking of old wine and mould.");
+        Location cellar = new Location(cellarDescription,
+                                      new GenericContainer(new DescriptionProvider("cellar items"), 10));
+        cellar.setTimesVisited(1);
+        gameContext.setCurrentLocation(cellar);
+
+        // Mirror production wiring: LoadAdventureAction registers an examine fallback on every location.
+        VocabularyData vocabularyData = new VocabularyData();
+        Word describeWord = vocabularyData.createWord("describe", Word.Type.VERB);
+        vocabularyData.setExamineWord(describeWord);
+        new CommandFactory(new MessagesHolder(), gameContext, vocabularyData)
+                .applyExamineFallback(List.of(cellar));
+
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("describe");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString())
+                .contains("A dank cellar reeking of old wine and mould.")
+                .doesNotContain("The dark cellar.");
     }
 
     @Test

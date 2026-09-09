@@ -30,7 +30,7 @@ public class MovePlayerAction extends AbstractAction {
         final DescribeAction describeAction = new DescribeAction(new Supplier<String>() {
             @Override
             public String get() {
-                return destination.getLongDescription();
+                return destination.getArrivalDescription();
             }
         }, messagesHolder);
         ExecutionResult result = describeAction.execute();

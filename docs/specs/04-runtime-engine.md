@@ -164,10 +164,14 @@ Every `Thing` and `GenericDirection` composes a `CommandHandler`
 - Wraps a `GenericCommandProvider` (a map of command-spec → `CommandChain`).
 - Adds, removes, and queries commands.
 - Provides an **examine fallback**: if a verb matches the adventure's
-  `examineWord` (configured via `CommandFactory.applyExamineFallback`) and no
-  command chain matches, an `ExamineFallbackAction` is returned that emits the
-  thing's long description. This makes "examine X" / "look at X" work without
-  every authored thing carrying its own examine command.
+  `examineWord` (configured via `CommandFactory.applyExamineFallback`; the
+  Special Words picker only offers base verbs, so `examineWord` is always a
+  canonical word, never a synonym) and no command chain matches, an
+  `ExamineFallbackAction` is returned that emits the thing's `getLongDescription()`.
+  For a `Location` that is always the full description, regardless of
+  `timesVisited` (see [§ Look / describe](#look--describe)). This makes
+  "examine X" / "look at X" work without every authored thing carrying its own
+  examine command.
 - `applyCommand(description)` runs every matching chain in turn and returns
   the last result, with `commandHasMatched` flagged. (`CommandExecutor` is the
   primary entry point at runtime; `applyCommand` is used by tests and
@@ -278,11 +282,17 @@ are not optional book-keeping; they are part of the game's behaviour.
 
 ### Look / describe
 
-```java
-thing.addCommand(new GenericCommand(
-    new GenericCommandDescription("describe", thing),
-    new DescribeAction(thing::getLongDescription, allMessages)));
-```
+Things are not given an individual `describe` command. Describing works through
+two wirings instead:
+
+- `applyExamineFallback(things)` — the per-thing examine fallback (see
+  [§ Examine fallback](#examine-fallback)), which emits `thing.getLongDescription()`.
+- The workflow `describe` / `describe here` Responses (see
+  [§ Workflow](#workflow)), which emit the current `Location`'s
+  `getLongDescription()`.
+
+Both always yield the **full** description. Only `MovePlayerAction` uses the
+visit-aware `Location.getArrivalDescription()`.
 
 ### Take / Drop (with worn handling)
 
@@ -317,7 +327,8 @@ list.
 
 `applyExamineFallback(things)` registers, on each thing, a *fallback* triggered
 by the configured `examineWord` if no specific command matches; the fallback
-emits the thing's long description.
+emits the thing's `getLongDescription()` — for a `Location`, always the full
+description.
 
 ### Workflow
 
@@ -329,13 +340,21 @@ Responses are layered on afterwards by `WorkflowMapper.populate` (see
 [§ Workflow: Processes and Responses](#workflow-processes-and-responses)).
 
 The built-in `describe` / `describe here` Response wraps a `DescribeAction`
-that forces the **full first-visit** long description: it reads the current
-`Location`'s `timesVisited`, temporarily sets it to `0` (so
-`Location.getLongDescription()` returns `super.getLongDescription()` rather
-than the abbreviated re-visit form), reads the description, then **restores
-the real count**. An explicit `look` therefore no longer resets the
-location's visit counter — earlier code restored it to `0`, which made every
-subsequent auto-describe on re-entry behave as a first visit.
+over `gameContext.getCurrentLocation().getLongDescription()`, which always
+returns the **full** description. `Location` splits the two concerns:
+
+- `getLongDescription()` — the full description (`super.getLongDescription()`
+  plus exits and visible items). Used by every *explicit* describe/examine
+  path: this Response, the examine fallback, and author-placed
+  `DescribeAction`s.
+- `getArrivalDescription()` — visit-aware: the full description on the first
+  visit (`timesVisited == 0`), the short description on every later visit,
+  plus exits and items. Used only by `MovePlayerAction` when the player walks
+  in.
+
+`MovePlayerAction` still increments `timesVisited` *after* reading the arrival
+description, so the first walk-in shows the long form and the next shows the
+short one. An explicit describe never touches the counter.
 
 ## Action catalog
 
@@ -358,7 +377,7 @@ author-placeable:
 | `MoveItemAction(item, dest, msgs)` | The primitive: remove the item from its parent if any, add it to `dest` if not full. Emits `SM54` (moved) / `SM55` (full) / `SM56` (can't). |
 | `WearAction(wearable, msgs)` | If `isWearable && !isWorn`, set `isWorn=true`, `SUCCESS` + `SM37`; else `FAILURE` + `SM40`. Interpolates `thing.getStrippedBasicDescription()` (article-less — the `SMnn` texts already carry *"the %s"*). |
 | `RemoveAction(wearable, msgs)` | Inverse of `WearAction`; clears `isWorn`; `SUCCESS` + `SM38` / `FAILURE` + `SM41`. Also interpolates the *stripped* (article-less) description. |
-| `MovePlayerAction(destination, msgs, gameContext)` | Set `gameContext.currentLocation = destination`, run `DescribeAction(destination::getLongDescription)`, increment `timesVisited`. |
+| `MovePlayerAction(destination, msgs, gameContext)` | Set `gameContext.currentLocation = destination`, run `DescribeAction(destination::getArrivalDescription)` (visit-aware: long on first visit, short thereafter), then increment `timesVisited`. |
 | `InventoryAction(consumer, pocketSupplier, msgs)` | Print the carried-items header (`SM9`) followed by `pocket.listContents()`. |
 | `QuitAction(msgs)` | Throw `QuitException` carrying the supplied bye message. |
 | `LoadAdventureAction(service, mapper, config, gameContext)` | Resolve an `adventureId`, load and map the `AdventureData`, throw `ReloadAdventureException` on success (returns normally on failure). Engine-managed — no DO, no editor. |

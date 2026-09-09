@@ -154,4 +154,41 @@ class LocationTest {
         // then
         assertThat(desc).contains(List.of("small", "perch", "mouse", "loop"));
     }
+
+    @Test
+    void getArrivalDescription_onFirstVisit_usesTheLongDescription() {
+        Location room = roomWithDescriptions("The short room.", "The long, richly detailed room.");
+        assertThat(room.getTimesVisited()).isZero();
+
+        assertThat(room.getArrivalDescription())
+                .contains("The long, richly detailed room.")
+                .doesNotContain("The short room.");
+    }
+
+    @Test
+    void getArrivalDescription_afterTheFirstVisit_usesTheShortDescription() {
+        Location room = roomWithDescriptions("The short room.", "The long, richly detailed room.");
+        room.setTimesVisited(1);
+
+        assertThat(room.getArrivalDescription())
+                .contains("The short room.")
+                .doesNotContain("The long, richly detailed room.");
+    }
+
+    @Test
+    void getLongDescription_alwaysUsesTheLongDescription_evenAfterRepeatedVisits() {
+        Location room = roomWithDescriptions("The short room.", "The long, richly detailed room.");
+        room.setTimesVisited(5);
+
+        assertThat(room.getLongDescription())
+                .contains("The long, richly detailed room.")
+                .doesNotContain("The short room.");
+    }
+
+    private Location roomWithDescriptions(String aShortDescription, String aLongDescription) {
+        DescriptionProvider descriptionProvider = new DescriptionProvider("plain", "room");
+        descriptionProvider.setShortDescription(aShortDescription);
+        descriptionProvider.setLongDescription(aLongDescription);
+        return new Location(descriptionProvider, new GenericContainer(new DescriptionProvider("room items"), 5));
+    }
 }
