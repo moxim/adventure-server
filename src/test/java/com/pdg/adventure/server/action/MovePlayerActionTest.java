@@ -22,7 +22,7 @@ class MovePlayerActionTest {
 
     @Test
     void execute_setsCurrentLocationOnGameContext() {
-        when(destination.getLongDescription()).thenReturn("A dark cave.");
+        when(destination.getArrivalDescription()).thenReturn("A dark cave.");
         when(destination.getTimesVisited()).thenReturn(0L);
 
         new MovePlayerAction(destination, messagesHolder, gameContext).execute();
@@ -31,8 +31,8 @@ class MovePlayerActionTest {
     }
 
     @Test
-    void execute_returnsDescriptionOfDestination() {
-        when(destination.getLongDescription()).thenReturn("A sunlit meadow.");
+    void execute_returnsArrivalDescriptionOfDestination() {
+        when(destination.getArrivalDescription()).thenReturn("A sunlit meadow.");
         when(destination.getTimesVisited()).thenReturn(2L);
 
         ExecutionResult result = new MovePlayerAction(destination, messagesHolder, gameContext).execute();
@@ -43,7 +43,7 @@ class MovePlayerActionTest {
 
     @Test
     void execute_incrementsTimesVisited() {
-        when(destination.getLongDescription()).thenReturn("A tower.");
+        when(destination.getArrivalDescription()).thenReturn("A tower.");
         when(destination.getTimesVisited()).thenReturn(3L);
 
         new MovePlayerAction(destination, messagesHolder, gameContext).execute();

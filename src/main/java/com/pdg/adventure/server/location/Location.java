@@ -87,16 +87,29 @@ public class Location extends Thing implements Visitable, HasLight {
         return availableCommands;
     }
 
+    /**
+     * The description shown when the player arrives at this location: the full (long)
+     * description on the very first visit, the short one on every later visit. Exits and
+     * visible items are always listed.
+     */
+    public String getArrivalDescription() {
+        String body = timesVisited == 0 ? super.getLongDescription() : getShortDescription();
+        return renderDescription(body);
+    }
+
+    /**
+     * The full description, shown whenever the player explicitly describes or examines this
+     * location, regardless of how often it has already been visited.
+     */
     @Override
     public String getLongDescription() {
+        return renderDescription(super.getLongDescription());
+    }
+
+    private String renderDescription(String aBody) {
         StringBuilder sb = new StringBuilder();
         sb.append(System.lineSeparator());
-
-        if (timesVisited == 0) {
-            sb.append(super.getLongDescription());
-        } else {
-            sb.append(getShortDescription());
-        }
+        sb.append(aBody);
 
         sb.append(System.lineSeparator());
         if (!directions.isEmpty()) {

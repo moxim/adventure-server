@@ -57,13 +57,8 @@ public class CommandFactory {
         GenericCommand quitCommand = new GenericCommand(quitCommandDescription, new QuitAction(allMessages));
         aWorkflow.addResponse(quitCommandDescription, quitCommand);
 
-        Action lookLocationAction = new DescribeAction(() -> {
-            long timesVisited = gameContext.getCurrentLocation().getTimesVisited();
-            gameContext.getCurrentLocation().setTimesVisited(0);
-            String result = gameContext.getCurrentLocation().getLongDescription();
-            gameContext.getCurrentLocation().setTimesVisited(timesVisited++);
-            return result;
-        }, allMessages);
+        Action lookLocationAction = new DescribeAction(
+                () -> gameContext.getCurrentLocation().getLongDescription(), allMessages);
         GenericCommandDescription lookCommandDescription = new GenericCommandDescription("describe");
         GenericCommand lookCommand = new GenericCommand(lookCommandDescription, lookLocationAction);
         aWorkflow.addResponse(lookCommandDescription, lookCommand);

@@ -11,6 +11,7 @@ import com.pdg.adventure.api.*;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.parser.CommandMatcher;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.support.DescriptionProvider;
 
 public class GenericContainer extends Item implements Container {
@@ -110,11 +111,11 @@ public class GenericContainer extends Item implements Container {
         String containerDescription = getEnrichedBasicDescription();
 
         if (contents.contains(anItem)) {
-            result.setResultMessage(ALREADY_PRESENT_TEXT.formatted(itemDescription, containerDescription));
+            result.setResultMessage(SystemMessageKey.SM64.defaultText().formatted(itemDescription, containerDescription));
         } else if (!anItem.isContainable()) {
-            result.setResultMessage(CANNOT_PUT_TEXT.formatted(itemDescription, containerDescription));
-        } else if (contents.size() == maxSize) {
-            result.setResultMessage(ALREADY_FULL_TEXT.formatted(containerDescription));
+            result.setResultMessage(SystemMessageKey.SM65.defaultText().formatted(itemDescription, containerDescription));
+        } else if (contents.size() >= maxSize) {
+            result.setResultMessage(SystemMessageKey.SM54.defaultText().formatted(containerDescription));
         } else {
             anItem.setParentContainer(this);
             contents.add(anItem);

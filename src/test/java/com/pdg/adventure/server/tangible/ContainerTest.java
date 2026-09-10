@@ -61,7 +61,7 @@ class ContainerTest {
         ExecutionResult result = sut.add(new Item(descriptionProvider, true));
 
         // then
-        assertThat(result.getResultMessage()).contains("already full");
+        assertThat(result.getResultMessage()).contains("is full");
     }
 
     @Test
@@ -122,6 +122,6 @@ class ContainerTest {
         ExecutionResult result = sut.add(item);
 
         // then
-        assertThat(result.getResultMessage()).contains("already present");
+        assertThat(result.getResultMessage()).contains("already in the");
     }
 }
