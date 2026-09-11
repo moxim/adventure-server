@@ -41,7 +41,7 @@ class MessageActionMapperTest {
     void mapToDO_convertsMessageActionToData() {
         // Given
         String messageText = "You enter a dark room.";
-        MessageAction action = new MessageAction(messageText, messagesHolder);
+        MessageAction action = new MessageAction(messageText);
 
         // When
         MessageActionData result = mapper.mapToDO(action);

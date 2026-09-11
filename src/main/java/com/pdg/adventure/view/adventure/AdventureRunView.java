@@ -5,19 +5,16 @@ import com.vaadin.flow.component.messages.MessageInput;
 import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.HasDynamicTitle;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.router.RouteParam;
-import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.*;
 import jakarta.annotation.security.RolesAllowed;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+
+import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.engine.AdventureRunSession;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
 import com.pdg.adventure.server.engine.AdventureRunSessionFactory;
@@ -141,8 +138,10 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             forwardToOrigin(event);
             return;
         }
-
-        handleInput("look");
+        MovePlayerAction movePlayerAction = new MovePlayerAction(session.getGameContext().getCurrentLocation(),
+                                                                 session.getGameContext());
+        ExecutionResult result = movePlayerAction.execute();
+        renderNarratorLines(List.of(result.getResultMessage()));
     }
 
     private static Origin resolveOrigin(Location location) {

@@ -10,19 +10,17 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.ContainerSupplier;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
 
 @ExtendWith(MockitoExtension.class)
 class InventoryActionTest {
 
     @Mock private Container pocket;
-    @Mock private MessagesHolder messagesHolder;
 
     @Test
     void execute_sendsInventoryHeaderAndContentsToConsumer() {
@@ -31,7 +29,7 @@ class InventoryActionTest {
         List<String> captured = new ArrayList<>();
         Consumer<String> consumer = captured::add;
 
-        new InventoryAction(consumer, new ContainerSupplier(pocket), messagesHolder).execute();
+        new InventoryAction(consumer, new ContainerSupplier(pocket)).execute();
 
         assertThat(captured).containsExactly(SystemMessageKey.SM9.defaultText(), "- a torch\n- a key");
     }
@@ -40,7 +38,7 @@ class InventoryActionTest {
     void execute_returnsSuccess() {
         when(pocket.listContents()).thenReturn("");
 
-        ExecutionResult result = new InventoryAction(_ -> {}, new ContainerSupplier(pocket), messagesHolder).execute();
+        ExecutionResult result = new InventoryAction(_ -> {}, new ContainerSupplier(pocket)).execute();
 
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
     }

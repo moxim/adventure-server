@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
 import com.pdg.adventure.api.ExecutionResult;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
@@ -18,11 +17,10 @@ import com.pdg.adventure.server.support.VariableProvider;
 class SetVariableActionTest {
 
     @Mock private VariableProvider variableProvider;
-    @Mock private MessagesHolder messagesHolder;
 
     @Test
     void execute_setsVariableInProvider() {
-        new SetVariableAction("score", 100, variableProvider, messagesHolder).execute();
+        new SetVariableAction("score", 100, variableProvider).execute();
 
         ArgumentCaptor<Variable> captor = ArgumentCaptor.forClass(Variable.class);
         verify(variableProvider).set(captor.capture());
@@ -32,7 +30,7 @@ class SetVariableActionTest {
 
     @Test
     void execute_returnsSuccess() {
-        ExecutionResult result = new SetVariableAction("lives", 3, variableProvider, messagesHolder).execute();
+        ExecutionResult result = new SetVariableAction("lives", 3, variableProvider).execute();
 
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
     }

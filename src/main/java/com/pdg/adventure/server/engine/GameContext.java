@@ -71,8 +71,12 @@ public class GameContext {
         return workflow;
     }
 
-    public void runProcesses() {
-        workflow.runProcesses();
+    public ExecutionResult runProcesses() {
+        return workflow.runProcesses();
+    }
+
+    public ExecutionResult runArrivalProcesses() {
+        return workflow.runArrivalProcesses();
     }
 
     public ExecutionResult respondTo(CommandDescription aCommand) {

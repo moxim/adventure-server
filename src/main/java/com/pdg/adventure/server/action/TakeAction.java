@@ -5,7 +5,6 @@ import lombok.Getter;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.ContainerSupplier;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.tangible.Item;
 
@@ -16,15 +15,14 @@ public class TakeAction extends AbstractAction {
     private final Item item;
     private final transient ContainerSupplier containerProvider;
 
-    public TakeAction(Item anItem, ContainerSupplier aContainerProvider, MessagesHolder aMessagesHolder) {
-        super(aMessagesHolder);
+    public TakeAction(Item anItem, ContainerSupplier aContainerProvider) {
         item = anItem;
         containerProvider = aContainerProvider;
     }
 
     @Override
     public ExecutionResult execute() {
-        ExecutionResult result = new MoveItemAction(item, containerProvider.get(), messagesHolder).execute();
+        ExecutionResult result = new MoveItemAction(item, containerProvider.get()).execute();
         if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
             // I now have the ...
             result.setResultMessage(SystemMessageKey.SM36.defaultText().formatted(item.getStrippedBasicDescription()));

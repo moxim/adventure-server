@@ -7,7 +7,6 @@ import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
 
 @Service
@@ -15,19 +14,17 @@ import com.pdg.adventure.server.support.MapperSupporter;
 public class MovePlayerActionMapper extends ActionMapper<MovePlayerActionData, MovePlayerAction> {
 
     private final GameContext gameContext;
-    private final MessagesHolder messagesHolder;
 
-    public MovePlayerActionMapper(MessagesHolder aMessagesHolder, GameContext aGameContext,
+    public MovePlayerActionMapper(GameContext aGameContext,
                                   MapperSupporter aMapperSupporter) {
         super(aMapperSupporter);
         gameContext = aGameContext;
-        messagesHolder = aMessagesHolder;
     }
 
     @Override
     public MovePlayerAction mapToBO(MovePlayerActionData from) {
         final Location location = getMapperSupporter().getMappedLocation(from.getLocationId());
-        MovePlayerAction movePlayerAction = new MovePlayerAction(location, messagesHolder, gameContext);
+        MovePlayerAction movePlayerAction = new MovePlayerAction(location, gameContext);
         return movePlayerAction;
     }
 

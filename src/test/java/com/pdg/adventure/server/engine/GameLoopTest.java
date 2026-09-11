@@ -12,6 +12,7 @@ import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.action.MovePlayerAction;
+import com.pdg.adventure.server.condition.PlayerAtCondition;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
@@ -194,12 +195,12 @@ class GameLoopTest {
         Location cellar = new Location(cellarDescription,
                                        new GenericContainer(new DescriptionProvider("cellar items"), 10));
         cellar.addCommand(new GenericCommand(new GenericCommandDescription("examine", "key"),
-                                             new MessageAction("A rusty key.", messages)));
+                                             new MessageAction("A rusty key.")));
 
         GenericCommandDescription descendDescription = new GenericCommandDescription("descend");
         workflow.addResponse(descendDescription,
                                        new GenericCommand(descendDescription,
-                                                          new MovePlayerAction(cellar, messages, gameContext)));
+                                                          new MovePlayerAction(cellar, gameContext)));
 
         vocabulary.createNewWord("descend", Word.Type.VERB);
         vocabulary.createNewWord("examine", Word.Type.VERB);
@@ -227,10 +228,10 @@ class GameLoopTest {
         vocabulary.createNewWord("shield", Word.Type.NOUN);
         gameContext.getCurrentLocation().addCommand(new GenericCommand(
                 new GenericCommandDescription("examine", "sword"),
-                new MessageAction("A sharp sword.", new MessagesHolder())));
+                new MessageAction("A sharp sword.")));
         gameContext.getCurrentLocation().addCommand(new GenericCommand(
                 new GenericCommandDescription("examine", "shield"),
-                new MessageAction("A sturdy shield.", new MessagesHolder())));
+                new MessageAction("A sturdy shield.")));
 
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("examine sword and shield");
 
@@ -243,7 +244,7 @@ class GameLoopTest {
         vocabulary.createNewWord("wear", Word.Type.VERB);
         gameContext.getCurrentLocation().addCommand(new GenericCommand(
                 new GenericCommandDescription("wear", "suit"),
-                new MessageAction(SystemMessageKey.SM37.defaultText().formatted("suit"), new MessagesHolder())));
+                new MessageAction(SystemMessageKey.SM37.defaultText().formatted("suit"))));
 
         GameLoop.CommandOutcome firstOutcome = gameLoop.processCommand("take suit");
         GameLoop.CommandOutcome secondOutcome = gameLoop.processCommand("wear it");
@@ -252,5 +253,148 @@ class GameLoopTest {
         assertThat(told.toString()).contains(SystemMessageKey.SM8.defaultText());
         assertThat(secondOutcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
         assertThat(told.toString()).contains(SystemMessageKey.SM37.defaultText().formatted("suit"));
+    }
+
+    @Test
+    void movingAway_doesNotFireAProcessGatedOnTheLocationJustLeft() {
+        // Before this fix, GameLoop evaluated Processes BEFORE the sub-command (the move) executed,
+        // so a Process gated on the room the player is leaving would still see them "there" and
+        // wrongly fire on the very turn they left.
+        MessagesHolder messages = new MessagesHolder();
+        Location room = gameContext.getCurrentLocation();
+        DescriptionProvider cellarDescription = new DescriptionProvider("cellar", "cellar");
+        cellarDescription.setLongDescription("A dark, damp cellar.");
+        Location cellar = new Location(cellarDescription,
+                                       new GenericContainer(new DescriptionProvider("cellar items"), 10));
+
+        GenericCommandDescription roomOnlyDescription = new GenericCommandDescription("throne-room-only");
+        GenericCommand roomOnlyProcess = new GenericCommand(roomOnlyDescription,
+                new MessageAction("Welcome to the throne room."));
+        roomOnlyProcess.addPreCondition(new PlayerAtCondition(room, gameContext));
+        workflow.addProcess(roomOnlyDescription, roomOnlyProcess);
+
+        GenericCommandDescription descendDescription = new GenericCommandDescription("descend");
+        workflow.addResponse(descendDescription,
+                new GenericCommand(descendDescription, new MovePlayerAction(cellar, gameContext)));
+        vocabulary.createNewWord("descend", Word.Type.VERB);
+
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("descend");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString())
+                .contains("A dark, damp cellar.")
+                .doesNotContain("Welcome to the throne room.");
+    }
+
+    @Test
+    void movingInto_firesAProcessGatedOnTheDestination_onTheSameTurnAsTheMove() {
+        // Mirror image of the above: a Process gated on the destination must fire on the very turn
+        // that arrives, not one turn later.
+        MessagesHolder messages = new MessagesHolder();
+        DescriptionProvider cellarDescription = new DescriptionProvider("cellar", "cellar");
+        cellarDescription.setLongDescription("A dark, damp cellar.");
+        Location cellar = new Location(cellarDescription,
+                                       new GenericContainer(new DescriptionProvider("cellar items"), 10));
+
+        GenericCommandDescription cellarOnlyDescription = new GenericCommandDescription("cellar-only");
+        GenericCommand cellarOnlyProcess = new GenericCommand(cellarOnlyDescription,
+                new MessageAction("You shiver in the cold."));
+        cellarOnlyProcess.addPreCondition(new PlayerAtCondition(cellar, gameContext));
+        workflow.addProcess(cellarOnlyDescription, cellarOnlyProcess);
+
+        GenericCommandDescription descendDescription = new GenericCommandDescription("descend");
+        workflow.addResponse(descendDescription,
+                new GenericCommand(descendDescription, new MovePlayerAction(cellar, gameContext)));
+        vocabulary.createNewWord("descend", Word.Type.VERB);
+
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("descend");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString()).contains("You shiver in the cold.");
+    }
+
+    @Test
+    void movingInto_arrivalProcessMessage_nowPrintsAfterTheArrivalDescription() {
+        // Documents current, intentional behavior: MovePlayerAction.execute() now appends the
+        // arrival process's message onto the destination's own arrival description (via
+        // gameContext.runArrivalProcesses().getResultMessage()) rather than having
+        // Workflow.runArrivalProcesses() tell it immediately mid-execution - so the description
+        // prints first and the arrival process's message follows it. This is the fix for the
+        // ordering inconsistency the final review flagged; pinned here so a future change to this
+        // ordering is a deliberate decision, not an untested accident.
+        MessagesHolder messages = new MessagesHolder();
+        DescriptionProvider cellarDescription = new DescriptionProvider("cellar", "cellar");
+        cellarDescription.setLongDescription("A dark, damp cellar.");
+        Location cellar = new Location(cellarDescription,
+                                       new GenericContainer(new DescriptionProvider("cellar items"), 10));
+
+        GenericCommandDescription cellarChillDescription = new GenericCommandDescription("chill");
+        GenericCommand cellarChill = new GenericCommand(cellarChillDescription,
+                new MessageAction("You shiver in the cold."));
+        cellarChill.addPreCondition(new PlayerAtCondition(cellar, gameContext));
+        workflow.addArrivalProcess(cellarChillDescription, cellarChill);
+
+        GenericCommandDescription descendDescription = new GenericCommandDescription("descend");
+        workflow.addResponse(descendDescription,
+                new GenericCommand(descendDescription, new MovePlayerAction(cellar, gameContext)));
+        vocabulary.createNewWord("descend", Word.Type.VERB);
+
+        gameLoop.processCommand("descend");
+
+        String output = told.toString();
+        assertThat(output).contains("You shiver in the cold.").contains("A dark, damp cellar.");
+        assertThat(output.indexOf("A dark, damp cellar."))
+                .isLessThan(output.indexOf("You shiver in the cold."));
+    }
+
+    @Test
+    void aFailingCommand_stillRunsProcessesThatTurn() {
+        // Processes must fire once per sub-command attempted regardless of whether it succeeds or
+        // fails - the arrival-timing fix only changes WHEN within the turn Processes evaluate state,
+        // not whether they run at all. "take" is a recognised verb wired to nothing (see setUp()),
+        // so it fails with SM8.
+        GenericCommandDescription alwaysDescription = new GenericCommandDescription("always-fires");
+        GenericCommand alwaysProcess = new GenericCommand(alwaysDescription,
+                new MessageAction("The wind stirs."));
+        workflow.addProcess(alwaysDescription, alwaysProcess);
+
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("take");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString()).contains(SystemMessageKey.SM8.defaultText());
+        assertThat(told.toString()).contains("The wind stirs.");
+    }
+
+    @Test
+    void describingCurrentLocation_firesAnArrivalProcessGatedOnIt() {
+        GenericCommandDescription hereDescription = new GenericCommandDescription("hush");
+        GenericCommand hereProcess = new GenericCommand(hereDescription,
+                new MessageAction("The room is silent."));
+        hereProcess.addPreCondition(new PlayerAtCondition(gameContext.getCurrentLocation(), gameContext));
+        workflow.addArrivalProcess(hereDescription, hereProcess);
+
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("describe");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString()).contains("The room is silent.");
+    }
+
+    @Test
+    void describingAgain_reFiresTheArrivalProcess_matchingTheOriginalPawDesign() {
+        // Documented, intended behaviour (docs/superpowers/specs/2026-09-11-process-arrival-timing-design.md,
+        // resolved question 4): an arrival Process re-fires on every redescribe of its location,
+        // including an explicit "describe"/"look" - not just the initial move. An author who wants
+        // "only once" adds their own guard; the engine does not de-duplicate.
+        GenericCommandDescription hereDescription = new GenericCommandDescription("hush");
+        GenericCommand hereProcess = new GenericCommand(hereDescription,
+                new MessageAction("The room is silent."));
+        hereProcess.addPreCondition(new PlayerAtCondition(gameContext.getCurrentLocation(), gameContext));
+        workflow.addArrivalProcess(hereDescription, hereProcess);
+
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("describe and describe");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        long occurrences = told.toString().lines().filter(line -> line.equals("The room is silent.")).count();
+        assertThat(occurrences).isEqualTo(2);
     }
 }

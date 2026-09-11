@@ -29,8 +29,7 @@ public class TakeActionMapper extends ActionMapper<TakeActionData, TakeAction> {
     public TakeAction mapToBO(final TakeActionData aTakeActionData) {
         TakeAction action = new TakeAction(
                 getMapperSupporter().requireMappedItem(aTakeActionData.getThingId(), aTakeActionData),
-                new ContainerSupplier(gameContext::getPocket),
-                adventureConfig.allMessages());
+                new ContainerSupplier(gameContext::getPocket));
         return action;
     }
 

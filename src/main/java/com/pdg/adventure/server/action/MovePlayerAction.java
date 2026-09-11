@@ -3,12 +3,9 @@ package com.pdg.adventure.server.action;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import java.util.function.Supplier;
-
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class MovePlayerAction extends AbstractAction {
@@ -16,10 +13,7 @@ public class MovePlayerAction extends AbstractAction {
     private final Location destination;
     private final transient GameContext gameContext;
 
-    public MovePlayerAction(Location aDestination,
-                            MessagesHolder aMessagesHolder,
-                            GameContext aGameContext) {
-        super(aMessagesHolder);
+    public MovePlayerAction(Location aDestination, GameContext aGameContext) {
         destination = aDestination;
         gameContext = aGameContext;
     }
@@ -27,14 +21,13 @@ public class MovePlayerAction extends AbstractAction {
     @Override
     public ExecutionResult execute() {
         gameContext.setCurrentLocation(destination);
-        final DescribeAction describeAction = new DescribeAction(new Supplier<String>() {
-            @Override
-            public String get() {
-                return destination.getArrivalDescription();
-            }
-        }, messagesHolder);
+        final DescribeAction describeAction = new DescribeAction(destination::getArrivalDescription);
         ExecutionResult result = describeAction.execute();
         destination.setTimesVisited(destination.getTimesVisited() + 1);
+        String arrivalMessage = gameContext.runArrivalProcesses().getResultMessage();
+        if (!arrivalMessage.isEmpty()) {
+            result.setResultMessage(result.getResultMessage() + "\n" + arrivalMessage);
+        }
         return result;
     }
 }

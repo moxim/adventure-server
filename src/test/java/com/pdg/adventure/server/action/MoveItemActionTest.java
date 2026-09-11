@@ -11,7 +11,6 @@ import static org.mockito.Mockito.*;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.tangible.Item;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,15 +25,12 @@ class MoveItemActionTest {
     @Mock
     private Container destinationContainer;
 
-    @Mock
-    private MessagesHolder messagesHolder;
-
     private MoveItemAction moveItemAction;
 
     @Test
     void execute_movesItemBetweenContainers() {
         // Given
-        moveItemAction = new MoveItemAction(item, destinationContainer, messagesHolder);
+        moveItemAction = new MoveItemAction(item, destinationContainer);
 
         when(item.getParentContainer()).thenReturn(sourceContainer);
         when(item.getStrippedBasicDescription()).thenReturn("golden key");
@@ -60,7 +56,7 @@ class MoveItemActionTest {
     @Test
     void execute_returnsFailureWhenContainerFull() {
         // Given
-        moveItemAction = new MoveItemAction(item, destinationContainer, messagesHolder);
+        moveItemAction = new MoveItemAction(item, destinationContainer);
 
         when(destinationContainer.getSize()).thenReturn(10);
         when(destinationContainer.getMaxSize()).thenReturn(10);
@@ -80,7 +76,7 @@ class MoveItemActionTest {
     @Test
     void execute_handlesNullParentContainerGracefully() {
         // Given
-        moveItemAction = new MoveItemAction(item, destinationContainer, messagesHolder);
+        moveItemAction = new MoveItemAction(item, destinationContainer);
 
         when(item.getParentContainer()).thenReturn(null);
         when(item.getStrippedBasicDescription()).thenReturn("magic wand");

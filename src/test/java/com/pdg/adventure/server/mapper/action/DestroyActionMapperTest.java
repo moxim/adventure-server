@@ -65,7 +65,7 @@ class DestroyActionMapperTest {
     @Test
     void mapToDO_roundTripsThingId() {
         when(thing.getId()).thenReturn(THING_ID);
-        DestroyAction action = new DestroyAction(thing, messagesHolder);
+        DestroyAction action = new DestroyAction(thing);
 
         DestroyActionData data = mapper.mapToDO(action);
 

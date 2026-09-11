@@ -15,7 +15,6 @@ import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
@@ -111,7 +110,7 @@ class LocationTest {
         sut.setExamineFallback("describe", sut::getLongDescription);
         Item basket = new Item(new DescriptionProvider("basket"), true);
         basket.addCommand(new GenericCommand(new GenericCommandDescription("describe", basket),
-                                             new MessageAction("A wicker basket.", new MessagesHolder())));
+                                             new MessageAction("A wicker basket.")));
         sut.addItem(basket);
 
         // when: the user asks to describe the basket
@@ -130,7 +129,7 @@ class LocationTest {
         sut.setExamineFallback("describe", sut::getLongDescription);
         Item shortSword = new Item(new DescriptionProvider("short", "sword"), true);
         shortSword.addCommand(new GenericCommand(new GenericCommandDescription("describe", shortSword),
-                                                 new MessageAction("A short sword.", new MessagesHolder())));
+                                                 new MessageAction("A short sword.")));
         sut.addItem(shortSword);
 
         // when: the user asks to describe the short sword

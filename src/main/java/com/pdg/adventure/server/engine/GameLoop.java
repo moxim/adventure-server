@@ -29,18 +29,25 @@ public class GameLoop {
 
     /**
      * Runs one already-obtained line of input through the engine: parses it into a sequence of
-     * sub-commands and, for each in turn, runs the author's workflow Processes
-     * (gameContext.runProcesses()) and then dispatches the sub-command, stopping at the
-     * first that fails. This is the only entry point; the former run(BufferedReader) console
-     * loop was removed with the CLI runner, and runProcesses() is now called here rather
-     * than by the caller.
+     * sub-commands and, for each in turn, dispatches the sub-command and then runs the author's
+     * workflow Processes (gameContext.runProcesses()) against the state that command left behind
+     * - stopping at the first sub-command that fails. Processes run after dispatch, not before,
+     * so a location-gated Process (e.g. PlayerAtCondition) evaluates the location as it stands
+     * after that turn's dispatch attempt, not before it. Processes run once per sub-command
+     * attempted regardless of whether that sub-command succeeded or failed, matching the
+     * original per-turn cadence. This is the only entry point; the former run(BufferedReader)
+     * console loop was removed with the CLI runner, and runProcesses() is now called here
+     * rather than by the caller.
      */
     public CommandOutcome processCommand(String anInput) {
         try {
             CommandSequence sequence = parser.handle(anInput);
             for (GenericCommandDescription command : sequence.commands()) {
-                gameContext.runProcesses();
-                if (!runOneCommandSucceeded(command)) {
+                boolean succeeded = runOneCommandSucceeded(command);
+                ExecutionResult processesResult = gameContext.runProcesses();
+                String processMessage = processesResult.getResultMessage();
+                gameContext.tell(processMessage);
+                if (!succeeded) {
                     break; // stop the sequence at the first sub-command that failed
                 }
             }
@@ -86,7 +93,8 @@ public class GameLoop {
 
         // Nothing local handled this verb - fall back to the workflow Responses (inventory, quit,
         // help, and any the author added).
-        if (result.getExecutionState() == ExecutionResult.State.FAILURE && result.getResultMessage().equals(SystemMessageKey.SM8.defaultText())) {
+        if (result.getExecutionState() == ExecutionResult.State.FAILURE &&
+            result.getResultMessage().equals(SystemMessageKey.SM8.defaultText())) {
             result = gameContext.respondTo(command);
         }
 

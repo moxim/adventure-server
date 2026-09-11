@@ -3,21 +3,15 @@ package com.pdg.adventure.server.mapper.action;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.action.BreakActionData;
 import com.pdg.adventure.server.action.BreakAction;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
-import com.pdg.adventure.server.support.MapperSupporter;
 
 @ExtendWith(MockitoExtension.class)
 class BreakActionMapperTest {
-
-    @Mock private MapperSupporter mapperSupporter;
-    @Mock private MessagesHolder messagesHolder;
 
     @InjectMocks private BreakActionMapper mapper;
 
@@ -32,7 +26,7 @@ class BreakActionMapperTest {
 
     @Test
     void mapToDO_returnsBreakActionData() {
-        BreakAction action = new BreakAction(messagesHolder);
+        BreakAction action = new BreakAction();
 
         BreakActionData data = mapper.mapToDO(action);
 

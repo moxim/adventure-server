@@ -6,7 +6,6 @@ import lombok.Getter;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.tangible.Item;
 
@@ -17,8 +16,7 @@ public class MoveItemAction extends AbstractAction {
     private final Item target;
     private final Container destination;
 
-    public MoveItemAction(Item aTarget, Container aDestination, MessagesHolder aMessagesHolder) {
-        super(aMessagesHolder);
+    public MoveItemAction(Item aTarget, Container aDestination) {
         target = aTarget;
         destination = aDestination;
     }

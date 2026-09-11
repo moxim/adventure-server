@@ -29,7 +29,7 @@ public class DescribeActionMapper extends ActionMapper<DescribeActionData, Descr
     public DescribeAction mapToBO(DescribeActionData actionData) {
         String targetId = actionData.getTargetId();
         Supplier<String> target = () -> describe(targetId);
-        return new DescribeAction(target, adventureConfig.allMessages());
+        return new DescribeAction(target);
     }
 
     @Override

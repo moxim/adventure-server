@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import static org.mockito.Mockito.mock;
 
 import com.pdg.adventure.api.Container;
@@ -15,7 +14,6 @@ import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
@@ -40,7 +38,6 @@ class DirectionTest {
     private final GenericCommandDescription directionDescription = new GenericCommandDescription("enter", destination);
     private final GenericCommand moveCommand = new GenericCommand(directionDescription,
                                                                   new MovePlayerAction(destination,
-                                                                                       new MessagesHolder(),
                                                                                        gameContext));
     private final GenericDirection sut = new GenericDirection(allLocations, moveCommand, destination.getId(), true);
 
@@ -102,7 +99,6 @@ class DirectionTest {
         Location destination = new Location(new DescriptionProvider(PORTAL_TXT), pocket);
         GenericCommandDescription directionDescription = new GenericCommandDescription("enter", destination);
         GenericCommand moveCommand = new GenericCommand(directionDescription, new MovePlayerAction(destination,
-                                                                                                   new MessagesHolder(),
                                                                                                    gameContext));
         allLocations.clear();
         allLocations.put(destination.getId(), destination);

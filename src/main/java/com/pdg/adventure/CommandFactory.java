@@ -4,17 +4,13 @@ import java.util.Collection;
 
 import com.pdg.adventure.api.Action;
 import com.pdg.adventure.model.VocabularyData;
-import com.pdg.adventure.server.action.DescribeAction;
-import com.pdg.adventure.server.action.InventoryAction;
-import com.pdg.adventure.server.action.MessageAction;
-import com.pdg.adventure.server.action.QuitAction;
+import com.pdg.adventure.server.action.*;
 import com.pdg.adventure.server.engine.ContainerSupplier;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.engine.Workflow;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
-import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.tangible.Thing;
 
 public class CommandFactory {
@@ -41,35 +37,38 @@ public class CommandFactory {
         GenericCommandDescription helpCommandDescription = new GenericCommandDescription("help");
         GenericCommand helpCommand = new GenericCommand(helpCommandDescription, new MessageAction("""
                 Look around, examine items, take or drop items, maybe wear items, enter or leave locations.
-                Or quit.""",
-            allMessages));
+                Or quit."""));
         aWorkflow.addResponse(helpCommandDescription, helpCommand);
 
         GenericCommandDescription inventoryCommandDescription = new GenericCommandDescription("inventory");
         GenericCommand inventoryCommand = new GenericCommand(inventoryCommandDescription,
                                                              new InventoryAction(gameContext::tell,
                                                                                  new ContainerSupplier(
-                                                                                         gameContext::getPocket),
-                                                                                 allMessages));
+                                                                                         gameContext::getPocket)
+                                                                                 ));
         aWorkflow.addResponse(inventoryCommandDescription, inventoryCommand);
 
         GenericCommandDescription quitCommandDescription = new GenericCommandDescription("quit");
-        GenericCommand quitCommand = new GenericCommand(quitCommandDescription, new QuitAction(allMessages));
+        GenericCommand quitCommand = new GenericCommand(quitCommandDescription, new QuitAction());
         aWorkflow.addResponse(quitCommandDescription, quitCommand);
 
         Action lookLocationAction = new DescribeAction(
-                () -> gameContext.getCurrentLocation().getLongDescription(), allMessages);
+                () -> gameContext.getCurrentLocation().getLongDescription());
+        Action runArrivalProcessesAction = new RunArrivalProcessesAction(gameContext);
+
         GenericCommandDescription lookCommandDescription = new GenericCommandDescription("describe");
         GenericCommand lookCommand = new GenericCommand(lookCommandDescription, lookLocationAction);
+        lookCommand.addAction(runArrivalProcessesAction);
         aWorkflow.addResponse(lookCommandDescription, lookCommand);
 
         GenericCommandDescription lookCommandDescription2 = new GenericCommandDescription("describe", "here");
         GenericCommand lookCommand2 = new GenericCommand(lookCommandDescription2, lookLocationAction);
+        lookCommand2.addAction(runArrivalProcessesAction);
         aWorkflow.addResponse(lookCommandDescription2, lookCommand2);
 
-        GenericCommandDescription anyCommandDescription = new GenericCommandDescription("~", "~", "~");
-        GenericCommand anyCommand = new GenericCommand(anyCommandDescription,
-                                                       new MessageAction(SystemMessageKey.SM2.defaultText(), allMessages));
-        aWorkflow.addProcess(anyCommandDescription, anyCommand);
+//        GenericCommandDescription anyCommandDescription = new GenericCommandDescription("~", "~", "~");
+//        GenericCommand anyCommand = new GenericCommand(anyCommandDescription,
+//                                                       new MessageAction(SystemMessageKey.SM2.defaultText()));
+//        aWorkflow.addProcess(anyCommandDescription, anyCommand);
     }
 }

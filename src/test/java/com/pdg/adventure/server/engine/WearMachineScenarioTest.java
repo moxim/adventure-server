@@ -16,7 +16,6 @@ import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandChain;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
@@ -34,7 +33,6 @@ class WearMachineScenarioTest {
 
     private static final String MACHINE_CANNOT_HELP = "machine_cannot_help";
 
-    private final MessagesHolder messages = new MessagesHolder();
     private GameContext gameContext;
     private Item neopreneSuit;
     private Item swimSuit;
@@ -57,12 +55,11 @@ class WearMachineScenarioTest {
         // the location's "wear||suit" command chain, exactly as authored in the editor
         GenericCommandDescription wearSuit = new GenericCommandDescription("wear", "", "suit");
 
-        GenericCommand wearNeoprene = new GenericCommand(wearSuit, new WearAction(neopreneSuit, messages));
+        GenericCommand wearNeoprene = new GenericCommand(wearSuit, new WearAction(neopreneSuit));
         wearNeoprene.addPreCondition(new CarriedCondition(neopreneSuit, gameContext));
         wearNeoprene.addPreCondition(new NotCondition(new WornCondition(neopreneSuit)));
 
-        GenericCommand machineCannotHelp = new GenericCommand(wearSuit, new MessageAction(MACHINE_CANNOT_HELP,
-                                                                                          messages));
+        GenericCommand machineCannotHelp = new GenericCommand(wearSuit, new MessageAction(MACHINE_CANNOT_HELP));
         machineCannotHelp.addPreCondition(new NotCondition(new HereCondition(neopreneSuit, gameContext)));
         machineCannotHelp.addPreCondition(new NotCondition(new CarriedCondition(neopreneSuit, gameContext)));
         machineCannotHelp.addPreCondition(new CarriedCondition(swimSuit, gameContext));

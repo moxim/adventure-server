@@ -5,7 +5,6 @@ import lombok.Getter;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 @Getter
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
@@ -13,8 +12,7 @@ public class MessageAction extends AbstractAction {
 
     private final String message;
 
-    public MessageAction(String aMessage, MessagesHolder aMessagesHolder) {
-        super(aMessagesHolder);
+    public MessageAction(String aMessage) {
         message = aMessage;
     }
 

@@ -25,11 +25,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.engine.AdventureRunSession;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
 import com.pdg.adventure.server.engine.AdventureRunSessionFactory;
+import com.pdg.adventure.server.engine.GameContext;
+import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.view.player.PlayerLibraryView;
@@ -41,6 +44,7 @@ class AdventureRunViewTest extends BrowserlessTest {
     private AdventureRunSessionFactory sessionFactory;
     private AdventureAccessService accessService;
     private AdventureRunSession session;
+    private GameContext gameContext;
     private AdventureData adventureData;
     private AdventureRunView view;
 
@@ -49,6 +53,7 @@ class AdventureRunViewTest extends BrowserlessTest {
         sessionFactory = mock(AdventureRunSessionFactory.class);
         accessService = mock(AdventureAccessService.class);
         session = mock(AdventureRunSession.class);
+        gameContext = mock(GameContext.class);
 
         adventureData = new AdventureData();
         adventureData.setId("adv-1");
@@ -62,6 +67,21 @@ class AdventureRunViewTest extends BrowserlessTest {
 
         view = new AdventureRunView(sessionFactory, accessService);
         UI.getCurrent().add(view);
+    }
+
+    // beforeEnter() now renders the opening room by directly executing a MovePlayerAction into
+    // the session's current (start) location - not by submitting "look" through session.submit()
+    // as before. Stubs that chain: session.getGameContext() -> a mocked GameContext whose
+    // getCurrentLocation() returns a mocked Location with the given arrival description, and an
+    // empty-message runArrivalProcesses() so MovePlayerAction.execute() doesn't NPE or append
+    // anything extra.
+    private void stubOpeningRoom(String description) {
+        com.pdg.adventure.server.location.Location startLocation =
+                mock(com.pdg.adventure.server.location.Location.class);
+        when(startLocation.getArrivalDescription()).thenReturn(description);
+        when(gameContext.getCurrentLocation()).thenReturn(startLocation);
+        when(gameContext.runArrivalProcesses()).thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS));
+        when(session.getGameContext()).thenReturn(gameContext);
     }
 
     @AfterEach
@@ -86,7 +106,7 @@ class AdventureRunViewTest extends BrowserlessTest {
 
     @Test
     void beforeEnter_rendersTheOpeningRoomDescription() {
-        when(session.submit("look")).thenReturn(new RunResult(List.of("A grand throne room."), false));
+        stubOpeningRoom("A grand throne room.");
 
         enterViaAuthorRoute();
 
@@ -97,7 +117,7 @@ class AdventureRunViewTest extends BrowserlessTest {
 
     @Test
     void submittingAMessage_echoesThePlayersInput_thenAppendsTheEngineResponse() {
-        when(session.submit("look")).thenReturn(new RunResult(List.of("A grand throne room."), false));
+        stubOpeningRoom("A grand throne room.");
         enterViaAuthorRoute();
         when(session.submit("go north")).thenReturn(new RunResult(List.of("You head north."), false));
 
@@ -111,19 +131,26 @@ class AdventureRunViewTest extends BrowserlessTest {
 
     @Test
     void multipleNarratorLinesFromOneTurn_arePooledIntoASingleMessageListItem() {
+        // The opening room is now rendered directly via MovePlayerAction, not via session.submit(),
+        // so the multi-line-pooling behavior (renderNarratorLines joining several lines into one
+        // MessageListItem) is exercised here through a regular submitted turn instead.
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
         when(session.submit("look")).thenReturn(
                 new RunResult(List.of(SystemMessageKey.SM9.defaultText(), "a rusty key"), false));
 
-        enterViaAuthorRoute();
+        MessageInput messageInput = find(MessageInput.class, view).single();
+        test(messageInput).send("look");
 
         MessageList messageList = find(MessageList.class, view).single();
         assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
-                .containsExactly(SystemMessageKey.SM9.defaultText() + "\na rusty key");
+                .containsExactly("A grand throne room.", "look",
+                                  SystemMessageKey.SM9.defaultText() + "\na rusty key");
     }
 
     @Test
     void gameOver_disablesTheMessageInput() {
-        when(session.submit("look")).thenReturn(new RunResult(List.of("A grand throne room."), false));
+        stubOpeningRoom("A grand throne room.");
         enterViaAuthorRoute();
         when(session.submit("quit")).thenReturn(new RunResult(List.of(SystemMessageKey.SM14.defaultText()), true));
 
@@ -171,7 +198,7 @@ class AdventureRunViewTest extends BrowserlessTest {
 
     @Test
     void beforeEnter_viaPlayerRoute_rendersTheOpeningRoomDescription() {
-        when(session.submit("look")).thenReturn(new RunResult(List.of("A grand throne room."), false));
+        stubOpeningRoom("A grand throne room.");
         when(sessionFactory.start(adventureData)).thenReturn(session);
 
         view.beforeEnter(eventFor("player/library/adv-1/run"));
@@ -212,7 +239,7 @@ class AdventureRunViewTest extends BrowserlessTest {
 
     @Test
     void beforeEnter_viaMenuRoute_rendersTheOpeningRoomDescription() {
-        when(session.submit("look")).thenReturn(new RunResult(List.of("A grand throne room."), false));
+        stubOpeningRoom("A grand throne room.");
         when(sessionFactory.start(adventureData)).thenReturn(session);
 
         view.beforeEnter(eventFor(AdventureRunView.menuRunPath("adv-1")));

@@ -22,14 +22,13 @@ class IncrementVariableActionMapperTest {
     private static final Integer VAR_VALUE = 5;
 
     @Mock private VariableProvider variableProvider;
-    @Mock private MessagesHolder messagesHolder;
     @Mock private MapperSupporter mapperSupporter;
 
     private IncrementVariableActionMapper mapper;
 
     @BeforeEach
     void setUp() {
-        mapper = new IncrementVariableActionMapper(messagesHolder, mapperSupporter);
+        mapper = new IncrementVariableActionMapper(mapperSupporter);
     }
 
     @Test
@@ -50,8 +49,7 @@ class IncrementVariableActionMapperTest {
 
     @Test
     void mapToDO_roundTripsNameAndValue() {
-        IncrementVariableAction action = new IncrementVariableAction(VAR_NAME, VAR_VALUE, variableProvider,
-                                                                     messagesHolder);
+        IncrementVariableAction action = new IncrementVariableAction(VAR_NAME, VAR_VALUE, variableProvider);
         IncrementVariableActionData data = mapper.mapToDO(action);
         assertThat(data).isNotNull();
         assertThat(data.getName()).isEqualTo(VAR_NAME);
