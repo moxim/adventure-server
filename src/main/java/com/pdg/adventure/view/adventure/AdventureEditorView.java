@@ -29,6 +29,7 @@ import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 import com.pdg.adventure.view.systemmessage.SystemMessagesView;
 import com.pdg.adventure.view.vocabulary.VocabularyMenuView;
+import com.pdg.adventure.view.workflow.ArrivalProcessesEditorView;
 import com.pdg.adventure.view.workflow.ResponsesEditorView;
 import com.pdg.adventure.view.workflow.WorkflowEditorView;
 
@@ -117,6 +118,14 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
+        Button arrivalButton = new Button("Manage Arrival", _ -> {
+            if (binder.writeBeanIfValid(adventureData)) {
+                UI.getCurrent().navigate(ArrivalProcessesEditorView.class,
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                            adventureData.getId())));
+            }
+        });
+
         Button backButton = new Button("Back", _ -> UI.getCurrent().navigate(AdventuresMenuView.class));
         backButton.addClickShortcut(Key.ESCAPE);
 
@@ -142,7 +151,7 @@ public class AdventureEditorView extends VerticalLayout
         setPadding(true);
 
         final VerticalLayout messagesLayout = new VerticalLayout(editMessagesButton, editSystemMessagesButton);
-        final VerticalLayout workflowLayout = new VerticalLayout(workflowButton, responsesButton);
+        final VerticalLayout workflowLayout = new VerticalLayout(workflowButton, responsesButton, arrivalButton);
         final VerticalLayout itemsLayout = new VerticalLayout(editItemsButton);
         final VerticalLayout locationsLayout = new VerticalLayout(editLocationsButton);
         final VerticalLayout vocabularyLayout = new VerticalLayout(editVocabularyButton);

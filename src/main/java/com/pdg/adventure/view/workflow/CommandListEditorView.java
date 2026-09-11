@@ -56,6 +56,7 @@ public class CommandListEditorView extends VerticalLayout
 
     public enum CommandListType {
         PROCESS,
+        ARRIVAL,
         RESPONSE
     }
 
@@ -117,7 +118,7 @@ public class CommandListEditorView extends VerticalLayout
         adjectiveSelector = new VocabularyPickerField("Adjective", "You may filter on adjectives.");
         nounSelector = new VocabularyPickerField("Noun", "You may filter on nouns.");
         setUpBinding();
-        if (aCommandListType == CommandListType.PROCESS) {
+        if (aCommandListType == CommandListType.PROCESS || aCommandListType == CommandListType.ARRIVAL) {
             verbSelector.setRequired(false);
         }
 
