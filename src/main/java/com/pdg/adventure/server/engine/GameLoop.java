@@ -29,20 +29,22 @@ public class GameLoop {
 
     /**
      * Runs one already-obtained line of input through the engine: parses it into a sequence of
-     * sub-commands and, for each in turn, runs the author's workflow Processes
-     * (gameContext.runProcesses()) and then dispatches the sub-command, stopping at the
-     * first that fails. This is the only entry point; the former run(BufferedReader) console
-     * loop was removed with the CLI runner, and runProcesses() is now called here rather
-     * than by the caller.
+     * sub-commands and, for each in turn, dispatches the sub-command and then runs the author's
+     * workflow Processes (gameContext.runProcesses()) against the state that command left behind
+     * - stopping at the first sub-command that fails. Processes run after dispatch, not before,
+     * so a location-gated Process (e.g. PlayerAtCondition) evaluates the location as it stands
+     * after that turn's move, not before it. This is the only entry point; the former
+     * run(BufferedReader) console loop was removed with the CLI runner, and runProcesses() is
+     * now called here rather than by the caller.
      */
     public CommandOutcome processCommand(String anInput) {
         try {
             CommandSequence sequence = parser.handle(anInput);
             for (GenericCommandDescription command : sequence.commands()) {
-                gameContext.runProcesses();
                 if (!runOneCommandSucceeded(command)) {
                     break; // stop the sequence at the first sub-command that failed
                 }
+                gameContext.runProcesses();
             }
             return CommandOutcome.CONTINUE;
         } catch (QuitException anException) {

@@ -12,6 +12,7 @@ import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.action.MovePlayerAction;
+import com.pdg.adventure.server.condition.PlayerAtCondition;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
@@ -252,5 +253,63 @@ class GameLoopTest {
         assertThat(told.toString()).contains(SystemMessageKey.SM8.defaultText());
         assertThat(secondOutcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
         assertThat(told.toString()).contains(SystemMessageKey.SM37.defaultText().formatted("suit"));
+    }
+
+    @Test
+    void movingAway_doesNotFireAProcessGatedOnTheLocationJustLeft() {
+        // Before this fix, GameLoop evaluated Processes BEFORE the sub-command (the move) executed,
+        // so a Process gated on the room the player is leaving would still see them "there" and
+        // wrongly fire on the very turn they left.
+        MessagesHolder messages = new MessagesHolder();
+        Location room = gameContext.getCurrentLocation();
+        DescriptionProvider cellarDescription = new DescriptionProvider("cellar", "cellar");
+        cellarDescription.setLongDescription("A dark, damp cellar.");
+        Location cellar = new Location(cellarDescription,
+                                       new GenericContainer(new DescriptionProvider("cellar items"), 10));
+
+        GenericCommandDescription roomOnlyDescription = new GenericCommandDescription("throne-room-only");
+        GenericCommand roomOnlyProcess = new GenericCommand(roomOnlyDescription,
+                new MessageAction("Welcome to the throne room.", messages));
+        roomOnlyProcess.addPreCondition(new PlayerAtCondition(room, gameContext));
+        workflow.addProcess(roomOnlyDescription, roomOnlyProcess);
+
+        GenericCommandDescription descendDescription = new GenericCommandDescription("descend");
+        workflow.addResponse(descendDescription,
+                new GenericCommand(descendDescription, new MovePlayerAction(cellar, messages, gameContext)));
+        vocabulary.createNewWord("descend", Word.Type.VERB);
+
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("descend");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString())
+                .contains("A dark, damp cellar.")
+                .doesNotContain("Welcome to the throne room.");
+    }
+
+    @Test
+    void movingInto_firesAProcessGatedOnTheDestination_onTheSameTurnAsTheMove() {
+        // Mirror image of the above: a Process gated on the destination must fire on the very turn
+        // that arrives, not one turn later.
+        MessagesHolder messages = new MessagesHolder();
+        DescriptionProvider cellarDescription = new DescriptionProvider("cellar", "cellar");
+        cellarDescription.setLongDescription("A dark, damp cellar.");
+        Location cellar = new Location(cellarDescription,
+                                       new GenericContainer(new DescriptionProvider("cellar items"), 10));
+
+        GenericCommandDescription cellarOnlyDescription = new GenericCommandDescription("cellar-only");
+        GenericCommand cellarOnlyProcess = new GenericCommand(cellarOnlyDescription,
+                new MessageAction("You shiver in the cold.", messages));
+        cellarOnlyProcess.addPreCondition(new PlayerAtCondition(cellar, gameContext));
+        workflow.addProcess(cellarOnlyDescription, cellarOnlyProcess);
+
+        GenericCommandDescription descendDescription = new GenericCommandDescription("descend");
+        workflow.addResponse(descendDescription,
+                new GenericCommand(descendDescription, new MovePlayerAction(cellar, messages, gameContext)));
+        vocabulary.createNewWord("descend", Word.Type.VERB);
+
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("descend");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString()).contains("You shiver in the cold.");
     }
 }
