@@ -99,7 +99,7 @@ public class Workflow {
                     String innerMessage = innerResult.getResultMessage();
                     if (!innerMessage.isEmpty()) {
                         result.setResultMessage(result.getResultMessage() +
-//                                                "\n" +
+                                                " " +
                                                 innerMessage);
                     }
                 });
