@@ -10,20 +10,18 @@ import static org.mockito.Mockito.*;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.api.Wearable;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 @ExtendWith(MockitoExtension.class)
 class WearActionTest {
 
     @Mock private Wearable thing;
-    @Mock private MessagesHolder messagesHolder;
 
     @Test
     void execute_wearableAndNotWorn_setsWornAndReturnsSuccess() {
         when(thing.isWearable()).thenReturn(true);
         when(thing.isWorn()).thenReturn(false);
 
-        ExecutionResult result = new WearAction(thing, messagesHolder).execute();
+        ExecutionResult result = new WearAction(thing).execute();
 
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
         verify(thing).setIsWorn(true);
@@ -35,7 +33,7 @@ class WearActionTest {
         when(thing.isWorn()).thenReturn(true);
         when(thing.getStrippedBasicDescription()).thenReturn("helmet");
 
-        ExecutionResult result = new WearAction(thing, messagesHolder).execute();
+        ExecutionResult result = new WearAction(thing).execute();
 
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
         assertThat(result.getResultMessage()).contains("helmet");
@@ -47,7 +45,7 @@ class WearActionTest {
         when(thing.isWearable()).thenReturn(false);
         when(thing.getStrippedBasicDescription()).thenReturn("sword");
 
-        ExecutionResult result = new WearAction(thing, messagesHolder).execute();
+        ExecutionResult result = new WearAction(thing).execute();
 
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
         assertThat(result.getResultMessage()).contains("sword");

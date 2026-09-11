@@ -5,7 +5,6 @@ import lombok.EqualsAndHashCode;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 /**
  * Fires the adventure's arrival-triggered Processes (Workflow.arrivalProcesses) - appended to the
@@ -26,8 +25,7 @@ import com.pdg.adventure.server.storage.message.MessagesHolder;
 public class RunArrivalProcessesAction extends AbstractAction {
     private final transient GameContext gameContext;
 
-    public RunArrivalProcessesAction(GameContext aGameContext, MessagesHolder aMessagesHolder) {
-        super(aMessagesHolder);
+    public RunArrivalProcessesAction(GameContext aGameContext) {
         gameContext = aGameContext;
     }
 

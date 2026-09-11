@@ -5,7 +5,6 @@ import lombok.Getter;
 
 import com.pdg.adventure.api.Containable;
 import com.pdg.adventure.api.ExecutionResult;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
@@ -14,8 +13,7 @@ public class DestroyAction extends AbstractAction {
     @Getter
     private final Containable thing;
 
-    public DestroyAction(Containable aThing, MessagesHolder aMessagesHolder) {
-        super(aMessagesHolder);
+    public DestroyAction(Containable aThing) {
         thing = aThing;
     }
 

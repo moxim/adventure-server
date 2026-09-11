@@ -10,19 +10,17 @@ import static org.mockito.Mockito.*;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.api.Wearable;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 @ExtendWith(MockitoExtension.class)
 class RemoveActionTest {
 
     @Mock private Wearable thing;
-    @Mock private MessagesHolder messagesHolder;
 
     @Test
     void execute_itemIsWorn_setsUnwornAndReturnsSuccess() {
         when(thing.isWorn()).thenReturn(true);
 
-        ExecutionResult result = new RemoveAction(thing, messagesHolder).execute();
+        ExecutionResult result = new RemoveAction(thing).execute();
 
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
         verify(thing).setIsWorn(false);
@@ -33,7 +31,7 @@ class RemoveActionTest {
         when(thing.isWorn()).thenReturn(false);
         when(thing.getStrippedBasicDescription()).thenReturn("robe");
 
-        ExecutionResult result = new RemoveAction(thing, messagesHolder).execute();
+        ExecutionResult result = new RemoveAction(thing).execute();
 
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
         assertThat(result.getResultMessage()).contains("robe");

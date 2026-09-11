@@ -35,6 +35,6 @@ public class MessageActionMapper extends ActionMapper<MessageActionData, Message
             // Fallback: use the messageId as the message itself
             message = actionData.getMessageId();
         }
-        return new MessageAction(message, adventureConfig.allMessages());
+        return new MessageAction(message);
     }
 }

@@ -35,13 +35,13 @@ class SetVariableActionMapperTest {
     @BeforeEach
     void setUp() {
         when(mapperSupporter.getVariableProvider()).thenReturn(variableProvider);
-        setVariableActionMapper = new SetVariableActionMapper(messagesHolder, mapperSupporter);
+        setVariableActionMapper = new SetVariableActionMapper(mapperSupporter);
     }
 
     @Test
     void mapToDOAndBO() {
         // given
-        SetVariableAction setVariableAction = new SetVariableAction("name", 7, variableProvider, messagesHolder);
+        SetVariableAction setVariableAction = new SetVariableAction("name", 7, variableProvider);
         Mapper<SetVariableActionData, SetVariableAction> mapper = setVariableActionMapper;
 
         // when

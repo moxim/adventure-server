@@ -3,19 +3,14 @@ package com.pdg.adventure.server.action;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.api.ExecutionResult;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 @ExtendWith(MockitoExtension.class)
 class MessageActionTest {
-
-    @Mock
-    private MessagesHolder messagesHolder;
 
     private MessageAction messageAction;
     private String testMessage;
@@ -28,7 +23,7 @@ class MessageActionTest {
     @Test
     void execute_returnsSuccessWithMessage() {
         // Given
-        messageAction = new MessageAction(testMessage, messagesHolder);
+        messageAction = new MessageAction(testMessage);
 
         // When
         ExecutionResult result = messageAction.execute();
@@ -43,7 +38,7 @@ class MessageActionTest {
     void execute_handlesEmptyMessage() {
         // Given
         String emptyMessage = "";
-        messageAction = new MessageAction(emptyMessage, messagesHolder);
+        messageAction = new MessageAction(emptyMessage);
 
         // When
         ExecutionResult result = messageAction.execute();
@@ -57,7 +52,7 @@ class MessageActionTest {
     @Test
     void constructor_setsMessageCorrectly() {
         // Given/When
-        messageAction = new MessageAction(testMessage, messagesHolder);
+        messageAction = new MessageAction(testMessage);
 
         // Then
         assertThat(messageAction.getMessage()).isEqualTo(testMessage);

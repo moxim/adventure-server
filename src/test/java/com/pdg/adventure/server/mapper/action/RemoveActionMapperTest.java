@@ -1,11 +1,9 @@
 package com.pdg.adventure.server.mapper.action;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +15,6 @@ import static org.mockito.Mockito.when;
 import com.pdg.adventure.model.action.RemoveActionData;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.RemoveAction;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.Item;
 
@@ -28,15 +25,14 @@ class RemoveActionMapperTest {
 
     @Mock private MapperSupporter mapperSupporter;
     @Mock private AdventureConfig adventureConfig;
-    @Mock private MessagesHolder messagesHolder;
     @Mock private Item wearable;
 
     @InjectMocks private RemoveActionMapper mapper;
 
-    @BeforeEach
-    void setUp() {
-        Mockito.lenient().when(adventureConfig.allMessages()).thenReturn(messagesHolder);
-    }
+//    @BeforeEach
+//    void setUp() {
+//        Mockito.lenient().when(adventureConfig.allMessages()).thenReturn(messagesHolder);
+//    }
 
     @Test
     void mapToBO_resolvesWearableById() {
@@ -65,7 +61,7 @@ class RemoveActionMapperTest {
     @Test
     void mapToDO_roundTripsThingId() {
         when(wearable.getId()).thenReturn(THING_ID);
-        RemoveAction action = new RemoveAction(wearable, messagesHolder);
+        RemoveAction action = new RemoveAction(wearable);
 
         RemoveActionData data = mapper.mapToDO(action);
 

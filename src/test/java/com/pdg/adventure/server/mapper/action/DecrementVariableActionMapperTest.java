@@ -23,13 +23,12 @@ class DecrementVariableActionMapperTest {
 
     @Mock private MapperSupporter mapperSupporter;
     @Mock private VariableProvider variableProvider;
-    @Mock private MessagesHolder messagesHolder;
 
     private DecrementVariableActionMapper mapper;
 
     @BeforeEach
     void setUp() {
-        mapper = new DecrementVariableActionMapper(messagesHolder, mapperSupporter);
+        mapper = new DecrementVariableActionMapper(mapperSupporter);
     }
 
     @Test
@@ -46,8 +45,7 @@ class DecrementVariableActionMapperTest {
 
     @Test
     void mapToDO_roundTripsNameAndValue() {
-        DecrementVariableAction action = new DecrementVariableAction(VAR_NAME, VAR_VALUE, variableProvider,
-                                                                     messagesHolder);
+        DecrementVariableAction action = new DecrementVariableAction(VAR_NAME, VAR_VALUE, variableProvider);
 
         DecrementVariableActionData data = mapper.mapToDO(action);
 

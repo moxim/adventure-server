@@ -21,7 +21,6 @@ import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.parser.GenericCommandProvider;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
@@ -33,7 +32,7 @@ class CommandProviderMapperTest {
         when(mapperSupporter.getVocabulary()).thenReturn(aVocabulary);
 
         Mapper<ActionData, Action> actionMapper = mock(Mapper.class);
-        when(actionMapper.mapToBO(any())).thenReturn(new MessageAction("hi", new MessagesHolder()));
+        when(actionMapper.mapToBO(any())).thenReturn(new MessageAction("hi"));
         when(mapperSupporter.getMapper(any())).thenReturn((Mapper) actionMapper);
 
         CommandDescriptionMapper descriptionMapper = new CommandDescriptionMapper(mapperSupporter);

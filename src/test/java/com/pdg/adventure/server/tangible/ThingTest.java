@@ -7,17 +7,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.action.MessageAction;
-import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.DescriptionProvider;
-import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.testhelper.TestSupporter;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 class ThingTest {
-    private final VariableProvider variableProvider = new VariableProvider();
     private final Vocabulary vocabulary = new Vocabulary();
 
     {
@@ -29,14 +25,10 @@ class ThingTest {
     @Test
     void removeCommand() {
         // given
-        DescriptionProvider locationDescription = new DescriptionProvider("location");
-        Location location = new Location(locationDescription, pocket);
-
         DescriptionProvider thingDescription = new DescriptionProvider("thing");
         Item item = new Item(thingDescription, true);
         GenericCommandDescription commandDescription = new GenericCommandDescription("take");
-        GenericCommand takeCommand = new GenericCommand(commandDescription, new MessageAction("Take-Command executed.",
-                                                                                              new MessagesHolder()));
+        GenericCommand takeCommand = new GenericCommand(commandDescription, new MessageAction("Take-Command executed."));
 
         item.addCommand(takeCommand);
 

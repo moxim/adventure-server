@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.action.MessageAction;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 class CommandHandlerExamineFallbackTest {
 
@@ -54,7 +53,7 @@ class CommandHandlerExamineFallbackTest {
 
         GenericCommandDescription desc = new GenericCommandDescription(EXAMINE_VERB, "sword");
         commandHandler.addCommand(new GenericCommand(desc,
-                new MessageAction("Custom examine response.", new MessagesHolder())));
+                new MessageAction("Custom examine response.")));
 
         ExecutionResult result = commandHandler.applyCommand(desc);
 

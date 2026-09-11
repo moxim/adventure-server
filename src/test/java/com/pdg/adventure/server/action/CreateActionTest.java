@@ -6,20 +6,19 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.api.Containable;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 @ExtendWith(MockitoExtension.class)
 class CreateActionTest {
 
     @Mock private Containable thing;
     @Mock private Container container;
-    @Mock private MessagesHolder messagesHolder;
 
     @Test
     void execute_onSuccess_addsThingAndSetsResultMessage() {
@@ -27,7 +26,7 @@ class CreateActionTest {
         when(thing.getStrippedBasicDescription()).thenReturn("torch");
         when(container.getStrippedBasicDescription()).thenReturn("room");
 
-        ExecutionResult result = new CreateAction(thing, () -> container, messagesHolder).execute();
+        ExecutionResult result = new CreateAction(thing, () -> container).execute();
 
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
         assertThat(result.getResultMessage()).contains("torch").contains("room");
@@ -38,9 +37,8 @@ class CreateActionTest {
     void execute_onFailure_returnsContainerResult() {
         when(container.add(thing)).thenReturn(new CommandExecutionResult(ExecutionResult.State.FAILURE, "Container full"));
 
-        ExecutionResult result = new CreateAction(thing, () -> container, messagesHolder).execute();
+        ExecutionResult result = new CreateAction(thing, () -> container).execute();
 
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
-        verify(messagesHolder, never()).getMessage(any());
     }
 }

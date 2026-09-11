@@ -5,15 +5,9 @@ import lombok.EqualsAndHashCode;
 import java.util.Objects;
 
 import com.pdg.adventure.api.Action;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public abstract class AbstractAction extends IdedAction implements Action {
-    protected final transient MessagesHolder messagesHolder;
-
-    protected AbstractAction(MessagesHolder aMessagesHolder) {
-        messagesHolder = aMessagesHolder;
-    }
 
     @Override
     public String getActionName() {

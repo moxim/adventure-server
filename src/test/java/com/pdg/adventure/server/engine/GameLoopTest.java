@@ -195,12 +195,12 @@ class GameLoopTest {
         Location cellar = new Location(cellarDescription,
                                        new GenericContainer(new DescriptionProvider("cellar items"), 10));
         cellar.addCommand(new GenericCommand(new GenericCommandDescription("examine", "key"),
-                                             new MessageAction("A rusty key.", messages)));
+                                             new MessageAction("A rusty key.")));
 
         GenericCommandDescription descendDescription = new GenericCommandDescription("descend");
         workflow.addResponse(descendDescription,
                                        new GenericCommand(descendDescription,
-                                                          new MovePlayerAction(cellar, messages, gameContext)));
+                                                          new MovePlayerAction(cellar, gameContext)));
 
         vocabulary.createNewWord("descend", Word.Type.VERB);
         vocabulary.createNewWord("examine", Word.Type.VERB);
@@ -228,10 +228,10 @@ class GameLoopTest {
         vocabulary.createNewWord("shield", Word.Type.NOUN);
         gameContext.getCurrentLocation().addCommand(new GenericCommand(
                 new GenericCommandDescription("examine", "sword"),
-                new MessageAction("A sharp sword.", new MessagesHolder())));
+                new MessageAction("A sharp sword.")));
         gameContext.getCurrentLocation().addCommand(new GenericCommand(
                 new GenericCommandDescription("examine", "shield"),
-                new MessageAction("A sturdy shield.", new MessagesHolder())));
+                new MessageAction("A sturdy shield.")));
 
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("examine sword and shield");
 
@@ -244,7 +244,7 @@ class GameLoopTest {
         vocabulary.createNewWord("wear", Word.Type.VERB);
         gameContext.getCurrentLocation().addCommand(new GenericCommand(
                 new GenericCommandDescription("wear", "suit"),
-                new MessageAction(SystemMessageKey.SM37.defaultText().formatted("suit"), new MessagesHolder())));
+                new MessageAction(SystemMessageKey.SM37.defaultText().formatted("suit"))));
 
         GameLoop.CommandOutcome firstOutcome = gameLoop.processCommand("take suit");
         GameLoop.CommandOutcome secondOutcome = gameLoop.processCommand("wear it");
@@ -269,13 +269,13 @@ class GameLoopTest {
 
         GenericCommandDescription roomOnlyDescription = new GenericCommandDescription("throne-room-only");
         GenericCommand roomOnlyProcess = new GenericCommand(roomOnlyDescription,
-                new MessageAction("Welcome to the throne room.", messages));
+                new MessageAction("Welcome to the throne room."));
         roomOnlyProcess.addPreCondition(new PlayerAtCondition(room, gameContext));
         workflow.addProcess(roomOnlyDescription, roomOnlyProcess);
 
         GenericCommandDescription descendDescription = new GenericCommandDescription("descend");
         workflow.addResponse(descendDescription,
-                new GenericCommand(descendDescription, new MovePlayerAction(cellar, messages, gameContext)));
+                new GenericCommand(descendDescription, new MovePlayerAction(cellar, gameContext)));
         vocabulary.createNewWord("descend", Word.Type.VERB);
 
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("descend");
@@ -298,13 +298,13 @@ class GameLoopTest {
 
         GenericCommandDescription cellarOnlyDescription = new GenericCommandDescription("cellar-only");
         GenericCommand cellarOnlyProcess = new GenericCommand(cellarOnlyDescription,
-                new MessageAction("You shiver in the cold.", messages));
+                new MessageAction("You shiver in the cold."));
         cellarOnlyProcess.addPreCondition(new PlayerAtCondition(cellar, gameContext));
         workflow.addProcess(cellarOnlyDescription, cellarOnlyProcess);
 
         GenericCommandDescription descendDescription = new GenericCommandDescription("descend");
         workflow.addResponse(descendDescription,
-                new GenericCommand(descendDescription, new MovePlayerAction(cellar, messages, gameContext)));
+                new GenericCommand(descendDescription, new MovePlayerAction(cellar, gameContext)));
         vocabulary.createNewWord("descend", Word.Type.VERB);
 
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("descend");
@@ -328,13 +328,13 @@ class GameLoopTest {
 
         GenericCommandDescription cellarChillDescription = new GenericCommandDescription("chill");
         GenericCommand cellarChill = new GenericCommand(cellarChillDescription,
-                new MessageAction("You shiver in the cold.", messages));
+                new MessageAction("You shiver in the cold."));
         cellarChill.addPreCondition(new PlayerAtCondition(cellar, gameContext));
         workflow.addArrivalProcess(cellarChillDescription, cellarChill);
 
         GenericCommandDescription descendDescription = new GenericCommandDescription("descend");
         workflow.addResponse(descendDescription,
-                new GenericCommand(descendDescription, new MovePlayerAction(cellar, messages, gameContext)));
+                new GenericCommand(descendDescription, new MovePlayerAction(cellar, gameContext)));
         vocabulary.createNewWord("descend", Word.Type.VERB);
 
         gameLoop.processCommand("descend");
@@ -353,7 +353,7 @@ class GameLoopTest {
         // so it fails with SM8.
         GenericCommandDescription alwaysDescription = new GenericCommandDescription("always-fires");
         GenericCommand alwaysProcess = new GenericCommand(alwaysDescription,
-                new MessageAction("The wind stirs.", new MessagesHolder()));
+                new MessageAction("The wind stirs."));
         workflow.addProcess(alwaysDescription, alwaysProcess);
 
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("take");
@@ -367,7 +367,7 @@ class GameLoopTest {
     void describingCurrentLocation_firesAnArrivalProcessGatedOnIt() {
         GenericCommandDescription hereDescription = new GenericCommandDescription("hush");
         GenericCommand hereProcess = new GenericCommand(hereDescription,
-                new MessageAction("The room is silent.", new MessagesHolder()));
+                new MessageAction("The room is silent."));
         hereProcess.addPreCondition(new PlayerAtCondition(gameContext.getCurrentLocation(), gameContext));
         workflow.addArrivalProcess(hereDescription, hereProcess);
 
@@ -385,7 +385,7 @@ class GameLoopTest {
         // "only once" adds their own guard; the engine does not de-duplicate.
         GenericCommandDescription hereDescription = new GenericCommandDescription("hush");
         GenericCommand hereProcess = new GenericCommand(hereDescription,
-                new MessageAction("The room is silent.", new MessagesHolder()));
+                new MessageAction("The room is silent."));
         hereProcess.addPreCondition(new PlayerAtCondition(gameContext.getCurrentLocation(), gameContext));
         workflow.addArrivalProcess(hereDescription, hereProcess);
 

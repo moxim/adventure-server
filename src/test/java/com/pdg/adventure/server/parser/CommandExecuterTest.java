@@ -24,7 +24,6 @@ import com.pdg.adventure.server.condition.PlayerAtCondition;
 import com.pdg.adventure.server.condition.WornCondition;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
@@ -255,18 +254,17 @@ class CommandExecutorTest {
         // End-to-end through CommandExecutor: a single "jump sea" chain with three commands.
         // No suit worn → the WORN command is skipped; the NOT_WORN command and the
         // no-precondition command both apply → two accumulated messages.
-        MessagesHolder messages = new MessagesHolder();
 
         GenericCommand worn = new GenericCommand(new GenericCommandDescription("jump", "sea"),
-                new MessageAction("jump_sea_ok", messages));
+                new MessageAction("jump_sea_ok"));
         worn.addPreCondition(precondition(ExecutionResult.State.FAILURE));        // suit not worn → skipped
 
         GenericCommand notWorn = new GenericCommand(new GenericCommandDescription("jump", "sea"),
-                new MessageAction("jetty_jump_sea_no_suit", messages));
+                new MessageAction("jetty_jump_sea_no_suit"));
         notWorn.addPreCondition(precondition(ExecutionResult.State.SUCCESS));     // not worn → applies
 
         GenericCommand always = new GenericCommand(new GenericCommandDescription("jump", "sea"),
-                new MessageAction("jump_sea_also_here", messages));               // no precondition
+                new MessageAction("jump_sea_also_here"));               // no precondition
 
         location.addCommand(worn);
         location.addCommand(notWorn);
@@ -294,12 +292,11 @@ class CommandExecutorTest {
         GameContext gameContext = new GameContext();
         gameContext.setPocket(pocket);
         gameContext.setCurrentLocation(location);
-        MessagesHolder messages = new MessagesHolder();
 
         Item carriedSuit = new Item(new DescriptionProvider("suit"), true);
         Item locationSuit = new Item(new DescriptionProvider("suit"), true);
-        addDropChain(carriedSuit, gameContext, messages);
-        addDropChain(locationSuit, gameContext, messages);
+        addDropChain(carriedSuit, gameContext);
+        addDropChain(locationSuit, gameContext);
 
         pocket.add(carriedSuit);
         location.getItemContainer().add(locationSuit);
@@ -321,12 +318,11 @@ class CommandExecutorTest {
         GameContext gameContext = new GameContext();
         gameContext.setPocket(pocket);
         gameContext.setCurrentLocation(location);
-        MessagesHolder messages = new MessagesHolder();
 
         Item carriedSuit = new Item(new DescriptionProvider("suit"), true);
         Item locationSuit = new Item(new DescriptionProvider("suit"), true);
-        addTakeChain(carriedSuit, gameContext, messages);
-        addTakeChain(locationSuit, gameContext, messages);
+        addTakeChain(carriedSuit, gameContext);
+        addTakeChain(locationSuit, gameContext);
 
         pocket.add(carriedSuit);
         location.getItemContainer().add(locationSuit);
@@ -352,8 +348,7 @@ class CommandExecutorTest {
         GenericCommandDescription waveSpec = new GenericCommandDescription("wave");
 
         Item chanceGatedSuit = new Item(new DescriptionProvider("suit"), true);
-        GenericCommand excuse = new GenericCommand(waveSpec, new MessageAction("maybe_not",
-                new MessagesHolder()));
+        GenericCommand excuse = new GenericCommand(waveSpec, new MessageAction("maybe_not"));
         excuse.addPreCondition(new ChanceCondition(100));
         chanceGatedSuit.addCommand(excuse);
         chanceGatedSuit.addCommand(new GenericCommand(waveSpec, successAction));
@@ -380,12 +375,11 @@ class CommandExecutorTest {
         GameContext gameContext = new GameContext();
         gameContext.setPocket(pocket);
         gameContext.setCurrentLocation(location);
-        MessagesHolder messages = new MessagesHolder();
 
         Item neoprene = new Item(new DescriptionProvider("neoprene", "suit"), true);
         GenericCommandDescription neopreneDropSpec = new GenericCommandDescription("drop", "neoprene", "suit");
         GenericCommand neopreneExcuse = new GenericCommand(neopreneDropSpec,
-                new MessageAction(SM49.defaultText().formatted("suit"), messages));
+                new MessageAction(SM49.defaultText().formatted("suit")));
         neopreneExcuse.addPreCondition(new NotCondition(new CarriedCondition(neoprene, gameContext)));
         neoprene.addCommand(neopreneExcuse);
         GenericCommand neopreneRealDrop = new GenericCommand(neopreneDropSpec,
@@ -406,7 +400,7 @@ class CommandExecutorTest {
         Item swim = new Item(new DescriptionProvider("suit"), true);
         GenericCommandDescription swimDropSpec = new GenericCommandDescription("drop", "suit");
         GenericCommand swimExcuse = new GenericCommand(swimDropSpec,
-                new MessageAction("I don't have the swim suit.", messages));
+                new MessageAction("I don't have the swim suit."));
         swimExcuse.addPreCondition(new NotCondition(new CarriedCondition(swim, gameContext)));
         swim.addCommand(swimExcuse);
         swim.addCommand(new GenericCommand(swimDropSpec, moveAction(swim, "dropped_swim", pocket,
@@ -428,16 +422,15 @@ class CommandExecutorTest {
         GameContext gameContext = new GameContext();
         gameContext.setPocket(pocket);
         gameContext.setCurrentLocation(location);
-        MessagesHolder messages = new MessagesHolder();
 
         Item neoprene = new Item(new DescriptionProvider("neoprene", "suit"), true);
         GenericCommandDescription neopreneTakeSpec = new GenericCommandDescription("take", "neoprene", "suit");
         GenericCommand neopreneAlreadyCarried = new GenericCommand(neopreneTakeSpec,
-                new MessageAction(SystemMessageKey.SM49.defaultText().formatted("neoprene suit."), messages));
+                new MessageAction(SystemMessageKey.SM49.defaultText().formatted("neoprene suit.")));
         neopreneAlreadyCarried.addPreCondition(new CarriedCondition(neoprene, gameContext));
         neoprene.addCommand(neopreneAlreadyCarried);
         GenericCommand neopreneNotHere = new GenericCommand(neopreneTakeSpec,
-                new MessageAction(SystemMessageKey.SM26.defaultText(), messages));
+                new MessageAction(SystemMessageKey.SM26.defaultText()));
         neopreneNotHere.addPreCondition(new NotCondition(new HereCondition(neoprene, gameContext)));
         neoprene.addCommand(neopreneNotHere);
         GenericCommand neopreneRealTake = new GenericCommand(neopreneTakeSpec,
@@ -448,7 +441,7 @@ class CommandExecutorTest {
         Item swim = new Item(new DescriptionProvider("suit"), true);
         GenericCommandDescription swimTakeSpec = new GenericCommandDescription("take", "suit");
         GenericCommand swimAlreadyCarried = new GenericCommand(swimTakeSpec,
-                new MessageAction(SM25.defaultText(), messages));
+                new MessageAction(SM25.defaultText()));
         swimAlreadyCarried.addPreCondition(new CarriedCondition(swim, gameContext));
         swim.addCommand(swimAlreadyCarried);
         GenericCommand swimRealTake = new GenericCommand(swimTakeSpec,
@@ -478,7 +471,7 @@ class CommandExecutorTest {
         Item neopreneSuit = new Item(new DescriptionProvider("neoprene", "suit"), true);
         neopreneSuit.setIsWearable(true);
         pocket.add(neopreneSuit);
-        addJumpChains(gameContext, new MessagesHolder(), neopreneSuit, sea);
+        addJumpChains(gameContext, neopreneSuit, sea);
 
         ExecutionResult result = sut.execute(new GenericCommandDescription("jump"));
 
@@ -499,14 +492,13 @@ class CommandExecutorTest {
         gameContext.setUpWorkflows();
         gameContext.setPocket(pocket);
         gameContext.setCurrentLocation(location);
-        MessagesHolder messages = new MessagesHolder();
 
         Item neopreneSuit = new Item(new DescriptionProvider("neoprene", "suit"), true);
         neopreneSuit.setIsWearable(true);
         neopreneSuit.setIsWorn(true);
         pocket.add(neopreneSuit);
 
-        addJumpChains(gameContext, messages, neopreneSuit, sea);
+        addJumpChains(gameContext, neopreneSuit, sea);
 
         // when
         ExecutionResult result = sut.execute(new GenericCommandDescription("jump", "sea"));
@@ -528,14 +520,13 @@ class CommandExecutorTest {
         GameContext gameContext = new GameContext();
         gameContext.setPocket(pocket);
         gameContext.setCurrentLocation(location);
-        MessagesHolder messages = new MessagesHolder();
 
         Item neopreneSuit = new Item(new DescriptionProvider("neoprene", "suit"), true);
         neopreneSuit.setIsWearable(true);
         neopreneSuit.setIsWorn(false);
         pocket.add(neopreneSuit);
 
-        addJumpChains(gameContext, messages, neopreneSuit, sea);
+        addJumpChains(gameContext, neopreneSuit, sea);
 
         // when
         ExecutionResult result = sut.execute(new GenericCommandDescription("jump", "sea"));
@@ -557,14 +548,13 @@ class CommandExecutorTest {
         gameContext.setUpWorkflows();
         gameContext.setPocket(pocket);
         gameContext.setCurrentLocation(location);
-        MessagesHolder messages = new MessagesHolder();
 
         Item neopreneSuit = new Item(new DescriptionProvider("neoprene", "suit"), true);
         neopreneSuit.setIsWearable(true);
         neopreneSuit.setIsWorn(true);
         pocket.add(neopreneSuit);
 
-        addJumpChains(gameContext, messages, neopreneSuit, sea, true);
+        addJumpChains(gameContext, neopreneSuit, sea, true);
 
         ExecutionResult result = sut.execute(new GenericCommandDescription("jump", "sea"));
 
@@ -576,38 +566,38 @@ class CommandExecutorTest {
     private final Location sea = new Location(new DescriptionProvider("sea"),
             new GenericContainer(new DescriptionProvider("seaPocket"), 5));
 
-    private void addJumpChains(GameContext aGameContext, MessagesHolder aMessages, Item aNeopreneSuit,
+    private void addJumpChains(GameContext aGameContext, Item aNeopreneSuit,
                                Location aSea) {
-        addJumpChains(aGameContext, aMessages, aNeopreneSuit, aSea, false);
+        addJumpChains(aGameContext, aNeopreneSuit, aSea, false);
     }
 
-    private void addJumpChains(GameContext aGameContext, MessagesHolder aMessages, Item aNeopreneSuit,
+    private void addJumpChains(GameContext aGameContext, Item aNeopreneSuit,
                                Location aSea, boolean aBreakAfterTheMove) {
         GenericCommandDescription bareJumpSpec = new GenericCommandDescription("jump");
-        location.addCommand(new GenericCommand(bareJumpSpec, new MessageAction("jetty_jump", aMessages)));
+        location.addCommand(new GenericCommand(bareJumpSpec, new MessageAction("jetty_jump")));
 
         GenericCommandDescription jumpSeaSpec = new GenericCommandDescription("jump", "sea");
-        GenericCommand jumpSeaOk = new GenericCommand(jumpSeaSpec, new MessageAction("jump_sea_ok", aMessages));
+        GenericCommand jumpSeaOk = new GenericCommand(jumpSeaSpec, new MessageAction("jump_sea_ok"));
         jumpSeaOk.addPreCondition(new WornCondition(aNeopreneSuit));
         jumpSeaOk.addPreCondition(new PlayerAtCondition(location, aGameContext));
-        jumpSeaOk.addAction(new MovePlayerAction(aSea, aMessages, aGameContext));
+        jumpSeaOk.addAction(new MovePlayerAction(aSea, aGameContext));
         if (aBreakAfterTheMove) {
-            jumpSeaOk.addAction(new BreakAction(aMessages));
+            jumpSeaOk.addAction(new BreakAction());
         }
         location.addCommand(jumpSeaOk);
 
         GenericCommand jumpSeaNoSuit = new GenericCommand(jumpSeaSpec,
-                new MessageAction("jetty_jump_sea_no_suit", aMessages));
+                new MessageAction("jetty_jump_sea_no_suit"));
         jumpSeaNoSuit.addPreCondition(new NotCondition(new WornCondition(aNeopreneSuit)));
         location.addCommand(jumpSeaNoSuit);
 
-        location.addCommand(new GenericCommand(jumpSeaSpec, new MessageAction("jump_sea_also_here", aMessages)));
+        location.addCommand(new GenericCommand(jumpSeaSpec, new MessageAction("jump_sea_also_here")));
     }
 
-    private void addDropChain(Item anItem, GameContext aGameContext, MessagesHolder aMessages) {
+    private void addDropChain(Item anItem, GameContext aGameContext) {
         GenericCommandDescription dropSpec = new GenericCommandDescription("drop");
 
-        GenericCommand notCarried = new GenericCommand(dropSpec, new MessageAction("not_carried", aMessages));
+        GenericCommand notCarried = new GenericCommand(dropSpec, new MessageAction("not_carried"));
         notCarried.addPreCondition(new NotCondition(new CarriedCondition(anItem, aGameContext)));
         anItem.addCommand(notCarried);
 
@@ -615,17 +605,17 @@ class CommandExecutorTest {
                 aGameContext.getCurrentLocation().getItemContainer())));
     }
 
-    private void addTakeChain(Item anItem, GameContext aGameContext, MessagesHolder aMessages) {
+    private void addTakeChain(Item anItem, GameContext aGameContext) {
         // mirrors ItemEditorView.createPickupCommands' three take variants exactly: already
         // carried, not here, and the real take (gated by HereCondition, unlike drop's success
         // variant which has no precondition of its own).
         GenericCommandDescription takeSpec = new GenericCommandDescription("take");
 
-        GenericCommand alreadyCarried = new GenericCommand(takeSpec, new MessageAction("already_carried", aMessages));
+        GenericCommand alreadyCarried = new GenericCommand(takeSpec, new MessageAction("already_carried"));
         alreadyCarried.addPreCondition(new CarriedCondition(anItem, aGameContext));
         anItem.addCommand(alreadyCarried);
 
-        GenericCommand notHere = new GenericCommand(takeSpec, new MessageAction("not_here", aMessages));
+        GenericCommand notHere = new GenericCommand(takeSpec, new MessageAction("not_here"));
         notHere.addPreCondition(new NotCondition(new HereCondition(anItem, aGameContext)));
         anItem.addCommand(notHere);
 

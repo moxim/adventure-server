@@ -23,8 +23,7 @@ public class DestroyActionMapper extends ActionMapper<DestroyActionData, Destroy
     @Override
     public DestroyAction mapToBO(DestroyActionData actionData) {
         return new DestroyAction(
-                getMapperSupporter().requireMappedItem(actionData.getThingId(), actionData),
-                adventureConfig.allMessages());
+                getMapperSupporter().requireMappedItem(actionData.getThingId(), actionData));
     }
 
     @Override

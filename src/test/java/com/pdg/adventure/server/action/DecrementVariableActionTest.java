@@ -4,15 +4,13 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
 class DecrementVariableActionTest {
     private static final String VAR_NAME = "t";
     private final VariableProvider variableProvider = new VariableProvider();
-    private final DecrementVariableAction sut = new DecrementVariableAction(VAR_NAME, 1, variableProvider,
-                                                                            new MessagesHolder());
+    private final DecrementVariableAction sut = new DecrementVariableAction(VAR_NAME, 1, variableProvider);
 
     @Test
     void executeWithNumericString() {

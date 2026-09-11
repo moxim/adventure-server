@@ -4,7 +4,6 @@ import lombok.EqualsAndHashCode;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.ContainerSupplier;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.tangible.Item;
 
@@ -14,8 +13,7 @@ public class DropAction extends AbstractAction {
     private final Item item;
     private final transient ContainerSupplier containerProvider;
 
-    public DropAction(Item anItem, ContainerSupplier aContainerProvider, MessagesHolder aMessagesHolder) {
-        super(aMessagesHolder);
+    public DropAction(Item anItem, ContainerSupplier aContainerProvider) {
         item = anItem;
         containerProvider = aContainerProvider;
     }
@@ -23,7 +21,7 @@ public class DropAction extends AbstractAction {
     @Override
     public ExecutionResult execute() {
         item.setIsWorn(false);
-        ExecutionResult result =  new MoveItemAction(item, containerProvider.get(), messagesHolder).execute();
+        ExecutionResult result =  new MoveItemAction(item, containerProvider.get()).execute();
         result.setResultMessage(SystemMessageKey.SM39.defaultText().formatted(item.getStrippedBasicDescription()));
         return result;
     }

@@ -5,7 +5,6 @@ import lombok.Getter;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
@@ -16,9 +15,8 @@ public class IncrementVariableAction extends AbstractVariableAction {
     private final Integer value;
 
 
-    public IncrementVariableAction(String aName, Integer aValue, VariableProvider aVariableProvider,
-                                   MessagesHolder aMessagesHolder) {
-        super(aVariableProvider, aMessagesHolder);
+    public IncrementVariableAction(String aName, Integer aValue, VariableProvider aVariableProvider) {
+        super(aVariableProvider);
         name = aName;
         value = aValue;
     }

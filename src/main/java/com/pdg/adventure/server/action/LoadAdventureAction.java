@@ -39,7 +39,6 @@ public class LoadAdventureAction extends AbstractAction {
     public LoadAdventureAction(AdventureService anAdventureService, AdventureMapper anAdventureMapper,
                                @Lazy AdventureConfig anAdventureConfig,
                                GameContext aGameContext) {
-        super(anAdventureConfig.allMessages());
         adventureService = anAdventureService;
         adventureMapper = anAdventureMapper;
         adventureConfig = anAdventureConfig;

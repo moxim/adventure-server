@@ -42,25 +42,24 @@ public class CommandFactory {
         GenericCommandDescription helpCommandDescription = new GenericCommandDescription("help");
         GenericCommand helpCommand = new GenericCommand(helpCommandDescription, new MessageAction("""
                 Look around, examine items, take or drop items, maybe wear items, enter or leave locations.
-                Or quit.""",
-            allMessages));
+                Or quit."""));
         aWorkflow.addResponse(helpCommandDescription, helpCommand);
 
         GenericCommandDescription inventoryCommandDescription = new GenericCommandDescription("inventory");
         GenericCommand inventoryCommand = new GenericCommand(inventoryCommandDescription,
                                                              new InventoryAction(gameContext::tell,
                                                                                  new ContainerSupplier(
-                                                                                         gameContext::getPocket),
-                                                                                 allMessages));
+                                                                                         gameContext::getPocket)
+                                                                                 ));
         aWorkflow.addResponse(inventoryCommandDescription, inventoryCommand);
 
         GenericCommandDescription quitCommandDescription = new GenericCommandDescription("quit");
-        GenericCommand quitCommand = new GenericCommand(quitCommandDescription, new QuitAction(allMessages));
+        GenericCommand quitCommand = new GenericCommand(quitCommandDescription, new QuitAction());
         aWorkflow.addResponse(quitCommandDescription, quitCommand);
 
         Action lookLocationAction = new DescribeAction(
-                () -> gameContext.getCurrentLocation().getLongDescription(), allMessages);
-        Action runArrivalProcessesAction = new RunArrivalProcessesAction(gameContext, allMessages);
+                () -> gameContext.getCurrentLocation().getLongDescription());
+        Action runArrivalProcessesAction = new RunArrivalProcessesAction(gameContext);
 
         GenericCommandDescription lookCommandDescription = new GenericCommandDescription("describe");
         GenericCommand lookCommand = new GenericCommand(lookCommandDescription, lookLocationAction);
@@ -74,7 +73,7 @@ public class CommandFactory {
 
         GenericCommandDescription anyCommandDescription = new GenericCommandDescription("~", "~", "~");
         GenericCommand anyCommand = new GenericCommand(anyCommandDescription,
-                                                       new MessageAction(SystemMessageKey.SM2.defaultText(), allMessages));
+                                                       new MessageAction(SystemMessageKey.SM2.defaultText()));
         aWorkflow.addProcess(anyCommandDescription, anyCommand);
     }
 }
