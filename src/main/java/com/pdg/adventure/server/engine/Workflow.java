@@ -21,12 +21,11 @@ import com.pdg.adventure.server.parser.GenericCommandDescription;
  *       description is (re)shown: on arrival via movement, and on an explicit look/describe
  *       ({@link #runArrivalProcesses()}). Re-fires on every redescribe of the same location by
  *       design (see docs/superpowers/specs/2026-09-11-process-arrival-timing-design.md); an
- *       author who wants "only once" adds their own guard condition. Output order: each matched
- *       entry's message is told immediately as it fires — before the triggering command's own
- *       message (e.g. the destination's arrival description) is told by its caller. This is the
- *       opposite of {@code processes}, whose output now lands after its trigger since the
- *       GameLoop reorder. Current, accepted-for-now behavior, not a guarantee — see the design
- *       doc's final-review notes before changing it.</li>
+ *       author who wants "only once" adds their own guard condition. Output order: this method
+ *       returns the matched entries' joined message rather than telling it itself — the caller
+ *       (e.g. {@code MovePlayerAction}) appends it after its own message (the destination's
+ *       arrival description), so the description prints first and arrival-process text follows
+ *       it, same ordering as {@code processes}.</li>
  *   <li><b>{@code responses}</b> — a fallback table, consulted by {@link #respondTo} only
  *       when no location/pocket command matched the typed verb. Keyed by exact
  *       {@link CommandDescription}.</li>

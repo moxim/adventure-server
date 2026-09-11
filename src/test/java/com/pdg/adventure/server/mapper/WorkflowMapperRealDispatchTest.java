@@ -4,9 +4,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.CommandData;
@@ -25,7 +22,7 @@ import com.pdg.adventure.server.support.MapperSupporter;
  * each mock away: authored WorkflowData -> real CommandMapper.mapToBO -> real
  * MapperSupporter.getMapper(MessageActionData.class) -> the auto-registered MessageActionMapper ->
  * a runtime Command executed by gameContext.runProcesses(), the exact call
- * GameLoop.processCommand() makes before each parsed sub-command.
+ * GameLoop.processCommand() makes after each parsed sub-command.
  */
 class WorkflowMapperRealDispatchTest {
 
@@ -61,15 +58,8 @@ class WorkflowMapperRealDispatchTest {
         Workflow workflow = gameContext.setUpWorkflows();
         workflowMapper.populate(gameContext.getWorkflowData(), workflow);
 
-        PrintStream originalOut = System.out;
-        ByteArrayOutputStream capturedOut = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(capturedOut));
-        try {
-            gameContext.runProcesses();
-        } finally {
-            System.setOut(originalOut);
-        }
+        String resultMessage = gameContext.runProcesses().getResultMessage();
 
-        assertThat(capturedOut.toString()).contains("THE_ROOM_GROWS_COLD");
+        assertThat(resultMessage).contains("THE_ROOM_GROWS_COLD");
     }
 }

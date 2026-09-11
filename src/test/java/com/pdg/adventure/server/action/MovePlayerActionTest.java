@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.action;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -11,12 +12,20 @@ import static org.mockito.Mockito.*;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
+import com.pdg.adventure.server.parser.CommandExecutionResult;
 
 @ExtendWith(MockitoExtension.class)
 class MovePlayerActionTest {
 
     @Mock private Location destination;
     @Mock private GameContext gameContext;
+
+    @BeforeEach
+    void setUp() {
+        // execute() always calls gameContext.runArrivalProcesses().getResultMessage() now - stub a
+        // no-op (empty message) result so tests that don't care about arrival processes don't NPE.
+        when(gameContext.runArrivalProcesses()).thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS));
+    }
 
     @Test
     void execute_setsCurrentLocationOnGameContext() {
