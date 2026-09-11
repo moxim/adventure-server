@@ -3,9 +3,6 @@ package com.pdg.adventure.server.engine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -18,13 +15,11 @@ import com.pdg.adventure.server.storage.message.SystemMessageKey;
 
 class WorkflowTest {
 
-    private final List<String> told = new ArrayList<>();
     private Workflow workflow;
 
     @BeforeEach
     void setUp() {
         GameContext gameContext = new GameContext();
-        gameContext.setOutputSink(told::add);
         workflow = gameContext.setUpWorkflows();
     }
 
@@ -34,9 +29,11 @@ class WorkflowTest {
         addProcess(new GenericCommandDescription("apple"), "Apple message.");
         addProcess(new GenericCommandDescription("middle"), "Middle message.");
 
-        workflow.runProcesses();
+        String result = workflow.runProcesses().getResultMessage();
 
-        assertThat(told).containsExactly("Apple message.", "Middle message.", "Zoo message.");
+        assertThat(result).contains("Apple message.", "Middle message.", "Zoo message.");
+        assertThat(result.indexOf("Apple message.")).isLessThan(result.indexOf("Middle message."));
+        assertThat(result.indexOf("Middle message.")).isLessThan(result.indexOf("Zoo message."));
     }
 
     // CommandFactory.setUpWorkflowCommands registers a sentinel Process keyed ("~", "~", "~")
@@ -50,9 +47,11 @@ class WorkflowTest {
         addProcess(new GenericCommandDescription("apple"), "Apple message.");
         addProcess(new GenericCommandDescription("~", "~", "~"), SystemMessageKey.SM2.defaultText());
 
-        workflow.runProcesses();
+        String result = workflow.runProcesses().getResultMessage();
 
-        assertThat(told).containsExactly("Apple message.", "Zebra message.", SystemMessageKey.SM2.defaultText());
+        assertThat(result).contains("Apple message.", "Zebra message.", SystemMessageKey.SM2.defaultText());
+        assertThat(result.indexOf("Apple message.")).isLessThan(result.indexOf("Zebra message."));
+        assertThat(result.indexOf("Zebra message.")).isLessThan(result.indexOf(SystemMessageKey.SM2.defaultText()));
     }
 
     @Test
@@ -61,9 +60,11 @@ class WorkflowTest {
         addProcess(new GenericCommandDescription("look", "big", "chest"), "Big chest.");
         addProcess(new GenericCommandDescription("look", "small", "box"), "Small box.");
 
-        workflow.runProcesses();
+        String result = workflow.runProcesses().getResultMessage();
 
-        assertThat(told).containsExactly("Big chest.", "Big door.", "Small box.");
+        assertThat(result).contains("Big chest.", "Big door.", "Small box.");
+        assertThat(result.indexOf("Big chest.")).isLessThan(result.indexOf("Big door."));
+        assertThat(result.indexOf("Big door.")).isLessThan(result.indexOf("Small box."));
     }
 
     @Test
@@ -71,9 +72,10 @@ class WorkflowTest {
         addArrivalProcess(new GenericCommandDescription("zoo"), "Zoo arrival message.");
         addArrivalProcess(new GenericCommandDescription("apple"), "Apple arrival message.");
 
-        workflow.runArrivalProcesses();
+        String result = workflow.runArrivalProcesses().getResultMessage();
 
-        assertThat(told).containsExactly("Apple arrival message.", "Zoo arrival message.");
+        assertThat(result).contains("Apple arrival message.", "Zoo arrival message.");
+        assertThat(result.indexOf("Apple arrival message.")).isLessThan(result.indexOf("Zoo arrival message."));
     }
 
     @Test
@@ -81,9 +83,9 @@ class WorkflowTest {
         addProcess(new GenericCommandDescription("regular"), "Regular process message.");
         addArrivalProcess(new GenericCommandDescription("arrival"), "Arrival process message.");
 
-        workflow.runArrivalProcesses();
+        String result = workflow.runArrivalProcesses().getResultMessage();
 
-        assertThat(told).containsExactly("Arrival process message.");
+        assertThat(result).isEqualTo("Arrival process message.");
     }
 
     @Test
@@ -91,9 +93,9 @@ class WorkflowTest {
         addProcess(new GenericCommandDescription("regular"), "Regular process message.");
         addArrivalProcess(new GenericCommandDescription("arrival"), "Arrival process message.");
 
-        workflow.runProcesses();
+        String result = workflow.runProcesses().getResultMessage();
 
-        assertThat(told).containsExactly("Regular process message.");
+        assertThat(result).isEqualTo("Regular process message.");
     }
 
     private void addProcess(GenericCommandDescription aDescription, String aMessage) {

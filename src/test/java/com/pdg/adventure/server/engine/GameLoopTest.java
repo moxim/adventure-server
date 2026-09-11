@@ -314,12 +314,14 @@ class GameLoopTest {
     }
 
     @Test
-    void movingInto_arrivalProcessMessage_currentlyPrintsBeforeTheArrivalDescription() {
-        // Documents current, intentional-for-now behavior (see Workflow's javadoc and the design
-        // doc's final-review notes): Workflow.runArrivalProcesses() tells its message synchronously
-        // as it fires, inside MovePlayerAction.execute(), before the caller tells the move's own
-        // joined result (the destination's arrival description). Pinned here so a future change to
-        // this ordering is a deliberate decision, not an untested accident.
+    void movingInto_arrivalProcessMessage_nowPrintsAfterTheArrivalDescription() {
+        // Documents current, intentional behavior: MovePlayerAction.execute() now appends the
+        // arrival process's message onto the destination's own arrival description (via
+        // gameContext.runArrivalProcesses().getResultMessage()) rather than having
+        // Workflow.runArrivalProcesses() tell it immediately mid-execution - so the description
+        // prints first and the arrival process's message follows it. This is the fix for the
+        // ordering inconsistency the final review flagged; pinned here so a future change to this
+        // ordering is a deliberate decision, not an untested accident.
         MessagesHolder messages = new MessagesHolder();
         DescriptionProvider cellarDescription = new DescriptionProvider("cellar", "cellar");
         cellarDescription.setLongDescription("A dark, damp cellar.");
@@ -341,8 +343,8 @@ class GameLoopTest {
 
         String output = told.toString();
         assertThat(output).contains("You shiver in the cold.").contains("A dark, damp cellar.");
-        assertThat(output.indexOf("You shiver in the cold."))
-                .isLessThan(output.indexOf("A dark, damp cellar."));
+        assertThat(output.indexOf("A dark, damp cellar."))
+                .isLessThan(output.indexOf("You shiver in the cold."));
     }
 
     @Test
