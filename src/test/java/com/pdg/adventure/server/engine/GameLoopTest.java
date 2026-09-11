@@ -312,4 +312,22 @@ class GameLoopTest {
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
         assertThat(told.toString()).contains("You shiver in the cold.");
     }
+
+    @Test
+    void aFailingCommand_stillRunsProcessesThatTurn() {
+        // Processes must fire once per sub-command attempted regardless of whether it succeeds or
+        // fails - the arrival-timing fix only changes WHEN within the turn Processes evaluate state,
+        // not whether they run at all. "take" is a recognised verb wired to nothing (see setUp()),
+        // so it fails with SM8.
+        GenericCommandDescription alwaysDescription = new GenericCommandDescription("always-fires");
+        GenericCommand alwaysProcess = new GenericCommand(alwaysDescription,
+                new MessageAction("The wind stirs.", new MessagesHolder()));
+        workflow.addProcess(alwaysDescription, alwaysProcess);
+
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("take");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString()).contains(SystemMessageKey.SM8.defaultText());
+        assertThat(told.toString()).contains("The wind stirs.");
+    }
 }

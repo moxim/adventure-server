@@ -33,18 +33,21 @@ public class GameLoop {
      * workflow Processes (gameContext.runProcesses()) against the state that command left behind
      * - stopping at the first sub-command that fails. Processes run after dispatch, not before,
      * so a location-gated Process (e.g. PlayerAtCondition) evaluates the location as it stands
-     * after that turn's move, not before it. This is the only entry point; the former
-     * run(BufferedReader) console loop was removed with the CLI runner, and runProcesses() is
-     * now called here rather than by the caller.
+     * after that turn's dispatch attempt, not before it. Processes run once per sub-command
+     * attempted regardless of whether that sub-command succeeded or failed, matching the
+     * original per-turn cadence. This is the only entry point; the former run(BufferedReader)
+     * console loop was removed with the CLI runner, and runProcesses() is now called here
+     * rather than by the caller.
      */
     public CommandOutcome processCommand(String anInput) {
         try {
             CommandSequence sequence = parser.handle(anInput);
             for (GenericCommandDescription command : sequence.commands()) {
-                if (!runOneCommandSucceeded(command)) {
+                boolean succeeded = runOneCommandSucceeded(command);
+                gameContext.runProcesses();
+                if (!succeeded) {
                     break; // stop the sequence at the first sub-command that failed
                 }
-                gameContext.runProcesses();
             }
             return CommandOutcome.CONTINUE;
         } catch (QuitException anException) {
