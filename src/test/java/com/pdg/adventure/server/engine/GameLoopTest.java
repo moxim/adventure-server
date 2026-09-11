@@ -330,4 +330,37 @@ class GameLoopTest {
         assertThat(told.toString()).contains(SystemMessageKey.SM8.defaultText());
         assertThat(told.toString()).contains("The wind stirs.");
     }
+
+    @Test
+    void describingCurrentLocation_firesAnArrivalProcessGatedOnIt() {
+        GenericCommandDescription hereDescription = new GenericCommandDescription("hush");
+        GenericCommand hereProcess = new GenericCommand(hereDescription,
+                new MessageAction("The room is silent.", new MessagesHolder()));
+        hereProcess.addPreCondition(new PlayerAtCondition(gameContext.getCurrentLocation(), gameContext));
+        workflow.addArrivalProcess(hereDescription, hereProcess);
+
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("describe");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString()).contains("The room is silent.");
+    }
+
+    @Test
+    void describingAgain_reFiresTheArrivalProcess_matchingTheOriginalPawDesign() {
+        // Documented, intended behaviour (docs/superpowers/specs/2026-09-11-process-arrival-timing-design.md,
+        // resolved question 4): an arrival Process re-fires on every redescribe of its location,
+        // including an explicit "describe"/"look" - not just the initial move. An author who wants
+        // "only once" adds their own guard; the engine does not de-duplicate.
+        GenericCommandDescription hereDescription = new GenericCommandDescription("hush");
+        GenericCommand hereProcess = new GenericCommand(hereDescription,
+                new MessageAction("The room is silent.", new MessagesHolder()));
+        hereProcess.addPreCondition(new PlayerAtCondition(gameContext.getCurrentLocation(), gameContext));
+        workflow.addArrivalProcess(hereDescription, hereProcess);
+
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("describe and describe");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        long occurrences = told.toString().lines().filter(line -> line.equals("The room is silent.")).count();
+        assertThat(occurrences).isEqualTo(2);
+    }
 }

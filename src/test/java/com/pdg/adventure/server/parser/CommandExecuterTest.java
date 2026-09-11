@@ -496,6 +496,7 @@ class CommandExecutorTest {
         // (via a real MovePlayerAction, so this proves the player actually relocates, not just
         // that a message is printed) and the unconditional "also here" flavour message.
         GameContext gameContext = new GameContext();
+        gameContext.setUpWorkflows();
         gameContext.setPocket(pocket);
         gameContext.setCurrentLocation(location);
         MessagesHolder messages = new MessagesHolder();
@@ -553,6 +554,7 @@ class CommandExecutorTest {
         // "also here" flavour alongside it - by adding a BreakAction after the move. This must
         // hold end-to-end through CommandExecutor.execute(), not just at the chain level.
         GameContext gameContext = new GameContext();
+        gameContext.setUpWorkflows();
         gameContext.setPocket(pocket);
         gameContext.setCurrentLocation(location);
         MessagesHolder messages = new MessagesHolder();

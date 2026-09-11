@@ -35,6 +35,7 @@ public class MovePlayerAction extends AbstractAction {
         }, messagesHolder);
         ExecutionResult result = describeAction.execute();
         destination.setTimesVisited(destination.getTimesVisited() + 1);
+        gameContext.runArrivalProcesses();
         return result;
     }
 }

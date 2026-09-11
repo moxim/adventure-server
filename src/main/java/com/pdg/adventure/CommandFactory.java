@@ -8,6 +8,7 @@ import com.pdg.adventure.server.action.DescribeAction;
 import com.pdg.adventure.server.action.InventoryAction;
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.action.QuitAction;
+import com.pdg.adventure.server.action.RunArrivalProcessesAction;
 import com.pdg.adventure.server.engine.ContainerSupplier;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.engine.Workflow;
@@ -59,12 +60,16 @@ public class CommandFactory {
 
         Action lookLocationAction = new DescribeAction(
                 () -> gameContext.getCurrentLocation().getLongDescription(), allMessages);
+        Action runArrivalProcessesAction = new RunArrivalProcessesAction(gameContext, allMessages);
+
         GenericCommandDescription lookCommandDescription = new GenericCommandDescription("describe");
         GenericCommand lookCommand = new GenericCommand(lookCommandDescription, lookLocationAction);
+        lookCommand.addAction(runArrivalProcessesAction);
         aWorkflow.addResponse(lookCommandDescription, lookCommand);
 
         GenericCommandDescription lookCommandDescription2 = new GenericCommandDescription("describe", "here");
         GenericCommand lookCommand2 = new GenericCommand(lookCommandDescription2, lookLocationAction);
+        lookCommand2.addAction(runArrivalProcessesAction);
         aWorkflow.addResponse(lookCommandDescription2, lookCommand2);
 
         GenericCommandDescription anyCommandDescription = new GenericCommandDescription("~", "~", "~");

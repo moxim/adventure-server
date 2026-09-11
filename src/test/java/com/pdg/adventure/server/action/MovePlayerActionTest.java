@@ -7,6 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.inOrder;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.GameContext;
@@ -49,5 +50,17 @@ class MovePlayerActionTest {
         new MovePlayerAction(destination, messagesHolder, gameContext).execute();
 
         verify(destination).setTimesVisited(4L);
+    }
+
+    @Test
+    void execute_runsArrivalProcesses_afterSettingTheNewLocation() {
+        when(destination.getArrivalDescription()).thenReturn("A dark cave.");
+        when(destination.getTimesVisited()).thenReturn(0L);
+
+        new MovePlayerAction(destination, messagesHolder, gameContext).execute();
+
+        org.mockito.InOrder inOrder = inOrder(gameContext);
+        inOrder.verify(gameContext).setCurrentLocation(destination);
+        inOrder.verify(gameContext).runArrivalProcesses();
     }
 }
