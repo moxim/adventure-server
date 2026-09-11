@@ -24,7 +24,8 @@ public class MovePlayerActionMapper extends ActionMapper<MovePlayerActionData, M
     @Override
     public MovePlayerAction mapToBO(MovePlayerActionData from) {
         final Location location = getMapperSupporter().getMappedLocation(from.getLocationId());
-        MovePlayerAction movePlayerAction = new MovePlayerAction(location, gameContext);
+        MovePlayerAction movePlayerAction = new MovePlayerAction(location, gameContext,
+                                                                  getMapperSupporter().getVariableProvider());
         return movePlayerAction;
     }
 

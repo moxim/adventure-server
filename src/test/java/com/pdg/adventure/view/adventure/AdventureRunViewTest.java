@@ -35,6 +35,7 @@ import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
+import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.view.player.PlayerLibraryView;
 import com.pdg.adventure.view.support.FlashNotifier;
 import com.pdg.adventure.view.support.RouteIds;
@@ -65,7 +66,7 @@ class AdventureRunViewTest extends BrowserlessTest {
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
 
-        view = new AdventureRunView(sessionFactory, accessService);
+        view = new AdventureRunView(sessionFactory, accessService, new VariableProvider());
         UI.getCurrent().add(view);
     }
 

@@ -26,11 +26,13 @@ import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.support.DescriptionProvider;
+import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 
 class CommandExecutorTest {
     Container pocket = new GenericContainer(new DescriptionProvider("pocket"), 5);
+    VariableProvider variableProvider = new VariableProvider();
     GenericCommandDescription smallTreeCommand = new GenericCommandDescription("climb", "small", "tree");
     GenericCommandDescription matchingCommand = new GenericCommandDescription("climb", "small", "tree");
     GenericCommandDescription bigTreeCommand = new GenericCommandDescription("climb", "big", "tree");
@@ -580,7 +582,7 @@ class CommandExecutorTest {
         GenericCommand jumpSeaOk = new GenericCommand(jumpSeaSpec, new MessageAction("jump_sea_ok"));
         jumpSeaOk.addPreCondition(new WornCondition(aNeopreneSuit));
         jumpSeaOk.addPreCondition(new PlayerAtCondition(location, aGameContext));
-        jumpSeaOk.addAction(new MovePlayerAction(aSea, aGameContext));
+        jumpSeaOk.addAction(new MovePlayerAction(aSea, aGameContext, variableProvider));
         if (aBreakAfterTheMove) {
             jumpSeaOk.addAction(new BreakAction());
         }

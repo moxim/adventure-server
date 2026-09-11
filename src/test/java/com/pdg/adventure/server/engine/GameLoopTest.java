@@ -20,6 +20,7 @@ import com.pdg.adventure.server.parser.Parser;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.support.DescriptionProvider;
+import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
@@ -35,6 +36,7 @@ class GameLoopTest {
     private Vocabulary vocabulary;
     private Workflow workflow;
     private GameLoop gameLoop;
+    private final VariableProvider variableProvider = new VariableProvider();
 
     @BeforeEach
     void setUp() {
@@ -200,7 +202,7 @@ class GameLoopTest {
         GenericCommandDescription descendDescription = new GenericCommandDescription("descend");
         workflow.addResponse(descendDescription,
                                        new GenericCommand(descendDescription,
-                                                          new MovePlayerAction(cellar, gameContext)));
+                                                          new MovePlayerAction(cellar, gameContext, variableProvider)));
 
         vocabulary.createNewWord("descend", Word.Type.VERB);
         vocabulary.createNewWord("examine", Word.Type.VERB);
@@ -275,7 +277,7 @@ class GameLoopTest {
 
         GenericCommandDescription descendDescription = new GenericCommandDescription("descend");
         workflow.addResponse(descendDescription,
-                new GenericCommand(descendDescription, new MovePlayerAction(cellar, gameContext)));
+                new GenericCommand(descendDescription, new MovePlayerAction(cellar, gameContext, variableProvider)));
         vocabulary.createNewWord("descend", Word.Type.VERB);
 
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("descend");
@@ -304,7 +306,7 @@ class GameLoopTest {
 
         GenericCommandDescription descendDescription = new GenericCommandDescription("descend");
         workflow.addResponse(descendDescription,
-                new GenericCommand(descendDescription, new MovePlayerAction(cellar, gameContext)));
+                new GenericCommand(descendDescription, new MovePlayerAction(cellar, gameContext, variableProvider)));
         vocabulary.createNewWord("descend", Word.Type.VERB);
 
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("descend");
@@ -336,7 +338,7 @@ class GameLoopTest {
 
         GenericCommandDescription descendDescription = new GenericCommandDescription("descend");
         workflow.addResponse(descendDescription,
-                new GenericCommand(descendDescription, new MovePlayerAction(cellar, gameContext)));
+                new GenericCommand(descendDescription, new MovePlayerAction(cellar, gameContext, variableProvider)));
         vocabulary.createNewWord("descend", Word.Type.VERB);
 
         gameLoop.processCommand("descend");

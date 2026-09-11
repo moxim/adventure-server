@@ -19,6 +19,7 @@ import com.pdg.adventure.server.engine.AdventureRunSession;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
 import com.pdg.adventure.server.engine.AdventureRunSessionFactory;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
+import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.view.player.PlayerLibraryView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.FlashNotifier;
@@ -55,6 +56,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
 
     private final transient AdventureRunSessionFactory sessionFactory;
     private final transient AdventureAccessService accessService;
+    private final transient VariableProvider variableProvider;
     private final MessageList messageList = new MessageList();
     private final MessageInput messageInput = new MessageInput();
 
@@ -63,9 +65,11 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     private String pageTitle = "Adventure";
     private Origin origin = Origin.EDITOR;
 
-    public AdventureRunView(AdventureRunSessionFactory aSessionFactory, AdventureAccessService anAccessService) {
+    public AdventureRunView(AdventureRunSessionFactory aSessionFactory, AdventureAccessService anAccessService,
+                            VariableProvider aVariableProvider) {
         sessionFactory = aSessionFactory;
         accessService = anAccessService;
+        variableProvider = aVariableProvider;
 
         messageList.setSizeFull();
         messageInput.setWidthFull();
@@ -139,7 +143,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             return;
         }
         MovePlayerAction movePlayerAction = new MovePlayerAction(session.getGameContext().getCurrentLocation(),
-                                                                 session.getGameContext());
+                                                                 session.getGameContext(), variableProvider);
         ExecutionResult result = movePlayerAction.execute();
         renderNarratorLines(List.of(result.getResultMessage()));
     }

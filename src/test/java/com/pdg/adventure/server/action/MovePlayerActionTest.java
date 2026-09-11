@@ -13,12 +13,15 @@ import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
+import com.pdg.adventure.server.support.Variable;
+import com.pdg.adventure.server.support.VariableProvider;
 
 @ExtendWith(MockitoExtension.class)
 class MovePlayerActionTest {
 
     @Mock private Location destination;
     @Mock private GameContext gameContext;
+    @Mock private VariableProvider variableProvider;
 
     @BeforeEach
     void setUp() {
@@ -32,7 +35,7 @@ class MovePlayerActionTest {
         when(destination.getArrivalDescription()).thenReturn("A dark cave.");
         when(destination.getTimesVisited()).thenReturn(0L);
 
-        new MovePlayerAction(destination, gameContext).execute();
+        new MovePlayerAction(destination, gameContext, variableProvider).execute();
 
         verify(gameContext).setCurrentLocation(destination);
     }
@@ -42,7 +45,7 @@ class MovePlayerActionTest {
         when(destination.getArrivalDescription()).thenReturn("A sunlit meadow.");
         when(destination.getTimesVisited()).thenReturn(2L);
 
-        ExecutionResult result = new MovePlayerAction(destination, gameContext).execute();
+        ExecutionResult result = new MovePlayerAction(destination, gameContext, variableProvider).execute();
 
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
         assertThat(result.getResultMessage()).isEqualTo("A sunlit meadow.");
@@ -53,9 +56,41 @@ class MovePlayerActionTest {
         when(destination.getArrivalDescription()).thenReturn("A tower.");
         when(destination.getTimesVisited()).thenReturn(3L);
 
-        new MovePlayerAction(destination, gameContext).execute();
+        new MovePlayerAction(destination, gameContext, variableProvider).execute();
 
         verify(destination).setTimesVisited(4L);
+    }
+
+    @Test
+    void execute_setsVisitedVariableToTheNumberOfTimesTheLocationHadAlreadyBeenVisited() {
+        when(destination.getArrivalDescription()).thenReturn("A tower.");
+        when(destination.getTimesVisited()).thenReturn(3L);
+
+        new MovePlayerAction(destination, gameContext, variableProvider).execute();
+
+        verify(variableProvider).set(new Variable(VariableProvider.VISITED_VARIABLE_NAME, 3));
+    }
+
+    @Test
+    void execute_setsVisitedVariableToZero_onFirstVisit() {
+        when(destination.getArrivalDescription()).thenReturn("A dark cave.");
+        when(destination.getTimesVisited()).thenReturn(0L);
+
+        new MovePlayerAction(destination, gameContext, variableProvider).execute();
+
+        verify(variableProvider).set(new Variable(VariableProvider.VISITED_VARIABLE_NAME, 0));
+    }
+
+    @Test
+    void execute_setsVisitedVariable_beforeIncrementingTimesVisited() {
+        when(destination.getArrivalDescription()).thenReturn("A tower.");
+        when(destination.getTimesVisited()).thenReturn(3L);
+
+        new MovePlayerAction(destination, gameContext, variableProvider).execute();
+
+        org.mockito.InOrder inOrder = inOrder(variableProvider, destination);
+        inOrder.verify(variableProvider).set(new Variable(VariableProvider.VISITED_VARIABLE_NAME, 3));
+        inOrder.verify(destination).setTimesVisited(4L);
     }
 
     @Test
@@ -63,7 +98,7 @@ class MovePlayerActionTest {
         when(destination.getArrivalDescription()).thenReturn("A dark cave.");
         when(destination.getTimesVisited()).thenReturn(0L);
 
-        new MovePlayerAction(destination, gameContext).execute();
+        new MovePlayerAction(destination, gameContext, variableProvider).execute();
 
         org.mockito.InOrder inOrder = inOrder(gameContext);
         inOrder.verify(gameContext).setCurrentLocation(destination);

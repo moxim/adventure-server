@@ -68,8 +68,8 @@ public abstract class AbstractNumericComparisonConditionEditor<T extends PreCond
     public final String getConditionSummary() {
         String var = (variableNameField != null && !variableNameField.getValue().isEmpty())
                 ? variableNameField.getValue() : "";
-        Integer val = (valueField != null)
-                ? valueField.getValue() : 0;
+        String val = (valueField != null && valueField.getValue() != null)
+                ? valueField.getValue().toString() : "";
         if (var.isEmpty()) return "(none)";
         return var + " " + operator + " " + val;
     }
