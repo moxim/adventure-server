@@ -1,5 +1,7 @@
 package com.pdg.adventure.server.engine;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +18,7 @@ import com.pdg.adventure.server.storage.message.SystemMessageKey;
 public class AdventureRunSession {
 
     private final GameLoop gameLoop;
+    @Getter
     private final GameContext gameContext;
     private boolean gameOver;
 

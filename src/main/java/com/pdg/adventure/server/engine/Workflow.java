@@ -1,5 +1,7 @@
 package com.pdg.adventure.server.engine;
 
+import org.jspecify.annotations.NonNull;
+
 import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -79,22 +81,29 @@ public class Workflow {
         arrivalProcesses.remove(aCommandDescription, aCommand);
     }
 
-    public void runProcesses() {
-        processes.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey(ALPHABETICAL))
-                .forEach(commandEntry -> {
-                    ExecutionResult result = commandEntry.getValue().execute();
-                    gameContext.tell(result.getResultMessage());
-                });
+    public ExecutionResult runProcesses() {
+        return getExecutionResult(processes);
     }
 
-    public void runArrivalProcesses() {
-        arrivalProcesses.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey(ALPHABETICAL))
-                .forEach(commandEntry -> {
-                    ExecutionResult result = commandEntry.getValue().execute();
-                    gameContext.tell(result.getResultMessage());
+    public ExecutionResult runArrivalProcesses() {
+        return getExecutionResult(arrivalProcesses);
+    }
+
+    @NonNull
+    private ExecutionResult getExecutionResult(final Map<CommandDescription, Command> someProcesses) {
+        ExecutionResult result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
+        someProcesses.entrySet().stream()
+                         .sorted(Map.Entry.comparingByKey(ALPHABETICAL))
+                         .forEach(commandEntry -> {
+                    ExecutionResult innerResult = commandEntry.getValue().execute();
+                    String innerMessage = innerResult.getResultMessage();
+                    if (!innerMessage.isEmpty()) {
+                        result.setResultMessage(result.getResultMessage() +
+//                                                "\n" +
+                                                innerMessage);
+                    }
                 });
+        return result;
     }
 
     public ExecutionResult respondTo(CommandDescription aCommand) {

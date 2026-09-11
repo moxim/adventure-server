@@ -44,7 +44,9 @@ public class GameLoop {
             CommandSequence sequence = parser.handle(anInput);
             for (GenericCommandDescription command : sequence.commands()) {
                 boolean succeeded = runOneCommandSucceeded(command);
-                gameContext.runProcesses();
+                ExecutionResult processesResult = gameContext.runProcesses();
+                String processMessage = processesResult.getResultMessage();
+                gameContext.tell(processMessage);
                 if (!succeeded) {
                     break; // stop the sequence at the first sub-command that failed
                 }
@@ -91,7 +93,8 @@ public class GameLoop {
 
         // Nothing local handled this verb - fall back to the workflow Responses (inventory, quit,
         // help, and any the author added).
-        if (result.getExecutionState() == ExecutionResult.State.FAILURE && result.getResultMessage().equals(SystemMessageKey.SM8.defaultText())) {
+        if (result.getExecutionState() == ExecutionResult.State.FAILURE &&
+            result.getResultMessage().equals(SystemMessageKey.SM8.defaultText())) {
             result = gameContext.respondTo(command);
         }
 

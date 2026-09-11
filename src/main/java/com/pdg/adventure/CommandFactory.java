@@ -4,18 +4,13 @@ import java.util.Collection;
 
 import com.pdg.adventure.api.Action;
 import com.pdg.adventure.model.VocabularyData;
-import com.pdg.adventure.server.action.DescribeAction;
-import com.pdg.adventure.server.action.InventoryAction;
-import com.pdg.adventure.server.action.MessageAction;
-import com.pdg.adventure.server.action.QuitAction;
-import com.pdg.adventure.server.action.RunArrivalProcessesAction;
+import com.pdg.adventure.server.action.*;
 import com.pdg.adventure.server.engine.ContainerSupplier;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.engine.Workflow;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
-import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.tangible.Thing;
 
 public class CommandFactory {
@@ -71,9 +66,9 @@ public class CommandFactory {
         lookCommand2.addAction(runArrivalProcessesAction);
         aWorkflow.addResponse(lookCommandDescription2, lookCommand2);
 
-        GenericCommandDescription anyCommandDescription = new GenericCommandDescription("~", "~", "~");
-        GenericCommand anyCommand = new GenericCommand(anyCommandDescription,
-                                                       new MessageAction(SystemMessageKey.SM2.defaultText()));
-        aWorkflow.addProcess(anyCommandDescription, anyCommand);
+//        GenericCommandDescription anyCommandDescription = new GenericCommandDescription("~", "~", "~");
+//        GenericCommand anyCommand = new GenericCommand(anyCommandDescription,
+//                                                       new MessageAction(SystemMessageKey.SM2.defaultText()));
+//        aWorkflow.addProcess(anyCommandDescription, anyCommand);
     }
 }

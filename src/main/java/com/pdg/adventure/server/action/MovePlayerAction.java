@@ -24,7 +24,10 @@ public class MovePlayerAction extends AbstractAction {
         final DescribeAction describeAction = new DescribeAction(destination::getArrivalDescription);
         ExecutionResult result = describeAction.execute();
         destination.setTimesVisited(destination.getTimesVisited() + 1);
-        gameContext.runArrivalProcesses();
+        String arrivalMessage = gameContext.runArrivalProcesses().getResultMessage();
+        if (!arrivalMessage.isEmpty()) {
+            result.setResultMessage(result.getResultMessage() + "\n" + arrivalMessage);
+        }
         return result;
     }
 }

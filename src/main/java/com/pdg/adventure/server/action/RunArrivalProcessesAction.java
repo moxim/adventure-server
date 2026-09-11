@@ -31,7 +31,9 @@ public class RunArrivalProcessesAction extends AbstractAction {
 
     @Override
     public ExecutionResult execute() {
-        gameContext.runArrivalProcesses();
-        return new CommandExecutionResult(ExecutionResult.State.SUCCESS);
+        CommandExecutionResult result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
+        ExecutionResult arrivalResult = gameContext.runArrivalProcesses();
+        result.setResultMessage("\n" + arrivalResult.getResultMessage());
+        return result;
     }
 }
