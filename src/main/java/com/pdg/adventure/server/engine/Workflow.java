@@ -97,9 +97,9 @@ public class Workflow {
                     ExecutionResult innerResult = commandEntry.getValue().execute();
                     String innerMessage = innerResult.getResultMessage();
                     if (!innerMessage.isEmpty()) {
-                        result.setResultMessage(result.getResultMessage() +
+                        result.setResultMessage((result.getResultMessage() +
                                                 " " +
-                                                innerMessage);
+                                                innerMessage).trim());
                     }
                 });
         return result;
