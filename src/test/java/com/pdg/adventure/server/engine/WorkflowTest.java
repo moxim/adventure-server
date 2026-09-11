@@ -66,9 +66,45 @@ class WorkflowTest {
         assertThat(told).containsExactly("Big chest.", "Big door.", "Small box.");
     }
 
+    @Test
+    void runArrivalProcesses_executesArrivalProcessesInAlphabeticalVerbOrder_regardlessOfInsertionOrder() {
+        addArrivalProcess(new GenericCommandDescription("zoo"), "Zoo arrival message.");
+        addArrivalProcess(new GenericCommandDescription("apple"), "Apple arrival message.");
+
+        workflow.runArrivalProcesses();
+
+        assertThat(told).containsExactly("Apple arrival message.", "Zoo arrival message.");
+    }
+
+    @Test
+    void runArrivalProcesses_doesNotExecuteRegularProcesses() {
+        addProcess(new GenericCommandDescription("regular"), "Regular process message.");
+        addArrivalProcess(new GenericCommandDescription("arrival"), "Arrival process message.");
+
+        workflow.runArrivalProcesses();
+
+        assertThat(told).containsExactly("Arrival process message.");
+    }
+
+    @Test
+    void runProcesses_doesNotExecuteArrivalProcesses() {
+        addProcess(new GenericCommandDescription("regular"), "Regular process message.");
+        addArrivalProcess(new GenericCommandDescription("arrival"), "Arrival process message.");
+
+        workflow.runProcesses();
+
+        assertThat(told).containsExactly("Regular process message.");
+    }
+
     private void addProcess(GenericCommandDescription aDescription, String aMessage) {
         Command command = mock(Command.class);
         when(command.execute()).thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS, aMessage));
         workflow.addProcess(aDescription, command);
+    }
+
+    private void addArrivalProcess(GenericCommandDescription aDescription, String aMessage) {
+        Command command = mock(Command.class);
+        when(command.execute()).thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS, aMessage));
+        workflow.addArrivalProcess(aDescription, command);
     }
 }

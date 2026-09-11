@@ -122,4 +122,27 @@ class WorkflowMapperTest {
 
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
     }
+
+    @Test
+    void populate_addsMappedCommandsAsWorkflowArrivalProcesses_soRunArrivalProcessesExecutesThem() {
+        CommandData commandData = new CommandData(new CommandDescriptionData("arrive||"));
+        WorkflowData workflowData = new WorkflowData();
+        workflowData.getArrivalProcesses().add(commandData);
+
+        GenericCommandDescription runtimeDescription = new GenericCommandDescription("arrive", "", "");
+        when(commandMapper.mapToBO(commandData)).thenReturn(command);
+        when(command.getDescription()).thenReturn(runtimeDescription);
+        when(command.execute()).thenReturn(
+                new CommandExecutionResult(ExecutionResult.State.SUCCESS, "Welcome!"));
+
+        GameContext gameContext = new GameContext();
+        Workflow workflow = gameContext.setUpWorkflows();
+
+        workflowMapper.populate(workflowData, workflow);
+
+        gameContext.runArrivalProcesses();
+
+        verify(commandMapper).mapToBO(commandData);
+        verify(command).execute();
+    }
 }

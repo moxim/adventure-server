@@ -33,5 +33,10 @@ public class WorkflowMapper {
             CommandDescription description = command.getDescription();
             aWorkflow.addResponse((GenericCommandDescription) description, command);
         }
+        for (CommandData commandData : aWorkflowData.getArrivalProcesses()) {
+            Command command = commandMapper.mapToBO(commandData);
+            CommandDescription description = command.getDescription();
+            aWorkflow.addArrivalProcess((GenericCommandDescription) description, command);
+        }
     }
 }
