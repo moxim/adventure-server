@@ -314,6 +314,38 @@ class GameLoopTest {
     }
 
     @Test
+    void movingInto_arrivalProcessMessage_currentlyPrintsBeforeTheArrivalDescription() {
+        // Documents current, intentional-for-now behavior (see Workflow's javadoc and the design
+        // doc's final-review notes): Workflow.runArrivalProcesses() tells its message synchronously
+        // as it fires, inside MovePlayerAction.execute(), before the caller tells the move's own
+        // joined result (the destination's arrival description). Pinned here so a future change to
+        // this ordering is a deliberate decision, not an untested accident.
+        MessagesHolder messages = new MessagesHolder();
+        DescriptionProvider cellarDescription = new DescriptionProvider("cellar", "cellar");
+        cellarDescription.setLongDescription("A dark, damp cellar.");
+        Location cellar = new Location(cellarDescription,
+                                       new GenericContainer(new DescriptionProvider("cellar items"), 10));
+
+        GenericCommandDescription cellarChillDescription = new GenericCommandDescription("chill");
+        GenericCommand cellarChill = new GenericCommand(cellarChillDescription,
+                new MessageAction("You shiver in the cold.", messages));
+        cellarChill.addPreCondition(new PlayerAtCondition(cellar, gameContext));
+        workflow.addArrivalProcess(cellarChillDescription, cellarChill);
+
+        GenericCommandDescription descendDescription = new GenericCommandDescription("descend");
+        workflow.addResponse(descendDescription,
+                new GenericCommand(descendDescription, new MovePlayerAction(cellar, messages, gameContext)));
+        vocabulary.createNewWord("descend", Word.Type.VERB);
+
+        gameLoop.processCommand("descend");
+
+        String output = told.toString();
+        assertThat(output).contains("You shiver in the cold.").contains("A dark, damp cellar.");
+        assertThat(output.indexOf("You shiver in the cold."))
+                .isLessThan(output.indexOf("A dark, damp cellar."));
+    }
+
+    @Test
     void aFailingCommand_stillRunsProcessesThatTurn() {
         // Processes must fire once per sub-command attempted regardless of whether it succeeds or
         // fails - the arrival-timing fix only changes WHEN within the turn Processes evaluate state,

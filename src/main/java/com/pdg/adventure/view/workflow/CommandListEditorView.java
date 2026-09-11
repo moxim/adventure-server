@@ -44,12 +44,12 @@ import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 /**
- * Grid-of-commands + single-command editor, shared by {@link WorkflowEditorView} (pre-commands)
- * and {@link ResponsesEditorView} (interceptor commands) — the two collections on {@code Workflow}
- * that authors edit the same way, differing only in which list they read/write and how that's
- * described to the author. Kept as a single concrete class (constructor-parameterized) rather than
- * an abstract base since every difference between the two screens is a fixed piece of data, not
- * behaviour.
+ * Grid-of-commands + single-command editor, shared by {@link WorkflowEditorView} (pre-commands),
+ * {@link ArrivalProcessesEditorView} (arrival-triggered commands), and {@link ResponsesEditorView}
+ * (interceptor commands) — the three collections on {@code Workflow} that authors edit the same
+ * way, differing only in which list they read/write and how that's described to the author. Kept
+ * as a single concrete class (constructor-parameterized) rather than an abstract base since every
+ * difference between the three screens is a fixed piece of data, not behaviour.
  */
 public class CommandListEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
