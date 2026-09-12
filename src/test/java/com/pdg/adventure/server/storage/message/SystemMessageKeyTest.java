@@ -11,7 +11,7 @@ class SystemMessageKeyTest {
 
     @Test
     void catalogHasSixtyEightEntries() {
-        assertThat(SystemMessageKey.values()).hasSize(68);
+        assertThat(SystemMessageKey.values()).hasSize(69);
     }
 
     @Test
