@@ -17,6 +17,14 @@ public class GenericCommandDescription implements CommandDescription {
     private final String adjective;
     @Getter
     private final String noun;
+    // Not part of the command's identity (excluded from equals/hashCode below, and from the
+    // COMMAND_TRIPLET-keyed matching in GenericCommandProvider/Workflow) - preposition/adverb are
+    // ambient parse results that PrepositionCondition/AdverbCondition check via GameContext, not
+    // extra dimensions of which command a "verb noun" spec refers to.
+    @Getter
+    private final String preposition;
+    @Getter
+    private final String adverb;
 
     public GenericCommandDescription(String aVerb, Describable aNamedThing) {
         this(aVerb, aNamedThing.getAdjective(), aNamedThing.getNoun());
@@ -31,9 +39,16 @@ public class GenericCommandDescription implements CommandDescription {
     }
 
     public GenericCommandDescription(String aVerb, String anAdjective, String aNoun) {
+        this(aVerb, anAdjective, aNoun, VocabularyData.EMPTY_STRING, VocabularyData.EMPTY_STRING);
+    }
+
+    public GenericCommandDescription(String aVerb, String anAdjective, String aNoun,
+            String aPreposition, String anAdverb) {
         verb = aVerb;
         adjective = anAdjective;
         noun = aNoun;
+        preposition = aPreposition;
+        adverb = anAdverb;
         id = UUID.randomUUID().toString();
     }
 

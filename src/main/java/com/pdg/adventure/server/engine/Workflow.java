@@ -7,9 +7,11 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import com.pdg.adventure.api.Command;
+import com.pdg.adventure.api.CommandChain;
 import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
+import com.pdg.adventure.server.parser.GenericCommandChain;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 
 /**
@@ -31,7 +33,12 @@ import com.pdg.adventure.server.parser.GenericCommandDescription;
  *       {@link CommandDescription}.</li>
  * </ul>
  * The domain terms are <i>Processes</i>, <i>Arrival Processes</i>, and <i>Responses</i> (see the
- * authoring UI).
+ * authoring UI). Each table key maps to a {@link CommandChain} rather than a single {@link
+ * Command} - mirroring {@code GenericCommandProvider}'s location/item command tables - so an
+ * author can add multiple rows sharing the same verb+adjective+noun (e.g. two "switch lamp"
+ * Responses, one gated on a PREPOSITION-"on" condition and one on "off") and have every one of
+ * them tried in insertion order until one's preconditions pass, instead of the second row
+ * silently overwriting the first.
  */
 public class Workflow {
 
@@ -44,9 +51,9 @@ public class Workflow {
             .thenComparing(CommandDescription::getAdjective, String.CASE_INSENSITIVE_ORDER)
             .thenComparing(CommandDescription::getNoun, String.CASE_INSENSITIVE_ORDER);
 
-    private final Map<CommandDescription, Command> processes;
-    private final Map<CommandDescription, Command> responses;
-    private final Map<CommandDescription, Command> arrivalProcesses;
+    private final Map<CommandDescription, CommandChain> processes;
+    private final Map<CommandDescription, CommandChain> responses;
+    private final Map<CommandDescription, CommandChain> arrivalProcesses;
     private final GameContext gameContext;
 
     public Workflow(GameContext aGameContext) {
@@ -57,27 +64,40 @@ public class Workflow {
     }
 
     public void addProcess(GenericCommandDescription aCommandDescription, Command aCommand) {
-        processes.put(aCommandDescription, aCommand);
+        chainFor(processes, aCommandDescription).addCommand(aCommand);
     }
 
     public void addResponse(GenericCommandDescription aCommandDescription, Command aCommand) {
-        responses.put(aCommandDescription, aCommand);
+        chainFor(responses, aCommandDescription).addCommand(aCommand);
     }
 
     public void addArrivalProcess(GenericCommandDescription aCommandDescription, Command aCommand) {
-        arrivalProcesses.put(aCommandDescription, aCommand);
+        chainFor(arrivalProcesses, aCommandDescription).addCommand(aCommand);
     }
 
     public void removeProcess(GenericCommandDescription aCommandDescription, Command aCommand) {
-        processes.remove(aCommandDescription, aCommand);
+        removeFrom(processes, aCommandDescription, aCommand);
     }
 
     public void removeResponse(GenericCommandDescription aCommandDescription, Command aCommand) {
-        responses.remove(aCommandDescription, aCommand);
+        removeFrom(responses, aCommandDescription, aCommand);
     }
 
     public void removeArrivalProcess(GenericCommandDescription aCommandDescription, Command aCommand) {
-        arrivalProcesses.remove(aCommandDescription, aCommand);
+        removeFrom(arrivalProcesses, aCommandDescription, aCommand);
+    }
+
+    private static CommandChain chainFor(Map<CommandDescription, CommandChain> aTable,
+            GenericCommandDescription aCommandDescription) {
+        return aTable.computeIfAbsent(aCommandDescription, _ -> new GenericCommandChain());
+    }
+
+    private static void removeFrom(Map<CommandDescription, CommandChain> aTable,
+            GenericCommandDescription aCommandDescription, Command aCommand) {
+        CommandChain chain = aTable.get(aCommandDescription);
+        if (chain != null) {
+            chain.removeCommand(aCommand);
+        }
     }
 
     public ExecutionResult runProcesses() {
@@ -89,7 +109,7 @@ public class Workflow {
     }
 
     @NonNull
-    private ExecutionResult getExecutionResult(final Map<CommandDescription, Command> someProcesses) {
+    private ExecutionResult getExecutionResult(final Map<CommandDescription, CommandChain> someProcesses) {
         ExecutionResult result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
         someProcesses.entrySet().stream()
                          .sorted(Map.Entry.comparingByKey(ALPHABETICAL))
@@ -107,9 +127,9 @@ public class Workflow {
 
     public ExecutionResult respondTo(CommandDescription aCommand) {
         ExecutionResult result = new CommandExecutionResult();
-        Command command = responses.get(aCommand);
-        if (command != null) {
-            result = command.execute();
+        CommandChain chain = responses.get(aCommand);
+        if (chain != null) {
+            result = chain.execute();
         }
         return result;
     }

@@ -86,6 +86,18 @@ class ConditionEditorFactoryTest {
     }
 
     @Test
+    void createEditor_withPrepositionConditionData_returnsPrepositionEditor() {
+        assertThat(ConditionEditorFactory.createEditor(new PrepositionConditionData(), adventureData))
+                .isInstanceOf(PrepositionConditionEditor.class);
+    }
+
+    @Test
+    void createEditor_withAdverbConditionData_returnsAdverbEditor() {
+        assertThat(ConditionEditorFactory.createEditor(new AdverbConditionData(), adventureData))
+                .isInstanceOf(AdverbConditionEditor.class);
+    }
+
+    @Test
     void createEditor_withUnknownType_throwsUnsupportedOperationException() {
         PreConditionData unknown = new PreConditionData() {};
         assertThatThrownBy(() -> ConditionEditorFactory.createEditor(unknown, adventureData))

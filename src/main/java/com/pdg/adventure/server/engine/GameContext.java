@@ -8,6 +8,7 @@ import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.WorkflowData;
 import com.pdg.adventure.server.location.Location;
 
@@ -19,6 +20,8 @@ public class GameContext {
     private Container pocket;
     private WorkflowData workflowData = new WorkflowData();
     private Consumer<String> outputSink = IO::println;
+    private String currentPreposition = VocabularyData.EMPTY_STRING;
+    private String currentAdverb = VocabularyData.EMPTY_STRING;
 
     public void show(Describable aThing) {
         tell(aThing.getLongDescription());
@@ -52,6 +55,32 @@ public class GameContext {
 
     public Container getPocket() {
         return pocket;
+    }
+
+    /**
+     * The preposition word (e.g. "on", "off") parsed out of the sub-command currently being
+     * dispatched, if any - set fresh by GameLoop before each sub-command so PrepositionCondition
+     * can check against it. Never null; VocabularyData.EMPTY_STRING when the input had none.
+     */
+    public void setCurrentPreposition(String aPreposition) {
+        currentPreposition = aPreposition == null ? VocabularyData.EMPTY_STRING : aPreposition;
+    }
+
+    public String getCurrentPreposition() {
+        return currentPreposition;
+    }
+
+    /**
+     * The adverb word (e.g. "slowly") parsed out of the sub-command currently being dispatched, if
+     * any - set fresh by GameLoop before each sub-command so AdverbCondition can check against it.
+     * Never null; VocabularyData.EMPTY_STRING when the input had none.
+     */
+    public void setCurrentAdverb(String anAdverb) {
+        currentAdverb = anAdverb == null ? VocabularyData.EMPTY_STRING : anAdverb;
+    }
+
+    public String getCurrentAdverb() {
+        return currentAdverb;
     }
 
     public Workflow setUpWorkflows() {

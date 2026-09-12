@@ -96,6 +96,20 @@ class PreconditionActionFormatterConditionsTest {
     }
 
     @Test
+    void preposition() {
+        PrepositionConditionData c = new PrepositionConditionData();
+        c.setPrepositionText("on");
+        assertThat(formatter.formatCondition(c)).isEqualTo("PREPOSITION on");
+    }
+
+    @Test
+    void adverb() {
+        AdverbConditionData c = new AdverbConditionData();
+        c.setAdverbText("slowly");
+        assertThat(formatter.formatCondition(c)).isEqualTo("ADVERB slowly");
+    }
+
+    @Test
     void notWrapsLeafWithPrefix() {
         NotConditionData not = new NotConditionData();
         not.setPreCondition(here("dragon"));

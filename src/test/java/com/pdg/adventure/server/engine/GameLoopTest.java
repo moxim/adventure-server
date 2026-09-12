@@ -13,6 +13,7 @@ import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.condition.PlayerAtCondition;
+import com.pdg.adventure.server.condition.PrepositionCondition;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
@@ -213,6 +214,51 @@ class GameLoopTest {
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
         assertThat(told.toString()).contains("A dark, damp cellar.").contains("A rusty key.");
         assertThat(told.toString()).doesNotContain(SystemMessageKey.SM8.defaultText());
+    }
+
+    @Test
+    void currentPreposition_isSetPerSubCommand_andResetsWhenTheNextSubCommandHasNone() {
+        // Same class of bug as the location-staleness trap documented on
+        // GameLoop.runOneCommandSucceeded: a preposition left over from an earlier sub-command
+        // (or turn) must not leak into a later one that had none.
+        vocabulary.createNewWord("switch", Word.Type.VERB);
+        vocabulary.createNewWord("lamp", Word.Type.NOUN);
+        vocabulary.createNewWord("on", Word.Type.PREPOSITION);
+
+        GenericCommandDescription switchLamp = new GenericCommandDescription("switch", "lamp");
+        workflow.addResponse(switchLamp, new GenericCommand(switchLamp, new MessageAction("Click.")));
+
+        gameLoop.processCommand("switch lamp on");
+        assertThat(gameContext.getCurrentPreposition()).isEqualTo("on");
+
+        gameLoop.processCommand("describe");
+        assertThat(gameContext.getCurrentPreposition()).isEmpty();
+    }
+
+    @Test
+    void and_prepositionGatedResponses_bothReachable_pickingTheOneMatchingTheTypedPreposition() {
+        // "SWITCH LAMP ON" vs "SWITCH LAMP OFF": two Response rows sharing the same verb+noun,
+        // each gated by a PrepositionCondition for a different preposition, must both be
+        // reachable - proving Workflow's chain-per-description fix actually works end to end.
+        vocabulary.createNewWord("switch", Word.Type.VERB);
+        vocabulary.createNewWord("lamp", Word.Type.NOUN);
+        vocabulary.createNewWord("on", Word.Type.PREPOSITION);
+        vocabulary.createNewWord("off", Word.Type.PREPOSITION);
+
+        GenericCommandDescription switchLamp = new GenericCommandDescription("switch", "lamp");
+        GenericCommand switchOn = new GenericCommand(switchLamp, new MessageAction("The lamp is now on."));
+        switchOn.addPreCondition(new PrepositionCondition("on", gameContext));
+        GenericCommand switchOff = new GenericCommand(switchLamp, new MessageAction("The lamp is now off."));
+        switchOff.addPreCondition(new PrepositionCondition("off", gameContext));
+        workflow.addResponse(switchLamp, switchOn);
+        workflow.addResponse(switchLamp, switchOff);
+
+        gameLoop.processCommand("switch lamp on");
+        assertThat(told.toString()).contains("The lamp is now on.").doesNotContain("The lamp is now off.");
+
+        told.setLength(0);
+        gameLoop.processCommand("switch lamp off");
+        assertThat(told.toString()).contains("The lamp is now off.").doesNotContain("The lamp is now on.");
     }
 
     @Test
