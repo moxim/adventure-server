@@ -12,6 +12,8 @@ import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.action.MovePlayerAction;
+import com.pdg.adventure.server.condition.Adjective2Condition;
+import com.pdg.adventure.server.condition.Noun2Condition;
 import com.pdg.adventure.server.condition.PlayerAtCondition;
 import com.pdg.adventure.server.condition.PrepositionCondition;
 import com.pdg.adventure.server.location.Location;
@@ -259,6 +261,57 @@ class GameLoopTest {
         told.setLength(0);
         gameLoop.processCommand("switch lamp off");
         assertThat(told.toString()).contains("The lamp is now off.").doesNotContain("The lamp is now on.");
+    }
+
+    @Test
+    void currentNoun2AndAdjective2_areSetPerSubCommand_andResetWhenTheNextSubCommandHasNone() {
+        vocabulary.createNewWord("use", Word.Type.VERB);
+        vocabulary.createNewWord("spanner", Word.Type.NOUN);
+        vocabulary.createNewWord("on", Word.Type.PREPOSITION);
+        vocabulary.createNewWord("ancient", Word.Type.ADJECTIVE);
+        vocabulary.createNewWord("machine", Word.Type.NOUN);
+
+        GenericCommandDescription useSpanner = new GenericCommandDescription("use", "spanner");
+        workflow.addResponse(useSpanner, new GenericCommand(useSpanner, new MessageAction("Click.")));
+
+        gameLoop.processCommand("use spanner on ancient machine");
+        assertThat(gameContext.getCurrentNoun2()).isEqualTo("machine");
+        assertThat(gameContext.getCurrentAdjective2()).isEqualTo("ancient");
+
+        gameLoop.processCommand("describe");
+        assertThat(gameContext.getCurrentNoun2()).isEmpty();
+        assertThat(gameContext.getCurrentAdjective2()).isEmpty();
+    }
+
+    @Test
+    void and_noun2AndAdjective2GatedResponses_bothReachable_pickingTheOneMatchingTheTypedSecondNounPhrase() {
+        // "USE SPANNER ON ANCIENT MACHINE" vs "USE SPANNER ON RUSTY ENGINE": two Response rows
+        // sharing the same verb+noun ("use spanner"), each gated by a Noun2Condition/
+        // Adjective2Condition pair for a different second noun phrase, must both be reachable.
+        vocabulary.createNewWord("use", Word.Type.VERB);
+        vocabulary.createNewWord("spanner", Word.Type.NOUN);
+        vocabulary.createNewWord("on", Word.Type.PREPOSITION);
+        vocabulary.createNewWord("ancient", Word.Type.ADJECTIVE);
+        vocabulary.createNewWord("machine", Word.Type.NOUN);
+        vocabulary.createNewWord("rusty", Word.Type.ADJECTIVE);
+        vocabulary.createNewWord("engine", Word.Type.NOUN);
+
+        GenericCommandDescription useSpanner = new GenericCommandDescription("use", "spanner");
+        GenericCommand onMachine = new GenericCommand(useSpanner, new MessageAction("You fix the machine."));
+        onMachine.addPreCondition(new Noun2Condition("machine", gameContext));
+        onMachine.addPreCondition(new Adjective2Condition("ancient", gameContext));
+        GenericCommand onEngine = new GenericCommand(useSpanner, new MessageAction("You fix the engine."));
+        onEngine.addPreCondition(new Noun2Condition("engine", gameContext));
+        onEngine.addPreCondition(new Adjective2Condition("rusty", gameContext));
+        workflow.addResponse(useSpanner, onMachine);
+        workflow.addResponse(useSpanner, onEngine);
+
+        gameLoop.processCommand("use spanner on ancient machine");
+        assertThat(told.toString()).contains("You fix the machine.").doesNotContain("You fix the engine.");
+
+        told.setLength(0);
+        gameLoop.processCommand("use spanner on rusty engine");
+        assertThat(told.toString()).contains("You fix the engine.").doesNotContain("You fix the machine.");
     }
 
     @Test

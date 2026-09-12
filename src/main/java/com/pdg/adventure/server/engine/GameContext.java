@@ -22,6 +22,8 @@ public class GameContext {
     private Consumer<String> outputSink = IO::println;
     private String currentPreposition = VocabularyData.EMPTY_STRING;
     private String currentAdverb = VocabularyData.EMPTY_STRING;
+    private String currentNoun2 = VocabularyData.EMPTY_STRING;
+    private String currentAdjective2 = VocabularyData.EMPTY_STRING;
 
     public void show(Describable aThing) {
         tell(aThing.getLongDescription());
@@ -81,6 +83,34 @@ public class GameContext {
 
     public String getCurrentAdverb() {
         return currentAdverb;
+    }
+
+    /**
+     * The second noun (e.g. "machine" in "use spanner on ancient machine") parsed out of the
+     * sub-command currently being dispatched, if any - set fresh by GameLoop before each
+     * sub-command so Noun2Condition can check against it. Never null; VocabularyData.EMPTY_STRING
+     * when the input had only one noun.
+     */
+    public void setCurrentNoun2(String aNoun2) {
+        currentNoun2 = aNoun2 == null ? VocabularyData.EMPTY_STRING : aNoun2;
+    }
+
+    public String getCurrentNoun2() {
+        return currentNoun2;
+    }
+
+    /**
+     * The adjective (e.g. "ancient") describing the second noun of the sub-command currently
+     * being dispatched, if any - set fresh by GameLoop before each sub-command so
+     * Adjective2Condition can check against it. Never null; VocabularyData.EMPTY_STRING when the
+     * input had no second adjective.
+     */
+    public void setCurrentAdjective2(String anAdjective2) {
+        currentAdjective2 = anAdjective2 == null ? VocabularyData.EMPTY_STRING : anAdjective2;
+    }
+
+    public String getCurrentAdjective2() {
+        return currentAdjective2;
     }
 
     public Workflow setUpWorkflows() {

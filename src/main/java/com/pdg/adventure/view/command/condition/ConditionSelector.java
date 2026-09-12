@@ -59,7 +59,9 @@ public class ConditionSelector extends HorizontalLayout {
             new ConditionTypeDescriptor("Same (variable = variable)", SameConditionData::new),
             new ConditionTypeDescriptor("Chance (1-100)", ChanceConditionData::new),
             new ConditionTypeDescriptor("Preposition (matches typed preposition)", PrepositionConditionData::new),
-            new ConditionTypeDescriptor("Adverb (matches typed adverb)", AdverbConditionData::new)
+            new ConditionTypeDescriptor("Adverb (matches typed adverb)", AdverbConditionData::new),
+            new ConditionTypeDescriptor("Noun 2 (matches typed second noun)", Noun2ConditionData::new),
+            new ConditionTypeDescriptor("Adjective 2 (matches typed second adjective)", Adjective2ConditionData::new)
         );
     }
 

@@ -80,7 +80,8 @@ public class Parser {
 
     private static GenericCommandDescription toDescription(SimpleSentence aSentence) {
         return new GenericCommandDescription(aSentence.getVerb(), aSentence.getAdjective(), aSentence.getNoun(),
-                aSentence.getPreposition(), aSentence.getAdverb());
+                aSentence.getPreposition(), aSentence.getAdverb(),
+                aSentence.getAdjective2(), aSentence.getNoun2());
     }
 
     // Closes one sub-command: infers a missing verb from the last one seen, builds the
@@ -104,9 +105,29 @@ public class Parser {
 
     private void populate(SimpleSentence aSentence, Word aWord) {
         switch (aWord.getType()) {
-            case NOUN -> aSentence.setNoun(aWord.getText());
+            // The first NOUN/ADJECTIVE seen in a sentence fills the primary slot (the one that
+            // is part of a command's match key); a second one - e.g. "ancient" and "machine" in
+            // "use spanner on ancient machine" - falls through to noun2/adjective2, which are
+            // ambient only (checked by Noun2Condition/Adjective2Condition). Whether an ADJECTIVE
+            // is "first" is decided by the primary noun slot, not a separate adjective slot, so
+            // that "use OLD spanner on ANCIENT machine" still pairs each adjective with the noun
+            // it precedes: "old" arrives before "spanner" has filled the primary noun slot, so it
+            // becomes the primary adjective; "ancient" arrives after, so it becomes adjective2.
+            case NOUN -> {
+                if (aSentence.getNoun().isEmpty()) {
+                    aSentence.setNoun(aWord.getText());
+                } else {
+                    aSentence.setNoun2(aWord.getText());
+                }
+            }
             case VERB -> aSentence.setVerb(aWord.getText());
-            case ADJECTIVE -> aSentence.setAdjective(aWord.getText());
+            case ADJECTIVE -> {
+                if (aSentence.getNoun().isEmpty()) {
+                    aSentence.setAdjective(aWord.getText());
+                } else {
+                    aSentence.setAdjective2(aWord.getText());
+                }
+            }
             case PREPOSITION -> aSentence.setPreposition(aWord.getText());
             case ADVERB -> aSentence.setAdverb(aWord.getText());
             case PRONOUN -> {
@@ -114,8 +135,13 @@ public class Parser {
                     throw new UnresolvedReferenceException(
                         "I don't know what '" + aWord.getText() + "' refers to.");
                 }
-                aSentence.setNoun(lastNoun);
-                aSentence.setAdjective(lastAdjective);
+                if (aSentence.getNoun().isEmpty()) {
+                    aSentence.setNoun(lastNoun);
+                    aSentence.setAdjective(lastAdjective);
+                } else {
+                    aSentence.setNoun2(lastNoun);
+                    aSentence.setAdjective2(lastAdjective);
+                }
             }
             default -> throw new IllegalArgumentException("Unknown word type " + aWord.getType());
         }
@@ -129,4 +155,6 @@ class SimpleSentence {
     private String noun = VocabularyData.EMPTY_STRING;
     private String preposition = VocabularyData.EMPTY_STRING;
     private String adverb = VocabularyData.EMPTY_STRING;
+    private String adjective2 = VocabularyData.EMPTY_STRING;
+    private String noun2 = VocabularyData.EMPTY_STRING;
 }

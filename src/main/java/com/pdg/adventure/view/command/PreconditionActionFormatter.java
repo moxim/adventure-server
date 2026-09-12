@@ -36,7 +36,9 @@ import com.pdg.adventure.model.condition.HereConditionData;
 import com.pdg.adventure.model.condition.ItemAtConditionData;
 import com.pdg.adventure.model.condition.LowerThanConditionData;
 import com.pdg.adventure.model.condition.NotConditionData;
+import com.pdg.adventure.model.condition.Adjective2ConditionData;
 import com.pdg.adventure.model.condition.AdverbConditionData;
+import com.pdg.adventure.model.condition.Noun2ConditionData;
 import com.pdg.adventure.model.condition.PlayerAtConditionData;
 import com.pdg.adventure.model.condition.PreConditionData;
 import com.pdg.adventure.model.condition.PrepositionConditionData;
@@ -107,6 +109,12 @@ public class PreconditionActionFormatter {
         }
         if (c instanceof AdverbConditionData adverb) {
             return "ADVERB " + txt(adverb.getAdverbText());
+        }
+        if (c instanceof Noun2ConditionData noun2) {
+            return "NOUN2 " + txt(noun2.getNoun2Text());
+        }
+        if (c instanceof Adjective2ConditionData adjective2) {
+            return "ADJECTIVE2 " + txt(adjective2.getAdjective2Text());
         }
         return c.getPreconditionName().replace("ConditionData", "").toUpperCase(Locale.ROOT);
     }

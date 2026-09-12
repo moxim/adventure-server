@@ -110,6 +110,20 @@ class PreconditionActionFormatterConditionsTest {
     }
 
     @Test
+    void noun2() {
+        Noun2ConditionData c = new Noun2ConditionData();
+        c.setNoun2Text("machine");
+        assertThat(formatter.formatCondition(c)).isEqualTo("NOUN2 machine");
+    }
+
+    @Test
+    void adjective2() {
+        Adjective2ConditionData c = new Adjective2ConditionData();
+        c.setAdjective2Text("ancient");
+        assertThat(formatter.formatCondition(c)).isEqualTo("ADJECTIVE2 ancient");
+    }
+
+    @Test
     void notWrapsLeafWithPrefix() {
         NotConditionData not = new NotConditionData();
         not.setPreCondition(here("dragon"));

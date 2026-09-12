@@ -225,6 +225,65 @@ class ParserTest {
     }
 
     @Test
+    void handle_secondNounAndAdjective_fallIntoNoun2AndAdjective2() {
+        // "USE SPANNER ON ANCIENT MACHINE"
+        Vocabulary vocabulary = new Vocabulary();
+        vocabulary.createNewWord("use", Word.Type.VERB);
+        vocabulary.createNewWord("spanner", Word.Type.NOUN);
+        vocabulary.createNewWord("on", Word.Type.PREPOSITION);
+        vocabulary.createNewWord("ancient", Word.Type.ADJECTIVE);
+        vocabulary.createNewWord("machine", Word.Type.NOUN);
+        Parser parser = new Parser(vocabulary);
+
+        CommandSequence sequence = parser.handle("use spanner on ancient machine");
+
+        assertThat(sequence.commands()).hasSize(1);
+        GenericCommandDescription command = sequence.commands().getFirst();
+        assertThat(command.getVerb()).isEqualTo("use");
+        assertThat(command.getNoun()).isEqualTo("spanner");
+        assertThat(command.getAdjective()).isEmpty();
+        assertThat(command.getPreposition()).isEqualTo("on");
+        assertThat(command.getAdjective2()).isEqualTo("ancient");
+        assertThat(command.getNoun2()).isEqualTo("machine");
+    }
+
+    @Test
+    void handle_adjectivesOnBothNouns_eachPairsWithTheNounItPrecedes() {
+        // "USE OLD SPANNER ON ANCIENT MACHINE"
+        Vocabulary vocabulary = new Vocabulary();
+        vocabulary.createNewWord("use", Word.Type.VERB);
+        vocabulary.createNewWord("old", Word.Type.ADJECTIVE);
+        vocabulary.createNewWord("spanner", Word.Type.NOUN);
+        vocabulary.createNewWord("on", Word.Type.PREPOSITION);
+        vocabulary.createNewWord("ancient", Word.Type.ADJECTIVE);
+        vocabulary.createNewWord("machine", Word.Type.NOUN);
+        Parser parser = new Parser(vocabulary);
+
+        CommandSequence sequence = parser.handle("use old spanner on ancient machine");
+
+        GenericCommandDescription command = sequence.commands().getFirst();
+        assertThat(command.getAdjective()).isEqualTo("old");
+        assertThat(command.getNoun()).isEqualTo("spanner");
+        assertThat(command.getAdjective2()).isEqualTo("ancient");
+        assertThat(command.getNoun2()).isEqualTo("machine");
+    }
+
+    @Test
+    void handle_singleNounSentence_leavesNoun2AndAdjective2Empty_matchingPriorBehaviour() {
+        // A lone adjective with no noun following still fills the PRIMARY adjective slot exactly
+        // as before this feature - it must not silently disappear into an unused adjective2.
+        Parser parser = new Parser(vocabularyWithBackReferenceWords());
+
+        CommandSequence sequence = parser.handle("take golden sword");
+
+        GenericCommandDescription command = sequence.commands().getFirst();
+        assertThat(command.getAdjective()).isEqualTo("golden");
+        assertThat(command.getNoun()).isEqualTo("sword");
+        assertThat(command.getAdjective2()).isEmpty();
+        assertThat(command.getNoun2()).isEmpty();
+    }
+
+    @Test
     void handle_it_withNoAntecedent_throwsUnresolvedReferenceException() {
         // given
         Parser parser = new Parser(vocabularyWithBackReferenceWords());
@@ -281,6 +340,27 @@ class ParserTest {
         assertThat(sequence.commands()).hasSize(1);
         assertThat(sequence.commands().getFirst().getVerb()).isEqualTo("wear");
         assertThat(sequence.commands().getFirst().getNoun()).isEqualTo("sword");
+    }
+
+    @Test
+    void handle_pronounAfterAPrimaryNounIsAlreadyFilled_fallsIntoNoun2_ratherThanOverwritingNoun() {
+        // "USE SPANNER ON IT" - the pronoun refers to the second noun slot, not the primary one.
+        Vocabulary vocabulary = new Vocabulary();
+        vocabulary.createNewWord("take", Word.Type.VERB);
+        vocabulary.createNewWord("use", Word.Type.VERB);
+        vocabulary.createNewWord("spanner", Word.Type.NOUN);
+        vocabulary.createNewWord("machine", Word.Type.NOUN);
+        vocabulary.createNewWord("on", Word.Type.PREPOSITION);
+        vocabulary.createNewWord("it", Word.Type.PRONOUN);
+        Parser parser = new Parser(vocabulary);
+        parser.handle("take machine");
+
+        CommandSequence sequence = parser.handle("use spanner on it");
+
+        GenericCommandDescription command = sequence.commands().getFirst();
+        assertThat(command.getVerb()).isEqualTo("use");
+        assertThat(command.getNoun()).isEqualTo("spanner");
+        assertThat(command.getNoun2()).isEqualTo("machine");
     }
 
     private static Vocabulary vocabularyWithTakeSwordAndKillOgre() {
