@@ -104,6 +104,9 @@ public enum SystemMessageKey {
          "is printed when the player tries to put an item into a container that already contains it."),
     SM65(65, "I can't put the %1s into the %2s.",
          "is printed when the player tries to put an item into a container that is not allowed."),
+    SM66(66, "The %1$s's light level is now %2$s.",
+         "is printed when LightAction changes an item's lumen value."),
+    SM67(67, " (lit)", "is printed when an item is lit."),
 
     // Currently never registered for a real adventure - CommandFactory looks this id up
     // unconditionally, which NPEs outside the console demo. A live bug, outside this feature's

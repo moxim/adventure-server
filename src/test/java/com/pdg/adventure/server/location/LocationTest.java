@@ -190,4 +190,99 @@ class LocationTest {
         descriptionProvider.setLongDescription(aLongDescription);
         return new Location(descriptionProvider, new GenericContainer(new DescriptionProvider("room items"), 5));
     }
+
+    @Test
+    void getLongDescription_belowTheLightThreshold_yieldsOnlyTheDarknessMessage() {
+        sut.addItem(mouse);
+        sut.addDirection(direction);
+        sut.setLight(9);
+
+        String desc = sut.getLongDescription();
+
+        assertThat(desc).isEqualTo(System.lineSeparator() + SystemMessageKey.SM0.defaultText());
+        assertThat(desc).doesNotContain("small", "perch", "mouse", "loop");
+    }
+
+    @Test
+    void getLongDescription_atExactlyTheLightThreshold_isNotDark() {
+        sut.setLight(10);
+
+        String desc = sut.getLongDescription();
+
+        assertThat(desc).doesNotContain(SystemMessageKey.SM0.defaultText());
+    }
+
+    @Test
+    void getArrivalDescription_belowTheLightThreshold_yieldsOnlyTheDarknessMessage() {
+        Location room = roomWithDescriptions("The short room.", "The long, richly detailed room.");
+        room.setLight(0);
+
+        assertThat(room.getArrivalDescription())
+                .isEqualTo(System.lineSeparator() + SystemMessageKey.SM0.defaultText())
+                .doesNotContain("The long, richly detailed room.");
+    }
+
+    @Test
+    void newLocation_defaultsToLit() {
+        assertThat(sut.getPerceivedLight()).isEqualTo(50);
+        assertThat(sut.getLongDescription()).doesNotContain(SystemMessageKey.SM0.defaultText());
+    }
+
+    @Test
+    void getPerceivedLight_addsTheLumenOfItemsPresentInTheLocation() {
+        mouse.setLight(20);
+        sut.addItem(mouse);
+
+        assertThat(sut.getPerceivedLight()).isEqualTo(70); // 50 ambient + 20 from the item
+    }
+
+    @Test
+    void getPerceivedLight_addsTheLumenOfCarriedItems() {
+        Item torch = new Item(new DescriptionProvider("torch"), true);
+        torch.setLight(15);
+        Container carried = new GenericContainer(new DescriptionProvider("carried items"), 5);
+        carried.add(torch);
+        sut.setCarriedItems(carried);
+
+        assertThat(sut.getPerceivedLight()).isEqualTo(65); // 50 ambient + 15 carried
+    }
+
+    @Test
+    void getPerceivedLight_sumsAmbientLocationAndCarriedLight() {
+        mouse.setLight(5);
+        sut.addItem(mouse);
+
+        Item torch = new Item(new DescriptionProvider("torch"), true);
+        torch.setLight(15);
+        Container carried = new GenericContainer(new DescriptionProvider("carried items"), 5);
+        carried.add(torch);
+        sut.setCarriedItems(carried);
+
+        assertThat(sut.getPerceivedLight()).isEqualTo(70); // 50 ambient + 5 item + 15 carried
+    }
+
+    @Test
+    void getPerceivedLight_withNoCarriedItemsContainerSet_ignoresIt() {
+        // setCarriedItems() is only wired up once an adventure is actually loaded; a Location
+        // built directly (as most tests do) must not NPE for lacking one.
+        assertThat(sut.getPerceivedLight()).isEqualTo(50);
+    }
+
+    @Test
+    void getLongDescription_aCarriedTorchCanLightUpAnOtherwiseDarkLocation() {
+        sut.addItem(mouse);
+        sut.addDirection(direction);
+        sut.setLight(0);
+
+        Item torch = new Item(new DescriptionProvider("torch"), true);
+        torch.setLight(15);
+        Container carried = new GenericContainer(new DescriptionProvider("carried items"), 5);
+        carried.add(torch);
+        sut.setCarriedItems(carried);
+
+        String desc = sut.getLongDescription();
+
+        assertThat(desc).doesNotContain(SystemMessageKey.SM0.defaultText())
+                        .contains("small", "perch", "mouse", "loop");
+    }
 }

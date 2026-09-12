@@ -48,6 +48,11 @@ public class Item extends Thing implements Containable, Wearable {
         if (isWorn) {
             result = result + SystemMessageKey.SM10.defaultText();
         }
+        int light = getLight();
+        if (light > 0) {
+            result = result + " " + SystemMessageKey.SM67.defaultText();;
+            result = result + "\n" + SystemMessageKey.SM66.defaultText().formatted(getStrippedBasicDescription(), light);
+        }
         return result;
     }
 
@@ -57,6 +62,11 @@ public class Item extends Thing implements Containable, Wearable {
         if (isWorn) {
             result = result + SystemMessageKey.SM10.defaultText();
         }
+        int light = getLight();
+        if (light > 0) {
+            result = result + " " + SystemMessageKey.SM67.defaultText();;
+            result = result + "\n" + SystemMessageKey.SM66.defaultText().formatted(getStrippedBasicDescription(), light);
+        }
         return result;
     }
 
@@ -65,6 +75,11 @@ public class Item extends Thing implements Containable, Wearable {
         String result = super.getEnrichedShortDescription();
         if (isWorn) {
             result = result + SystemMessageKey.SM10.defaultText();
+        }
+        int light = getLight();
+        if (light > 0) {
+            result = result + " " + SystemMessageKey.SM67.defaultText();;
+            result = result + "\n" + SystemMessageKey.SM66.defaultText().formatted(getStrippedBasicDescription(), light);
         }
         return result;
     }

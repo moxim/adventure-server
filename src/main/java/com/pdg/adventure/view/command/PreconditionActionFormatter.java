@@ -19,6 +19,7 @@ import com.pdg.adventure.model.action.DestroyActionData;
 import com.pdg.adventure.model.action.DropActionData;
 import com.pdg.adventure.model.action.IncrementVariableActionData;
 import com.pdg.adventure.model.action.InventoryActionData;
+import com.pdg.adventure.model.action.LightActionData;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
@@ -142,6 +143,9 @@ public class PreconditionActionFormatter {
         }
         if (a instanceof RemoveActionData r) {
             return "REMOVE " + resolveName(r.getThingId());
+        }
+        if (a instanceof LightActionData l) {
+            return "LIGHT " + resolveName(l.getThingId()) + " " + num(l.getLumen());
         }
         if (a instanceof MoveItemActionData mi) {
             return "MOVE_ITEM " + resolveName(mi.getThingId()) + " " + resolveName(mi.getDestinationId());

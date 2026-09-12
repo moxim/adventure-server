@@ -39,4 +39,24 @@ class ThingTest {
         // then
         assertThat(TestSupporter.applyCommandToBoolean(item, commandDescription)).isFalse();
     }
+
+    @Test
+    void newThing_emitsNoLightByDefault() {
+        // Unlike Location (which defaults to lit, representing ambient room light), a plain Thing
+        // - and so a plain Item, e.g. a key or a sword - shouldn't glow unless an author says so.
+        Item item = new Item(new DescriptionProvider("key"), true);
+
+        assertThat(item.getLight()).isZero();
+    }
+
+    @Test
+    void setLight_makesAnItemEmitLight() {
+        // The point of moving lumen up from Location to Thing: an Item (a torch, say) can now
+        // carry its own light level too.
+        Item torch = new Item(new DescriptionProvider("torch"), true);
+
+        torch.setLight(80);
+
+        assertThat(torch.getLight()).isEqualTo(80);
+    }
 }

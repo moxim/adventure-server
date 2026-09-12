@@ -13,16 +13,27 @@ import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.tangible.Thing;
 
-public class Location extends Thing implements Visitable, HasLight {
+public class Location extends Thing implements Visitable {
+
+    /** Below this perceived light level, the location is too dark to see anything in it. */
+    private static final int MINIMUM_LIGHT_TO_SEE = 10;
+
+    // Matches LocationData's default, so a Location built without an explicit setLight() call
+    // (as most hand-built test fixtures are) is lit, not dark.
+    private static final int DEFAULT_LUMEN = 50;
 
     private final Container directions;
     private Container itemContainer;
+    // The player's inventory, wired in once when the adventure loads (every Location shares the
+    // same instance) so a light-emitting item still counts toward this location's perceived
+    // light while it's being carried, not just while it's lying on the floor.
+    private Container carriedItems;
     private long timesVisited;
-    private int lumen;
 
     public Location(DescriptionProvider aDescriptionProvider) {
         super(aDescriptionProvider);
         directions = new GenericContainer(aDescriptionProvider, true, 9999);
+        setLight(DEFAULT_LUMEN);
     }
 
     public Location(DescriptionProvider aDescriptionProvider, Container aPocket) {
@@ -106,7 +117,42 @@ public class Location extends Thing implements Visitable, HasLight {
         return renderDescription(super.getLongDescription());
     }
 
+    public void setCarriedItems(Container aCarriedItems) {
+        carriedItems = aCarriedItems;
+    }
+
+    /**
+     * How much light actually reaches this location right now: its own ambient {@code lumen},
+     * plus the lumen of every item present - whether lying in the location or carried by the
+     * player. A seam for future light sources (a nearby lit location, say) to contribute too,
+     * without changing every caller.
+     */
+    public int getPerceivedLight() {
+        return getLight() + sumLumen(itemContainer) + sumLumen(carriedItems);
+    }
+
+    private static int sumLumen(Container aContainer) {
+        if (aContainer == null) {
+            return 0;
+        }
+        int total = 0;
+        for (Containable containable : aContainer.getContents()) {
+            if (containable instanceof HasLight lightSource) {
+                total += lightSource.getLight();
+            }
+        }
+        return total;
+    }
+
+    private boolean isTooDarkToSee() {
+        return getPerceivedLight() < MINIMUM_LIGHT_TO_SEE;
+    }
+
     private String renderDescription(String aBody) {
+        if (isTooDarkToSee()) {
+            return System.lineSeparator() + SystemMessageKey.SM0.defaultText();
+        }
+
         StringBuilder sb = new StringBuilder();
         sb.append(System.lineSeparator());
         sb.append(aBody);
@@ -151,16 +197,6 @@ public class Location extends Thing implements Visitable, HasLight {
 //                ", pocket=" + pocket +
                ", " + super.toString() +
                '}';
-    }
-
-    @Override
-    public void setLight(int aLumenValue) {
-        lumen = aLumenValue;
-    }
-
-    @Override
-    public int getLight() {
-        return lumen;
     }
 
     public void setItemContainer(final Container aItemContainer) {

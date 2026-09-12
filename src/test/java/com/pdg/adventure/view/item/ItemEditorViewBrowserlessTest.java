@@ -5,6 +5,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.RouteParameters;
 import org.junit.jupiter.api.AfterEach;
@@ -131,6 +132,10 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
         return find(Button.class, view).withText("Manage Commands").single();
     }
 
+    private IntegerField lumenField() {
+        return find(IntegerField.class, view).single();
+    }
+
     private Checkbox checkboxLabelled(String label) {
         return find(Checkbox.class, view).all().stream()
                                       .filter(cb -> label.equals(cb.getLabel()))
@@ -206,6 +211,46 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
         assertThat(reset.isEnabled()).isFalse();
 
         test(checkboxLabelled("Is wearable")).click();
+
+        assertThat(reset.isEnabled()).isTrue();
+    }
+
+    @Test
+    @DisplayName("The view renders a 'Lighting (Lumen)' field, mirroring LocationEditorView")
+    void view_rendersLumenField() {
+        enterWithItemId(null);
+
+        assertThat(lumenField().getLabel()).isEqualTo("Lighting (Lumen)");
+    }
+
+    @Test
+    @DisplayName("The Lumen field is pre-populated from an existing item's data")
+    void lumenField_isPrePopulated_forExistingItem() {
+        existingItem.setLumen(80);
+        locationData.getItemContainerData().getItems().add(existingItem);
+
+        enterWithItemId(ITEM_ID);
+
+        assertThat(lumenField().getValue()).isEqualTo(80);
+    }
+
+    @Test
+    @DisplayName("A new item's Lumen field defaults to no light")
+    void lumenField_defaultsToZero_forNewItem() {
+        enterWithItemId(null);
+
+        assertThat(lumenField().getValue()).isZero();
+    }
+
+    @Test
+    @DisplayName("Changing the Lumen field marks the form dirty and enables Reset")
+    void changingLumenField_enablesResetButton() {
+        enterWithItemId(null);
+
+        Button reset = find(Button.class, view).withText("Reset").single();
+        assertThat(reset.isEnabled()).isFalse();
+
+        lumenField().setValue(42);
 
         assertThat(reset.isEnabled()).isTrue();
     }

@@ -195,6 +195,9 @@ public class ItemUsageTracker {
         } else if (action instanceof RemoveActionData removeAction) {
             thingId = removeAction.getThingId();
             actionType = "Remove Action";
+        } else if (action instanceof LightActionData lightAction) {
+            thingId = lightAction.getThingId();
+            actionType = "Light Action";
         }
 
         if (targetItemId.equals(thingId)) {

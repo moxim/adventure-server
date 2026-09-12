@@ -8,6 +8,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
@@ -53,6 +54,10 @@ public class ItemEditorView extends VerticalLayout
 
     private static final Logger LOG = LoggerFactory.getLogger(ItemEditorView.class);
 
+    private static final int MIN_LUMEN = 0;
+    private static final int MAX_LUMEN = 100;
+    private static final int LUMEN_STEP = 1;
+
     private final transient AdventureService adventureService;
     private final transient ItemService itemService;
     private final transient AdventureAccessService accessService;
@@ -93,6 +98,7 @@ public class ItemEditorView extends VerticalLayout
         TextField locationIdTF = getLocationIdTF();
         TextArea shortDescription = getShortDescTextArea();
         TextArea longDescription = getLongDescTextArea();
+        IntegerField lumen = getLumenField();
 
         // Checkboxes for item properties
         final var isContainableCheckbox = createIsContainableCheckbox();
@@ -123,6 +129,7 @@ public class ItemEditorView extends VerticalLayout
         binder.bind(isContainableCheckbox, ItemViewModel::isContainable, ItemViewModel::setContainable);
         binder.bind(isWearableCheckbox, ItemViewModel::isWearable, ItemViewModel::setWearable);
         binder.bind(isWornCheckbox, ItemViewModel::isWorn, ItemViewModel::setWorn);
+        binder.bind(lumen, ItemViewModel::getLumen, ItemViewModel::setLumen);
         binder.bindReadOnly(itemIdTF, ItemViewModel::getId);
         binder.bindReadOnly(locationIdTF, ItemViewModel::getLocationId);
         binder.bindReadOnly(adventureIdTF, ItemViewModel::getAdventureId);
@@ -136,6 +143,7 @@ public class ItemEditorView extends VerticalLayout
         });
 
         HorizontalLayout h1 = new HorizontalLayout(adjectiveSelector, nounSelector);
+        HorizontalLayout h2 = new HorizontalLayout(lumen);
         HorizontalLayout checkboxRow = new HorizontalLayout(isContainableCheckbox, isWearableCheckbox, isWornCheckbox,
                                                             commandsButton);
         checkboxRow.setSpacing(true);
@@ -145,7 +153,7 @@ public class ItemEditorView extends VerticalLayout
         setPadding(true);
 
         HorizontalLayout idRow = new HorizontalLayout(itemIdTF, locationIdTF, adventureIdTF);
-        add(idRow, h1, shortDescription, longDescription, checkboxRow, resetBackSaveView);
+        add(idRow, h1, h2, shortDescription, longDescription, checkboxRow, resetBackSaveView);
     }
 
     private Checkbox createIsContainableCheckbox() {
@@ -209,6 +217,18 @@ public class ItemEditorView extends VerticalLayout
         field.setMinHeight("200px");
         field.setMaxHeight("350px");
         field.setTooltipText("If left empty, this will be derived from the short description.");
+        field.setValueChangeMode(ValueChangeMode.EAGER);
+        return field;
+    }
+
+    private IntegerField getLumenField() {
+        IntegerField field = new IntegerField("Lighting (Lumen)");
+        field.setMax(MAX_LUMEN);
+        field.setMin(MIN_LUMEN);
+        field.setStep(LUMEN_STEP);
+        field.setTooltipText(
+                "Set how much light this item emits, e.g. a lit torch. (" + MAX_LUMEN + " = max, " + MIN_LUMEN
+                + " = none)");
         field.setValueChangeMode(ValueChangeMode.EAGER);
         return field;
     }

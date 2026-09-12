@@ -13,17 +13,30 @@ import com.pdg.adventure.server.parser.CommandHandler;
 import com.pdg.adventure.server.parser.GenericCommandProvider;
 import com.pdg.adventure.server.support.DescriptionProvider;
 
-public class Thing implements Actionable {
+public class Thing implements Actionable, HasLight {
 
     private String id;
     @Setter
     private DescriptionProvider descriptionProvider;
     private final transient CommandHandler commandHandler;
+    // 0 (no light emitted) by default: most Things (a key, a sword) don't glow. A subclass that
+    // should be lit by default (Location, representing ambient room light) sets its own default.
+    private int lumen;
 
     public Thing(DescriptionProvider aDescriptionProvider) {
         commandHandler = new CommandHandler();
         descriptionProvider = aDescriptionProvider;
         id = UUID.randomUUID().toString();
+    }
+
+    @Override
+    public void setLight(int aLumenValue) {
+        lumen = aLumenValue;
+    }
+
+    @Override
+    public int getLight() {
+        return lumen;
     }
 
     public void setExamineFallback(String aVerb, Supplier<String> aDescription) {
