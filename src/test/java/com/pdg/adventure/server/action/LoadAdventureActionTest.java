@@ -13,6 +13,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
@@ -76,6 +77,23 @@ class LoadAdventureActionTest {
 
         assertThat(gameContext.getWorkflowData()).isSameAs(workflowData);
         assertThat(gameContext.getWorkflowData().getCommands()).hasSize(1);
+    }
+
+    @Test
+    void loadAdventure_wiresThePocketIntoEveryLocation_soCarriedLightSourcesCount() {
+        AdventureData adventureData = new AdventureData();
+        adventureData.setId("adv-1");
+        adventureData.setCurrentLocationId("loc-1");
+        LocationData locationData = new LocationData();
+        locationData.setId("loc-1");
+        adventureData.getLocationData().put("loc-1", locationData);
+
+        stubSuccessfulLoad(adventureData);
+
+        assertThatThrownBy(() -> loadAdventureAction.loadAdventure("adv-1"))
+                .isInstanceOf(ReloadAdventureException.class);
+
+        verify(startLocation).setCarriedItems(gameContext.getPocket());
     }
 
     private void stubSuccessfulLoad(AdventureData anAdventureData) {

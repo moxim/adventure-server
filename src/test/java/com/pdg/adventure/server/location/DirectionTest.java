@@ -15,6 +15,7 @@ import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.support.DescriptionProvider;
+import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
@@ -28,6 +29,7 @@ class DirectionTest {
     private final Container pocket = new GenericContainer(new DescriptionProvider("your pocket"), 5);
     private final Location destination = new Location(new DescriptionProvider(GLOWING_TXT, PORTAL_TXT), pocket);
     private final GameContext gameContext = mock(GameContext.class);
+    private final VariableProvider variableProvider = new VariableProvider();
 
     {
         vocabulary.createNewWord("enter", Word.Type.VERB);
@@ -38,7 +40,8 @@ class DirectionTest {
     private final GenericCommandDescription directionDescription = new GenericCommandDescription("enter", destination);
     private final GenericCommand moveCommand = new GenericCommand(directionDescription,
                                                                   new MovePlayerAction(destination,
-                                                                                       gameContext));
+                                                                                       gameContext,
+                                                                                       variableProvider));
     private final GenericDirection sut = new GenericDirection(allLocations, moveCommand, destination.getId(), true);
 
     @Test
@@ -99,7 +102,8 @@ class DirectionTest {
         Location destination = new Location(new DescriptionProvider(PORTAL_TXT), pocket);
         GenericCommandDescription directionDescription = new GenericCommandDescription("enter", destination);
         GenericCommand moveCommand = new GenericCommand(directionDescription, new MovePlayerAction(destination,
-                                                                                                   gameContext));
+                                                                                                   gameContext,
+                                                                                                   variableProvider));
         allLocations.clear();
         allLocations.put(destination.getId(), destination);
         GenericDirection noAdj = new GenericDirection(allLocations, moveCommand, destination.getId(), true);

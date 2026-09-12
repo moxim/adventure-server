@@ -41,6 +41,7 @@ public class ItemMapper implements Mapper<ItemData, Item> {
         item.setId(anItemData.getId());
         item.setIsWearable(anItemData.isWearable());
         item.setIsWorn(anItemData.isWorn());
+        item.setLight(anItemData.getLumen());
         mapperSupporter.addMappedItem(item);
 //        DirectionContainerMapper directionContainerMapper = mapperProvider.getMapper(DirectionContainerMapper.class);
         // TODO
@@ -88,6 +89,7 @@ public class ItemMapper implements Mapper<ItemData, Item> {
         itemData.setContainable(anItem.isContainable());
         itemData.setWearable(anItem.isWearable());
         itemData.setWorn(anItem.isWorn());
+        itemData.setLumen(anItem.getLight());
 //        DirectionContainerMapper directionContainerMapper = mapperProvider.getMapper(DirectionContainerMapper.class);
 //        itemData.setParentContainer(anItem.getParentContainer());
         return itemData;

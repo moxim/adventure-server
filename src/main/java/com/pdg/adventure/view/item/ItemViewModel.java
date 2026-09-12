@@ -13,6 +13,7 @@ public final class ItemViewModel {
 
     // these attributes can be edited
     private String id;
+    private int lumen;
     private Word noun;
     private Word adjective;
     private String shortDescription;
@@ -27,6 +28,7 @@ public final class ItemViewModel {
         adventureId = data.getAdventureId();
         locationId = data.getLocationId();
         id = data.getId();
+        lumen = data.getLumen();
         noun = data.getDescriptionData().getNoun();
         adjective = data.getDescriptionData().getAdjective();
         shortDescription = data.getDescriptionData().getShortDescription();
@@ -39,6 +41,11 @@ public final class ItemViewModel {
     public void setId(String anId) {
         id = anId;
         data.setId(anId);
+    }
+
+    public void setLumen(Integer aValue) {
+        lumen = aValue;
+        data.setLumen(aValue);
     }
 
     public void setNoun(Word aNoun) {

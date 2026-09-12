@@ -79,6 +79,14 @@ class PreconditionActionFormatterActionsTest {
     }
 
     @Test
+    void light() {
+        LightActionData a = new LightActionData();
+        a.setThingId("torch");
+        a.setLumen(50);
+        assertThat(formatter.formatAction(a)).isEqualTo("LIGHT torch 50");
+    }
+
+    @Test
     void remove() {
         RemoveActionData a = new RemoveActionData();
         a.setThingId("ring");

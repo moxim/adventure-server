@@ -19,6 +19,7 @@ import com.pdg.adventure.model.action.DescribeActionData;
 import com.pdg.adventure.model.action.DestroyActionData;
 import com.pdg.adventure.model.action.IncrementVariableActionData;
 import com.pdg.adventure.model.action.InventoryActionData;
+import com.pdg.adventure.model.action.LightActionData;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
@@ -106,6 +107,7 @@ public class ActionSelector extends HorizontalLayout {
         types.add(new ActionTypeDescriptor("Take", "Player picks up an item", TakeActionData::new));
         types.add(new ActionTypeDescriptor("Drop", "Player drops an item", DropActionData::new));
         types.add(new ActionTypeDescriptor("Wear", "Player wears a wearable item", WearActionData::new));
+        types.add(new ActionTypeDescriptor("Light", "Set an item's light level (lumen)", LightActionData::new));
         types.add(new ActionTypeDescriptor("Set Variable", "Set a named variable to a specific value",
                                            () -> new SetVariableActionData(null, null)));
         types.add(new ActionTypeDescriptor("Quit", "Terminate the game", QuitActionData::new));

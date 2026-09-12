@@ -14,7 +14,7 @@ package com.pdg.adventure;
  *    - NOT-DONE: objects worn (no, use objects with flag on object)
  *  - DONE: add FollowupActions to PreConditions
  *  - add flags (and conditions and actions on them?)
- *      - automatically copy value of this location's "visited" into VISITED
+ *      - DONE: automatically copy value of this location's "visited" into VISITED
  *  - add / complete more mappers (esp. actions, conditions)
  *  - add serialization via https://github.com/nitrite/nitrite-java (no, not sufficiently ready)
  *

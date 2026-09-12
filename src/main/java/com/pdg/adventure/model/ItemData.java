@@ -32,6 +32,7 @@ public class ItemData extends ThingData {
     private String parentContainerId; // The container this item is in (if any)
     private boolean isWearable;
     private boolean isWorn;
+    private int lumen; // how much light this item emits, e.g. a lit torch; 0 = none, the default
 
 //    private boolean isOpenable;
 //    private boolean isOpen;

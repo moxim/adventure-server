@@ -11,6 +11,8 @@ import java.util.Map;
  * silently splitting variable writers from readers.
  */
 public class VariableProvider {
+    public static final String VISITED_VARIABLE_NAME = "VISITED";
+
     private final Map<String, Variable> variables;
 
     public VariableProvider() {

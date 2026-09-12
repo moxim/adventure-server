@@ -20,6 +20,7 @@ import com.pdg.adventure.model.action.DescribeActionData;
 import com.pdg.adventure.model.action.DestroyActionData;
 import com.pdg.adventure.model.action.IncrementVariableActionData;
 import com.pdg.adventure.model.action.InventoryActionData;
+import com.pdg.adventure.model.action.LightActionData;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
@@ -159,6 +160,12 @@ class ActionEditorFactoryTest {
     void createEditor_withWearActionData_shouldReturnWearActionEditor() {
         ActionEditorComponent editor = ActionEditorFactory.createEditor(new WearActionData(), adventureData);
         assertThat(editor).isNotNull().isInstanceOf(WearActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withLightActionData_shouldReturnLightActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new LightActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(LightActionEditor.class);
     }
 
     @Test

@@ -38,4 +38,36 @@ class LowerThanConditionEditorTest {
         editor.initialize();
         assertThat(editor.getChildren().count()).isGreaterThan(0);
     }
+
+    @Test
+    void getConditionSummary_withBothFieldsEmpty_doesNotThrow() {
+        // Reproduces the NPE hit when a brand-new row is added to the Arrivals condition table:
+        // ConditionRow's constructor calls getConditionSummary() immediately, before either field
+        // has been touched, so IntegerField.getValue() is still null.
+        LowerThanConditionEditor editor = new LowerThanConditionEditor(new LowerThanConditionData());
+        editor.initialize();
+
+        assertThat(editor.getConditionSummary()).isEqualTo("(none)");
+    }
+
+    @Test
+    void getConditionSummary_withNameButNoValue_omitsTheValue() {
+        LowerThanConditionData data = new LowerThanConditionData();
+        data.setVariableName("lives");
+        LowerThanConditionEditor editor = new LowerThanConditionEditor(data);
+        editor.initialize();
+
+        assertThat(editor.getConditionSummary()).isEqualTo("lives < ");
+    }
+
+    @Test
+    void getConditionSummary_withPreSetValues_includesBoth() {
+        LowerThanConditionData data = new LowerThanConditionData();
+        data.setVariableName("lives");
+        data.setValue(3);
+        LowerThanConditionEditor editor = new LowerThanConditionEditor(data);
+        editor.initialize();
+
+        assertThat(editor.getConditionSummary()).isEqualTo("lives < 3");
+    }
 }

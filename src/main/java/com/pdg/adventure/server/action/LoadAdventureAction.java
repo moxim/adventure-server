@@ -112,6 +112,9 @@ public class LoadAdventureAction extends AbstractAction {
         gameContext.setCurrentLocation(startLocation);
 
         gameContext.setPocket(savedAdventure.getPocket());
+        // Every location shares the same pocket instance, so a carried light source (a lit
+        // torch, say) counts toward whichever location the player is currently in.
+        adventureLocations.forEach(location -> location.setCarriedItems(savedAdventure.getPocket()));
 
         gameContext.setWorkflowData(adventureData.getWorkflowData());
 

@@ -66,6 +66,22 @@ class ItemMapperTest {
     }
 
     @Test
+    void mapToDO_carriesOverTheItemsLumen() {
+        // Given: a lit torch
+        Item item = new Item(descriptionProvider, true);
+        item.setId("torch");
+        item.setLight(80);
+
+        when(descriptionMapper.mapToDO(descriptionProvider)).thenReturn(descriptionData);
+
+        // When
+        ItemData result = itemMapper.mapToDO(item);
+
+        // Then
+        assertThat(result.getLumen()).isEqualTo(80);
+    }
+
+    @Test
     void mapToBO_convertsItemDataToItem() {
         // Given
         ItemData itemData = new ItemData();
@@ -86,6 +102,39 @@ class ItemMapperTest {
         assertThat(result.isContainable()).isTrue();
         assertThat(result.isWearable()).isTrue();
         assertThat(result.isWorn()).isFalse();
+    }
+
+    @Test
+    void mapToBO_carriesOverTheItemDatasLumen() {
+        // Given: a persisted lit torch
+        ItemData itemData = new ItemData();
+        itemData.setId("torch");
+        itemData.setLumen(80);
+        itemData.setDescriptionData(descriptionData);
+
+        when(descriptionMapper.mapToBO(descriptionData)).thenReturn(descriptionProvider);
+
+        // When
+        Item result = itemMapper.mapToBO(itemData);
+
+        // Then
+        assertThat(result.getLight()).isEqualTo(80);
+    }
+
+    @Test
+    void mapToBO_defaultsToNoLightWhenUnset() {
+        // Given: an item that has never had its light set (the common case: a key, a sword)
+        ItemData itemData = new ItemData();
+        itemData.setId("key");
+        itemData.setDescriptionData(descriptionData);
+
+        when(descriptionMapper.mapToBO(descriptionData)).thenReturn(descriptionProvider);
+
+        // When
+        Item result = itemMapper.mapToBO(itemData);
+
+        // Then
+        assertThat(result.getLight()).isZero();
     }
 
     @Test

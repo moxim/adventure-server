@@ -21,6 +21,7 @@ import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.model.action.LightActionData;
 import com.pdg.adventure.model.action.TakeActionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
@@ -174,6 +175,40 @@ class ItemUsageTrackerTest {
         // Then: the displayed command spec is the readable trigger text, not the raw ULID key
         assertThat(usages).hasSize(1);
         assertThat(usages.getFirst().getCommandSpecification()).isEqualTo("take||");
+    }
+
+    @Test
+    void findItemUsages_shouldDetectLightActionReferencingTheItem() {
+        // Given
+        String itemId = "torch";
+        LocationData location = new LocationData();
+        location.setId("loc1");
+        DescriptionData descData = new DescriptionData();
+        descData.setShortDescription("Cellar");
+        location.setDescriptionData(descData);
+
+        CommandChainData chain = new CommandChainData();
+        Word light = new Word("light", Word.Type.VERB);
+        CommandData command = new CommandData(new CommandDescriptionData(light, null, null));
+        LightActionData lightAction = new LightActionData();
+        lightAction.setThingId(itemId);
+        lightAction.setLumen(50);
+        command.addAction(lightAction);
+        chain.getCommands().add(command);
+
+        CommandProviderData commandProvider = new CommandProviderData();
+        Map<String, CommandChainData> byUlid = new HashMap<>();
+        byUlid.put(chain.getId(), chain);
+        commandProvider.setAvailableCommands(byUlid);
+        location.setCommandProviderData(commandProvider);
+        adventureData.getLocationData().put("loc1", location);
+
+        // When
+        List<ItemUsageTracker.ItemUsage> usages = ItemUsageTracker.findItemUsages(adventureData, itemId);
+
+        // Then
+        assertThat(usages).hasSize(1);
+        assertThat(usages.getFirst().getUsageType()).isEqualTo("Light Action");
     }
 
     @Test
