@@ -43,6 +43,13 @@ public class GameLoop {
         try {
             CommandSequence sequence = parser.handle(anInput);
             for (GenericCommandDescription command : sequence.commands()) {
+                // Set fresh per sub-command, unconditionally, before dispatch AND before the
+                // runProcesses() call below (which runs even when this sub-command fails) - the
+                // same location-staleness trap documented on runOneCommandSucceeded: a stale
+                // preposition/adverb left over from an earlier sub-command (or turn) must never
+                // leak into a PrepositionCondition/AdverbCondition check for this one.
+                gameContext.setCurrentPreposition(command.getPreposition());
+                gameContext.setCurrentAdverb(command.getAdverb());
                 boolean succeeded = runOneCommandSucceeded(command);
                 ExecutionResult processesResult = gameContext.runProcesses();
                 String processMessage = processesResult.getResultMessage();

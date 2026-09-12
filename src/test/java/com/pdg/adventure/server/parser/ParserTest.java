@@ -178,6 +178,53 @@ class ParserTest {
     }
 
     @Test
+    void handle_adverbBeforeVerb_isCapturedWithoutDisturbingVerbAndNoun() {
+        // "SLOWLY OPEN CHEST"
+        Vocabulary vocabulary = new Vocabulary();
+        vocabulary.createNewWord("slowly", Word.Type.ADVERB);
+        vocabulary.createNewWord("open", Word.Type.VERB);
+        vocabulary.createNewWord("chest", Word.Type.NOUN);
+        Parser parser = new Parser(vocabulary);
+
+        CommandSequence sequence = parser.handle("slowly open chest");
+
+        assertThat(sequence.commands()).hasSize(1);
+        GenericCommandDescription command = sequence.commands().getFirst();
+        assertThat(command.getVerb()).isEqualTo("open");
+        assertThat(command.getNoun()).isEqualTo("chest");
+        assertThat(command.getAdverb()).isEqualTo("slowly");
+    }
+
+    @Test
+    void handle_prepositionAfterNoun_isCapturedWithoutDisturbingVerbAndNoun() {
+        // "SWITCH LAMP ON"
+        Vocabulary vocabulary = new Vocabulary();
+        vocabulary.createNewWord("switch", Word.Type.VERB);
+        vocabulary.createNewWord("lamp", Word.Type.NOUN);
+        vocabulary.createNewWord("on", Word.Type.PREPOSITION);
+        Parser parser = new Parser(vocabulary);
+
+        CommandSequence sequence = parser.handle("switch lamp on");
+
+        assertThat(sequence.commands()).hasSize(1);
+        GenericCommandDescription command = sequence.commands().getFirst();
+        assertThat(command.getVerb()).isEqualTo("switch");
+        assertThat(command.getNoun()).isEqualTo("lamp");
+        assertThat(command.getPreposition()).isEqualTo("on");
+    }
+
+    @Test
+    void handle_noAdverbOrPreposition_leavesBothFieldsEmpty() {
+        Parser parser = new Parser(vocabularyWithTakeSwordAndKillOgre());
+
+        CommandSequence sequence = parser.handle("take sword");
+
+        GenericCommandDescription command = sequence.commands().getFirst();
+        assertThat(command.getPreposition()).isEmpty();
+        assertThat(command.getAdverb()).isEmpty();
+    }
+
+    @Test
     void handle_it_withNoAntecedent_throwsUnresolvedReferenceException() {
         // given
         Parser parser = new Parser(vocabularyWithBackReferenceWords());

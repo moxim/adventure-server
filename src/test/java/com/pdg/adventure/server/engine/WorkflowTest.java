@@ -98,6 +98,47 @@ class WorkflowTest {
         assertThat(result).isEqualTo("Regular process message.");
     }
 
+    @Test
+    void respondTo_triesEverySiblingSharingTheSameDescription_untilOneSucceeds() {
+        // The premise the PrepositionCondition/AdverbCondition feature relies on: two authored
+        // Response rows sharing the same verb+adjective+noun (e.g. "switch lamp" gated on
+        // PREPOSITION on/off respectively) must both be reachable, not have the second silently
+        // overwrite the first.
+        GenericCommandDescription switchLamp = new GenericCommandDescription("switch", "lamp");
+        Command failingSibling = mock(Command.class);
+        when(failingSibling.execute()).thenReturn(new CommandExecutionResult(ExecutionResult.State.FAILURE));
+        Command succeedingSibling = mock(Command.class);
+        when(succeedingSibling.execute())
+                .thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS, "The lamp is now on."));
+
+        workflow.addResponse(switchLamp, failingSibling);
+        workflow.addResponse(switchLamp, succeedingSibling);
+
+        ExecutionResult result = workflow.respondTo(switchLamp);
+
+        assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
+        assertThat(result.getResultMessage()).isEqualTo("The lamp is now on.");
+    }
+
+    @Test
+    void respondTo_whenNoSiblingSucceeds_surfacesTheLastFailuresMessage() {
+        GenericCommandDescription switchLamp = new GenericCommandDescription("switch", "lamp");
+        Command firstSibling = mock(Command.class);
+        when(firstSibling.execute())
+                .thenReturn(new CommandExecutionResult(ExecutionResult.State.FAILURE, "Not that way."));
+        Command lastSibling = mock(Command.class);
+        when(lastSibling.execute())
+                .thenReturn(new CommandExecutionResult(ExecutionResult.State.FAILURE, "Still not that way."));
+
+        workflow.addResponse(switchLamp, firstSibling);
+        workflow.addResponse(switchLamp, lastSibling);
+
+        ExecutionResult result = workflow.respondTo(switchLamp);
+
+        assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
+        assertThat(result.getResultMessage()).isEqualTo("Still not that way.");
+    }
+
     private void addProcess(GenericCommandDescription aDescription, String aMessage) {
         Command command = mock(Command.class);
         when(command.execute()).thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS, aMessage));

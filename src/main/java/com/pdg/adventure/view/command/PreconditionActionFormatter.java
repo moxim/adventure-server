@@ -36,8 +36,10 @@ import com.pdg.adventure.model.condition.HereConditionData;
 import com.pdg.adventure.model.condition.ItemAtConditionData;
 import com.pdg.adventure.model.condition.LowerThanConditionData;
 import com.pdg.adventure.model.condition.NotConditionData;
+import com.pdg.adventure.model.condition.AdverbConditionData;
 import com.pdg.adventure.model.condition.PlayerAtConditionData;
 import com.pdg.adventure.model.condition.PreConditionData;
+import com.pdg.adventure.model.condition.PrepositionConditionData;
 import com.pdg.adventure.model.condition.SameConditionData;
 import com.pdg.adventure.model.condition.WornConditionData;
 import com.pdg.adventure.view.support.ViewSupporter;
@@ -99,6 +101,12 @@ public class PreconditionActionFormatter {
         }
         if (c instanceof ChanceConditionData chance) {
             return "CHANCE " + num(chance.getValue());
+        }
+        if (c instanceof PrepositionConditionData preposition) {
+            return "PREPOSITION " + txt(preposition.getPrepositionText());
+        }
+        if (c instanceof AdverbConditionData adverb) {
+            return "ADVERB " + txt(adverb.getAdverbText());
         }
         return c.getPreconditionName().replace("ConditionData", "").toUpperCase(Locale.ROOT);
     }

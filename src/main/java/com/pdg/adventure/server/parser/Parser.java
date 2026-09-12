@@ -10,10 +10,10 @@ import java.util.Scanner;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.exception.UnresolvedReferenceException;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 public class Parser {
-    private static final String SENTENCE_TERMINATOR = ".";
 
     private final Vocabulary vocabulary;
     private String lastVerb = VocabularyData.EMPTY_STRING;
@@ -33,7 +33,7 @@ public class Parser {
             while (scanner.hasNext()) {
                 String token = scanner.next();
                 Word resolved = null;
-                boolean isSeparator = SENTENCE_TERMINATOR.equals(token);
+                boolean isSeparator = SystemMessageKey.SM51.defaultText().equals(token);
 
                 if (!isSeparator) {
                     Optional<Word> optionalWord = vocabulary.findWord(token);
@@ -75,11 +75,12 @@ public class Parser {
     // out into its own token here, before the whitespace-based Scanner tokenizing above, rather
     // than being treated as a hardcoded command string like a real word would be.
     private static String withSpacedTerminators(String anInput) {
-        return anInput.toLowerCase().replace(SENTENCE_TERMINATOR, " " + SENTENCE_TERMINATOR + " ");
+        return anInput.toLowerCase().replace(SystemMessageKey.SM51.defaultText(), " " + SystemMessageKey.SM51.defaultText() + " ");
     }
 
     private static GenericCommandDescription toDescription(SimpleSentence aSentence) {
-        return new GenericCommandDescription(aSentence.getVerb(), aSentence.getAdjective(), aSentence.getNoun());
+        return new GenericCommandDescription(aSentence.getVerb(), aSentence.getAdjective(), aSentence.getNoun(),
+                aSentence.getPreposition(), aSentence.getAdverb());
     }
 
     // Closes one sub-command: infers a missing verb from the last one seen, builds the
@@ -106,6 +107,8 @@ public class Parser {
             case NOUN -> aSentence.setNoun(aWord.getText());
             case VERB -> aSentence.setVerb(aWord.getText());
             case ADJECTIVE -> aSentence.setAdjective(aWord.getText());
+            case PREPOSITION -> aSentence.setPreposition(aWord.getText());
+            case ADVERB -> aSentence.setAdverb(aWord.getText());
             case PRONOUN -> {
                 if (lastNoun.isEmpty()) {
                     throw new UnresolvedReferenceException(
@@ -124,4 +127,6 @@ class SimpleSentence {
     private String verb = VocabularyData.EMPTY_STRING;
     private String adjective = VocabularyData.EMPTY_STRING;
     private String noun = VocabularyData.EMPTY_STRING;
+    private String preposition = VocabularyData.EMPTY_STRING;
+    private String adverb = VocabularyData.EMPTY_STRING;
 }
