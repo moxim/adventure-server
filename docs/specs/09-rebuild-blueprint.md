@@ -312,8 +312,7 @@ and
    pickers.
 5. Add the JSON test fixtures: `OneLocation.json`, `QuickAdventure.json`,
    `Vocab.json`.
-6. Add `AdventureBuilderTest` for end-to-end coverage with embedded MongoDB.
-7. **Do not** introduce `BaseDTO.java` or `BaseRecord.java` PoC test
+6. **Do not** introduce `BaseDTO.java` or `BaseRecord.java` PoC test
    classes — they were dead code in the previous repo and should not be
    carried over.
 
