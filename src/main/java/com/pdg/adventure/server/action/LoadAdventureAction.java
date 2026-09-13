@@ -87,8 +87,7 @@ public class LoadAdventureAction extends AbstractAction {
 
         final var adventureLocations = savedAdventure.getLocations();
 
-        CommandFactory commandFactory = new CommandFactory(
-                adventureConfig.allMessages(), gameContext, adventureData.getVocabularyData());
+        CommandFactory commandFactory = new CommandFactory(gameContext, adventureData.getVocabularyData());
         commandFactory.applyExamineFallback(adventureConfig.allLocations().values());
         List<Thing> loadedItems = adventureLocations.stream()
                 .filter(loc -> loc.getItemContainer() != null)

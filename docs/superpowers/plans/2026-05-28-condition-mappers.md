@@ -1901,7 +1901,7 @@ Expected: `Tests run: 5, Failures: 0, Errors: 0, Skipped: 0`
 - [ ] **Step 5: Run the full test suite**
 
 ```bash
-cd server && mvn test "-Dexclude=**/storage/**Test.java,**/AdventureBuilderTest.java" 2>&1 | tail -30
+cd server && mvn test "-Dexclude=**/storage/**Test.java" 2>&1 | tail -30
 ```
 
 Expected: all existing tests still pass plus the new condition mapper tests.

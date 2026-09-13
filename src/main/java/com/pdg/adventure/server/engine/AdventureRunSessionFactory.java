@@ -51,8 +51,7 @@ public class AdventureRunSessionFactory {
         registerBaseVerbs(vocabulary);
 
         Workflow workflow = gameContext.setUpWorkflows();
-        CommandFactory commandFactory = new CommandFactory(adventureConfig.allMessages(), gameContext,
-                                                            anAdventureData.getVocabularyData());
+        CommandFactory commandFactory = new CommandFactory(gameContext, anAdventureData.getVocabularyData());
         commandFactory.setUpWorkflowCommands(workflow);
         workflowMapper.populate(gameContext.getWorkflowData(), workflow);
 
