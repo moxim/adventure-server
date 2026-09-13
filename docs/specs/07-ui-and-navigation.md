@@ -317,6 +317,22 @@ the dialogue:
 
 This cascade is `VocabularyData.findWordsBySynonym`'s primary call site.
 
+### `CommandEditorView` layout
+
+`CommandEditorView` is a two-column layout below the Verb/Adjective/Noun
+picker row (`commandLayout`):
+
+- **Left column** (`vl1`): a "Command Chain" label, the Command Chain grid
+  (see below), and the `ResetBackSaveView` button bar directly beneath it —
+  Save/Reset/Back apply to the whole editor (chain + currently selected
+  variant), not just the grid, but sit in this column rather than spanning
+  the full view width.
+- **Right column** (`details`): a "Preconditions & Actions" label followed
+  by the lazily-built `PreconditionActionEditor` for whichever command in
+  the chain is currently selected.
+
+Both columns are wrapped in one `HorizontalLayout` (`hl1`).
+
 ### `CommandsMenuView` grid
 
 `CommandsMenuView` shows a **read-only** summary grid of the scope's commands
@@ -364,8 +380,8 @@ grid/dialog read-model record.
 |-------|------|
 | `ActionEditorComponent` | Abstract base for all per-action sub-editors. |
 | `AbstractSingleItemActionEditor<T extends ActionData>` | Generic abstract mid-layer for the 8 editors that need one `ItemData` selector (title, description, label, placeholder, error text customised per subclass). |
-| `ActionSelector` | A combo-box of supported `Action` kinds. Picking one swaps in the matching editor. |
-| `ActionEditorFactory` | `createEditor(ActionData, AdventureData)` — the stable entry point every call site uses. Delegates lookup to `ActionEditorRegistry` (package-private); covers all 16 authorable action types. |
+| `ActionSelector` | A combo-box of the 17 authorable `Action` kinds, sorted alphabetically by display name. Picking one and clicking **Add** doesn't build an editor itself — it calls `ActionEditorSelectedListener.onEditorSelected(ActionData)` with a freshly-constructed, empty `ActionData`; the listener (`ActionListEditor`) turns that into the matching editor via `ActionEditorFactory`. This mirrors `ConditionSelector` / `ConditionListEditor` exactly. |
+| `ActionEditorFactory` | `createEditor(ActionData, AdventureData)` — the stable entry point every call site uses. Delegates lookup to `ActionEditorRegistry` (package-private); covers all 17 authorable action types. |
 | `ActionEditorRegistry` | One-time classpath scan (`ClassPathScanningCandidateComponentProvider`) for `@AutoRegisterActionEditor`-annotated `ActionEditorComponent`s, keyed by the `ActionData` subtype resolved from each editor's generic type argument. Replaced a hand-maintained `switch` statement — adding a new action editor means writing the class and annotating it, not touching the factory. Reflectively picks a `(ActionData)` or `(ActionData, AdventureData)` constructor to instantiate. |
 | `MessageActionEditor` | Inline text field for the message body. |
 | `MoveItemActionEditor` | Item selector (uses `ViewSupporter.collectAllItems`). |
@@ -383,6 +399,7 @@ grid/dialog read-model record.
 | `DecrementVariableActionEditor` | Variable name text field. |
 | `SetVariableActionEditor` | Variable name + value text fields. |
 | `BreakActionEditor` | No extra input (stops command chain execution immediately). |
+| `LightActionEditor` | Item selector + a 0–100 lumen `IntegerField` (not via `AbstractSingleItemActionEditor`, since it needs two fields). Sets an item's light level. |
 
 ### Condition editor factory
 
@@ -393,8 +410,9 @@ grid/dialog read-model record.
 | `ConditionEditorComponent` | Abstract base for all per-condition sub-editors. |
 | `AbstractSingleItemConditionEditor` | Abstract mid-layer for the 3 item-presence conditions (Carried / Here / Worn) that share one `ItemData` selector. |
 | `AbstractNumericComparisonConditionEditor` | Abstract mid-layer for the 2 numeric-comparison conditions (GreaterThan / LowerThan) that share a variable-name field and a numeric value field. |
-| `ConditionSelector` | A combo-box of supported `PreCondition` kinds — 10 entries; `NotCondition` is not among them (see below). |
-| `ConditionEditorFactory` | Entry point for condition editors, mirroring `ActionEditorFactory`'s shape. Delegates to `ConditionEditorRegistry`; covers all 10 selectable condition types. |
+| `AbstractSingleWordConditionEditor<T extends PreConditionData>` | Generic abstract mid-layer for the 4 conditions that pick one `Word` of a fixed `Word.Type` via a `VocabularyPickerField` (Preposition, Adverb, Noun 2, Adjective 2). |
+| `ConditionSelector` | A combo-box of the 14 selectable `PreCondition` kinds, sorted alphabetically by display name; `NotCondition` is not among them (see below). Picking one and clicking **Add** calls `ConditionSelectedListener.onConditionSelected(PreConditionData)` with a freshly-constructed, empty data object — the listener (`ConditionListEditor`) builds the matching editor via `ConditionEditorFactory`. |
+| `ConditionEditorFactory` | Entry point for condition editors, mirroring `ActionEditorFactory`'s shape. Delegates to `ConditionEditorRegistry`; covers all 14 selectable condition types. |
 | `ConditionEditorRegistry` | Classpath scan for `@AutoRegisterConditionEditor`-annotated `ConditionEditorComponent`s, the condition-side twin of `ActionEditorRegistry` above — same replaced-the-switch-statement story. |
 | `CarriedConditionEditor` | Item selector (via `AbstractSingleItemConditionEditor`). |
 | `HereConditionEditor` | Item selector (via `AbstractSingleItemConditionEditor`). |
@@ -406,11 +424,15 @@ grid/dialog read-model record.
 | `SameConditionEditor` | Two variable name text fields. |
 | `PlayerAtConditionEditor` | Location selector. |
 | `ItemAtConditionEditor` | Item selector + location selector. |
+| `PrepositionConditionEditor` | Word selector (via `AbstractSingleWordConditionEditor`, `Word.Type.PREPOSITION`). Matches the preposition captured from the typed command (e.g. "on" in "switch lamp on"). |
+| `AdverbConditionEditor` | Word selector (via `AbstractSingleWordConditionEditor`, `Word.Type.ADVERB`). Matches the adverb captured from the typed command (e.g. "slowly" in "slowly open chest"). |
+| `Noun2ConditionEditor` | Word selector (via `AbstractSingleWordConditionEditor`, `Word.Type.NOUN`). Matches the second noun captured from a two-noun-phrase command (e.g. "machine" in "use spanner on ancient machine"). |
+| `Adjective2ConditionEditor` | Word selector (via `AbstractSingleWordConditionEditor`, `Word.Type.ADJECTIVE`). Matches the second adjective captured the same way (e.g. "ancient" above). |
 
 **There is no `NotConditionEditor`, by design.** `NotConditionData` is
 applied structurally rather than picked as a kind: `ConditionRow`
 (`view/command/condition/ConditionRow.java`) renders every condition row
-with a **Negate** checkbox alongside whichever of the 10 kinds above was
+with a **Negate** checkbox alongside whichever of the 14 kinds above was
 chosen, and `ConditionRow.toConditionData()` wraps the underlying
 `PreConditionData` in a `NotConditionData` when it's checked. This is a
 structural choice, not a coverage gap — see

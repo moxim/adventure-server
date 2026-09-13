@@ -66,9 +66,8 @@ precondition-gated variants above the catch-all one.
 
 An ordered list of checks — see the
 [Action & Condition reference](appendix-a-action-and-condition-reference.md)
-for the full set (Carried, Here, Worn, Player At, Item At, Equals, Greater
-Than, Lower Than, Same, Chance). Add one via the **Add Condition** dropdown.
-Each row:
+for the full set. Add one via the **Add Condition** dropdown, which lists
+every kind alphabetically. Each row:
 
 - Expands (**Details**) to show/edit its fields.
 - Has **Up** / **Down** buttons to reorder it, and **Remove** to delete it.
@@ -84,11 +83,10 @@ with one of the conditions.
 
 ### Actions
 
-A second ordered list, added via the **Select Action Type** dropdown — see
-the [Action & Condition reference](appendix-a-action-and-condition-reference.md)
-for the full set (Message, Move Player, Move Item, Take, Drop, Wear,
-Remove, Destroy, Create Item, Describe, Inventory, Quit, Break, and
-Increment/Decrement/Set Variable). Same **Up**/**Down**/**Remove** controls
+A second ordered list, added via the **Select Action Type** dropdown, which
+lists every kind alphabetically — see the
+[Action & Condition reference](appendix-a-action-and-condition-reference.md)
+for the full set. Same **Up**/**Down**/**Remove** controls
 as preconditions, and a newly added row opens expanded so you can fill it in
 straight away. All actions in the list run in order — this is how one command
 can both print a message *and* move the player *and* update a variable in a

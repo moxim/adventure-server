@@ -13,12 +13,12 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.MessageData;
-import com.pdg.adventure.view.command.action.ActionEditorComponent;
-import com.pdg.adventure.view.command.action.ActionSelector;
+import com.pdg.adventure.model.action.ActionData;
 
 class ActionSelectorTest {
 
     private AdventureData adventureData;
+    ActionSelector actionSelector = new ActionSelector();
 
     @BeforeEach
     void setUp() {
@@ -46,7 +46,6 @@ class ActionSelectorTest {
     @Test
     void constructor_shouldCreateActionSelectorWithDisabledUseButton() {
         // When
-        ActionSelector actionSelector = new ActionSelector(adventureData);
 
         // Then
         assertThat(actionSelector).isNotNull();
@@ -56,12 +55,9 @@ class ActionSelectorTest {
     @Test
     void setEditorSelectedListener_shouldInvokeListenerWhenActionSelected() {
         // Given
-        ActionSelector actionSelector = new ActionSelector(adventureData);
-        AtomicReference<ActionEditorComponent> capturedEditor = new AtomicReference<>();
+        AtomicReference<ActionData> capturedEditor = new AtomicReference<>();
 
-        actionSelector.setEditorSelectedListener(editor -> {
-            capturedEditor.set(editor);
-        });
+        actionSelector.setEditorSelectedListener(capturedEditor::set);
 
         // When - Simulate selecting an action type and clicking Use
         // Note: In a real UI test, we would interact with the ComboBox and Button
@@ -74,7 +70,6 @@ class ActionSelectorTest {
     @Test
     void constructor_shouldPopulateActionTypes() {
         // When
-        ActionSelector actionSelector = new ActionSelector(adventureData);
 
         // Then - The selector should have been created with available action types
         // We verify this indirectly by checking that the component has children
@@ -84,7 +79,6 @@ class ActionSelectorTest {
     @Test
     void setEditorSelectedListener_withNullListener_shouldNotThrowException() {
         // Given
-        ActionSelector actionSelector = new ActionSelector(adventureData);
 
         // When & Then - Should not throw
         actionSelector.setEditorSelectedListener(null);
@@ -95,7 +89,6 @@ class ActionSelectorTest {
     @Test
     void constructor_withValidAdventureData_shouldCreateAllComponents() {
         // When
-        ActionSelector actionSelector = new ActionSelector(adventureData);
 
         // Then
         assertThat(actionSelector.getChildren().count()).isEqualTo(2);

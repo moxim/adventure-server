@@ -18,13 +18,21 @@ public class GenericCommandDescription implements CommandDescription {
     @Getter
     private final String noun;
     // Not part of the command's identity (excluded from equals/hashCode below, and from the
-    // COMMAND_TRIPLET-keyed matching in GenericCommandProvider/Workflow) - preposition/adverb are
-    // ambient parse results that PrepositionCondition/AdverbCondition check via GameContext, not
-    // extra dimensions of which command a "verb noun" spec refers to.
+    // COMMAND_TRIPLET-keyed matching in GenericCommandProvider/Workflow) - preposition/adverb/
+    // adjective2/noun2 are ambient parse results that PrepositionCondition/AdverbCondition/
+    // Adjective2Condition/Noun2Condition check via GameContext, not extra dimensions of which
+    // command a "verb noun" spec refers to.
     @Getter
     private final String preposition;
     @Getter
     private final String adverb;
+    // The second noun+adjective pair, e.g. "USE SPANNER ON ANCIENT MACHINE" - noun/adjective
+    // stay "spanner"/"" (the primary command's match key); adjective2/noun2 hold "ancient"/
+    // "machine" for Adjective2Condition/Noun2Condition to check.
+    @Getter
+    private final String adjective2;
+    @Getter
+    private final String noun2;
 
     public GenericCommandDescription(String aVerb, Describable aNamedThing) {
         this(aVerb, aNamedThing.getAdjective(), aNamedThing.getNoun());
@@ -44,11 +52,19 @@ public class GenericCommandDescription implements CommandDescription {
 
     public GenericCommandDescription(String aVerb, String anAdjective, String aNoun,
             String aPreposition, String anAdverb) {
+        this(aVerb, anAdjective, aNoun, aPreposition, anAdverb,
+                VocabularyData.EMPTY_STRING, VocabularyData.EMPTY_STRING);
+    }
+
+    public GenericCommandDescription(String aVerb, String anAdjective, String aNoun,
+            String aPreposition, String anAdverb, String anAdjective2, String aNoun2) {
         verb = aVerb;
         adjective = anAdjective;
         noun = aNoun;
         preposition = aPreposition;
         adverb = anAdverb;
+        adjective2 = anAdjective2;
+        noun2 = aNoun2;
         id = UUID.randomUUID().toString();
     }
 
