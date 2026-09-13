@@ -118,7 +118,7 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button arrivalButton = new Button("Manage Arrival", _ -> {
+        Button onArrivalButton = new Button("Manage On Arrival", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(ArrivalProcessesEditorView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
@@ -151,7 +151,7 @@ public class AdventureEditorView extends VerticalLayout
         setPadding(true);
 
         final VerticalLayout messagesLayout = new VerticalLayout(editMessagesButton, editSystemMessagesButton);
-        final VerticalLayout workflowLayout = new VerticalLayout(workflowButton, responsesButton, arrivalButton);
+        final VerticalLayout workflowLayout = new VerticalLayout(onArrivalButton, workflowButton, responsesButton);
         final VerticalLayout itemsLayout = new VerticalLayout(editItemsButton);
         final VerticalLayout locationsLayout = new VerticalLayout(editLocationsButton);
         final VerticalLayout vocabularyLayout = new VerticalLayout(editVocabularyButton);

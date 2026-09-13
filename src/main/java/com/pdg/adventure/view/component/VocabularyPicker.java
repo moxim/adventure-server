@@ -16,6 +16,6 @@ public class VocabularyPicker extends ComboBox<Word> {
     }
 
     public void populate(Collection<Word> aNumberOfWords) {
-        setItems(aNumberOfWords);
+        setItems(aNumberOfWords.stream().sorted((w1, w2) -> w1.getText().compareToIgnoreCase(w2.getText())).toList());
     }
 }

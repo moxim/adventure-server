@@ -20,8 +20,31 @@ Both **Create Word** and **Edit Word** open the same dialog:
 | Field | Notes |
 |-------|-------|
 | **Word** | The text itself. |
-| **Type** | A radio choice: **Noun**, **Adjective**, or **Verb**. (The engine has two more types — *Conjunction* for `and`/`then`, and *Pronoun* for `it` — but it seeds those itself; they're deliberately left out of this picker, so you never create them.) |
+| **Type** | A radio choice between all seven word types: **Verb**, **Noun**, **Adjective**, **Adverb**, **Preposition**, **Conjunction**, and **Pronoun**. In practice you'll only ever create Verbs, Nouns, Adjectives, Adverbs, and Prepositions — *Conjunction* (`and`/`then`) and *Pronoun* (`it`) are seeded by the engine itself and already exist in every adventure, so there's rarely a reason to add another one, though the picker doesn't stop you from editing or adding to them. |
 | **Synonyms** | Optionally point this word at another as its canonical form. The dialog's own hint: *"A synonym has precedence over a type."* — pick a synonym and the word inherits that word's type. |
+
+### Adverbs and Prepositions
+
+Most commands are built from a verb plus an optional adjective and noun (see
+[Chapter 8](08-commands-actions-and-conditions.md)) — but the parser also
+recognizes two more word types that let a single typed command carry extra
+detail without needing a whole separate verb for every variant:
+
+- **Adverb** — modifies *how* the action is done, and can appear before the
+  verb: `SLOWLY OPEN CHEST`.
+- **Preposition** — relates the noun to something else, and typically
+  appears after it: `SWITCH LAMP ON`.
+
+Neither is captured by the Verb/Adjective/Noun pickers in the command
+editor — there's no built-in vocabulary for either, so if you want a
+command to respond to a specific adverb or preposition, you have to create
+that word yourself here first. Once it exists, attach an **Adverb** or
+**Preposition** [condition](08-commands-actions-and-conditions.md) to a
+command variant to check for it — e.g. a `Preposition: on` condition on one
+"switch lamp" variant and `Preposition: off` on another, so the same
+verb+noun pair does two different things depending on what the player
+typed. A command that's built without an Adverb/Preposition condition
+doesn't care whether one was typed at all — it's purely additive.
 
 ### The synonym cascade
 
