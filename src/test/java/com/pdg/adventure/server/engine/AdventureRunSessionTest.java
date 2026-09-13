@@ -11,7 +11,6 @@ import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.Parser;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
@@ -36,7 +35,7 @@ class AdventureRunSessionTest {
         vocabulary.createNewWord("describe", Word.Type.VERB);
 
         Workflow workflow = gameContext.setUpWorkflows();
-        new CommandFactory(new MessagesHolder(), gameContext, new VocabularyData()).setUpWorkflowCommands(workflow);
+        new CommandFactory(gameContext, new VocabularyData()).setUpWorkflowCommands(workflow);
 
         session = new AdventureRunSession(new GameLoop(new Parser(vocabulary), gameContext), gameContext);
     }
