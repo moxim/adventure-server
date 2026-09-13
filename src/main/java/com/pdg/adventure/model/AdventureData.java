@@ -44,21 +44,23 @@ public class AdventureData extends DatedData {
     @CascadeDelete
     private Map<String, SystemMessageData> systemMessages;
 
-    private String notes = ""; // to outline a story or whatever
+    private String notes; // to outline a story or whatever
 
-    private WorkflowData workflowData = new WorkflowData();
+    private WorkflowData workflowData;
 
     public AdventureData() {
         this(new VocabularyData());
     }
 
     public AdventureData(VocabularyData aVocabularyData) {
-        vocabularyData = aVocabularyData;
+        title = "";
         playerPocket = new ItemContainerData("your pocket");
         locationData = new HashMap<>();
+        vocabularyData = aVocabularyData;
         messages = new HashMap<>();
         systemMessages = new HashMap<>();
         currentLocationId = "";
-        title = "";
+        notes = "";
+        workflowData = new WorkflowData();
     }
 }
