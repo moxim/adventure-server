@@ -28,6 +28,7 @@ order, when that command fires.
 | **Increment Variable** | Adds an amount to a named variable | Variable name; amount |
 | **Decrement Variable** | Subtracts an amount from a named variable | Variable name; amount |
 | **Set Variable** | Sets a named variable to an exact value | Variable name; value |
+| **Light** | Sets an item's light level (lumen), e.g. turning a lamp on or off | The item; a lumen value from 0 (dark) to 100 (full brightness) |
 
 Variables are your own free-form named counters — use them for anything
 that needs to be remembered across turns: a score, a flag ("door_unlocked"),
@@ -52,11 +53,25 @@ flipped with the **Negate** checkbox on its row.
 | **Lower Than** | A variable is less than a value | Variable name; value |
 | **Same** | Two variables hold equal values | Two variable names |
 | **Chance** | A random roll succeeds | A chance percentage (1–100) |
+| **Preposition** | The player typed a specific preposition | The preposition, picked from your vocabulary |
+| **Adverb** | The player typed a specific adverb | The adverb, picked from your vocabulary |
+| **Noun 2** | The player typed a specific *second* noun | The noun, picked from your vocabulary |
+| **Adjective 2** | The player typed a specific *second* adjective | The adjective, picked from your vocabulary |
 
 **Chance** is worth calling out for design: it re-rolls every time the
 command is attempted, so a 20% chance condition doesn't mean "one in five
 players" — it means "roughly one in five *attempts*," which matters if a
 player can just try again.
+
+**Preposition / Adverb / Noun 2 / Adjective 2** check parts of the typed
+command beyond the command editor's own Verb/Adjective/Noun pickers — they
+let one command variant tell "switch lamp on" apart from "switch lamp off",
+or "use spanner on ancient machine" apart from "use spanner on rusty
+engine", without needing a separate word in the vocabulary for every
+combination. A mismatch fails silently (no message of its own), so pair
+these with the ordinary Command Chain pattern: a variant with the matching
+Preposition/Adverb/Noun 2/Adjective 2 condition higher in the chain, a
+catch-all variant beneath it.
 
 ## See also
 

@@ -9,15 +9,16 @@ import lombok.Setter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import com.pdg.adventure.model.condition.*;
 
 public class ConditionSelector extends HorizontalLayout {
+    private final ComboBox<ConditionTypeDescriptor> typeSelector;
 
     @Setter
     private transient ConditionSelectedListener conditionSelectedListener;
 
-    private final ComboBox<ConditionTypeDescriptor> typeSelector;
 
     public ConditionSelector() {
         typeSelector = new ComboBox<>("Add Condition");
@@ -49,7 +50,7 @@ public class ConditionSelector extends HorizontalLayout {
     }
 
     private List<ConditionTypeDescriptor> availableTypes() {
-        return List.of(
+        return Stream.of(
             new ConditionTypeDescriptor("Carried (item in inventory)", CarriedConditionData::new),
             new ConditionTypeDescriptor("Here (item at current location)", HereConditionData::new),
             new ConditionTypeDescriptor("Worn (item being worn)", WornConditionData::new),
@@ -64,9 +65,7 @@ public class ConditionSelector extends HorizontalLayout {
             new ConditionTypeDescriptor("Adverb (matches typed adverb)", AdverbConditionData::new),
             new ConditionTypeDescriptor("Noun 2 (matches typed second noun)", Noun2ConditionData::new),
             new ConditionTypeDescriptor("Adjective 2 (matches typed second adjective)", Adjective2ConditionData::new)
-        ).stream()
-         .sorted(Comparator.comparing(ConditionTypeDescriptor::displayName, String.CASE_INSENSITIVE_ORDER))
-         .toList();
+        ).sorted(Comparator.comparing(ConditionTypeDescriptor::displayName, String.CASE_INSENSITIVE_ORDER)).toList();
     }
 
     @FunctionalInterface

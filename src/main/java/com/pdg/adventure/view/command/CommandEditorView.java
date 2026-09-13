@@ -117,15 +117,13 @@ public class CommandEditorView extends VerticalLayout
 
         VerticalLayout vl1 = new VerticalLayout();
         vl1.add(new Span("Command Chain"));
-        vl1.add(commandChainGrid);
+        vl1.add(commandChainGrid, resetBackSaveView);
 
         preconditionAndActionHolder = new Span();
         VerticalLayout details = new VerticalLayout(new NativeLabel("Preconditions & Actions"), preconditionAndActionHolder);
         HorizontalLayout hl1 = new HorizontalLayout(vl1, details);
 
-        // The precondition/action editor is built lazily in setData(), once adventureData is
-        // available (its action/condition leaf editors dereference adventureData when populated).
-        add(commandLayout, hl1, resetBackSaveView);
+        add(commandLayout, hl1);
     }
 
     private Grid<CommandData> createCommandChainGrid() {

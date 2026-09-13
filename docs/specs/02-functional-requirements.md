@@ -244,18 +244,28 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     row in the Command Chain grid.
   - Action sub-editors are pluggable via an annotation-driven registry
     (`@AutoRegisterActionEditor`, discovered by `ActionEditorRegistry`) /
-    `ActionSelector`; all 16 authorable action types have editors —
+    `ActionSelector`; all 17 authorable action types have editors —
     Message, Describe, Take, Drop, Wear, Remove, MovePlayer, MoveItem,
     Inventory, Quit, SetVariable, IncrementVariable, DecrementVariable,
-    Create, Destroy, and Break (`LoadAdventureAction` is engine-managed and
-    has no editor) (see
+    Create, Destroy, Light, and Break (`LoadAdventureAction` is
+    engine-managed and has no editor) (see
     [`07-ui-and-navigation.md` § Action editor factory](07-ui-and-navigation.md#action-editor-factory)).
+    `ActionSelector`'s dropdown lists them alphabetically by display name;
+    picking one and clicking **Add** hands the new `ActionData` to a
+    listener (`ActionEditorSelectedListener.onEditorSelected(ActionData)`)
+    — the caller (`ActionListEditor`) creates the matching editor via
+    `ActionEditorFactory`, mirroring how `ConditionSelector` /
+    `ConditionListEditor` already worked.
   - Condition sub-editors are pluggable the same way
     (`@AutoRegisterConditionEditor` / `ConditionEditorRegistry`) /
-    `ConditionSelector`; all 10 selectable condition types have editors,
-    including `ChanceCondition` (a random-roll gate). `NotConditionData`
-    is applied structurally via the Negate checkbox above rather than
-    being one of the 10 selectable kinds.
+    `ConditionSelector`; all 14 selectable condition types have editors,
+    including `ChanceCondition` (a random-roll gate) and the four
+    ambient-state conditions `PrepositionCondition`, `AdverbCondition`,
+    `Noun2Condition`, `Adjective2Condition` (see
+    [`04-runtime-engine.md`](04-runtime-engine.md) for what these check).
+    `NotConditionData` is applied structurally via the Negate checkbox
+    above rather than being one of the 14 selectable kinds. Its dropdown
+    is likewise sorted alphabetically by display name.
 
 ### B8. Manage messages
 
