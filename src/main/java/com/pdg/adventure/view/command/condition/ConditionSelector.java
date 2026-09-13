@@ -6,6 +6,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import lombok.Setter;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -24,6 +25,7 @@ public class ConditionSelector extends HorizontalLayout {
         typeSelector.setItemLabelGenerator(ConditionTypeDescriptor::displayName);
         typeSelector.setPlaceholder("Choose condition type…");
         typeSelector.setWidthFull();
+        typeSelector.getStyle().set("--vaadin-combo-box-overlay-width", "28em");
 
         Button addButton = new Button("Add");
         addButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -62,7 +64,9 @@ public class ConditionSelector extends HorizontalLayout {
             new ConditionTypeDescriptor("Adverb (matches typed adverb)", AdverbConditionData::new),
             new ConditionTypeDescriptor("Noun 2 (matches typed second noun)", Noun2ConditionData::new),
             new ConditionTypeDescriptor("Adjective 2 (matches typed second adjective)", Adjective2ConditionData::new)
-        );
+        ).stream()
+         .sorted(Comparator.comparing(ConditionTypeDescriptor::displayName, String.CASE_INSENSITIVE_ORDER))
+         .toList();
     }
 
     @FunctionalInterface

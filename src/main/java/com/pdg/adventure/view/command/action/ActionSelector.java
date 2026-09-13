@@ -7,6 +7,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -50,6 +51,7 @@ public class ActionSelector extends HorizontalLayout {
         actionTypeSelector.setItemLabelGenerator(ActionTypeDescriptor::displayName);
         actionTypeSelector.setPlaceholder("Choose an action...");
         actionTypeSelector.setWidthFull();
+        actionTypeSelector.getStyle().set("--vaadin-combo-box-overlay-width", "28em");
 
         // Create the Use button
         addButton = new Button("Add");
@@ -115,6 +117,7 @@ public class ActionSelector extends HorizontalLayout {
                                            "Stop processing this command chain; other chains are unaffected",
                                            BreakActionData::new));
 
+        types.sort(Comparator.comparing(ActionTypeDescriptor::displayName, String.CASE_INSENSITIVE_ORDER));
         return types;
     }
 
