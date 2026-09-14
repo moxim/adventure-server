@@ -68,9 +68,9 @@ class ConditionEditorFactoryTest {
     }
 
     @Test
-    void createEditor_withLowerThanConditionData_returnsLowerThanEditor() {
-        assertThat(ConditionEditorFactory.createEditor(new LowerThanConditionData(), adventureData))
-                .isInstanceOf(LowerThanConditionEditor.class);
+    void createEditor_withLessThanConditionData_returnsLessThanEditor() {
+        assertThat(ConditionEditorFactory.createEditor(new LessThanConditionData(), adventureData))
+                .isInstanceOf(LessThanConditionEditor.class);
     }
 
     @Test

@@ -16,7 +16,7 @@
 **Modified — BO conditions (add `@Getter` on fields needed by mapToDO):**
 - `server/src/main/java/com/pdg/adventure/server/condition/EqualsCondition.java` — `@Getter` on `variableName`, `value`
 - `server/src/main/java/com/pdg/adventure/server/condition/GreaterThanCondition.java` — `@Getter` on `variableName`, `value`
-- `server/src/main/java/com/pdg/adventure/server/condition/LowerThanCondition.java` — `@Getter` on `variableName`, `value`
+- `server/src/main/java/com/pdg/adventure/server/condition/LessThanCondition.java` — `@Getter` on `variableName`, `value`
 - `server/src/main/java/com/pdg/adventure/server/condition/SameCondition.java` — `@Getter` on `variableNameOne`, `variableNameTwo`
 - `server/src/main/java/com/pdg/adventure/server/condition/WornCondition.java` — `@Getter` on `thing`
 - `server/src/main/java/com/pdg/adventure/server/condition/PlayerAtCondition.java` — `@Getter` on `location`
@@ -25,7 +25,7 @@
 **Created — mappers:**
 - `server/src/main/java/com/pdg/adventure/server/mapper/condition/EqualsConditionMapper.java`
 - `server/src/main/java/com/pdg/adventure/server/mapper/condition/GreaterThanConditionMapper.java`
-- `server/src/main/java/com/pdg/adventure/server/mapper/condition/LowerThanConditionMapper.java`
+- `server/src/main/java/com/pdg/adventure/server/mapper/condition/LessThanConditionMapper.java`
 - `server/src/main/java/com/pdg/adventure/server/mapper/condition/SameConditionMapper.java`
 - `server/src/main/java/com/pdg/adventure/server/mapper/condition/WornConditionMapper.java`
 - `server/src/main/java/com/pdg/adventure/server/mapper/condition/PlayerAtConditionMapper.java`
@@ -34,7 +34,7 @@
 **Created — tests:**
 - `server/src/test/java/com/pdg/adventure/server/mapper/condition/EqualsConditionMapperTest.java`
 - `server/src/test/java/com/pdg/adventure/server/mapper/condition/GreaterThanConditionMapperTest.java`
-- `server/src/test/java/com/pdg/adventure/server/mapper/condition/LowerThanConditionMapperTest.java`
+- `server/src/test/java/com/pdg/adventure/server/mapper/condition/LessThanConditionMapperTest.java`
 - `server/src/test/java/com/pdg/adventure/server/mapper/condition/SameConditionMapperTest.java`
 - `server/src/test/java/com/pdg/adventure/server/mapper/condition/WornConditionMapperTest.java`
 - `server/src/test/java/com/pdg/adventure/server/mapper/condition/PlayerAtConditionMapperTest.java`
@@ -84,7 +84,7 @@ public class XConditionMapper extends PreConditionMapper<XConditionData, XCondit
 **Files:**
 - Modify: `server/src/main/java/com/pdg/adventure/server/condition/EqualsCondition.java`
 - Modify: `server/src/main/java/com/pdg/adventure/server/condition/GreaterThanCondition.java`
-- Modify: `server/src/main/java/com/pdg/adventure/server/condition/LowerThanCondition.java`
+- Modify: `server/src/main/java/com/pdg/adventure/server/condition/LessThanCondition.java`
 - Modify: `server/src/main/java/com/pdg/adventure/server/condition/SameCondition.java`
 - Modify: `server/src/main/java/com/pdg/adventure/server/condition/WornCondition.java`
 - Modify: `server/src/main/java/com/pdg/adventure/server/condition/PlayerAtCondition.java`
@@ -183,7 +183,7 @@ public class GreaterThanCondition extends AbstractVariableCondition {
 }
 ```
 
-- [ ] **Step 3: Update `LowerThanCondition`**
+- [ ] **Step 3: Update `LessThanCondition`**
 
 Replace the entire file content:
 
@@ -200,14 +200,14 @@ import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class LowerThanCondition extends AbstractVariableCondition {
+public class LessThanCondition extends AbstractVariableCondition {
 
     @Getter
     private final String variableName;
     @Getter
     private final Number value;
 
-    public LowerThanCondition(String aVariableName, Number aValue, VariableProvider aVariableProvider) {
+    public LessThanCondition(String aVariableName, Number aValue, VariableProvider aVariableProvider) {
         super(aVariableProvider);
         variableName = aVariableName;
         value = aValue;
@@ -410,7 +410,7 @@ Expected: no output (clean compile).
 cd server && git add \
   src/main/java/com/pdg/adventure/server/condition/EqualsCondition.java \
   src/main/java/com/pdg/adventure/server/condition/GreaterThanCondition.java \
-  src/main/java/com/pdg/adventure/server/condition/LowerThanCondition.java \
+  src/main/java/com/pdg/adventure/server/condition/LessThanCondition.java \
   src/main/java/com/pdg/adventure/server/condition/SameCondition.java \
   src/main/java/com/pdg/adventure/server/condition/WornCondition.java \
   src/main/java/com/pdg/adventure/server/condition/PlayerAtCondition.java \
@@ -810,17 +810,17 @@ git commit -m "feat: add GreaterThanConditionMapper with tests"
 
 ---
 
-## Task 5: LowerThanConditionMapper
+## Task 5: LessThanConditionMapper
 
 **Files:**
-- Create: `server/src/main/java/com/pdg/adventure/server/mapper/condition/LowerThanConditionMapper.java`
-- Create: `server/src/test/java/com/pdg/adventure/server/mapper/condition/LowerThanConditionMapperTest.java`
+- Create: `server/src/main/java/com/pdg/adventure/server/mapper/condition/LessThanConditionMapper.java`
+- Create: `server/src/test/java/com/pdg/adventure/server/mapper/condition/LessThanConditionMapperTest.java`
 
-Identical structure to `GreaterThanConditionMapper`. `LowerThanConditionData` fields are mutable.
+Identical structure to `GreaterThanConditionMapper`. `LessThanConditionData` fields are mutable.
 
 - [ ] **Step 1: Write the failing test**
 
-`server/src/test/java/com/pdg/adventure/server/mapper/condition/LowerThanConditionMapperTest.java`:
+`server/src/test/java/com/pdg/adventure/server/mapper/condition/LessThanConditionMapperTest.java`:
 
 ```java
 package com.pdg.adventure.server.mapper.condition;
@@ -839,14 +839,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-import com.pdg.adventure.model.condition.LowerThanConditionData;
-import com.pdg.adventure.server.condition.LowerThanCondition;
+import com.pdg.adventure.model.condition.LessThanConditionData;
+import com.pdg.adventure.server.condition.LessThanCondition;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.support.VariableProvider;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class LowerThanConditionMapperTest {
+class LessThanConditionMapperTest {
 
     @Mock
     private MapperSupporter mapperSupporter;
@@ -854,24 +854,24 @@ class LowerThanConditionMapperTest {
     @Mock
     private VariableProvider variableProvider;
 
-    private LowerThanConditionMapper mapper;
+    private LessThanConditionMapper mapper;
 
     @BeforeEach
     void setUp() {
         doNothing().when(mapperSupporter).registerMapper(any(), any(), any());
         when(mapperSupporter.getVariableProvider()).thenReturn(variableProvider);
-        mapper = new LowerThanConditionMapper(mapperSupporter);
+        mapper = new LessThanConditionMapper(mapperSupporter);
     }
 
     @Test
-    @DisplayName("Test 1: mapToBO - converts LowerThanConditionData to LowerThanCondition")
-    void mapToBO_shouldConvertLowerThanConditionDataToLowerThanCondition() {
-        LowerThanConditionData data = new LowerThanConditionData();
+    @DisplayName("Test 1: mapToBO - converts LessThanConditionData to LessThanCondition")
+    void mapToBO_shouldConvertLessThanConditionDataToLessThanCondition() {
+        LessThanConditionData data = new LessThanConditionData();
         data.setId("lt-001");
         data.setVariableName("health");
         data.setValue(10);
 
-        LowerThanCondition result = mapper.mapToBO(data);
+        LessThanCondition result = mapper.mapToBO(data);
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("lt-001");
@@ -882,22 +882,22 @@ class LowerThanConditionMapperTest {
     @Test
     @DisplayName("Test 2: mapToBO - passes VariableProvider from MapperSupporter to condition")
     void mapToBO_shouldPassVariableProviderToCondition() {
-        LowerThanConditionData data = new LowerThanConditionData();
+        LessThanConditionData data = new LessThanConditionData();
         data.setVariableName("lives");
         data.setValue(3);
 
-        LowerThanCondition result = mapper.mapToBO(data);
+        LessThanCondition result = mapper.mapToBO(data);
 
         assertThat(result.getVariableProvider()).isEqualTo(variableProvider);
     }
 
     @Test
-    @DisplayName("Test 3: mapToDO - converts LowerThanCondition to LowerThanConditionData")
-    void mapToDO_shouldConvertLowerThanConditionToLowerThanConditionData() {
-        LowerThanCondition condition = new LowerThanCondition("energy", 5, variableProvider);
+    @DisplayName("Test 3: mapToDO - converts LessThanCondition to LessThanConditionData")
+    void mapToDO_shouldConvertLessThanConditionToLessThanConditionData() {
+        LessThanCondition condition = new LessThanCondition("energy", 5, variableProvider);
         condition.setId("lt-002");
 
-        LowerThanConditionData result = mapper.mapToDO(condition);
+        LessThanConditionData result = mapper.mapToDO(condition);
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("lt-002");
@@ -908,14 +908,14 @@ class LowerThanConditionMapperTest {
     @Test
     @DisplayName("Test 4: mapToDO - preserves ID during conversion")
     void mapToDO_shouldPreserveIdDuringConversion() {
-        LowerThanCondition condition1 = new LowerThanCondition("x", 5, variableProvider);
+        LessThanCondition condition1 = new LessThanCondition("x", 5, variableProvider);
         condition1.setId("lt-id-001");
 
-        LowerThanCondition condition2 = new LowerThanCondition("x", 5, variableProvider);
+        LessThanCondition condition2 = new LessThanCondition("x", 5, variableProvider);
         condition2.setId("lt-id-002");
 
-        LowerThanConditionData result1 = mapper.mapToDO(condition1);
-        LowerThanConditionData result2 = mapper.mapToDO(condition2);
+        LessThanConditionData result1 = mapper.mapToDO(condition1);
+        LessThanConditionData result2 = mapper.mapToDO(condition2);
 
         assertThat(result1.getId()).isEqualTo("lt-id-001");
         assertThat(result2.getId()).isEqualTo("lt-id-002");
@@ -925,13 +925,13 @@ class LowerThanConditionMapperTest {
     @Test
     @DisplayName("Test 5: Round-trip mapping - data → BO → data preserves information")
     void roundTripMapping_shouldPreserveInformation() {
-        LowerThanConditionData original = new LowerThanConditionData();
+        LessThanConditionData original = new LessThanConditionData();
         original.setId("round-trip-lt");
         original.setVariableName("health");
         original.setValue(10);
 
-        LowerThanCondition bo = mapper.mapToBO(original);
-        LowerThanConditionData roundTrip = mapper.mapToDO(bo);
+        LessThanCondition bo = mapper.mapToBO(original);
+        LessThanConditionData roundTrip = mapper.mapToDO(bo);
 
         assertThat(roundTrip.getId()).isEqualTo(original.getId());
         assertThat(roundTrip.getVariableName()).isEqualTo(original.getVariableName());
@@ -943,45 +943,46 @@ class LowerThanConditionMapperTest {
 - [ ] **Step 2: Run the test — expect failure**
 
 ```bash
-cd server && mvn test -Dtest="LowerThanConditionMapperTest" -DfailIfNoTests=false 2>&1 | tail -10
+cd server && mvn test -Dtest="LessThanConditionMapperTest" -DfailIfNoTests=false 2>&1 | tail -10
 ```
 
-Expected: compilation error for `LowerThanConditionMapper`.
+Expected: compilation error for `LessThanConditionMapper`.
 
-- [ ] **Step 3: Create `LowerThanConditionMapper`**
+- [ ] **Step 3: Create `LessThanConditionMapper`**
 
-`server/src/main/java/com/pdg/adventure/server/mapper/condition/LowerThanConditionMapper.java`:
+`server/src/main/java/com/pdg/adventure/server/mapper/condition/LessThanConditionMapper.java`:
 
 ```java
 package com.pdg.adventure.server.mapper.condition;
 
 import org.springframework.stereotype.Service;
 
-import com.pdg.adventure.model.condition.LowerThanConditionData;
+import com.pdg.adventure.model.condition.LessThanConditionData;
+import com.pdg.adventure.model.condition.LessThanConditionData;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
-import com.pdg.adventure.server.condition.LowerThanCondition;
+import com.pdg.adventure.server.condition.LessThanCondition;
 import com.pdg.adventure.server.support.MapperSupporter;
 
 @Service
-@AutoRegisterMapper(priority = 20, description = "LowerThanCondition mapper")
-public class LowerThanConditionMapper extends PreConditionMapper<LowerThanConditionData, LowerThanCondition> {
+@AutoRegisterMapper(priority = 20, description = "LessThanCondition mapper")
+public class LessThanConditionMapper extends PreConditionMapper<LessThanConditionData, LessThanCondition> {
 
-    public LowerThanConditionMapper(MapperSupporter aMapperSupporter) {
+    public LessThanConditionMapper(MapperSupporter aMapperSupporter) {
         super(aMapperSupporter);
-        aMapperSupporter.registerMapper(LowerThanConditionData.class, LowerThanCondition.class, this);
+        aMapperSupporter.registerMapper(LessThanConditionData.class, LessThanCondition.class, this);
     }
 
     @Override
-    public LowerThanCondition mapToBO(LowerThanConditionData data) {
-        LowerThanCondition result = new LowerThanCondition(data.getVariableName(), data.getValue(),
-                                                           getMapperSupporter().getVariableProvider());
+    public LessThanCondition mapToBO(LessThanConditionData data) {
+        LessThanCondition result = new LessThanCondition(data.getVariableName(), data.getValue(),
+                                                         getMapperSupporter().getVariableProvider());
         result.setId(data.getId());
         return result;
     }
 
     @Override
-    public LowerThanConditionData mapToDO(LowerThanCondition condition) {
-        LowerThanConditionData result = new LowerThanConditionData();
+    public LessThanConditionData mapToDO(LessThanCondition condition) {
+        LessThanConditionData result = new LessThanConditionData();
         result.setVariableName(condition.getVariableName());
         result.setValue(condition.getValue());
         result.setId(condition.getId());
@@ -993,7 +994,7 @@ public class LowerThanConditionMapper extends PreConditionMapper<LowerThanCondit
 - [ ] **Step 4: Run the test — expect all 5 to pass**
 
 ```bash
-cd server && mvn test -Dtest="LowerThanConditionMapperTest" -DfailIfNoTests=false 2>&1 | tail -10
+cd server && mvn test -Dtest="LessThanConditionMapperTest" -DfailIfNoTests=false 2>&1 | tail -10
 ```
 
 Expected: `Tests run: 5, Failures: 0, Errors: 0, Skipped: 0`
@@ -1002,9 +1003,9 @@ Expected: `Tests run: 5, Failures: 0, Errors: 0, Skipped: 0`
 
 ```bash
 cd server && git add \
-  src/main/java/com/pdg/adventure/server/mapper/condition/LowerThanConditionMapper.java \
-  src/test/java/com/pdg/adventure/server/mapper/condition/LowerThanConditionMapperTest.java
-git commit -m "feat: add LowerThanConditionMapper with tests"
+  src/main/java/com/pdg/adventure/server/mapper/condition/LessThanConditionMapper.java \
+  src/test/java/com/pdg/adventure/server/mapper/condition/LessThanConditionMapperTest.java
+git commit -m "feat: add LessThanConditionMapper with tests"
 ```
 
 ---

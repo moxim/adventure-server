@@ -58,7 +58,7 @@ public class ConditionSelector extends HorizontalLayout {
             new ConditionTypeDescriptor("Item At (item + location)", ItemAtConditionData::new),
             new ConditionTypeDescriptor("Equals (variable = value)", EqualsConditionData::new),
             new ConditionTypeDescriptor("Greater Than (variable > value)", GreaterThanConditionData::new),
-            new ConditionTypeDescriptor("Lower Than (variable < value)", LowerThanConditionData::new),
+            new ConditionTypeDescriptor("Less Than (variable < value)", LessThanConditionData::new),
             new ConditionTypeDescriptor("Same (variable = variable)", SameConditionData::new),
             new ConditionTypeDescriptor("Chance (1-100)", ChanceConditionData::new),
             new ConditionTypeDescriptor("Preposition (matches typed preposition)", PrepositionConditionData::new),

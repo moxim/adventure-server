@@ -61,7 +61,7 @@ public class AdventureEditorView extends VerticalLayout
         accessService = anAccessService;
         binder = new Binder<>(AdventureData.class);
 
-        Button editLocationsButton = new Button("Manage Locations");
+        Button editLocationsButton = new Button("Locations");
         editLocationsButton.addClickListener(_ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(LocationsMenuView.class,
@@ -70,7 +70,7 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button editVocabularyButton = new Button("Manage Vocabulary", _ -> {
+        Button editVocabularyButton = new Button("Vocabulary", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(VocabularyMenuView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
@@ -78,7 +78,7 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button editMessagesButton = new Button("Manage Messages", _ -> {
+        Button editMessagesButton = new Button("Messages", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(MessagesMenuView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
@@ -86,7 +86,7 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button editItemsButton = new Button("Manage Items", _ -> {
+        Button editItemsButton = new Button("Items", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(AllItemsMenuView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
@@ -94,7 +94,7 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button editSystemMessagesButton = new Button("Manage System Messages", _ -> {
+        Button editSystemMessagesButton = new Button("System Messages", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(SystemMessagesView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
@@ -102,7 +102,7 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button workflowButton = new Button("Manage Workflow Processes", _ -> {
+        Button workflowButton = new Button("Workflow", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(WorkflowEditorView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
@@ -110,7 +110,7 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button responsesButton = new Button("Manage Response Processes ", _ -> {
+        Button responsesButton = new Button("Response Processes ", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(ResponsesEditorView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
@@ -118,7 +118,7 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button arrivalButton = new Button("Manage Arrival Processes", _ -> {
+        Button arrivalButton = new Button("Arrival Processes", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(ArrivalProcessesEditorView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),

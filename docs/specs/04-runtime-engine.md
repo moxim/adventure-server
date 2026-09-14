@@ -440,7 +440,7 @@ when the variable is not defined.
 |-----------|----------------------|
 | `EqualsCondition(name, value, vars)` | `vars.get(name).aValue() == value`. |
 | `GreaterThanCondition(name, value, vars)` | `vars.get(name)` parsed as integer is > `value`. |
-| `LowerThanCondition(name, value, vars)` | `vars.get(name)` parsed as integer is < `value`. |
+| `LessThanCondition(name, value, vars)` | `vars.get(name)` parsed as integer is < `value`. |
 | `SameCondition(name1, name2, vars)` | The values of two variables are equal. |
 
 ### Composites

@@ -26,7 +26,7 @@
 - `ItemAtConditionEditor.java` — ComboBox<ItemData> + ComboBox<LocationData>
 - `EqualsConditionEditor.java` — TextField (variable) + TextField (value)
 - `GreaterThanConditionEditor.java` — TextField (variable) + TextField (number value)
-- `LowerThanConditionEditor.java` — TextField (variable) + TextField (number value)
+- `LessThanConditionEditor.java` — TextField (variable) + TextField (number value)
 - `SameConditionEditor.java` — TextField (variable 1) + TextField (variable 2)
 
 **New — `src/test/java/com/pdg/adventure/view/command/condition/`:**
@@ -40,7 +40,7 @@
 - `ItemAtConditionEditorTest.java`
 - `EqualsConditionEditorTest.java`
 - `GreaterThanConditionEditorTest.java`
-- `LowerThanConditionEditorTest.java`
+- `LessThanConditionEditorTest.java`
 - `SameConditionEditorTest.java`
 
 **Modified:**
@@ -1062,17 +1062,17 @@ git commit -m "feat: add ItemAtConditionEditor"
 
 ---
 
-### Task 6: EqualsConditionEditor, GreaterThanConditionEditor, LowerThanConditionEditor
+### Task 6: EqualsConditionEditor, GreaterThanConditionEditor, LessThanConditionEditor
 
-Variable/value text-field editors. `GreaterThan` and `LowerThan` additionally validate that the value is a parseable number and store it as `Double`.
+Variable/value text-field editors. `GreaterThan` and `LessThan` additionally validate that the value is a parseable number and store it as `Double`.
 
 **Files:**
 - Create: `src/main/java/com/pdg/adventure/view/command/condition/EqualsConditionEditor.java`
 - Create: `src/main/java/com/pdg/adventure/view/command/condition/GreaterThanConditionEditor.java`
-- Create: `src/main/java/com/pdg/adventure/view/command/condition/LowerThanConditionEditor.java`
+- Create: `src/main/java/com/pdg/adventure/view/command/condition/LessThanConditionEditor.java`
 - Create: `src/test/java/com/pdg/adventure/view/command/condition/EqualsConditionEditorTest.java`
 - Create: `src/test/java/com/pdg/adventure/view/command/condition/GreaterThanConditionEditorTest.java`
-- Create: `src/test/java/com/pdg/adventure/view/command/condition/LowerThanConditionEditorTest.java`
+- Create: `src/test/java/com/pdg/adventure/view/command/condition/LessThanConditionEditorTest.java`
 
 - [ ] **Step 1: Write `EqualsConditionEditorTest`**
 
@@ -1311,7 +1311,7 @@ public class GreaterThanConditionEditor extends ConditionEditorComponent {
 }
 ```
 
-- [ ] **Step 5: Write `LowerThanConditionEditorTest`**
+- [ ] **Step 5: Write `LessThanConditionEditorTest`**
 
 ```java
 package com.pdg.adventure.view.command.condition;
@@ -1320,58 +1320,60 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.pdg.adventure.model.condition.LowerThanConditionData;
+import com.pdg.adventure.model.condition.LessThanConditionData;
+import com.pdg.adventure.model.condition.LessThanConditionData;
 
-class LowerThanConditionEditorTest {
+class LessThanConditionEditorTest {
 
     @Test
     void validate_withEmptyFields_returnsFalse() {
-        LowerThanConditionEditor editor = new LowerThanConditionEditor(new LowerThanConditionData());
+        LessThanConditionEditor editor = new LessThanConditionEditor(new LessThanConditionData());
         editor.initialize();
         assertThat(editor.validate()).isFalse();
     }
 
     @Test
     void validate_withPreSetValues_returnsTrue() {
-        LowerThanConditionData data = new LowerThanConditionData();
+        LessThanConditionData data = new LessThanConditionData();
         data.setVariableName("lives");
         data.setValue(3);
-        LowerThanConditionEditor editor = new LowerThanConditionEditor(data);
+        LessThanConditionEditor editor = new LessThanConditionEditor(data);
         editor.initialize();
         assertThat(editor.validate()).isTrue();
     }
 
     @Test
     void constructor_setsConditionDataReference() {
-        LowerThanConditionData data = new LowerThanConditionData();
-        LowerThanConditionEditor editor = new LowerThanConditionEditor(data);
+        LessThanConditionData data = new LessThanConditionData();
+        LessThanConditionEditor editor = new LessThanConditionEditor(data);
         assertThat(editor.getConditionData()).isSameAs(data);
     }
 
     @Test
     void initialize_buildsUI() {
-        LowerThanConditionEditor editor = new LowerThanConditionEditor(new LowerThanConditionData());
+        LessThanConditionEditor editor = new LessThanConditionEditor(new LessThanConditionData());
         editor.initialize();
         assertThat(editor.getChildren().count()).isGreaterThan(0);
     }
 }
 ```
 
-- [ ] **Step 6: Implement `LowerThanConditionEditor`**
+- [ ] **Step 6: Implement `LessThanConditionEditor`**
 
 ```java
 package com.pdg.adventure.view.command.condition;
 
 import com.vaadin.flow.component.textfield.TextField;
 
-import com.pdg.adventure.model.condition.LowerThanConditionData;
+import com.pdg.adventure.model.condition.LessThanConditionData;
+import com.pdg.adventure.model.condition.LessThanConditionData;
 
-public class LowerThanConditionEditor extends ConditionEditorComponent {
-    private final LowerThanConditionData condData;
+public class LessThanConditionEditor extends ConditionEditorComponent {
+    private final LessThanConditionData condData;
     private TextField variableNameField;
     private TextField valueField;
 
-    public LowerThanConditionEditor(LowerThanConditionData conditionData) {
+    public LessThanConditionEditor(LessThanConditionData conditionData) {
         super(conditionData);
         this.condData = conditionData;
     }
@@ -1391,8 +1393,11 @@ public class LowerThanConditionEditor extends ConditionEditorComponent {
 
         variableNameField.addValueChangeListener(e -> condData.setVariableName(e.getValue()));
         valueField.addValueChangeListener(e -> {
-            try { condData.setValue(Double.parseDouble(e.getValue())); }
-            catch (NumberFormatException ex) { condData.setValue(null); }
+            try {
+                condData.setValue(Double.parseDouble(e.getValue()));
+            } catch (NumberFormatException ex) {
+                condData.setValue(null);
+            }
         });
 
         add(variableNameField, valueField);
@@ -1403,8 +1408,11 @@ public class LowerThanConditionEditor extends ConditionEditorComponent {
         boolean nameValid = variableNameField.getValue() != null && !variableNameField.getValue().trim().isEmpty();
         boolean valValid = false;
         if (valueField.getValue() != null && !valueField.getValue().trim().isEmpty()) {
-            try { Double.parseDouble(valueField.getValue()); valValid = true; }
-            catch (NumberFormatException ignored) {}
+            try {
+                Double.parseDouble(valueField.getValue());
+                valValid = true;
+            } catch (NumberFormatException ignored) {
+            }
         }
         variableNameField.setInvalid(!nameValid);
         valueField.setInvalid(!valValid);
@@ -1416,9 +1424,9 @@ public class LowerThanConditionEditor extends ConditionEditorComponent {
     @Override
     public String getConditionSummary() {
         String var = (variableNameField != null && !variableNameField.getValue().isEmpty())
-                ? variableNameField.getValue() : "";
+                     ? variableNameField.getValue() : "";
         String val = (valueField != null && !valueField.getValue().isEmpty())
-                ? valueField.getValue() : "";
+                     ? valueField.getValue() : "";
         if (var.isEmpty()) return "(none)";
         return var + " < " + val;
     }
@@ -1428,7 +1436,7 @@ public class LowerThanConditionEditor extends ConditionEditorComponent {
 - [ ] **Step 7: Run all three tests**
 
 ```bash
-cd server && mvn test -Dtest="EqualsConditionEditorTest,GreaterThanConditionEditorTest,LowerThanConditionEditorTest" -q
+cd server && mvn test -Dtest="EqualsConditionEditorTest,GreaterThanConditionEditorTest,LessThanConditionEditorTest" -q
 ```
 
 Expected: `BUILD SUCCESS`.
@@ -1438,7 +1446,7 @@ Expected: `BUILD SUCCESS`.
 ```bash
 git add src/main/java/com/pdg/adventure/view/command/condition/ \
         src/test/java/com/pdg/adventure/view/command/condition/
-git commit -m "feat: add EqualsConditionEditor, GreaterThanConditionEditor, LowerThanConditionEditor"
+git commit -m "feat: add EqualsConditionEditor, GreaterThanConditionEditor, LessThanConditionEditor"
 ```
 
 ---
@@ -1623,7 +1631,8 @@ class ConditionEditorFactoryTest {
 
     @Test
     void createEditor_withCarriedConditionData_returnsCarriedEditor() {
-        ConditionEditorComponent editor = ConditionEditorFactory.createEditor(new CarriedConditionData(), adventureData);
+        ConditionEditorComponent editor = ConditionEditorFactory.createEditor(new CarriedConditionData(),
+                                                                              adventureData);
         assertThat(editor).isInstanceOf(CarriedConditionEditor.class);
         assertThat(editor.getChildren().count()).isGreaterThan(0);
     }
@@ -1665,9 +1674,9 @@ class ConditionEditorFactoryTest {
     }
 
     @Test
-    void createEditor_withLowerThanConditionData_returnsLowerThanEditor() {
-        assertThat(ConditionEditorFactory.createEditor(new LowerThanConditionData(), adventureData))
-                .isInstanceOf(LowerThanConditionEditor.class);
+    void createEditor_withLessThanConditionData_returnsLessThanEditor() {
+        assertThat(ConditionEditorFactory.createEditor(new LessThanConditionData(), adventureData))
+                .isInstanceOf(LessThanConditionEditor.class);
     }
 
     @Test
@@ -1678,7 +1687,8 @@ class ConditionEditorFactoryTest {
 
     @Test
     void createEditor_withUnknownType_throwsUnsupportedOperationException() {
-        PreConditionData unknown = new PreConditionData() {};
+        PreConditionData unknown = new PreConditionData() {
+        };
         assertThatThrownBy(() -> ConditionEditorFactory.createEditor(unknown, adventureData))
                 .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessageContaining("No editor available for condition type");
@@ -1686,7 +1696,8 @@ class ConditionEditorFactoryTest {
 
     @Test
     void createEditor_returnsInitializedEditor() {
-        ConditionEditorComponent editor = ConditionEditorFactory.createEditor(new CarriedConditionData(), adventureData);
+        ConditionEditorComponent editor = ConditionEditorFactory.createEditor(new CarriedConditionData(),
+                                                                              adventureData);
         assertThat(editor.getChildren().count()).isGreaterThan(0);
     }
 }
@@ -1717,7 +1728,7 @@ public class ConditionEditorFactory {
             case ItemAtConditionData d -> new ItemAtConditionEditor(d, adventureData);
             case EqualsConditionData d -> new EqualsConditionEditor(d);
             case GreaterThanConditionData d -> new GreaterThanConditionEditor(d);
-            case LowerThanConditionData d -> new LowerThanConditionEditor(d);
+            case LessThanConditionData d -> new LessThanConditionEditor(d);
             case SameConditionData d -> new SameConditionEditor(d);
             default -> throw new UnsupportedOperationException(
                     "No editor available for condition type: " + data.getClass().getSimpleName());
@@ -1808,15 +1819,15 @@ public class ConditionSelector extends HorizontalLayout {
 
     private List<ConditionTypeDescriptor> availableTypes() {
         return List.of(
-            new ConditionTypeDescriptor("Carried (item in inventory)", CarriedConditionData::new),
-            new ConditionTypeDescriptor("Here (item at current location)", HereConditionData::new),
-            new ConditionTypeDescriptor("Worn (item being worn)", WornConditionData::new),
-            new ConditionTypeDescriptor("Player At (location)", PlayerAtConditionData::new),
-            new ConditionTypeDescriptor("Item At (item + location)", ItemAtConditionData::new),
-            new ConditionTypeDescriptor("Equals (variable = value)", EqualsConditionData::new),
-            new ConditionTypeDescriptor("Greater Than (variable > value)", GreaterThanConditionData::new),
-            new ConditionTypeDescriptor("Lower Than (variable < value)", LowerThanConditionData::new),
-            new ConditionTypeDescriptor("Same (variable = variable)", SameConditionData::new)
+                new ConditionTypeDescriptor("Carried (item in inventory)", CarriedConditionData::new),
+                new ConditionTypeDescriptor("Here (item at current location)", HereConditionData::new),
+                new ConditionTypeDescriptor("Worn (item being worn)", WornConditionData::new),
+                new ConditionTypeDescriptor("Player At (location)", PlayerAtConditionData::new),
+                new ConditionTypeDescriptor("Item At (item + location)", ItemAtConditionData::new),
+                new ConditionTypeDescriptor("Equals (variable = value)", EqualsConditionData::new),
+                new ConditionTypeDescriptor("Greater Than (variable > value)", GreaterThanConditionData::new),
+                new ConditionTypeDescriptor("Lower Than (variable < value)", LessThanConditionData::new),
+                new ConditionTypeDescriptor("Same (variable = variable)", SameConditionData::new)
         );
     }
 
@@ -1826,7 +1837,9 @@ public class ConditionSelector extends HorizontalLayout {
     }
 
     private record ConditionTypeDescriptor(String displayName, Supplier<PreConditionData> factory) {
-        PreConditionData createData() { return factory.get(); }
+        PreConditionData createData() {
+            return factory.get();
+        }
     }
 }
 ```

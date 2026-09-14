@@ -8,10 +8,10 @@ import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.testhelper.TestSupporter;
 
-class LowerThanConditionTest {
+class LessThanConditionTest {
     private static final String varName = "t";
     private final VariableProvider variableProvider = new VariableProvider();
-    private final LowerThanCondition sut = new LowerThanCondition(varName, 2, variableProvider);
+    private final LessThanCondition sut = new LessThanCondition(varName, 2, variableProvider);
 
     @Test
     void testVariableMeetsCondition() {

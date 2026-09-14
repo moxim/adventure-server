@@ -16,7 +16,7 @@ class ChanceConditionTest {
     }
 
     @Test
-    void succeedsWhenRollIsLowerThanChance() {
+    void succeedsWhenRollIsLessThanChance() {
         ChanceCondition sut = new ChanceCondition(50, () -> 10);
 
         assertThat(TestSupporter.conditionToBoolean(sut)).isTrue();
