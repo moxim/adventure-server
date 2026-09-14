@@ -12,7 +12,7 @@ public class VocabularyPicker extends ComboBox<Word> {
         super(aLabel);
         setItemLabelGenerator(Word::getText);
         setClearButtonVisible(true);
-        setHelperText("You may filter on a word's text.");
+        setHelperText("You can filter on text.");
     }
 
     public void populate(Collection<Word> aNumberOfWords) {

@@ -475,7 +475,13 @@ public class ItemEditorView extends VerticalLayout
 
         VocabularyData vocabularyData = adventureData.getVocabularyData();
         adjectiveSelector.populate(vocabularyData.getWords(ADJECTIVE));
+        if (itemData.getDescriptionData() != null && itemData.getDescriptionData().getAdjective() == null) {
+            adjectiveSelector.setHelperText("Why not give this a descriptive adjective?");
+        }
         nounSelector.populate(vocabularyData.getWords(NOUN));
+        if (itemData.getDescriptionData() != null && itemData.getDescriptionData().getNoun() == null) {
+            nounSelector.setHelperText("Give this a descriptive name.");;
+        }
 
         saveButton.setEnabled(false);
         // Commands live on the persisted item; only offer them for an item already in the container.

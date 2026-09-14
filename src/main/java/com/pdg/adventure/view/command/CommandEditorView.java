@@ -312,6 +312,16 @@ public class CommandEditorView extends VerticalLayout
         return pageTitle;
     }
 
+    /** Package-private for testing. */
+    VocabularyPicker getNounSelector() {
+        return nounSelector;
+    }
+
+    /** Package-private for testing. */
+    VocabularyPicker getAdjectiveSelector() {
+        return adjectiveSelector;
+    }
+
     /**
      * Test/loader seam: set the id (command specification) of the command chain to edit.
      * Mirrors {@code DirectionEditorView.setUpLoading(String)}; normally {@link #beforeEnter}
@@ -418,6 +428,23 @@ public class CommandEditorView extends VerticalLayout
         saveButton.setEnabled(false);
         cvm = new CommandViewModel(commandDescriptionData);
         binder.readBean(cvm);
+
+        if (itemData != null) {
+            Word itemNoun = itemData.getDescriptionData().getNoun();
+            if (itemNoun != null) {
+                nounSelector.setValue(itemNoun);
+                nounSelector.setHelperText("This is always set to \""+ itemNoun.getText() + "\" because this command is for the item itself.");
+            }
+            Word itemAdjective = itemData.getDescriptionData().getAdjective();
+            if (itemAdjective != null) {
+                adjectiveSelector.setValue(itemAdjective);
+                adjectiveSelector.setHelperText("This is always set to \""+ itemAdjective.getText() + "\" because this command is for the item itself.");
+            } else {
+                adjectiveSelector.setHelperText("Why not give this a descriptive adjective?");
+            }
+            nounSelector.setReadOnly(true);
+            adjectiveSelector.setReadOnly(true);
+        }
 
         // Reset editor change tracking
         editorHasChanges = false;

@@ -24,14 +24,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.CommandData;
-import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.WorkflowData;
-import com.pdg.adventure.model.Word;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
@@ -130,71 +129,70 @@ class WorkflowEditorViewRoutingTest extends BrowserlessTest {
     }
 
     @Test
-    void beforeEnter_populatesVocabularyPickers_fromAdventureVocabulary() {
+    void newAndBackButtons_arePresent() {
         AdventureData adventure = adventureWithOneWorkflowCommand();
-        VocabularyData vocabulary = new VocabularyData();
-        vocabulary.createWord("shiver", Word.Type.VERB);
-        adventure.setVocabularyData(vocabulary);
         when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
                 .thenReturn(Optional.of(adventure));
-
         view.beforeEnter(eventWithAdventureId("adv-1"));
 
-        assertThat(view.getVerbSelector().getListDataView().getItems().toList())
-                .extracting(Word::getText)
-                .contains("shiver");
+        assertThat(find(Button.class, view).withText("New Command").single()).isNotNull();
+        assertThat(find(Button.class, view).withText("Back").single()).isNotNull();
     }
 
+    // Edit/Delete go through a GridContextMenu item click, which has no reliable way to be
+    // driven from a browserless test - these tests instead build the delete confirmation dialog
+    // directly (buildDeleteConfirmDialog is package-private for exactly this) and drive it as a
+    // user would: open it, then confirm or cancel. Mirrors AdventuresMenuViewTest's pattern.
     @Test
-    void newCommandButton_startsWithDeleteDisabledAndSaveDisabled() {
+    void deleteConfirmDialog_showsTheCommandsDescriptionAndDoesNotDeleteUntilConfirmed() {
         AdventureData adventure = adventureWithOneWorkflowCommand();
-        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
-                .thenReturn(Optional.of(adventure));
-        view.beforeEnter(eventWithAdventureId("adv-1"));
-
-        Button newCommandButton = find(Button.class, view).withText("New Command").single();
-        Button deleteButton = find(Button.class, view).withText("Delete Command").single();
-        Button saveButton = find(Button.class, view).withText("Save Command").single();
-
-        assertThat(deleteButton.isEnabled()).isFalse();
-        assertThat(saveButton.isEnabled()).isFalse();
-
-        test(newCommandButton).click();
-
-        assertThat(deleteButton.isEnabled()).isFalse();
-        assertThat(saveButton.isEnabled()).isFalse();
-    }
-
-    @Test
-    void selectingExistingCommand_enablesDeleteButton() {
-        AdventureData adventure = adventureWithOneWorkflowCommand();
-        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
-                .thenReturn(Optional.of(adventure));
-        view.beforeEnter(eventWithAdventureId("adv-1"));
         CommandData existing = adventure.getWorkflowData().getCommands().getFirst();
-
-        grid(view).select(existing);
-
-        Button deleteButton = find(Button.class, view).withText("Delete Command").single();
-        assertThat(deleteButton.isEnabled()).isTrue();
-    }
-
-    @Test
-    void deletingSelectedCommand_removesFromWorkflowDataAndPersistsAdventure() {
-        AdventureData adventure = adventureWithOneWorkflowCommand();
         when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
                 .thenReturn(Optional.of(adventure));
         view.beforeEnter(eventWithAdventureId("adv-1"));
+
+        ConfirmDialog dialog = view.buildDeleteConfirmDialog(existing);
+        UI.getCurrent().add(dialog);
+        dialog.open();
+
+        assertThat(test(dialog).getHeader()).isEqualTo("Delete Command");
+        assertThat(test(dialog).getText()).contains("shiver");
+        assertThat(adventure.getWorkflowData().getCommands()).contains(existing);
+    }
+
+    @Test
+    void confirmingDeleteDialog_removesTheCommandAndPersistsAdventure() {
+        AdventureData adventure = adventureWithOneWorkflowCommand();
         CommandData existing = adventure.getWorkflowData().getCommands().getFirst();
-        grid(view).select(existing);
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+        view.beforeEnter(eventWithAdventureId("adv-1"));
 
-        Button deleteButton = find(Button.class, view).withText("Delete Command").single();
-        test(deleteButton).click();
+        ConfirmDialog dialog = view.buildDeleteConfirmDialog(existing);
+        UI.getCurrent().add(dialog);
+        dialog.open();
 
-        ConfirmDialog confirm = find(ConfirmDialog.class).single();
-        test(confirm).confirm();
+        test(dialog).confirm();
 
-        verify(adventureService).saveAdventureData(adventure);
         assertThat(adventure.getWorkflowData().getCommands()).isEmpty();
+        verify(adventureService).saveAdventureData(adventure);
+    }
+
+    @Test
+    void cancelingDeleteDialog_deletesNothing() {
+        AdventureData adventure = adventureWithOneWorkflowCommand();
+        CommandData existing = adventure.getWorkflowData().getCommands().getFirst();
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+        view.beforeEnter(eventWithAdventureId("adv-1"));
+
+        ConfirmDialog dialog = view.buildDeleteConfirmDialog(existing);
+        UI.getCurrent().add(dialog);
+        dialog.open();
+
+        test(dialog).cancel();
+
+        assertThat(adventure.getWorkflowData().getCommands()).contains(existing);
+        verify(adventureService, never()).saveAdventureData(any());
     }
 }

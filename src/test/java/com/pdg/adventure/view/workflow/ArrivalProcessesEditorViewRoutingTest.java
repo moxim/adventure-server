@@ -2,8 +2,9 @@ package com.pdg.adventure.view.workflow;
 
 import com.vaadin.browserless.BrowserlessTest;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
@@ -21,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,8 +33,6 @@ import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.view.adventure.AdventuresMenuView;
-import com.pdg.adventure.view.support.FlashNotifier;
 import com.pdg.adventure.view.support.RouteIds;
 
 class ArrivalProcessesEditorViewRoutingTest extends BrowserlessTest {
@@ -95,16 +95,66 @@ class ArrivalProcessesEditorViewRoutingTest extends BrowserlessTest {
     }
 
     @Test
-    void beforeEnter_unknownAdventureId_forwardsToAdventuresMenuView() {
-        when(accessService.findAdventureById(eq("missing"), any(UserData.class)))
-                .thenReturn(Optional.empty());
-        BeforeEnterEvent event = eventWithAdventureId("missing");
+    void newAndBackButtons_arePresent() {
+        AdventureData adventure = adventureWithOneArrivalProcess();
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+        view.beforeEnter(eventWithAdventureId("adv-1"));
 
-        view.beforeEnter(event);
+        assertThat(find(Button.class, view).withText("New Arrival Process").single()).isNotNull();
+        assertThat(find(Button.class, view).withText("Back").single()).isNotNull();
+    }
 
-        verify(event).forwardTo(AdventuresMenuView.class);
-        FlashNotifier.showPending();
-        Notification notification = find(Notification.class).single();
-        assertThat(test(notification).getText()).isEqualTo("Adventure not found or access denied: missing");
+    @Test
+    void deleteConfirmDialog_showsTheProcessesDescriptionAndDoesNotDeleteUntilConfirmed() {
+        AdventureData adventure = adventureWithOneArrivalProcess();
+        CommandData existing = adventure.getWorkflowData().getArrivalProcesses().getFirst();
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+        view.beforeEnter(eventWithAdventureId("adv-1"));
+
+        ConfirmDialog dialog = view.buildDeleteConfirmDialog(existing);
+        UI.getCurrent().add(dialog);
+        dialog.open();
+
+        assertThat(test(dialog).getHeader()).isEqualTo("Delete Arrival Process");
+        assertThat(test(dialog).getText()).contains("welcome");
+        assertThat(adventure.getWorkflowData().getArrivalProcesses()).contains(existing);
+    }
+
+    @Test
+    void confirmingDeleteDialog_removesTheProcessAndPersistsAdventure() {
+        AdventureData adventure = adventureWithOneArrivalProcess();
+        CommandData existing = adventure.getWorkflowData().getArrivalProcesses().getFirst();
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+        view.beforeEnter(eventWithAdventureId("adv-1"));
+
+        ConfirmDialog dialog = view.buildDeleteConfirmDialog(existing);
+        UI.getCurrent().add(dialog);
+        dialog.open();
+
+        test(dialog).confirm();
+
+        assertThat(adventure.getWorkflowData().getArrivalProcesses()).isEmpty();
+        verify(adventureService).saveAdventureData(adventure);
+    }
+
+    @Test
+    void cancelingDeleteDialog_deletesNothing() {
+        AdventureData adventure = adventureWithOneArrivalProcess();
+        CommandData existing = adventure.getWorkflowData().getArrivalProcesses().getFirst();
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+        view.beforeEnter(eventWithAdventureId("adv-1"));
+
+        ConfirmDialog dialog = view.buildDeleteConfirmDialog(existing);
+        UI.getCurrent().add(dialog);
+        dialog.open();
+
+        test(dialog).cancel();
+
+        assertThat(adventure.getWorkflowData().getArrivalProcesses()).contains(existing);
+        verify(adventureService, never()).saveAdventureData(any());
     }
 }

@@ -32,7 +32,11 @@ import com.pdg.adventure.model.CommandProviderData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.Word;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
+
+import static com.pdg.adventure.model.Word.Type.ADJECTIVE;
+import static com.pdg.adventure.model.Word.Type.NOUN;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
@@ -223,6 +227,34 @@ class CommandEditorViewRoutingTest extends BrowserlessTest {
 
         Grid<?> grid = find(Grid.class, view).single();
         assertThat(test(grid).size()).isEqualTo(1);
+    }
+
+    @Test
+    void beforeEnter_itemScoped_nounAndAdjectiveSelectorsShowTheItemsOwnWords() {
+        ItemData item = new ItemData();
+        item.setId("item-1");
+        item.setCommandProviderData(providerWithOneCommand());
+        item.getDescriptionData().setNoun(new Word("lamp", NOUN));
+        item.getDescriptionData().setAdjective(new Word("brass", ADJECTIVE));
+        ItemContainerData container = new ItemContainerData("loc-1");
+        container.setItems(List.of(item));
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        location.setItemContainerData(container);
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of("loc-1", location));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1"),
+                new RouteParam(RouteIds.ITEM_ID.getValue(), "item-1"),
+                new RouteParam(RouteIds.COMMAND_ID.getValue(), "go|north|")));
+
+        assertThat(view.getNounSelector().getValue().getText()).isEqualTo("lamp");
+        assertThat(view.getAdjectiveSelector().getValue().getText()).isEqualTo("brass");
     }
 
     @Test
