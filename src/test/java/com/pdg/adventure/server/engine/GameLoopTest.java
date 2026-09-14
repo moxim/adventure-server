@@ -64,7 +64,7 @@ class GameLoopTest {
         vocabulary.createNewWord("it", Word.Type.PRONOUN);
 
         workflow = gameContext.setUpWorkflows();
-        new CommandFactory(new MessagesHolder(), gameContext, new VocabularyData()).setUpWorkflowCommands(workflow);
+        new CommandFactory(gameContext, new VocabularyData()).setUpWorkflowCommands(workflow);
 
         gameLoop = new GameLoop(new Parser(vocabulary), gameContext);
     }
@@ -93,8 +93,7 @@ class GameLoopTest {
         VocabularyData vocabularyData = new VocabularyData();
         Word describeWord = vocabularyData.createWord("describe", Word.Type.VERB);
         vocabularyData.setExamineWord(describeWord);
-        new CommandFactory(new MessagesHolder(), gameContext, vocabularyData)
-                .applyExamineFallback(List.of(cellar));
+        new CommandFactory( gameContext, vocabularyData).applyExamineFallback(List.of(cellar));
 
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("describe");
 

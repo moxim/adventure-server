@@ -10,16 +10,13 @@ import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.engine.Workflow;
 import com.pdg.adventure.server.parser.GenericCommand;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.tangible.Thing;
 
 public class CommandFactory {
-    private final MessagesHolder allMessages;
     private final GameContext gameContext;
     private final VocabularyData vocabulary;
 
-    public CommandFactory(MessagesHolder aMessagesHolder, GameContext aGameContext, VocabularyData aVocabulary) {
-        allMessages = aMessagesHolder;
+    public CommandFactory(GameContext aGameContext, VocabularyData aVocabulary) {
         gameContext = aGameContext;
         vocabulary = aVocabulary;
     }
