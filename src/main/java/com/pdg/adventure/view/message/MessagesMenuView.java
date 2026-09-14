@@ -64,7 +64,6 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                                             adventureData.getId())))
         );
-        createButton.setIcon(new Icon(VaadinIcon.PLUS));
 
         // Message count indicator
         Span messageCount = new Span();

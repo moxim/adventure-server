@@ -5,7 +5,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
@@ -16,7 +15,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -24,20 +22,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.CommandData;
-import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.WorkflowData;
-import com.pdg.adventure.model.Word;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.view.adventure.AdventuresMenuView;
-import com.pdg.adventure.view.support.FlashNotifier;
 import com.pdg.adventure.view.support.RouteIds;
 
 class ResponsesEditorViewRoutingTest extends BrowserlessTest {
@@ -113,103 +108,66 @@ class ResponsesEditorViewRoutingTest extends BrowserlessTest {
     }
 
     @Test
-    void beforeEnter_gridShowsResponsesInAlphabeticalVerbOrder_regardlessOfInsertionOrder() {
-        AdventureData adventure = adventureWithOneResponse();
-        adventure.getWorkflowData().getInterceptorCommands()
-                 .addFirst(new CommandData(new CommandDescriptionData("zebra||")));
-        adventure.getWorkflowData().getInterceptorCommands()
-                 .addFirst(new CommandData(new CommandDescriptionData("apple||")));
-        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
-                .thenReturn(Optional.of(adventure));
-
-        view.beforeEnter(eventWithAdventureId("adv-1"));
-
-        var gridTester = test(grid(view));
-        assertThat(List.of(gridTester.getRow(0), gridTester.getRow(1), gridTester.getRow(2)))
-                .extracting(cmd -> cmd.getCommandDescription().getSafeVerb().getText())
-                .containsExactly("apple", "shiver", "zebra");
-    }
-
-    @Test
-    void beforeEnter_unknownAdventureId_forwardsToAdventuresMenuView() {
-        when(accessService.findAdventureById(eq("missing"), any(UserData.class)))
-                .thenReturn(Optional.empty());
-        BeforeEnterEvent event = eventWithAdventureId("missing");
-
-        view.beforeEnter(event);
-
-        verify(event).forwardTo(AdventuresMenuView.class);
-        FlashNotifier.showPending();
-        Notification notification = find(Notification.class).single();
-        assertThat(test(notification).getText()).isEqualTo("Adventure not found or access denied: missing");
-    }
-
-    @Test
-    void beforeEnter_populatesVocabularyPickers_fromAdventureVocabulary() {
-        AdventureData adventure = adventureWithOneResponse();
-        VocabularyData vocabulary = new VocabularyData();
-        vocabulary.createWord("shiver", Word.Type.VERB);
-        adventure.setVocabularyData(vocabulary);
-        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
-                .thenReturn(Optional.of(adventure));
-
-        view.beforeEnter(eventWithAdventureId("adv-1"));
-
-        assertThat(view.getVerbSelector().getListDataView().getItems().toList())
-                .extracting(Word::getText)
-                .contains("shiver");
-    }
-
-    @Test
-    void newResponseButton_startsWithDeleteDisabledAndSaveDisabled() {
+    void newAndBackButtons_arePresent() {
         AdventureData adventure = adventureWithOneResponse();
         when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
                 .thenReturn(Optional.of(adventure));
         view.beforeEnter(eventWithAdventureId("adv-1"));
 
-        Button newCommandButton = find(Button.class, view).withText("New Response").single();
-        Button deleteButton = find(Button.class, view).withText("Delete Response").single();
-        Button saveButton = find(Button.class, view).withText("Save Response").single();
-
-        assertThat(deleteButton.isEnabled()).isFalse();
-        assertThat(saveButton.isEnabled()).isFalse();
-
-        test(newCommandButton).click();
-
-        assertThat(deleteButton.isEnabled()).isFalse();
-        assertThat(saveButton.isEnabled()).isFalse();
+        assertThat(find(Button.class, view).withText("Create Response Process").single()).isNotNull();
+        assertThat(find(Button.class, view).withText("Back").single()).isNotNull();
     }
 
     @Test
-    void selectingExistingResponse_enablesDeleteButton() {
+    void deleteConfirmDialog_showsTheResponsesDescriptionAndDoesNotDeleteUntilConfirmed() {
         AdventureData adventure = adventureWithOneResponse();
-        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
-                .thenReturn(Optional.of(adventure));
-        view.beforeEnter(eventWithAdventureId("adv-1"));
         CommandData existing = adventure.getWorkflowData().getInterceptorCommands().getFirst();
-
-        grid(view).select(existing);
-
-        Button deleteButton = find(Button.class, view).withText("Delete Response").single();
-        assertThat(deleteButton.isEnabled()).isTrue();
-    }
-
-    @Test
-    void deletingSelectedResponse_removesFromInterceptorCommandsAndPersistsAdventure() {
-        AdventureData adventure = adventureWithOneResponse();
         when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
                 .thenReturn(Optional.of(adventure));
         view.beforeEnter(eventWithAdventureId("adv-1"));
+
+        ConfirmDialog dialog = view.buildDeleteConfirmDialog(existing);
+        UI.getCurrent().add(dialog);
+        dialog.open();
+
+        assertThat(test(dialog).getHeader()).isEqualTo("Delete Response Process");
+        assertThat(test(dialog).getText()).contains("shiver");
+        assertThat(adventure.getWorkflowData().getInterceptorCommands()).contains(existing);
+    }
+
+    @Test
+    void confirmingDeleteDialog_removesTheResponseAndPersistsAdventure() {
+        AdventureData adventure = adventureWithOneResponse();
         CommandData existing = adventure.getWorkflowData().getInterceptorCommands().getFirst();
-        grid(view).select(existing);
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+        view.beforeEnter(eventWithAdventureId("adv-1"));
 
-        Button deleteButton = find(Button.class, view).withText("Delete Response").single();
-        test(deleteButton).click();
+        ConfirmDialog dialog = view.buildDeleteConfirmDialog(existing);
+        UI.getCurrent().add(dialog);
+        dialog.open();
 
-        ConfirmDialog confirm = find(ConfirmDialog.class).single();
-        test(confirm).confirm();
+        test(dialog).confirm();
 
-        verify(adventureService).saveAdventureData(adventure);
         assertThat(adventure.getWorkflowData().getInterceptorCommands()).isEmpty();
+        verify(adventureService).saveAdventureData(adventure);
+    }
+
+    @Test
+    void cancelingDeleteDialog_deletesNothing() {
+        AdventureData adventure = adventureWithOneResponse();
+        CommandData existing = adventure.getWorkflowData().getInterceptorCommands().getFirst();
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+        view.beforeEnter(eventWithAdventureId("adv-1"));
+
+        ConfirmDialog dialog = view.buildDeleteConfirmDialog(existing);
+        UI.getCurrent().add(dialog);
+        dialog.open();
+
+        test(dialog).cancel();
+
+        assertThat(adventure.getWorkflowData().getInterceptorCommands()).contains(existing);
+        verify(adventureService, never()).saveAdventureData(any());
     }
 }

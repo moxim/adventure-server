@@ -12,13 +12,11 @@ import com.pdg.adventure.server.storage.service.AdventureService;
 public class WorkflowEditorView extends CommandListEditorView {
 
     public WorkflowEditorView(AdventureService anAdventureService, AdventureAccessService anAccessService) {
-        super(anAdventureService, anAccessService, "Command", "Workflow for ",
-              "Workflow commands run automatically every turn. " +
-              "Add preconditions to control when it fires; " +
-              "an unmet precondition still shows its message every turn," +
-              " it does not silently skip.",
+        super(anAdventureService, anAccessService, "Workflow Process", "Workflow for ",
+              "Workflow commands run automatically every turn. The verb / adjective / noun combos are not " +
+              "evaluated against the player's input and serve only as a hint for you. " +
+              "Therefore, you must add preconditions to control when they fire.",
               "No workflow commands yet. Create one to get started.",
-              CommandListType.PROCESS,
-              WorkflowData::getCommands);
+              WorkflowData::getCommands, WorkflowCommandEditorView.class);
     }
 }

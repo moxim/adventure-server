@@ -1,6 +1,7 @@
 package com.pdg.adventure.view.command;
 
 import com.vaadin.flow.component.html.NativeLabel;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import com.pdg.adventure.model.AdventureData;
@@ -19,8 +20,10 @@ public class PreconditionActionEditor extends VerticalLayout {
         VerticalLayout preconditionsSection = new VerticalLayout(new NativeLabel("Preconditions"), conditionListEditor);
         VerticalLayout actionsSection = new VerticalLayout(new NativeLabel("Actions"), actionListEditor);
 
+        HorizontalLayout hl = new HorizontalLayout(preconditionsSection, actionsSection);
+
         setPadding(false);
-        add(preconditionsSection, actionsSection);
+        add(hl);
     }
 
     public void setCommand(CommandData commandData) {
