@@ -114,7 +114,7 @@ class ResponsesEditorViewRoutingTest extends BrowserlessTest {
                 .thenReturn(Optional.of(adventure));
         view.beforeEnter(eventWithAdventureId("adv-1"));
 
-        assertThat(find(Button.class, view).withText("New Response").single()).isNotNull();
+        assertThat(find(Button.class, view).withText("Create Response Process").single()).isNotNull();
         assertThat(find(Button.class, view).withText("Back").single()).isNotNull();
     }
 
@@ -130,7 +130,7 @@ class ResponsesEditorViewRoutingTest extends BrowserlessTest {
         UI.getCurrent().add(dialog);
         dialog.open();
 
-        assertThat(test(dialog).getHeader()).isEqualTo("Delete Response");
+        assertThat(test(dialog).getHeader()).isEqualTo("Delete Response Process");
         assertThat(test(dialog).getText()).contains("shiver");
         assertThat(adventure.getWorkflowData().getInterceptorCommands()).contains(existing);
     }

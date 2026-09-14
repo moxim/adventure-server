@@ -135,7 +135,7 @@ class WorkflowEditorViewRoutingTest extends BrowserlessTest {
                 .thenReturn(Optional.of(adventure));
         view.beforeEnter(eventWithAdventureId("adv-1"));
 
-        assertThat(find(Button.class, view).withText("New Command").single()).isNotNull();
+        assertThat(find(Button.class, view).withText("Create Workflow Process").single()).isNotNull();
         assertThat(find(Button.class, view).withText("Back").single()).isNotNull();
     }
 
@@ -155,7 +155,7 @@ class WorkflowEditorViewRoutingTest extends BrowserlessTest {
         UI.getCurrent().add(dialog);
         dialog.open();
 
-        assertThat(test(dialog).getHeader()).isEqualTo("Delete Command");
+        assertThat(test(dialog).getHeader()).isEqualTo("Delete Workflow Process");
         assertThat(test(dialog).getText()).contains("shiver");
         assertThat(adventure.getWorkflowData().getCommands()).contains(existing);
     }

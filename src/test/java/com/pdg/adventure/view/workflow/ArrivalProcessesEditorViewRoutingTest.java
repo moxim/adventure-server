@@ -101,7 +101,7 @@ class ArrivalProcessesEditorViewRoutingTest extends BrowserlessTest {
                 .thenReturn(Optional.of(adventure));
         view.beforeEnter(eventWithAdventureId("adv-1"));
 
-        assertThat(find(Button.class, view).withText("New Arrival Process").single()).isNotNull();
+        assertThat(find(Button.class, view).withText("Create Arrival Process").single()).isNotNull();
         assertThat(find(Button.class, view).withText("Back").single()).isNotNull();
     }
 
