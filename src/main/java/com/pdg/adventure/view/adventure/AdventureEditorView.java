@@ -139,10 +139,15 @@ public class AdventureEditorView extends VerticalLayout
         TextField adventureIdTF = getAdventureIdTF();
         TextField title = getTitleField();
         startLocation = getReadOnlyTextField("Start Location");
-        startLocation.setHelperText("The location where a player starts in this adventure. Set it in the locations menu");
+        startLocation.setHelperText("The location where a player starts in this adventure. Set it in the locations menu.");
+        startLocation.setMaxWidth("150px");
+
         numberOfLocations = getReadOnlyTextField("Total Locations");
+        numberOfLocations.setMaxWidth("120px");
         numberOfLocations.setHelperText("The number of locations in this adventure.");
+
         numberOfItems = getReadOnlyTextField("Total Items");
+        numberOfItems.setMaxWidth("100px");
         numberOfItems.setHelperText("The number of items in this adventure.");
 
         HorizontalLayout titleStartRow = new HorizontalLayout(adventureIdTF, title,
@@ -154,22 +159,20 @@ public class AdventureEditorView extends VerticalLayout
         setMargin(true);
         setPadding(true);
 
-        final VerticalLayout messagesLayout = new VerticalLayout(editMessagesButton, editSystemMessagesButton);
-        final VerticalLayout workflowLayout = new VerticalLayout(arrivalButton, workflowButton, responsesButton);
-        final VerticalLayout itemsLayout = new VerticalLayout(editItemsButton);
-        final VerticalLayout locationsLayout = new VerticalLayout(editLocationsButton);
-        final VerticalLayout vocabularyLayout = new VerticalLayout(editVocabularyButton);
-        final HorizontalLayout editRow = new HorizontalLayout(vocabularyLayout,
-                                                              messagesLayout,
-                                                              locationsLayout,
-                                                              itemsLayout,
-                                                              workflowLayout
-        );
-
         final HorizontalLayout testSaveRow = new HorizontalLayout(backButton, testButton, saveButton);
+        final VerticalLayout menuRow = new VerticalLayout(editVocabularyButton,
+                                                          editMessagesButton, editSystemMessagesButton,
+                                                          editLocationsButton,
+                                                          editItemsButton,
+                                                          arrivalButton, workflowButton, responsesButton,
+                                                          testSaveRow);
 
-        add(titleStartRow, longDescription, editRow, testSaveRow);
-        setHorizontalComponentAlignment(Alignment.CENTER, testButton, saveButton);
+        VerticalLayout details = new VerticalLayout(titleStartRow, longDescription);
+
+        HorizontalLayout hl = new HorizontalLayout(menuRow, details);
+
+        add(hl);
+//        setHorizontalComponentAlignment(Alignment.CENTER, testButton, saveButton);
     }
 
     private void validateSave(AdventureData adventureData) {
