@@ -14,14 +14,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-import com.pdg.adventure.model.condition.LowerThanConditionData;
-import com.pdg.adventure.server.condition.LowerThanCondition;
+import com.pdg.adventure.model.condition.LessThanConditionData;
+import com.pdg.adventure.server.condition.LessThanCondition;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.support.VariableProvider;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class LowerThanConditionMapperTest {
+class LessThanConditionMapperTest {
 
     @Mock
     private MapperSupporter mapperSupporter;
@@ -29,24 +29,24 @@ class LowerThanConditionMapperTest {
     @Mock
     private VariableProvider variableProvider;
 
-    private LowerThanConditionMapper mapper;
+    private LessThanConditionMapper mapper;
 
     @BeforeEach
     void setUp() {
         doNothing().when(mapperSupporter).registerMapper(any(), any(), any());
         when(mapperSupporter.getVariableProvider()).thenReturn(variableProvider);
-        mapper = new LowerThanConditionMapper(mapperSupporter);
+        mapper = new LessThanConditionMapper(mapperSupporter);
     }
 
     @Test
-    @DisplayName("Test 1: mapToBO - converts LowerThanConditionData to LowerThanCondition")
-    void mapToBO_shouldConvertLowerThanConditionDataToLowerThanCondition() {
-        LowerThanConditionData data = new LowerThanConditionData();
+    @DisplayName("Test 1: mapToBO - converts LessThanConditionData to LessThanCondition")
+    void mapToBO_shouldConvertLessThanConditionDataToLessThanCondition() {
+        LessThanConditionData data = new LessThanConditionData();
         data.setId("lt-001");
         data.setVariableName("health");
         data.setValue(10);
 
-        LowerThanCondition result = mapper.mapToBO(data);
+        LessThanCondition result = mapper.mapToBO(data);
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("lt-001");
@@ -57,22 +57,22 @@ class LowerThanConditionMapperTest {
     @Test
     @DisplayName("Test 2: mapToBO - passes VariableProvider from MapperSupporter to condition")
     void mapToBO_shouldPassVariableProviderToCondition() {
-        LowerThanConditionData data = new LowerThanConditionData();
+        LessThanConditionData data = new LessThanConditionData();
         data.setVariableName("lives");
         data.setValue(3);
 
-        LowerThanCondition result = mapper.mapToBO(data);
+        LessThanCondition result = mapper.mapToBO(data);
 
         assertThat(result.getVariableProvider()).isEqualTo(variableProvider);
     }
 
     @Test
-    @DisplayName("Test 3: mapToDO - converts LowerThanCondition to LowerThanConditionData")
-    void mapToDO_shouldConvertLowerThanConditionToLowerThanConditionData() {
-        LowerThanCondition condition = new LowerThanCondition("energy", 5, variableProvider);
+    @DisplayName("Test 3: mapToDO - converts LessThanCondition to LessThanConditionData")
+    void mapToDO_shouldConvertLessThanConditionToLessThanConditionData() {
+        LessThanCondition condition = new LessThanCondition("energy", 5, variableProvider);
         condition.setId("lt-002");
 
-        LowerThanConditionData result = mapper.mapToDO(condition);
+        LessThanConditionData result = mapper.mapToDO(condition);
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("lt-002");
@@ -83,14 +83,14 @@ class LowerThanConditionMapperTest {
     @Test
     @DisplayName("Test 4: mapToDO - preserves ID during conversion")
     void mapToDO_shouldPreserveIdDuringConversion() {
-        LowerThanCondition condition1 = new LowerThanCondition("x", 5, variableProvider);
+        LessThanCondition condition1 = new LessThanCondition("x", 5, variableProvider);
         condition1.setId("lt-id-001");
 
-        LowerThanCondition condition2 = new LowerThanCondition("x", 5, variableProvider);
+        LessThanCondition condition2 = new LessThanCondition("x", 5, variableProvider);
         condition2.setId("lt-id-002");
 
-        LowerThanConditionData result1 = mapper.mapToDO(condition1);
-        LowerThanConditionData result2 = mapper.mapToDO(condition2);
+        LessThanConditionData result1 = mapper.mapToDO(condition1);
+        LessThanConditionData result2 = mapper.mapToDO(condition2);
 
         assertThat(result1.getId()).isEqualTo("lt-id-001");
         assertThat(result2.getId()).isEqualTo("lt-id-002");
@@ -100,13 +100,13 @@ class LowerThanConditionMapperTest {
     @Test
     @DisplayName("Test 5: Round-trip mapping - data → BO → data preserves information")
     void roundTripMapping_shouldPreserveInformation() {
-        LowerThanConditionData original = new LowerThanConditionData();
+        LessThanConditionData original = new LessThanConditionData();
         original.setId("round-trip-lt");
         original.setVariableName("health");
         original.setValue(10);
 
-        LowerThanCondition bo = mapper.mapToBO(original);
-        LowerThanConditionData roundTrip = mapper.mapToDO(bo);
+        LessThanCondition bo = mapper.mapToBO(original);
+        LessThanConditionData roundTrip = mapper.mapToDO(bo);
 
         assertThat(roundTrip.getId()).isEqualTo(original.getId());
         assertThat(roundTrip.getVariableName()).isEqualTo(original.getVariableName());

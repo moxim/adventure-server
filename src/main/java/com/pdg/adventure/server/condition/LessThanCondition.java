@@ -8,14 +8,14 @@ import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.VariableProvider;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class LowerThanCondition extends AbstractVariableCondition {
+public class LessThanCondition extends AbstractVariableCondition {
 
     @Getter
     private final String variableName;
     @Getter
     private final Integer value;
 
-    public LowerThanCondition(String aVariableName, Integer aValue, VariableProvider aVariableProvider) {
+    public LessThanCondition(String aVariableName, Integer aValue, VariableProvider aVariableProvider) {
         super(aVariableProvider);
         variableName = aVariableName;
         value = aValue;

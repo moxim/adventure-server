@@ -74,7 +74,7 @@ class PreconditionActionFormatterConditionsTest {
 
     @Test
     void lowerThan() {
-        LowerThanConditionData c = new LowerThanConditionData();
+        LessThanConditionData c = new LessThanConditionData();
         c.setVariableName("score");
         c.setValue(10);
         assertThat(formatter.formatCondition(c)).isEqualTo("LT score 10");

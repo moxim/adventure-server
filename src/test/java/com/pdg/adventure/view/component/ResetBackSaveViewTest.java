@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 
 class ResetBackSaveViewTest {
 
@@ -38,6 +39,8 @@ class ResetBackSaveViewTest {
     void clickingCancel_withNoBackListenerRegistered_doesNotThrow() {
         ResetBackSaveView view = new ResetBackSaveView();
 
-        view.getCancel().click();
+        assertThatCode(() -> {
+            view.getCancel().click();
+        }).withFailMessage("must not throw an exception").doesNotThrowAnyException();
     }
 }

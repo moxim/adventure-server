@@ -1,11 +1,11 @@
 package com.pdg.adventure.view.command.condition;
 
-import com.pdg.adventure.model.condition.LowerThanConditionData;
+import com.pdg.adventure.model.condition.LessThanConditionData;
 
 @AutoRegisterConditionEditor
-public class LowerThanConditionEditor extends AbstractNumericComparisonConditionEditor<LowerThanConditionData> {
+public class LessThanConditionEditor extends AbstractNumericComparisonConditionEditor<LessThanConditionData> {
 
-    public LowerThanConditionEditor(LowerThanConditionData conditionData) {
+    public LessThanConditionEditor(LessThanConditionData conditionData) {
         super(conditionData, "<");
     }
 

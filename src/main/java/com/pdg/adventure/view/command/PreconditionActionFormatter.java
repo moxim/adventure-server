@@ -34,7 +34,7 @@ import com.pdg.adventure.model.condition.EqualsConditionData;
 import com.pdg.adventure.model.condition.GreaterThanConditionData;
 import com.pdg.adventure.model.condition.HereConditionData;
 import com.pdg.adventure.model.condition.ItemAtConditionData;
-import com.pdg.adventure.model.condition.LowerThanConditionData;
+import com.pdg.adventure.model.condition.LessThanConditionData;
 import com.pdg.adventure.model.condition.NotConditionData;
 import com.pdg.adventure.model.condition.Adjective2ConditionData;
 import com.pdg.adventure.model.condition.AdverbConditionData;
@@ -95,7 +95,7 @@ public class PreconditionActionFormatter {
         if (c instanceof GreaterThanConditionData gt) {
             return "GT " + txt(gt.getVariableName()) + " " + num(gt.getValue());
         }
-        if (c instanceof LowerThanConditionData lt) {
+        if (c instanceof LessThanConditionData lt) {
             return "LT " + txt(lt.getVariableName()) + " " + num(lt.getValue());
         }
         if (c instanceof SameConditionData same) {

@@ -420,7 +420,7 @@ Plus a runtime-only `LoadAdventureAction` (no DO; engine-managed).
 |------------------|---------|
 | `CarriedConditionData`, `WornConditionData`, `HereConditionData`, `ItemAtConditionData`, `PlayerAtConditionData` | item / location predicates |
 | `ChanceConditionData` | random-roll gate (`ChanceCondition`) |
-| `EqualsConditionData`, `GreaterThanConditionData`, `LowerThanConditionData`, `SameConditionData` | variable comparisons |
+| `EqualsConditionData`, `GreaterThanConditionData`, `LessThanConditionData`, `SameConditionData` | variable comparisons |
 | `NotConditionData` | composite — wraps another `PreConditionData` and inverts its result. Applied in the UI via a per-condition **Negate** checkbox (`ConditionRow.toConditionData()`) rather than being one of the directly-selectable condition kinds. |
 
 ## Security / access control entities

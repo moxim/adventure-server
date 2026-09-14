@@ -307,6 +307,7 @@ public class ViewSupporter {
             case NOUN -> aCommandDescriptionData.setNoun(foundWord);
             case ADJECTIVE -> aCommandDescriptionData.setAdjective(foundWord);
             case VERB -> aCommandDescriptionData.setVerb(foundWord);
+            default -> throw new IllegalStateException("Unexpected value: " + foundWord.getType());
         }
     }
 

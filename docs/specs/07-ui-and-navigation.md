@@ -409,7 +409,7 @@ grid/dialog read-model record.
 |-------|------|
 | `ConditionEditorComponent` | Abstract base for all per-condition sub-editors. |
 | `AbstractSingleItemConditionEditor` | Abstract mid-layer for the 3 item-presence conditions (Carried / Here / Worn) that share one `ItemData` selector. |
-| `AbstractNumericComparisonConditionEditor` | Abstract mid-layer for the 2 numeric-comparison conditions (GreaterThan / LowerThan) that share a variable-name field and a numeric value field. |
+| `AbstractNumericComparisonConditionEditor` | Abstract mid-layer for the 2 numeric-comparison conditions (GreaterThan / LessThan) that share a variable-name field and a numeric value field. |
 | `AbstractSingleWordConditionEditor<T extends PreConditionData>` | Generic abstract mid-layer for the 4 conditions that pick one `Word` of a fixed `Word.Type` via a `VocabularyPickerField` (Preposition, Adverb, Noun 2, Adjective 2). |
 | `ConditionSelector` | A combo-box of the 14 selectable `PreCondition` kinds, sorted alphabetically by display name; `NotCondition` is not among them (see below). Picking one and clicking **Add** calls `ConditionSelectedListener.onConditionSelected(PreConditionData)` with a freshly-constructed, empty data object — the listener (`ConditionListEditor`) builds the matching editor via `ConditionEditorFactory`. |
 | `ConditionEditorFactory` | Entry point for condition editors, mirroring `ActionEditorFactory`'s shape. Delegates to `ConditionEditorRegistry`; covers all 14 selectable condition types. |
@@ -420,7 +420,7 @@ grid/dialog read-model record.
 | `ChanceConditionEditor` | A single numeric field for the 1–100 chance percentage. |
 | `EqualsConditionEditor` | Variable name + value text fields. |
 | `GreaterThanConditionEditor` | Variable name + numeric threshold (via `AbstractNumericComparisonConditionEditor`). |
-| `LowerThanConditionEditor` | Variable name + numeric threshold (via `AbstractNumericComparisonConditionEditor`). |
+| `LessThanConditionEditor` | Variable name + numeric threshold (via `AbstractNumericComparisonConditionEditor`). |
 | `SameConditionEditor` | Two variable name text fields. |
 | `PlayerAtConditionEditor` | Location selector. |
 | `ItemAtConditionEditor` | Item selector + location selector. |

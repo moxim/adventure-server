@@ -65,16 +65,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.basic.DescriptionData;
-import com.pdg.adventure.model.condition.CarriedConditionData;
-import com.pdg.adventure.model.condition.EqualsConditionData;
-import com.pdg.adventure.model.condition.GreaterThanConditionData;
-import com.pdg.adventure.model.condition.HereConditionData;
-import com.pdg.adventure.model.condition.ItemAtConditionData;
-import com.pdg.adventure.model.condition.LowerThanConditionData;
-import com.pdg.adventure.model.condition.NotConditionData;
-import com.pdg.adventure.model.condition.PlayerAtConditionData;
-import com.pdg.adventure.model.condition.SameConditionData;
-import com.pdg.adventure.model.condition.WornConditionData;
+import com.pdg.adventure.model.condition.*;
 
 class PreconditionActionFormatterConditionsTest {
 
@@ -139,7 +130,7 @@ class PreconditionActionFormatterConditionsTest {
 
     @Test
     void lowerThan() {
-        LowerThanConditionData c = new LowerThanConditionData();
+        LessThanConditionData c = new LessThanConditionData();
         c.setVariableName("score");
         c.setValue(10);
         assertThat(formatter.formatCondition(c)).isEqualTo("LT score 10");
@@ -220,17 +211,7 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.model.condition.CarriedConditionData;
-import com.pdg.adventure.model.condition.EqualsConditionData;
-import com.pdg.adventure.model.condition.GreaterThanConditionData;
-import com.pdg.adventure.model.condition.HereConditionData;
-import com.pdg.adventure.model.condition.ItemAtConditionData;
-import com.pdg.adventure.model.condition.LowerThanConditionData;
-import com.pdg.adventure.model.condition.NotConditionData;
-import com.pdg.adventure.model.condition.PlayerAtConditionData;
-import com.pdg.adventure.model.condition.PreConditionData;
-import com.pdg.adventure.model.condition.SameConditionData;
-import com.pdg.adventure.model.condition.WornConditionData;
+import com.pdg.adventure.model.condition.*;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 /**
@@ -282,7 +263,7 @@ public class PreconditionActionFormatter {
         if (c instanceof GreaterThanConditionData gt) {
             return "GT " + txt(gt.getVariableName()) + " " + num(gt.getValue());
         }
-        if (c instanceof LowerThanConditionData lt) {
+        if (c instanceof LessThanConditionData lt) {
             return "LT " + txt(lt.getVariableName()) + " " + num(lt.getValue());
         }
         if (c instanceof SameConditionData same) {

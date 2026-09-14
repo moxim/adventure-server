@@ -6,7 +6,7 @@ Add a functional precondition editor inside `PreconditionActionEditor` that lets
 
 ## Scope
 
-- 9 leaf condition types: Carried, Here, Worn, PlayerAt, ItemAt, Equals, GreaterThan, LowerThan, Same
+- 9 leaf condition types: Carried, Here, Worn, PlayerAt, ItemAt, Equals, GreaterThan, LessThan, Same
 - Negate toggle on each condition (wraps/unwraps `NotConditionData`)
 - No And/Or composite editing — out of scope for this iteration
 - Lives inside the existing `PreconditionActionEditor` component
@@ -51,7 +51,7 @@ Static factory with a switch expression on `PreConditionData` subtype → create
 | `ItemAtConditionEditor` | `ItemAtConditionData` | `ComboBox<ItemData>` + `ComboBox<LocationData>` |
 | `EqualsConditionEditor` | `EqualsConditionData` | `TextField` (variable) + `TextField` (value) |
 | `GreaterThanConditionEditor` | `GreaterThanConditionData` | `TextField` (variable) + `NumberField` (value) |
-| `LowerThanConditionEditor` | `LowerThanConditionData` | `TextField` (variable) + `NumberField` (value) |
+| `LessThanConditionEditor` | `LessThanConditionData` | `TextField` (variable) + `NumberField` (value) |
 | `SameConditionEditor` | `SameConditionData` | `TextField` (variable 1) + `TextField` (variable 2) |
 
 Item and location pickers are populated from `AdventureData` passed down from `PreconditionActionEditor`. For `WornConditionEditor`, items are filtered to those that implement or are tagged as wearable — determined by checking `ItemData` for the wearable flag (to confirm during implementation).
