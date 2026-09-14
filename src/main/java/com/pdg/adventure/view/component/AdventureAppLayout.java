@@ -27,6 +27,7 @@ import com.pdg.adventure.view.about.AboutView;
 import com.pdg.adventure.view.admin.AdminDashboardView;
 import com.pdg.adventure.view.author.AuthorDashboardView;
 import com.pdg.adventure.view.login.LogoutView;
+import com.pdg.adventure.view.player.PlayerLibraryView;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 @StyleSheet(Lumo.STYLESHEET)
@@ -104,6 +105,8 @@ public class AdventureAppLayout extends AppLayout implements AfterNavigationObse
             nav.addItem(new SideNavItem("Dashboard", AdminDashboardView.class, VaadinIcon.DASHBOARD.create()));
         } else if (user.isAuthor()) {
             nav.addItem( new SideNavItem("Dashboard", AuthorDashboardView.class, VaadinIcon.DASHBOARD.create()));
+        } else if (user.isPlayer()) {
+            nav.addItem(new SideNavItem("Library", PlayerLibraryView.class, VaadinIcon.BOOK.create()));
         }
 
         nav.addItem(new SideNavItem("Logout", LogoutView.class, VaadinIcon.SIGN_OUT.create()));

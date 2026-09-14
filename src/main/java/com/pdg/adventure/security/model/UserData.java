@@ -55,6 +55,10 @@ public class UserData implements UserDetails {
         return roles.contains(Role.AUTHOR);
     }
 
+    public boolean isPlayer() {
+        return roles.contains(Role.PLAYER);
+    }
+
     @Override
     public String getPassword() {
         return password;
