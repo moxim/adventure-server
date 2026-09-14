@@ -3,9 +3,9 @@ package com.pdg.adventure;
 /*
  * TODO:
  *  - extend parser
- *    - add word type PREPOSTION
- *    - add second noun
- *    - add adverb
+ *    - DONE: add word type PREPOSTION
+ *    - DONE: add second noun
+ *    - DONE: add adverb
  *    - DONE: allow conjunctions through AND and THEN
  *    - allow speech (to interact with other characters, for instance SAY "Hello" )
  *    - DONE: allow all objects to be referenced by IT, thus, remember previous noun(s?)

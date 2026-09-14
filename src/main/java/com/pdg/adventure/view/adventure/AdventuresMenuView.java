@@ -2,11 +2,14 @@ package com.pdg.adventure.view.adventure;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -118,13 +121,38 @@ public class AdventuresMenuView extends VerticalLayout {
 
             addComponent(new Hr());
 
-            addItem("Delete", e -> e.getItem().ifPresent(adventure -> {
-                ListDataProvider<AdventureData> dataProvider =
-                        (ListDataProvider<AdventureData>) target.getDataProvider();
-                dataProvider.getItems().remove(adventure);
-                dataProvider.refreshAll();
-                accessService.deleteAdventure(adventure.getId(), ViewSupporter.getCurrentUser());
-            }));
+            addItem("Delete", e -> e.getItem().ifPresent(adventure ->
+                    buildDeleteConfirmDialog(adventure, target).open()));
         }
+    }
+
+    /**
+     * Package-private for testing: GridContextMenu item clicks have no reliable way to be
+     * driven from a browserless test, so this builds the dialog (and wires its confirm
+     * listener) in isolation from the context-menu click that triggers it.
+     */
+    @SuppressWarnings("unchecked")
+    ConfirmDialog buildDeleteConfirmDialog(AdventureData adventure, Grid<AdventureData> grid) {
+        ConfirmDialog dialog = new ConfirmDialog();
+        dialog.setHeader("Delete Adventure");
+        dialog.setText("Are you sure you want to delete '" + adventure.getTitle()
+                + "'? This cannot be undone.");
+        dialog.setCancelable(true);
+        dialog.setConfirmText("Delete");
+        dialog.setConfirmButtonTheme("error primary");
+
+        dialog.addConfirmListener(_ -> {
+            ListDataProvider<AdventureData> dataProvider =
+                    (ListDataProvider<AdventureData>) grid.getDataProvider();
+            dataProvider.getItems().remove(adventure);
+            dataProvider.refreshAll();
+            accessService.deleteAdventure(adventure.getId(), ViewSupporter.getCurrentUser());
+
+            Notification notification = Notification.show("Adventure '" + adventure.getTitle()
+                    + "' deleted successfully.", 2000, Notification.Position.BOTTOM_START);
+            notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        });
+
+        return dialog;
     }
 }
