@@ -181,7 +181,7 @@ public class MessageEditorView extends VerticalLayout
         }
 
         // Check if another message with this ID exists
-        return adventureData == null || !messageService.messageExists(adventureData.getId(), id);
+        return adventureData == null || !adventureData.getMessages().containsKey(id);
     }
 
     private void updatePreview() {

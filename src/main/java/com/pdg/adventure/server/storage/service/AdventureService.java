@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -104,49 +103,7 @@ public class AdventureService {
     }
 
     public Optional<AdventureData> findAdventureById(String anId) {
-        final Optional<AdventureData> byId = adventureRepository.findById(anId);
-        byId.ifPresent(this::postProcess);
-        return byId;
-    }
-
-    private void postProcess(AdventureData anAdventureData) {
-//        Vocabulary vocabulary = new Vocabulary();
-//        anAdventureData.setVocabulary(vocabulary);
-//        vocabulary.putWords(anAdventureData.getWords());
-//
-//        final Vocabulary vocabulary = anAdventureData.getVocabulary();
-//        final Collection<Word> allWords = vocabulary.getWords();
-//        for (Word word : allWords) {
-//            word.setSynonym(word.getSynonym());
-//        }
-//        for (Map.Entry<String, Word> entry : allWords.entrySet()) {
-//            vocabulary.addSynonymForWord(entry.getKey(), allWords.get(entry.getKey()));
-//        }
-        ensureSystemMessagesUsable(anAdventureData);
-    }
-
-    /**
-     * A lazy {@code @DBRef} Map whose referenced documents were deleted out-of-band (e.g. the
-     * systemMessages collection dropped directly in the database, leaving this adventure's stored
-     * DBRef pointers referencing nothing) throws when Spring Data's lazy-loading proxy tries to
-     * resolve it on first access - anywhere, including cascade-save on an unrelated field. Detected
-     * right after load so every consumer (the System Messages view, or cascade-save triggered by
-     * editing Vocabulary/Locations/etc. on this same adventure) sees a clean, empty map instead of
-     * the corrupted proxy; SystemMessageKey.seedMissingInto repopulates it with defaults on next use.
-     */
-    private void ensureSystemMessagesUsable(AdventureData anAdventureData) {
-        try {
-            if (anAdventureData.getSystemMessages().isEmpty()) {
-                LOG.debug("System messages for adventure {} loaded successfully", anAdventureData.getId());
-            } else {
-                LOG.debug("System messages for adventure {} are empty", anAdventureData.getId());
-            }
-        } catch (RuntimeException e) {
-            LOG.warn("System messages for adventure {} could not be resolved (referenced documents "
-                     + "likely deleted directly in the database) - resetting to an empty map",
-                     anAdventureData.getId(), e);
-            anAdventureData.setSystemMessages(new HashMap<>());
-        }
+        return adventureRepository.findById(anId);
     }
 
     public List<AdventureData> getAdventures() {

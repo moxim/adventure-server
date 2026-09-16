@@ -34,14 +34,10 @@ public class AdventureData extends DatedData {
     @CascadeDelete
     private transient VocabularyData vocabularyData;
 
-    @DBRef(lazy = true)
-    @CascadeSave
-    @CascadeDelete
+    // Embedded (not @DBRef): owned 1:1 by this adventure, never queried or shared independently -
+    // see MessageData/SystemMessageData javadoc.
     private Map<String, MessageData> messages;
 
-    @DBRef(lazy = true)
-    @CascadeSave
-    @CascadeDelete
     private Map<String, SystemMessageData> systemMessages;
 
     private String notes; // to outline a story or whatever

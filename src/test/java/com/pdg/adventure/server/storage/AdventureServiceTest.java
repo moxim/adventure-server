@@ -119,7 +119,7 @@ class AdventureServiceTest {
     }
 
     @Test
-    void findAdventureById_systemMessagesResolveNormally_leftUntouched() {
+    void findAdventureById_returnsSystemMessagesAsLoaded() {
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
         adventure.getSystemMessages().put("-6", new SystemMessageData("adv-1", "-6", SystemMessageKey.SM40.defaultText()));
@@ -128,23 +128,6 @@ class AdventureServiceTest {
         Optional<AdventureData> result = adventureService.findAdventureById("adv-1");
 
         assertThat(result.get().getSystemMessages()).hasSize(1);
-    }
-
-    @Test
-    void findAdventureById_systemMessagesProxyResolutionFails_resetsToEmptyMapInsteadOfPropagating() {
-        // Simulates a lazy @DBRef Map whose referenced documents were deleted directly in the
-        // database: the underlying proxy throws on first access instead of returning a usable Map.
-        AdventureData adventure = spy(new AdventureData());
-        adventure.setId("adv-1");
-        doThrow(new RuntimeException("simulated lazy-proxy resolution failure"))
-                .doCallRealMethod()
-                .when(adventure).getSystemMessages();
-        when(adventureRepository.findById("adv-1")).thenReturn(Optional.of(adventure));
-
-        Optional<AdventureData> result = adventureService.findAdventureById("adv-1");
-
-        assertThat(result).isPresent();
-        assertThat(result.get().getSystemMessages()).isEmpty();
     }
 
     @Test

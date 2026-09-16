@@ -1,6 +1,7 @@
 package com.pdg.adventure.server.storage.message;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 
 import com.pdg.adventure.server.support.PlaceholderSpec;
@@ -116,6 +117,14 @@ public enum SystemMessageKey {
               "CommandFactory",
               "The full text shown for the built-in 'help' command.");
 
+    /**
+     * The currently loaded adventure's own edits (id -> text), sparse - a key with no entry here
+     * simply reads as {@link #defaultText()}. Process-wide, like the rest of the engine's
+     * "currently loaded adventure" state (see {@code GameContext}, {@code MessagesHolder}) -
+     * installed once per adventure (re)load by {@code LoadAdventureAction}, not per turn.
+     */
+    private static volatile Map<String, String> overridesByKeyId = Map.of();
+
     private final String id;
     private final String defaultText;
     private final String sourceLocation;
@@ -142,7 +151,7 @@ public enum SystemMessageKey {
     }
 
     public String defaultText() {
-        return defaultText;
+        return overridesByKeyId.getOrDefault(id, defaultText);
     }
 
     public String sourceLocation() {
@@ -155,5 +164,10 @@ public enum SystemMessageKey {
 
     public static Optional<SystemMessageKey> fromId(String anId) {
         return Arrays.stream(values()).filter(key -> key.id.equals(anId)).findFirst();
+    }
+
+    /** Replaces the installed overrides wholesale - never merges with a previous install. */
+    public static void installOverrides(Map<String, String> anOverridesByKeyId) {
+        overridesByKeyId = Map.copyOf(anOverridesByKeyId);
     }
 }

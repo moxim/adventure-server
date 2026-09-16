@@ -4,6 +4,7 @@ import com.vaadin.browserless.BrowserlessTest;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -21,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -104,6 +107,26 @@ class MessageEditorViewRoutingTest extends BrowserlessTest {
 
         TextArea messageText = find(TextArea.class, view).single();
         assertThat(messageText.getValue()).isEqualTo("Welcome!");
+    }
+
+    @Test
+    void messageIdField_rejectsIdAlreadyUsedByAnotherMessage_withoutConsultingMessageService() {
+        Map<String, MessageData> messages = new HashMap<>();
+        messages.put("existing_id", new MessageData("adv-1", "existing_id", "Already here."));
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setMessages(messages);
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithParams(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1")));
+
+        TextField messageIdField = find(TextField.class, view).single();
+        messageIdField.setValue("existing_id");
+
+        assertThat(messageIdField.isInvalid()).isTrue();
+        assertThat(messageIdField.getErrorMessage()).isEqualTo("A message with this ID already exists");
+        verify(messageService, never()).messageExists(any(), any());
     }
 
     @Test
