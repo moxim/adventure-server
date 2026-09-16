@@ -2,8 +2,6 @@ package com.pdg.adventure.model;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,13 +9,11 @@ import java.util.Map;
 import com.pdg.adventure.model.basic.DatedData;
 
 /**
- * Message data stored in MongoDB.
- * Messages are stored in their own collection for better scalability and querying.
+ * Message data embedded in {@link AdventureData#getMessages()}. Messages are owned 1:1 by their
+ * adventure - not an independent, top-level Mongo document.
  */
-@Document(collection = "messages")
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-@CompoundIndex(name = "adventure_message_idx", def = "{'adventureId': 1, 'messageId': 1}", unique = true)
 public class MessageData extends DatedData {
 
     /**

@@ -3,6 +3,7 @@ package com.pdg.adventure.view.message;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.html.Hr;
@@ -211,15 +212,21 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
                                                          5000, Notification.Position.MIDDLE);
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         } else {
-            final var dialog = ViewSupporter.getConfirmDialog("Delete Message", "message", messageId);
-            dialog.addConfirmListener(_ -> {
-                adventureData.getMessages().remove(messageId);
-                messageService.deleteMessage(adventureData.getId(), messageId);
-                adventureService.saveAdventureData(adventureData);
-                refreshGrid();
-            });
-            dialog.open();
+            buildDeleteConfirmDialog(adapter).open();
         }
+    }
+
+    // Package-private so a browserless test can drive the dialog directly - a GridContextMenu
+    // item click has no reliable way to be triggered from such a test.
+    ConfirmDialog buildDeleteConfirmDialog(MessageDescriptionAdapter adapter) {
+        String messageId = adapter.getId();
+        final var dialog = ViewSupporter.getConfirmDialog("Delete Message", "message", messageId);
+        dialog.addConfirmListener(_ -> {
+            adventureData.getMessages().remove(messageId);
+            adventureService.saveAdventureData(adventureData);
+            refreshGrid();
+        });
+        return dialog;
     }
 
     private void filterMessages(String searchTerm) {

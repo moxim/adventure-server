@@ -15,6 +15,7 @@ import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.MessageData;
+import com.pdg.adventure.model.SystemMessageData;
 import com.pdg.adventure.model.basic.BasicData;
 import com.pdg.adventure.server.storage.mongo.CascadeDeleteHelper;
 import com.pdg.adventure.server.storage.mongo.CascadeSaveMongoEventListener;
@@ -25,11 +26,13 @@ import com.pdg.adventure.server.storage.service.AdventureService;
 
 /**
  * Deleting an adventure must remove every document that belongs to it: locations, their
- * containers, the player's pocket, all items and all messages.
+ * containers and items, and the player's pocket. Messages and system messages are embedded
+ * directly in the adventure document (not {@code @DBRef}), so they round-trip and disappear
+ * along with it automatically - this test also proves that round-trip actually works.
  * <p>
  * The test mirrors {@link com.pdg.adventure.server.storage.service.AdventureService#deleteAdventure}
- * exactly: the adventure is RELOADED from MongoDB before deletion, so lazy {@code @DBRef}
- * fields (the player pocket, the messages map) are lazy-loading proxies — just as in production.
+ * exactly: the adventure is RELOADED from MongoDB before deletion, so the remaining lazy
+ * {@code @DBRef} field (the player pocket) is a lazy-loading proxy — just as in production.
  */
 @DataMongoTest
 @Import(value = {UuidIdGenerationMongoEventListener.class, CascadeSaveMongoEventListener.class,
@@ -61,6 +64,9 @@ class AdventureDeleteCascadeTest {
         MessageData message = new MessageData(adventure.getId(), "greeting", "hello");
         adventure.getMessages().put(message.getMessageId(), message);
 
+        SystemMessageData override = new SystemMessageData(adventure.getId(), "0", "It's pitch black.");
+        adventure.getSystemMessages().put(override.getKey(), override);
+
         mongoTemplate.save(adventure);
 
         assertSoftly(softly -> {
@@ -73,6 +79,17 @@ class AdventureDeleteCascadeTest {
         // when: deleting the same way AdventureService.deleteAdventure does — load fresh, cascade, remove
         AdventureData reloaded = mongoTemplate.findById(adventure.getId(), AdventureData.class);
         cascadeDeleteHelper.cascadeDelete(reloaded);
+
+        // the embedded messages/systemMessages round-trip as plain fields of the adventure
+        // document — no lazy DBRef proxy, no risk of a dangling-reference crash on access
+        assertSoftly(softly -> {
+            softly.assertThat(reloaded.getMessages().get("greeting")).extracting(MessageData::getText)
+                  .as("embedded message survives a save/reload round trip").isEqualTo("hello");
+            softly.assertThat(reloaded.getSystemMessages().get("0")).extracting(SystemMessageData::getText)
+                  .as("embedded system message override survives a save/reload round trip")
+                  .isEqualTo("It's pitch black.");
+        });
+
         mongoTemplate.remove(reloaded);
 
         // then: nothing of the adventure may survive
@@ -85,8 +102,6 @@ class AdventureDeleteCascadeTest {
                   .as("containers").isEmpty();
             softly.assertThat(mongoTemplate.findAll(ItemData.class))
                   .as("items").isEmpty();
-            softly.assertThat(mongoTemplate.findAll(MessageData.class))
-                  .as("messages").isEmpty();
         });
     }
 

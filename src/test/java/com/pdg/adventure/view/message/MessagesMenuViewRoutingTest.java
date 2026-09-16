@@ -2,6 +2,7 @@ package com.pdg.adventure.view.message;
 
 import com.vaadin.browserless.BrowserlessTest;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -21,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -82,6 +85,35 @@ class MessagesMenuViewRoutingTest extends BrowserlessTest {
         assertThat(view.getPageTitle()).isEqualTo("Messages for The Demo");
         Grid<?> grid = find(Grid.class, view).single();
         assertThat(test(grid).size()).isEqualTo(1);
+    }
+
+    // Delete goes through a GridContextMenu item click, which has no reliable way to be driven
+    // from a browserless test - this test instead builds the confirmation dialog directly
+    // (buildDeleteConfirmDialog is package-private for exactly this) and drives it as a user
+    // would: open it, then confirm.
+    @Test
+    void confirmingDeleteDialog_removesTheMessage_andDoesNotConsultMessageService() {
+        Map<String, MessageData> messages = new HashMap<>();
+        messages.put("msg-1", new MessageData("adv-1", "msg-1", "Welcome!"));
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setTitle("The Demo");
+        adventure.setMessages(messages);
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+        view.beforeEnter(eventWithAdventureId("adv-1"));
+
+        MessageDescriptionAdapter adapter = new MessageDescriptionAdapter(
+                new MessageViewModel(messages.get("msg-1")));
+        ConfirmDialog dialog = view.buildDeleteConfirmDialog(adapter);
+        UI.getCurrent().add(dialog);
+        dialog.open();
+
+        test(dialog).confirm();
+
+        assertThat(adventure.getMessages()).doesNotContainKey("msg-1");
+        verify(adventureService).saveAdventureData(adventure);
+        verify(messageService, never()).deleteMessage(any(), any());
     }
 
     @Test

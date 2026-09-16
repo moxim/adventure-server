@@ -6,13 +6,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.pdg.adventure.CommandFactory;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
+import com.pdg.adventure.model.SystemMessageData;
 import com.pdg.adventure.server.Adventure;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.engine.GameContext;
@@ -20,6 +23,7 @@ import com.pdg.adventure.server.exception.ReloadAdventureException;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.tangible.Thing;
 
@@ -75,6 +79,12 @@ public class LoadAdventureAction extends AbstractAction {
         for (MessageData messageData : adventureData.getMessages().values()) {
             adventureConfig.allMessages().addMessage(messageData.getMessageId(), messageData.getText());
         }
+
+        Map<String, String> systemMessageOverrides = new HashMap<>();
+        for (SystemMessageData override : adventureData.getSystemMessages().values()) {
+            systemMessageOverrides.put(override.getKey(), override.getText());
+        }
+        SystemMessageKey.installOverrides(systemMessageOverrides);
 
         // Reset all registries before mapping. Mapping registers the new adventure's locations,
         // containers and items as it goes; anything left over from a previously loaded adventure
