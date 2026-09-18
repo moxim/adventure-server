@@ -176,7 +176,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         if (lines.isEmpty()) {
             return;
         }
-        messageList.addItem(new MessageListItem(String.join("\n", lines), Instant.now(), NARRATOR));
+        messageList.addItem(new MessageListItem(String.join("\n", lines))); //, Instant.now(), NARRATOR));
     }
 
     private void navigateBack() {
