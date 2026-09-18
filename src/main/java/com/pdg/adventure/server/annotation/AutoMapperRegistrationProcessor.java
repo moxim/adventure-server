@@ -145,7 +145,13 @@ public class AutoMapperRegistrationProcessor implements BeanPostProcessor, Smart
                 );
 
             } catch (Exception e) {
-                logger.error("Failed to auto-register mapper {}: {}", registration.beanName, e.getMessage(), e);
+                // Fail startup instead of continuing with a half-configured MapperSupporter - a
+                // silently skipped registration only surfaces later as an unrelated NPE or
+                // ClassCastException at mapping time, far from this root cause.
+                throw new IllegalStateException(
+                        "Failed to auto-register mapper " + registration.beanName + " for "
+                        + registration.dataObjectClass.getSimpleName() + " -> "
+                        + registration.businessObjectClass.getSimpleName() + ": " + e.getMessage(), e);
             }
         }
 

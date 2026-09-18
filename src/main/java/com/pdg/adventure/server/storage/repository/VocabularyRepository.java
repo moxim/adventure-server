@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 import com.pdg.adventure.model.VocabularyData;
 
 @Repository
-public interface VocabularyReporitory extends MongoRepository<VocabularyData, String> {
+public interface VocabularyRepository extends MongoRepository<VocabularyData, String> {
 }

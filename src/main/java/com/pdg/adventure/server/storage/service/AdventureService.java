@@ -16,9 +16,8 @@ import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.storage.mongo.CascadeDeleteHelper;
 import com.pdg.adventure.server.storage.repository.AdventureRepository;
 import com.pdg.adventure.server.storage.repository.LocationRepository;
-import com.pdg.adventure.server.storage.repository.VocabularyReporitory;
+import com.pdg.adventure.server.storage.repository.VocabularyRepository;
 import com.pdg.adventure.server.storage.repository.WordRepository;
-import com.pdg.adventure.server.support.MapperSupporter;
 
 @Service
 public class AdventureService {
@@ -27,15 +26,13 @@ public class AdventureService {
     private final AdventureRepository adventureRepository;
     private final LocationRepository locationRepository;
     private final WordRepository wordRepository;
-    private final VocabularyReporitory vocabularyRepository;
+    private final VocabularyRepository vocabularyRepository;
     private final CascadeDeleteHelper cascadeDeleteHelper;
 
     public AdventureService(LocationRepository aLocationRepository,
                             AdventureRepository anAdventureRepository,
                             WordRepository aWordRepository,
-                            VocabularyReporitory aVocabularyRepository,
-                            MapperSupporter aMappingService,
-                            MessageService aMessageService,
+                            VocabularyRepository aVocabularyRepository,
                             CascadeDeleteHelper aCascadeDeleteHelper) {
         locationRepository = aLocationRepository;
         adventureRepository = anAdventureRepository;

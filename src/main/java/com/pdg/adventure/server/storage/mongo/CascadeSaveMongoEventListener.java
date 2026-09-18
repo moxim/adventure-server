@@ -22,7 +22,10 @@ import com.pdg.adventure.api.Ided;
 @Order(Ordered.LOWEST_PRECEDENCE)  // Run after other listeners (like UuidIdGenerationMongoEventListener)
 public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Object> {
     private final ThreadLocal<Set<Object>> processedObjects = ThreadLocal.withInitial(HashSet::new);
-    // Per-thread to avoid cycles
+    // Separate from processedObjects: the UUID-assignment pass runs before the cascade-save pass over
+    // the same object graph, so sharing one set would make the cascade pass see everything as already
+    // visited and skip it. Per-thread to avoid cycles.
+    private final ThreadLocal<Set<Object>> uuidAssignmentVisited = ThreadLocal.withInitial(HashSet::new);
     private final ThreadLocal<Integer> eventDepth = ThreadLocal.withInitial(() -> 0);
 
     private static final Logger LOG = LoggerFactory.getLogger(CascadeSaveMongoEventListener.class);
@@ -41,6 +44,7 @@ public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Ob
         int depth = eventDepth.get();
         if (depth == 0) {
             processedObjects.get().clear();
+            uuidAssignmentVisited.get().clear();
         }
         eventDepth.set(++depth);
 
@@ -54,11 +58,15 @@ public class CascadeSaveMongoEventListener extends AbstractMongoEventListener<Ob
         eventDepth.set(eventDepth.get() - 1);
         if (eventDepth.get() == 0) {
             processedObjects.remove();
+            uuidAssignmentVisited.remove();
             eventDepth.remove();
         }
     }
 
     private void assignUuidsRecursively(Object obj) {
+        if (obj == null || !uuidAssignmentVisited.get().add(obj)) {
+            return; // null, or already visited on this pass - avoid infinite recursion on cycles
+        }
         Class<?> current = obj.getClass();
         while (current != null && current != Object.class) {
             ReflectionUtils.doWithFields(current, field -> {
