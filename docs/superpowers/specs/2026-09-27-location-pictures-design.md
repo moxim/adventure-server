@@ -215,10 +215,10 @@ Cloned from the `location` package's CRUD triad
 - `PictureEditorView` (`.../pictures/edit`, `.../pictures/new`) —
   `TextField name`, and a Vaadin `Upload` component (**first use in this
   codebase** — no prior art to mirror for the upload UX itself, only for
-  the surrounding CRUD scaffold) accepting image files, storing bytes +
-  content-type directly into `PictureData.content`/`contentType` on save.
-  `ResetBackSaveView` for the standard button row, matching
-  `LocationEditorView`.
+  the surrounding CRUD scaffold), constrained to PNG/WebP/JPEG and 2MB max
+  (see "Upload constraints" below), storing bytes + content-type directly
+  into `PictureData.content`/`contentType` on save. `ResetBackSaveView` for
+  the standard button row, matching `LocationEditorView`.
 - **Delete guard**: new `PictureUsageTracker`
   (mirrors `LocationUsageTracker`) scans the adventure's
   `LocationData.pictureId` values and all `PictureActionData.pictureId`
@@ -281,21 +281,14 @@ One test class per layer, matching the codebase's existing convention:
     `docs/superpowers/specs/2026-09-11-process-arrival-timing-design.md`
     §Open questions #4.
 
+## Upload constraints (resolved)
+
+- **Accepted formats**: PNG, WebP, and JPEG only — via `Upload.setAcceptedFileTypes("image/png", "image/webp", "image/jpeg")`. `PictureEditorView` rejects anything else at the component level; `PictureData.contentType` is expected to always be one of these three.
+- **Maximum size**: 2MB per picture, via `Upload.setMaxFileSize(2 * 1024 * 1024)`. Comfortably clear of the 16MB Mongo per-document cap for a single `PictureData` document.
+
 ## Open questions
 
-1. **Upload size limit.** No limit specified by the user. Recommend
-   reusing Vaadin `Upload`'s built-in `setMaxFileSize(...)` at a
-   conservative default (e.g. 2MB) given the byte[]-in-Mongo storage
-   decision (Decision 1) — large images stored this way risk the 16MB
-   per-document Mongo cap in aggregate across many pictures, though each
-   `PictureData` is its own document so the cap is per-picture, not
-   per-adventure. To confirm with the user before implementation, or defer
-   to a sensible default and revisit if it proves too restrictive.
-2. **Accepted image formats.** Not specified. Recommend PNG/JPEG/GIF/WebP
-   via `Upload`'s `setAcceptedFileTypes(...)`, matching what
-   `Image`/`StreamResource` can render in-browser without additional
-   conversion.
-3. **Exact name of `LocationData`'s persistence access point** (repository/
+1. **Exact name of `LocationData`'s persistence access point** (repository/
    service interface) needs confirming during implementation so
    `PictureService` follows the same shape — not investigated in detail
    during design, called out as a to-verify item in Section A rather than
