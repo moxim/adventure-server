@@ -50,15 +50,17 @@ carries the trade-off that was rejected, for future reference.
 4. **A too-dark-to-see location shows no picture**, mirrored on the same gate
    that already suppresses `getLongDescription()`
    (`Location.java:130-149`, `isTooDarkToSee()`).
-5. **Runtime display is a same-turn "flash," not a persistent overlay that
-   survives until explicitly replaced.** Originally designed as a persistent
-   `GameContext.currentPictureId` that stayed put across turns until a move
-   or another `PICTURE` action changed it. Revised after the requirement that
-   pictures only show on first-visit arrival, on look, and on `PICTURE` — a
-   persistent field would keep the arrival picture on screen through
-   unrelated subsequent turns (e.g. "take sword"), which is not what was
-   asked for. The final mechanism resets to "no picture" once per sub-command
-   and only the three named triggers populate it (see Section C).
+5. **Runtime display is persistent, not reset on every sub-command.** A
+   picture, once shown, stays on screen through unrelated commands (e.g.
+   "take sword", "inventory") and only changes when one of the three
+   triggers fires again: a move (to the new location's picture, or to no
+   picture if not a first visit — "replaced even with nothing"), an explicit
+   look (always re-shows the current location's picture), or a `PICTURE`
+   action. A first draft of this design reset `currentPictureId` to `null`
+   once per sub-command and required one of the three triggers to
+   repopulate it every time — rejected because it cleared the picture after
+   any intervening non-triggering command, which is not the desired
+   behavior. See Section C.
 6. **The long/short description decision already made by `Location` is the
    single source of truth for the picture trigger, rather than a duplicated
    "is this a picture moment" check.** Originally planned as a brand-new
@@ -125,17 +127,19 @@ Mirrors the `MessageAction`/`MessageActionData` triad exactly
 
 ## C. Runtime trigger mechanism (final, revised)
 
-`GameContext` gains `private String currentPictureId;`.
+`GameContext` gains `private String currentPictureId;`, initially `null`.
+**No reset hook is added to `GameLoop`** — unlike `currentPreposition`/
+`currentAdverb`/`currentNoun2`/`currentAdjective2` (reset every sub-command
+to avoid the documented "location-staleness trap",
+`GameLoop.java:51-54`), `currentPictureId` is deliberately *not* reset
+there. It only ever changes via one of the three triggers below; any other
+sub-command (e.g. "take sword", "inventory") leaves it untouched, so
+whatever picture was last shown remains on screen.
 
-**Reset, once per sub-command.** `GameLoop.processCommand`'s per-sub-command
-loop (`GameLoop.java:51-54`) already resets `currentPreposition`/
-`currentAdverb`/`currentNoun2`/`currentAdjective2` fresh before each
-sub-command dispatch, specifically to prevent staleness leaking across
-sub-commands within one `submit()` call (the documented "location-staleness
-trap"). `gameContext.setCurrentPictureId(null)` is added to that same reset
-block. This is what makes "no picture" the default for every sub-command
-unless one of the two triggers below, or a `PICTURE` action, sets it during
-that sub-command's execution.
+A useful side effect: a **failed** move (e.g. "go north" with no exit that
+way) never reaches the code that sets `currentPictureId`, so a failed move
+correctly leaves the current picture in place too — only a *successful*
+move counts as "the move that replaces the picture."
 
 **Triggers, unified with the existing long/short description decision.**
 `Location` already decides between long and short description text at
@@ -184,10 +188,13 @@ public LocationDescription getLookDescription() {
   `RunArrivalProcessesAction` override-precedence gotcha,
   `RunArrivalProcessesAction.java:15-22`) as long as they attach a `PICTURE`
   action to their replacement.
-- Any sub-command that is neither a first-visit arrival, a look, nor a
-  `PICTURE` action (e.g. movement to an already-visited location, "take
-  sword", "inventory") leaves `currentPictureId == null` for that
-  sub-command — `AdventureRunView` hides the image region.
+- A move to an **already-visited** location still counts as a trigger (it
+  calls `getArrivalDescription()`, which returns `pictureId == null` for a
+  repeat visit) — so `currentPictureId` is explicitly cleared, matching
+  "replaced even with nothing." Any *other* sub-command that is neither a
+  move, a look, nor a `PICTURE` action (e.g. "take sword", "inventory")
+  leaves `currentPictureId` completely untouched — the previously shown
+  picture (or lack of one) persists.
 - Initial arrival (`AdventureRunView.beforeEnter()`,
   `AdventureRunView.java:116`) seeds `currentPictureId` the same way, via
   `getCurrentLocation().getArrivalDescription()`, since the starting
@@ -262,17 +269,17 @@ One test class per layer, matching the codebase's existing convention:
   - picture shown on first-arrival `beforeEnter()`,
   - picture cleared on a move to an already-visited location,
   - picture shown again on an explicit "look" after being cleared,
-  - `PICTURE` action overrides for that sub-command only, cleared on the
-    following sub-command unless re-triggered,
+  - `PICTURE` action shows its picture, which then **persists** through a
+    subsequent unrelated command (e.g. "take sword") — asserts no reset
+    hook exists, not just that the trigger works,
+  - a failed move (invalid direction) leaves the previously shown picture
+    unchanged,
   - suppressed picture (both arrival and look) when the location is dark,
   - a conjunction turn ("go north and look") — confirm the look's picture
-    (or lack thereof) is what's visible at the end of the turn, since the
-    per-sub-command reset means the last sub-command's outcome wins, same
+    is what's visible at the end of the turn (last trigger wins), same
     principle already verified for `runProcesses()` double-firing in
     `docs/superpowers/specs/2026-09-11-process-arrival-timing-design.md`
     §Open questions #4.
-- `GameLoopTest` (if one exists covering the per-sub-command reset loop) —
-  add a case asserting `currentPictureId` resets between sub-commands.
 
 ## Open questions
 
