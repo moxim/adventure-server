@@ -24,3 +24,4 @@ src/main/frontend/generated/
 vite.generated.ts
 .superpowers/
 package-lock.json
+.worktrees/
