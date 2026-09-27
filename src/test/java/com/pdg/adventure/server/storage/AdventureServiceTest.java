@@ -19,6 +19,7 @@ import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.storage.mongo.CascadeDeleteHelper;
 import com.pdg.adventure.server.storage.repository.AdventureRepository;
 import com.pdg.adventure.server.storage.repository.LocationRepository;
+import com.pdg.adventure.server.storage.repository.PictureRepository;
 import com.pdg.adventure.server.storage.repository.VocabularyRepository;
 import com.pdg.adventure.server.storage.repository.WordRepository;
 import com.pdg.adventure.server.storage.service.AdventureService;
@@ -31,13 +32,14 @@ class AdventureServiceTest {
     @Mock private WordRepository wordRepository;
     @Mock private VocabularyRepository vocabularyRepository;
     @Mock private CascadeDeleteHelper cascadeDeleteHelper;
+    @Mock private PictureRepository pictureRepository;
 
     private AdventureService adventureService;
 
     @BeforeEach
     void setUp() {
         adventureService = new AdventureService(locationRepository, adventureRepository, wordRepository,
-                vocabularyRepository, cascadeDeleteHelper);
+                vocabularyRepository, cascadeDeleteHelper, pictureRepository);
     }
 
     @Test

@@ -11,11 +11,13 @@ import java.util.UUID;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.storage.mongo.CascadeDeleteHelper;
 import com.pdg.adventure.server.storage.repository.AdventureRepository;
 import com.pdg.adventure.server.storage.repository.LocationRepository;
+import com.pdg.adventure.server.storage.repository.PictureRepository;
 import com.pdg.adventure.server.storage.repository.VocabularyRepository;
 import com.pdg.adventure.server.storage.repository.WordRepository;
 
@@ -28,17 +30,20 @@ public class AdventureService {
     private final WordRepository wordRepository;
     private final VocabularyRepository vocabularyRepository;
     private final CascadeDeleteHelper cascadeDeleteHelper;
+    private final PictureRepository pictureRepository;
 
     public AdventureService(LocationRepository aLocationRepository,
                             AdventureRepository anAdventureRepository,
                             WordRepository aWordRepository,
                             VocabularyRepository aVocabularyRepository,
-                            CascadeDeleteHelper aCascadeDeleteHelper) {
+                            CascadeDeleteHelper aCascadeDeleteHelper,
+                            PictureRepository aPictureRepository) {
         locationRepository = aLocationRepository;
         adventureRepository = anAdventureRepository;
         wordRepository = aWordRepository;
         vocabularyRepository = aVocabularyRepository;
         cascadeDeleteHelper = aCascadeDeleteHelper;
+        pictureRepository = aPictureRepository;
     }
 
     public LocationData findLocationById(String id) {
@@ -65,6 +70,19 @@ public class AdventureService {
 
     public int getCountOfLocations() {
         return getLocations().size();
+    }
+
+    public void savePictureData(PictureData aPictureData) {
+        LOG.debug("Saving picture data: {}", aPictureData);
+        LOG.info("Saving picture data: {}", aPictureData.getId());
+        pictureRepository.save(aPictureData);
+    }
+
+    public void deletePicture(String anId) {
+        LOG.info("Deleting picture: {}", anId);
+        pictureRepository.findById(anId).ifPresentOrElse(
+                pictureRepository::delete,
+                () -> LOG.warn("Picture not found for deletion: {}", anId));
     }
 
     public void saveAdventureData(AdventureData anAdventure) {
