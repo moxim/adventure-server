@@ -13,12 +13,10 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.*;
-import com.vaadin.flow.server.StreamResource;
 import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -162,8 +160,12 @@ public class PictureEditorView extends VerticalLayout
             preview.setVisible(false);
             return;
         }
-        StreamResource resource = new StreamResource(pictureData.getId(), () -> new ByteArrayInputStream(content));
-        preview.setSrc(resource);
+        String contentType = pendingContent != null ? pendingContentType : pictureData.getContentType();
+        preview.setSrc(event -> {
+            event.inline();
+            event.setContentType(contentType);
+            event.getOutputStream().write(content);
+        });
         preview.setVisible(true);
     }
 

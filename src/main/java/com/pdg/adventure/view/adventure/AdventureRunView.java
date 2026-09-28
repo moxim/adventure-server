@@ -8,10 +8,8 @@ import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
-import com.vaadin.flow.server.StreamResource;
 import jakarta.annotation.security.RolesAllowed;
 
-import java.io.ByteArrayInputStream;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -211,10 +209,11 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             return;
         }
 
-        StreamResource resource = new StreamResource(picture.getId(),
-                () -> new ByteArrayInputStream(picture.getContent()));
-        resource.setContentType(picture.getContentType());
-        pictureDisplay.setSrc(resource);
+        pictureDisplay.setSrc(event -> {
+            event.inline();
+            event.setContentType(picture.getContentType());
+            event.getOutputStream().write(picture.getContent());
+        });
         pictureContainer.setVisible(true);
     }
 

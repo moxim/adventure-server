@@ -18,10 +18,8 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
-import com.vaadin.flow.server.StreamResource;
 import jakarta.annotation.security.RolesAllowed;
 
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -158,9 +156,11 @@ public class PictureMenuView extends VerticalLayout implements BeforeLeaveObserv
     private Image thumbnailFor(PictureData picture) {
         Image thumbnail = new Image();
         thumbnail.setMaxHeight("48px");
-        StreamResource resource = new StreamResource(picture.getId(),
-                () -> new ByteArrayInputStream(picture.getContent()));
-        thumbnail.setSrc(resource);
+        thumbnail.setSrc(event -> {
+            event.inline();
+            event.setContentType(picture.getContentType());
+            event.getOutputStream().write(picture.getContent());
+        });
         return thumbnail;
     }
 
