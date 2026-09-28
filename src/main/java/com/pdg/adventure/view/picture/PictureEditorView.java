@@ -51,6 +51,8 @@ public class PictureEditorView extends VerticalLayout
     private Button resetButton;
     private String pageTitle;
     private boolean hasPendingUpload;
+    private byte[] pendingContent;
+    private String pendingContentType;
 
     private transient String pictureId;
     private transient PictureData pictureData;
@@ -81,10 +83,7 @@ public class PictureEditorView extends VerticalLayout
         upload.addSucceededListener(event -> {
             try {
                 byte[] bytes = uploadBuffer.getInputStream().readAllBytes();
-                pictureData.setContent(bytes);
-                pictureData.setContentType(event.getMIMEType());
-                hasPendingUpload = true;
-                updatePreview();
+                stagePendingUpload(bytes, event.getMIMEType());
                 saveButton.setEnabled(binder.isValid());
             } catch (IOException e) {
                 LOG.error("Failed to read uploaded picture", e);
@@ -106,7 +105,8 @@ public class PictureEditorView extends VerticalLayout
               .bind(PictureViewModel::getName, PictureViewModel::setName);
 
         binder.addStatusChangeListener(event -> {
-            boolean isValid = event.getBinder().isValid() && pictureData.getContent() != null;
+            boolean isValid = event.getBinder().isValid()
+                               && (pictureData.getContent() != null || pendingContent != null);
             boolean hasChanges = event.getBinder().hasChanges() || hasPendingUpload;
             saveButton.setEnabled(hasChanges && isValid);
             resetButton.setEnabled(hasChanges);
@@ -119,13 +119,22 @@ public class PictureEditorView extends VerticalLayout
         add(nameField, uploadRow, resetBackSaveView);
     }
 
+    // Package-private so a browserless test can exercise the real staging path directly, since
+    // driving Vaadin's Upload component end-to-end is impractical in that environment.
+    void stagePendingUpload(byte[] bytes, String contentType) {
+        pendingContent = bytes;
+        pendingContentType = contentType;
+        hasPendingUpload = true;
+        updatePreview();
+    }
+
     private void updatePreview() {
-        if (pictureData.getContent() == null) {
+        byte[] content = pendingContent != null ? pendingContent : pictureData.getContent();
+        if (content == null) {
             preview.setVisible(false);
             return;
         }
-        StreamResource resource = new StreamResource(pictureData.getId(),
-                () -> new ByteArrayInputStream(pictureData.getContent()));
+        StreamResource resource = new StreamResource(pictureData.getId(), () -> new ByteArrayInputStream(content));
         preview.setSrc(resource);
         preview.setVisible(true);
     }
@@ -144,6 +153,9 @@ public class PictureEditorView extends VerticalLayout
         resetButton.addClickListener(_ -> {
             binder.readBean(pvm);
             hasPendingUpload = false;
+            pendingContent = null;
+            pendingContentType = null;
+            updatePreview();
         });
         resetBackSaveView.getCancel().addClickShortcut(Key.ESCAPE);
 
@@ -158,7 +170,11 @@ public class PictureEditorView extends VerticalLayout
 
     private void validateSave(PictureViewModel aPictureViewModel) {
         try {
-            if (binder.validate().isOk() && pictureData.getContent() != null) {
+            if (binder.validate().isOk() && (pictureData.getContent() != null || pendingContent != null)) {
+                if (hasPendingUpload) {
+                    pictureData.setContent(pendingContent);
+                    pictureData.setContentType(pendingContentType);
+                }
                 binder.writeBean(aPictureViewModel);
                 final PictureData data = aPictureViewModel.getData();
                 adventureData.getPictureData().put(aPictureViewModel.getId(), data);
@@ -200,6 +216,8 @@ public class PictureEditorView extends VerticalLayout
 
         saveButton.setEnabled(false);
         hasPendingUpload = false;
+        pendingContent = null;
+        pendingContentType = null;
         pvm = new PictureViewModel(pictureData);
         pvm.setAdventureId(adventureData.getId());
 

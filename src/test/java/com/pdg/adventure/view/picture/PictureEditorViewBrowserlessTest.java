@@ -130,4 +130,22 @@ class PictureEditorViewBrowserlessTest extends BrowserlessTest {
 
         assertThat(reset.isEnabled()).isTrue();
     }
+
+    @Test
+    void uploadingOnAnExistingPicture_thenClickingReset_doesNotMutateTheLivePictureData() {
+        enterWithPictureId("pic-1");
+
+        view.stagePendingUpload(new byte[] {9, 9, 9}, "image/webp");
+
+        // Also change the name so the Reset button becomes enabled (its enablement is driven by
+        // the binder's status-change listener, which only fires on a bound-field change).
+        TextField nameField = find(TextField.class, view).all().getFirst();
+        test(nameField).setValue("Updated name");
+
+        Button reset = find(Button.class, view).withText("Reset").single();
+        test(reset).click();
+
+        assertThat(pictureData.getContent()).isEqualTo(new byte[] {1, 2, 3});
+        assertThat(pictureData.getContentType()).isEqualTo("image/png");
+    }
 }

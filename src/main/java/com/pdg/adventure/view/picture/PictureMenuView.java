@@ -184,7 +184,7 @@ public class PictureMenuView extends VerticalLayout implements BeforeLeaveObserv
         ViewSupporter.showUsages("Picture Usage", "picture", aPicture.getId(), usages);
     }
 
-    private void confirmDeletePicture(PictureData aPicture) {
+    void confirmDeletePicture(PictureData aPicture) {
         String pictureId = aPicture.getId();
         int usageCount = PictureUsageTracker.countPictureUsages(adventureData, pictureId);
 
@@ -196,16 +196,23 @@ public class PictureMenuView extends VerticalLayout implements BeforeLeaveObserv
                     5000, Notification.Position.MIDDLE);
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         } else {
-            final ConfirmDialog dialog = ViewSupporter.getConfirmDialog("Delete Picture", "picture",
-                                                                        aPicture.getName());
-            dialog.addConfirmListener(_ -> {
-                adventureData.getPictureData().remove(pictureId);
-                adventureService.deletePicture(pictureId);
-                adventureService.saveAdventureData(adventureData);
-                fillGUI();
-            });
-            dialog.open();
+            buildDeleteConfirmDialog(aPicture).open();
         }
+    }
+
+    // Package-private so a browserless test can drive the dialog directly - a GridContextMenu
+    // item click has no reliable way to be triggered from such a test.
+    ConfirmDialog buildDeleteConfirmDialog(PictureData aPicture) {
+        String pictureId = aPicture.getId();
+        final ConfirmDialog dialog = ViewSupporter.getConfirmDialog("Delete Picture", "picture",
+                                                                    aPicture.getName());
+        dialog.addConfirmListener(_ -> {
+            adventureData.getPictureData().remove(pictureId);
+            adventureService.deletePicture(pictureId);
+            adventureService.saveAdventureData(adventureData);
+            fillGUI();
+        });
+        return dialog;
     }
 
     @Override
