@@ -24,6 +24,7 @@ import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.view.item.AllItemsMenuView;
 import com.pdg.adventure.view.location.LocationsMenuView;
 import com.pdg.adventure.view.message.MessagesMenuView;
+import com.pdg.adventure.view.picture.PictureMenuView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
@@ -89,6 +90,14 @@ public class AdventureEditorView extends VerticalLayout
         Button editItemsButton = new Button("Items", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(AllItemsMenuView.class,
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                            adventureData.getId())));
+            }
+        });
+
+        Button editPicturesButton = new Button("Pictures", _ -> {
+            if (binder.writeBeanIfValid(adventureData)) {
+                UI.getCurrent().navigate(PictureMenuView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                                             adventureData.getId())));
             }
@@ -164,6 +173,7 @@ public class AdventureEditorView extends VerticalLayout
                                                           editMessagesButton, editSystemMessagesButton,
                                                           editLocationsButton,
                                                           editItemsButton,
+                                                          editPicturesButton,
                                                           arrivalButton, workflowButton, responsesButton,
                                                           testSaveRow);
 

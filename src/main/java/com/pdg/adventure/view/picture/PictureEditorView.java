@@ -83,7 +83,21 @@ public class PictureEditorView extends VerticalLayout
         upload.addSucceededListener(event -> {
             try {
                 byte[] bytes = uploadBuffer.getInputStream().readAllBytes();
-                stagePendingUpload(bytes, event.getMIMEType());
+                if (bytes.length > MAX_FILE_SIZE_BYTES) {
+                    Notification notification = Notification.show("The uploaded file is too large.", 5000,
+                                                                   Notification.Position.MIDDLE);
+                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    return;
+                }
+                String sniffedContentType = sniffContentType(bytes);
+                if (sniffedContentType == null) {
+                    Notification notification = Notification.show(
+                            "The uploaded file is not a recognized PNG, JPEG, or WebP image.", 5000,
+                            Notification.Position.MIDDLE);
+                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    return;
+                }
+                stagePendingUpload(bytes, sniffedContentType);
                 saveButton.setEnabled(binder.isValid());
             } catch (IOException e) {
                 LOG.error("Failed to read uploaded picture", e);
@@ -117,6 +131,20 @@ public class PictureEditorView extends VerticalLayout
 
         HorizontalLayout uploadRow = new HorizontalLayout(upload, preview);
         add(nameField, uploadRow, resetBackSaveView);
+    }
+
+    private static String sniffContentType(byte[] bytes) {
+        if (bytes.length >= 8 && bytes[0] == (byte) 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) {
+            return "image/png";
+        }
+        if (bytes.length >= 3 && bytes[0] == (byte) 0xFF && bytes[1] == (byte) 0xD8 && bytes[2] == (byte) 0xFF) {
+            return "image/jpeg";
+        }
+        if (bytes.length >= 12 && bytes[0] == 'R' && bytes[1] == 'I' && bytes[2] == 'F' && bytes[3] == 'F'
+            && bytes[8] == 'W' && bytes[9] == 'E' && bytes[10] == 'B' && bytes[11] == 'P') {
+            return "image/webp";
+        }
+        return null;
     }
 
     // Package-private so a browserless test can exercise the real staging path directly, since
@@ -178,12 +206,16 @@ public class PictureEditorView extends VerticalLayout
                 binder.writeBean(aPictureViewModel);
                 final PictureData data = aPictureViewModel.getData();
                 adventureData.getPictureData().put(aPictureViewModel.getId(), data);
+                adventureService.savePictureData(data);
                 adventureService.saveAdventureData(adventureData);
                 hasPendingUpload = false;
                 saveButton.setEnabled(false);
             }
         } catch (Exception e) {
             LOG.error(e.getMessage());
+            Notification notification = Notification.show("Could not save the picture: " + e.getMessage(), 5000,
+                                                           Notification.Position.MIDDLE);
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
     }
 

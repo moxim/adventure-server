@@ -5,7 +5,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.RouteParameters;
@@ -119,7 +118,7 @@ class PictureMenuViewBrowserlessTest extends BrowserlessTest {
     // from a browserless test - this instead calls the package-private confirmDeletePicture()
     // directly, exercising the real usage-guard logic in production code.
     @Test
-    void deletingAPictureStillReferencedByALocation_showsAnErrorNotification_andDoesNotDelete() {
+    void deletingAPictureStillReferencedByALocation_showsTheUsageDialog_andDoesNotDelete() {
         LocationData location = new LocationData();
         location.setId("loc-1");
         location.setPictureId("pic-1");
@@ -130,7 +129,7 @@ class PictureMenuViewBrowserlessTest extends BrowserlessTest {
         view.confirmDeletePicture(pictureData);
 
         assertThat(adventureData.getPictureData()).containsKey("pic-1");
-        assertThat(find(Notification.class).single()).isNotNull();
+        assertThat(find(ConfirmDialog.class).single()).isNotNull();
     }
 
     // Unblocked path: no usages, so confirmDeletePicture() would build and open the dialog.

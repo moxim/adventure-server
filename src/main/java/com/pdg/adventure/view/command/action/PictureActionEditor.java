@@ -27,7 +27,7 @@ public class PictureActionEditor extends ActionEditorComponent<PictureActionData
     @Override
     protected void buildUI() {
         H4 title = new H4("Picture Action");
-        Span description = new Span("Show a picture to the player for the rest of this turn");
+        Span description = new Span("Show a picture to the player until the next move, look, or picture action");
         description.getStyle().set("color", "var(--lumo-secondary-text-color)");
 
         List<PictureData> pictures = new ArrayList<>(adventureData.getPictureData().values());

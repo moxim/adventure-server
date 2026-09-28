@@ -107,6 +107,24 @@ class AdventureRunSessionFactoryTest {
     }
 
     @Test
+    void start_lookThenUnrelatedCommand_picturePersistsAcrossTheUnrelatedCommand() {
+        AdventureData adventureData = adventureWithOneLocation("adv-1", "loc-1");
+        when(adventureService.findAdventureById("adv-1")).thenReturn(Optional.of(adventureData));
+        when(startLocation.getId()).thenReturn("loc-1");
+        when(startLocation.getLookDescription())
+                .thenReturn(new Location.LocationDescription("A grand throne room.", "pic-1"));
+        Adventure adventure = adventureBoundTo(startLocation, "loc-1");
+        when(adventureMapper.mapToBO(adventureData)).thenReturn(adventure);
+
+        AdventureRunSession session = factory.start(adventureData);
+        session.submit("look");
+        assertThat(gameContext.getCurrentPictureId()).isEqualTo("pic-1");
+
+        session.submit("inventory");
+        assertThat(gameContext.getCurrentPictureId()).isEqualTo("pic-1");
+    }
+
+    @Test
     void start_compoundCommand_runsBothSubCommandsThroughTheRealSeededVocabulary() {
         // "and" must be seeded by the real registerBaseVerbs() production path, not just by a
         // hand-built test Vocabulary - this is the browser/"Run Adventure" entry point.

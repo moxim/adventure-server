@@ -30,7 +30,6 @@ public class AdventureData extends DatedData {
     private Map<String, LocationData> locationData;
 
     @DBRef(lazy = false)
-    @CascadeSave
     @CascadeDelete
     private Map<String, PictureData> pictureData;
     private String currentLocationId;
