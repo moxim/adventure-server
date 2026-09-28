@@ -1,19 +1,25 @@
 package com.pdg.adventure.view.adventure;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.messages.MessageInput;
 import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
+import com.vaadin.flow.server.StreamResource;
 import jakarta.annotation.security.RolesAllowed;
 
+import java.io.ByteArrayInputStream;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.engine.AdventureRunSession;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
@@ -59,8 +65,12 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     private final transient VariableProvider variableProvider;
     private final MessageList messageList = new MessageList();
     private final MessageInput messageInput = new MessageInput();
+    private final Image pictureDisplay = new Image();
+    private final Div pictureContainer = new Div(pictureDisplay);
 
     private transient AdventureRunSession session;
+    private transient AdventureData adventureData;
+    private String displayedPictureId;
     private String adventureId;
     private String pageTitle = "Adventure";
     private Origin origin = Origin.EDITOR;
@@ -92,9 +102,16 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         chatLayout.setPadding(false);
         chatLayout.expand(messageListContainer);
 
+        pictureContainer.setWidthFull();
+        pictureContainer.getStyle().set("flex", "0 0 50%");
+        pictureContainer.setVisible(false);
+        pictureDisplay.setWidthFull();
+        pictureDisplay.setHeightFull();
+        pictureDisplay.getStyle().set("object-fit", "contain");
+
         setSizeFull();
         setPadding(true);
-        add(backButton, chatLayout);
+        add(backButton, pictureContainer, chatLayout);
         expand(chatLayout);
     }
 
@@ -131,7 +148,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             }
             return;
         }
-        AdventureData adventureData = resolvedAdventure.get();
+        adventureData = resolvedAdventure.get();
         adventureId = adventureData.getId();
         pageTitle = (origin == Origin.LIBRARY ? "Playing: " : "Test: ") + adventureData.getTitle();
 
@@ -146,6 +163,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
                                                                  session.getGameContext(), variableProvider);
         ExecutionResult result = movePlayerAction.execute();
         renderNarratorLines(List.of(result.getResultMessage()));
+        refreshPictureDisplay();
     }
 
     private static Origin resolveOrigin(Location location) {
@@ -169,6 +187,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     private void handleInput(final String input) {
         RunResult result = session.submit(input);
         renderNarratorLines(result.lines());
+        refreshPictureDisplay();
         messageInput.setEnabled(!result.gameOver());
     }
 
@@ -177,6 +196,26 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             return;
         }
         messageList.addItem(new MessageListItem(String.join("\n", lines))); //, Instant.now(), NARRATOR));
+    }
+
+    private void refreshPictureDisplay() {
+        String pictureId = session.getGameContext().getCurrentPictureId();
+        if (Objects.equals(pictureId, displayedPictureId)) {
+            return;
+        }
+        displayedPictureId = pictureId;
+
+        PictureData picture = pictureId == null ? null : adventureData.getPictureData().get(pictureId);
+        if (picture == null) {
+            pictureContainer.setVisible(false);
+            return;
+        }
+
+        StreamResource resource = new StreamResource(picture.getId(),
+                () -> new ByteArrayInputStream(picture.getContent()));
+        resource.setContentType(picture.getContentType());
+        pictureDisplay.setSrc(resource);
+        pictureContainer.setVisible(true);
     }
 
     private void navigateBack() {
