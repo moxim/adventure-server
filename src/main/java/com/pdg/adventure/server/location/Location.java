@@ -29,6 +29,7 @@ public class Location extends Thing implements Visitable {
     // light while it's being carried, not just while it's lying on the floor.
     private Container carriedItems;
     private long timesVisited;
+    private String pictureId;
 
     public Location(DescriptionProvider aDescriptionProvider) {
         super(aDescriptionProvider);
@@ -201,5 +202,13 @@ public class Location extends Thing implements Visitable {
 
     public void setItemContainer(final Container aItemContainer) {
         itemContainer = aItemContainer;
+    }
+
+    public void setPictureId(String aPictureId) {
+        pictureId = aPictureId;
+    }
+
+    public String getPictureId() {
+        return pictureId;
     }
 }

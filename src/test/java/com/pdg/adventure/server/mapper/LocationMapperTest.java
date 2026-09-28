@@ -359,6 +359,43 @@ class LocationMapperTest {
         verify(directionMapper, times(3)).mapToDOs(anyList());
     }
 
+    @Test
+    @DisplayName("Test 9: mapToBO - copies the pictureId")
+    void mapToBO_copiesThePictureId() {
+        // Given: LocationData with a pictureId set
+        LocationData locationData = new LocationData();
+        locationData.setId("treasure-room");
+        locationData.setDescriptionData(descriptionData);
+        locationData.setPictureId("treasure-chest");
+
+        when(mapperSupporter.getMappedLocation("treasure-room")).thenReturn(null);
+        when(descriptionMapper.mapToBO(descriptionData)).thenReturn(descriptionProvider);
+
+        // When: mapping to business object
+        Location result = locationMapper.mapToBO(locationData);
+
+        // Then: pictureId should be copied across
+        assertThat(result.getPictureId()).isEqualTo("treasure-chest");
+    }
+
+    @Test
+    @DisplayName("Test 10: mapToDO - copies the pictureId")
+    void mapToDO_copiesThePictureId() {
+        // Given: Location business object with a pictureId set
+        Location location = new Location(descriptionProvider, itemContainer);
+        location.setId("treasure-room");
+        location.setPictureId("treasure-chest");
+
+        when(descriptionMapper.mapToDO(descriptionProvider)).thenReturn(descriptionData);
+        when(itemContainerMapper.mapToDO(itemContainer)).thenReturn(new ItemContainerData("treasure-room"));
+
+        // When: mapping to data object
+        LocationData result = locationMapper.mapToDO(location);
+
+        // Then: pictureId should be copied across
+        assertThat(result.getPictureId()).isEqualTo("treasure-chest");
+    }
+
     // Helper methods to create test data
     private LocationData createLocationData(String id, int lumen, int timesVisited) {
         LocationData locationData = new LocationData();
