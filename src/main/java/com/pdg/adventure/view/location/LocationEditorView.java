@@ -3,6 +3,7 @@ package com.pdg.adventure.view.location;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
@@ -22,6 +23,7 @@ import static com.pdg.adventure.model.Word.Type.NOUN;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
@@ -53,6 +55,7 @@ public class LocationEditorView extends VerticalLayout
     private final Binder<LocationViewModel> binder;
     private final VocabularyPickerField adjectiveSelector;
     private final VocabularyPickerField nounSelector;
+    private final ComboBox<PictureData> pictureSelector;
 
     private Button saveButton;
     private Button resetButton;
@@ -85,6 +88,7 @@ public class LocationEditorView extends VerticalLayout
         TextArea longDescription = getLongDescTextArea();
         IntegerField lumen = getLumenField();
         IntegerField exits = getExitsField();
+        pictureSelector = getPictureSelector();
 
         final ResetBackSaveView resetBackSaveView = setUpNavigationButtons();
 
@@ -96,6 +100,11 @@ public class LocationEditorView extends VerticalLayout
         binder.bind(shortDescription, LocationViewModel::getShortDescription, LocationViewModel::setShortDescription);
         binder.bind(longDescription, LocationViewModel::getLongDescription, LocationViewModel::setLongDescription);
         binder.bind(lumen, LocationViewModel::getLumen, LocationViewModel::setLumen);
+        binder.forField(pictureSelector)
+              .withConverter(
+                      picture -> picture == null ? null : picture.getId(),
+                      id -> id == null ? null : adventureData.getPictureData().get(id))
+              .bind(LocationViewModel::getPictureId, LocationViewModel::setPictureId);
         binder.bindReadOnly(locationIdTF, LocationViewModel::getId);
         binder.bindReadOnly(adventureIdTF, LocationViewModel::getAdventureId);
         binder.bindReadOnly(exits, LocationViewModel::getNumberOfExits);
@@ -109,7 +118,7 @@ public class LocationEditorView extends VerticalLayout
         });
 
         HorizontalLayout h1 = new HorizontalLayout(adjectiveSelector, nounSelector);
-        HorizontalLayout h2 = new HorizontalLayout(lumen, exits);
+        HorizontalLayout h2 = new HorizontalLayout(lumen, exits, pictureSelector);
 
         VerticalLayout hl = new VerticalLayout(h1, h2);
 
@@ -185,6 +194,15 @@ public class LocationEditorView extends VerticalLayout
         return field;
     }
 
+    private ComboBox<PictureData> getPictureSelector() {
+        ComboBox<PictureData> field = new ComboBox<>("Default Picture");
+        field.setItemLabelGenerator(PictureData::getName);
+        field.setClearButtonVisible(true);
+        field.setTooltipText(
+                "Shown automatically the first time the player arrives here, and every time they look.");
+        return field;
+    }
+
     private ResetBackSaveView setUpNavigationButtons() {
         final ResetBackSaveView resetBackSaveView = new ResetBackSaveView();
 
@@ -256,6 +274,7 @@ public class LocationEditorView extends VerticalLayout
         locationId = locationData.getId();
 
         VocabularyData vocabularyData = adventureData.getVocabularyData();
+        pictureSelector.setItems(new java.util.ArrayList<>(adventureData.getPictureData().values()));
         adjectiveSelector.populate(vocabularyData.getWords(ADJECTIVE));
         nounSelector.populate(vocabularyData.getWords(NOUN));
 

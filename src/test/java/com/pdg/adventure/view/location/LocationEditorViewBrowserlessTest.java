@@ -3,6 +3,7 @@ package com.pdg.adventure.view.location;
 import com.vaadin.browserless.BrowserlessTest;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.RouteParameters;
@@ -25,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.model.basic.DescriptionData;
@@ -85,6 +87,13 @@ class LocationEditorViewBrowserlessTest extends BrowserlessTest {
         VocabularyData vocab = new VocabularyData();
         vocab.setWords(List.of(noun, adjective));
         data.setVocabularyData(vocab);
+
+        PictureData picture = new PictureData();
+        picture.setId("pic-1");
+        picture.setName("Treasure chest");
+        HashMap<String, PictureData> pictures = new HashMap<>();
+        pictures.put(picture.getId(), picture);
+        data.setPictureData(pictures);
 
         return data;
     }
@@ -159,5 +168,17 @@ class LocationEditorViewBrowserlessTest extends BrowserlessTest {
         test(shortDesc).setValue("Updated short description");
 
         assertThat(reset.isEnabled()).isTrue();
+    }
+
+    @Test
+    void pictureSelector_listsTheAdventuresPictures() {
+        enterWithLocationId(null);
+
+        List<ComboBox> comboBoxes = find(ComboBox.class, view).all();
+        ComboBox<?> pictureSelector = comboBoxes.stream()
+                .filter(cb -> "Default Picture".equals(cb.getLabel()))
+                .findFirst()
+                .orElseThrow();
+        assertThat(test(pictureSelector).getSuggestionItems()).hasSize(1);
     }
 }
