@@ -79,7 +79,8 @@ class AdventureRunViewTest extends BrowserlessTest {
     private void stubOpeningRoom(String description) {
         com.pdg.adventure.server.location.Location startLocation =
                 mock(com.pdg.adventure.server.location.Location.class);
-        when(startLocation.getArrivalDescription()).thenReturn(description);
+        when(startLocation.getArrivalDescription())
+                .thenReturn(new com.pdg.adventure.server.location.Location.LocationDescription(description, null));
         when(gameContext.getCurrentLocation()).thenReturn(startLocation);
         when(gameContext.runArrivalProcesses()).thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS));
         when(session.getGameContext()).thenReturn(gameContext);

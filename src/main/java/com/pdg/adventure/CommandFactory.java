@@ -49,8 +49,11 @@ public class CommandFactory {
         GenericCommand quitCommand = new GenericCommand(quitCommandDescription, new QuitAction());
         aWorkflow.addResponse(quitCommandDescription, quitCommand);
 
-        Action lookLocationAction = new DescribeAction(
-                () -> gameContext.getCurrentLocation().getLongDescription());
+        Action lookLocationAction = new DescribeAction(() -> {
+            var description = gameContext.getCurrentLocation().getLookDescription();
+            gameContext.setCurrentPictureId(description.pictureId());
+            return description.text();
+        });
         Action runArrivalProcessesAction = new RunArrivalProcessesAction(gameContext);
 
         GenericCommandDescription lookCommandDescription = new GenericCommandDescription("describe");

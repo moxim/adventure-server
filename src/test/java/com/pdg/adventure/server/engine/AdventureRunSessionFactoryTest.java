@@ -71,7 +71,10 @@ class AdventureRunSessionFactoryTest {
 
         when(adventureService.findAdventureById("adv-1")).thenReturn(Optional.of(adventureData));
         when(startLocation.getId()).thenReturn("loc-1");
-        when(startLocation.getLongDescription()).thenReturn("A grand throne room.");
+        // "look" resolves through getLookDescription() (see CommandFactory), not
+        // getLongDescription() - stub it so the mocked Location doesn't return null.
+        when(startLocation.getLookDescription())
+                .thenReturn(new Location.LocationDescription("A grand throne room.", null));
         // Precompute the stubbed return value before opening when(...): calling a mock (getId()
         // etc., inside adventureBoundTo) while a when(...) stubbing is still "armed" waiting for
         // its thenReturn() throws UnfinishedStubbingException.
@@ -110,7 +113,10 @@ class AdventureRunSessionFactoryTest {
         AdventureData adventureData = adventureWithOneLocation("adv-1", "loc-1");
         when(adventureService.findAdventureById("adv-1")).thenReturn(Optional.of(adventureData));
         when(startLocation.getId()).thenReturn("loc-1");
-        when(startLocation.getLongDescription()).thenReturn("A grand throne room.");
+        // "describe" resolves through getLookDescription() (see CommandFactory), not
+        // getLongDescription() - stub it so the mocked Location doesn't return null.
+        when(startLocation.getLookDescription())
+                .thenReturn(new Location.LocationDescription("A grand throne room.", null));
         Adventure adventure = adventureBoundTo(startLocation, "loc-1");
         when(adventureMapper.mapToBO(adventureData)).thenReturn(adventure);
 
