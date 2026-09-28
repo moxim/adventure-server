@@ -83,22 +83,22 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         messageInput.setWidthFull();
         messageInput.focus();
         messageInput.addSubmitListener(this::handleSubmit);
+        // Fixed row: never let the flex algorithm shrink this to make room for playSection.
+        messageInput.getStyle().set("flex-shrink", "0");
 
         Button backButton = new Button("Back", _ -> navigateBack());
+        // Fixed row: never let the flex algorithm shrink this to make room for playSection.
+        backButton.getStyle().set("flex-shrink", "0");
 
         // Its own scrollable region, independent of the page: as the conversation grows, this
-        // scrolls internally instead of pushing the Back button or MessageInput out of view.
+        // scrolls internally instead of pushing the picture, Back button or MessageInput out of
+        // view. Sized by playSection.expand() below - grows to fill whatever room the picture
+        // (when shown) doesn't need, and shrinks to make room for it otherwise.
         VerticalLayout messageListContainer = new VerticalLayout(messageList);
-        messageListContainer.setSizeFull();
-        messageListContainer.setMaxHeight("80%");
+        messageListContainer.setWidthFull();
         messageListContainer.setPadding(false);
         messageListContainer.getStyle().set("overflow-y", "auto");
         messageListContainer.getStyle().set("border", "1px solid #e0e0e0");
-
-        VerticalLayout chatLayout = new VerticalLayout(messageListContainer, messageInput);
-        chatLayout.setSizeFull();
-        chatLayout.setPadding(false);
-        chatLayout.expand(messageListContainer);
 
         pictureContainer.setWidthFull();
         pictureContainer.getStyle().set("flex", "0 0 auto");
@@ -111,10 +111,31 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         pictureDisplay.getStyle().set("display", "block");
         pictureDisplay.getStyle().set("margin", "0 auto");
 
+        // The combined picture+description section: the picture (when shown) takes only the
+        // natural space it needs (capped at 640x480 above), and the description always fills
+        // whatever is left - the full section when there's no picture, a shrunk remainder when
+        // there is.
+        VerticalLayout playSection = new VerticalLayout(pictureContainer, messageListContainer);
+        playSection.setWidthFull();
+        playSection.setPadding(false);
+        playSection.expand(messageListContainer);
+        playSection.getStyle().set("border", "1px solid #e0e0e0");
+        // A flex child's default min-height is "auto" (its content's natural size), not 0 - so
+        // without this, playSection refuses to shrink below its content's height and can blow
+        // out the root layout, pushing the Back button off screen (root's overflow:hidden plus
+        // messageInput.focus() scrolling the page down to keep the input visible is what actually
+        // hides it - see backButton/messageInput's flex-shrink:0 below for the other half of the
+        // fix).
+        playSection.getStyle().set("min-height", "0");
+
+        // Back button, play section and input are direct siblings of the same fixed-height root,
+        // with only the play section allowed to grow/shrink - so all three stay on screen
+        // together and only messageListContainer ever scrolls internally.
         setSizeFull();
         setPadding(true);
-        add(backButton, pictureContainer, chatLayout);
-        expand(chatLayout);
+        getStyle().set("overflow", "hidden");
+        add(backButton, playSection, messageInput);
+        expand(playSection);
     }
 
     /** AdventureEditorView's "Test" button should navigate here. */
