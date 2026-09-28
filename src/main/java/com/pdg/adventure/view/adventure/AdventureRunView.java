@@ -101,11 +101,15 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         chatLayout.expand(messageListContainer);
 
         pictureContainer.setWidthFull();
-        pictureContainer.getStyle().set("flex", "0 0 50%");
+        pictureContainer.getStyle().set("flex", "0 0 auto");
         pictureContainer.setVisible(false);
-        pictureDisplay.setWidthFull();
-        pictureDisplay.setHeightFull();
+        pictureDisplay.getStyle().set("max-width", "640px");
+        pictureDisplay.getStyle().set("max-height", "480px");
+        pictureDisplay.getStyle().set("width", "100%");
+        pictureDisplay.getStyle().set("height", "auto");
         pictureDisplay.getStyle().set("object-fit", "contain");
+        pictureDisplay.getStyle().set("display", "block");
+        pictureDisplay.getStyle().set("margin", "0 auto");
 
         setSizeFull();
         setPadding(true);

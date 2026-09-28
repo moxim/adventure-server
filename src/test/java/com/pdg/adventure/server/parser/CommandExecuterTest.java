@@ -20,7 +20,9 @@ import com.pdg.adventure.server.condition.CarriedCondition;
 import com.pdg.adventure.server.condition.ChanceCondition;
 import com.pdg.adventure.server.condition.HereCondition;
 import com.pdg.adventure.server.condition.NotCondition;
+import com.pdg.adventure.server.condition.Noun2Condition;
 import com.pdg.adventure.server.condition.PlayerAtCondition;
+import com.pdg.adventure.server.condition.PrepositionCondition;
 import com.pdg.adventure.server.condition.WornCondition;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
@@ -460,6 +462,48 @@ class CommandExecutorTest {
         // then: genuinely ambiguous - neither carried, both here, both have a real take applicable
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
         assertThat(result.getResultMessage()).isEqualTo("Which suit should I take?");
+    }
+
+    @Test
+    void realDemoDataShape_useSpannerWithNoNoun2_resolvesToTheLocationsFallbackMessage() {
+        // given: reproduces the machine location's actual command data - the spanner item
+        // carries its own "use spanner" chain, gated on "use spanner WITH MACHINE" specifically
+        // (an easter egg), completely separate from the location's own "use spanner" chain
+        // (screw the machine in, screw already tight, or - with no second noun at all - a
+        // "what should I use it on?" fallback). Typing bare "use spanner" (no second noun) must
+        // resolve to the location's fallback message, not ask "Which spanner should I use?":
+        // the item's chain has ONLY a gated command whose precondition doesn't currently hold
+        // (no noun2 given), so it does not currently apply at all - it must not tie with the
+        // location's chain, which has a genuinely unconditional fallback command.
+        GameContext gameContext = new GameContext();
+        gameContext.setPocket(pocket);
+        gameContext.setCurrentLocation(location);
+
+        Item spanner = new Item(new DescriptionProvider("spanner"), true);
+        GenericCommandDescription useSpannerSpec = new GenericCommandDescription("use", "spanner");
+        GenericCommand useSpannerOnMachine = new GenericCommand(useSpannerSpec, new MessageAction("bang_head"));
+        useSpannerOnMachine.addPreCondition(new Noun2Condition("machine", gameContext));
+        useSpannerOnMachine.addPreCondition(new PrepositionCondition("with", gameContext));
+        spanner.addCommand(useSpannerOnMachine);
+        pocket.add(spanner);
+
+        GenericCommand screwIn = new GenericCommand(useSpannerSpec, new MessageAction("machine_one_more"));
+        screwIn.addPreCondition(new Noun2Condition("screw", gameContext));
+        location.addCommand(screwIn);
+
+        GenericCommand alreadyTight = new GenericCommand(useSpannerSpec, new MessageAction("machine_ok"));
+        alreadyTight.addPreCondition(new Noun2Condition("screw", gameContext));
+        location.addCommand(alreadyTight);
+
+        GenericCommand missingNoun2 = new GenericCommand(useSpannerSpec, new MessageAction("spanner_missing_noun2"));
+        location.addCommand(missingNoun2);   // no precondition - the genuine fallback
+
+        // when: "use spanner" with no second noun and no preposition (both default to "")
+        ExecutionResult result = sut.execute(useSpannerSpec);
+
+        // then
+        assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
+        assertThat(result.getResultMessage()).isEqualTo("spanner_missing_noun2");
     }
 
     @Test
