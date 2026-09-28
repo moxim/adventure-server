@@ -37,14 +37,28 @@ public class UserData implements UserDetails {
 
     private boolean isEnabled;
 
+    // Role-hierarchy-expanded authorities for the current session, populated by
+    // CustomUserDetailsService. Kept transient (never persisted) so that expanding
+    // an ADMIN's authorities to include AUTHOR/PLAYER can never be dirty-checked
+    // back into the persisted `roles` collection.
+    @Transient
+    private transient Collection<? extends GrantedAuthority> effectiveAuthorities;
+
     // Getters and Setters...
 
     // UserDetails implementation methods
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (effectiveAuthorities != null) {
+            return effectiveAuthorities;
+        }
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                 .collect(Collectors.toList());
+    }
+
+    public void setAuthorities(Collection<? extends GrantedAuthority> authorities) {
+        this.effectiveAuthorities = authorities;
     }
 
     public boolean isAdmin() {

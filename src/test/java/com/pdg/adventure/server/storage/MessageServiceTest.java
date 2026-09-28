@@ -215,23 +215,23 @@ class MessageServiceTest {
                 .thenReturn(Optional.of(message));
 
         // When
-        String result = messageService.getMessageText(adventureId, messageId);
+        Optional<String> result = messageService.getMessageText(adventureId, messageId);
 
         // Then
-        assertThat(result).isEqualTo(messageText);
+        assertThat(result).contains(messageText);
     }
 
     @Test
-    void getMessageText_shouldReturnNull_whenMessageNotExists() {
+    void getMessageText_shouldReturnEmpty_whenMessageNotExists() {
         // Given
         when(messageRepository.findByAdventureIdAndMessageId(adventureId, messageId))
                 .thenReturn(Optional.empty());
 
         // When
-        String result = messageService.getMessageText(adventureId, messageId);
+        Optional<String> result = messageService.getMessageText(adventureId, messageId);
 
         // Then
-        assertThat(result).isNull();
+        assertThat(result).isEmpty();
     }
 
     @Test

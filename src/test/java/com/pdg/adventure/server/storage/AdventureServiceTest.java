@@ -19,11 +19,10 @@ import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.storage.mongo.CascadeDeleteHelper;
 import com.pdg.adventure.server.storage.repository.AdventureRepository;
 import com.pdg.adventure.server.storage.repository.LocationRepository;
-import com.pdg.adventure.server.storage.repository.VocabularyReporitory;
+import com.pdg.adventure.server.storage.repository.PictureRepository;
+import com.pdg.adventure.server.storage.repository.VocabularyRepository;
 import com.pdg.adventure.server.storage.repository.WordRepository;
 import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.server.storage.service.MessageService;
-import com.pdg.adventure.server.support.MapperSupporter;
 
 @ExtendWith(MockitoExtension.class)
 class AdventureServiceTest {
@@ -31,17 +30,16 @@ class AdventureServiceTest {
     @Mock private LocationRepository locationRepository;
     @Mock private AdventureRepository adventureRepository;
     @Mock private WordRepository wordRepository;
-    @Mock private VocabularyReporitory vocabularyRepository;
-    @Mock private MapperSupporter mapperSupporter;
-    @Mock private MessageService messageService;
+    @Mock private VocabularyRepository vocabularyRepository;
     @Mock private CascadeDeleteHelper cascadeDeleteHelper;
+    @Mock private PictureRepository pictureRepository;
 
     private AdventureService adventureService;
 
     @BeforeEach
     void setUp() {
         adventureService = new AdventureService(locationRepository, adventureRepository, wordRepository,
-                vocabularyRepository, mapperSupporter, messageService, cascadeDeleteHelper);
+                vocabularyRepository, cascadeDeleteHelper, pictureRepository);
     }
 
     @Test

@@ -102,10 +102,9 @@ public class VocabularyMapper implements Mapper<VocabularyData, Vocabulary> {
 
 The system uses Spring's `BeanPostProcessor` to scan for annotated mappers during application startup:
 
-1. `MapperRegistrationProcessor` handles `@RegisterMapper` annotations
-2. `AutoMapperRegistrationProcessor` handles `@AutoRegisterMapper` annotations
-3. Both processors queue mappers and register them when `MapperSupporter` is ready
-4. Registration happens in priority order (lower numbers first)
+1. `AutoMapperRegistrationProcessor` handles `@AutoRegisterMapper` annotations
+2. It queues mappers and registers them when `MapperSupporter` is ready
+3. Registration happens in priority order (lower numbers first)
 
 ## Logging
 
@@ -136,7 +135,6 @@ This will show:
 If `@AutoRegisterMapper` can't detect types:
 - Ensure your mapper directly implements `Mapper<DO, BO>`
 - Avoid complex inheritance hierarchies
-- Use `@RegisterMapper` with explicit types as fallback
 
 ### Registration Order Issues  
 If mappers fail due to dependencies:

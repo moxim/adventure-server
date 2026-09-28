@@ -60,6 +60,14 @@ class AdventureRunViewTest extends BrowserlessTest {
         adventureData.setId("adv-1");
         adventureData.setTitle("The Demo");
 
+        com.pdg.adventure.model.PictureData picture = new com.pdg.adventure.model.PictureData();
+        picture.setId("pic-1");
+        picture.setContentType("image/png");
+        picture.setContent(new byte[] {1, 2, 3});
+        java.util.HashMap<String, com.pdg.adventure.model.PictureData> pictures = new java.util.HashMap<>();
+        pictures.put(picture.getId(), picture);
+        adventureData.setPictureData(pictures);
+
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
         testUser.setRoles(Set.of());
@@ -77,11 +85,17 @@ class AdventureRunViewTest extends BrowserlessTest {
     // empty-message runArrivalProcesses() so MovePlayerAction.execute() doesn't NPE or append
     // anything extra.
     private void stubOpeningRoom(String description) {
+        stubOpeningRoom(description, null);
+    }
+
+    private void stubOpeningRoom(String description, String pictureId) {
         com.pdg.adventure.server.location.Location startLocation =
                 mock(com.pdg.adventure.server.location.Location.class);
-        when(startLocation.getArrivalDescription()).thenReturn(description);
+        when(startLocation.getArrivalDescription())
+                .thenReturn(new com.pdg.adventure.server.location.Location.LocationDescription(description, pictureId));
         when(gameContext.getCurrentLocation()).thenReturn(startLocation);
         when(gameContext.runArrivalProcesses()).thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS));
+        when(gameContext.getCurrentPictureId()).thenReturn(pictureId);
         when(session.getGameContext()).thenReturn(gameContext);
     }
 
@@ -248,5 +262,70 @@ class AdventureRunViewTest extends BrowserlessTest {
         MessageList messageList = find(MessageList.class, view).single();
         assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
                 .containsExactly("A grand throne room.");
+    }
+
+    @Test
+    void beforeEnter_withAPictureOnTheStartLocation_showsIt() {
+        stubOpeningRoom("A grand throne room.", "pic-1");
+
+        enterViaAuthorRoute();
+
+        com.vaadin.flow.component.html.Image image = find(com.vaadin.flow.component.html.Image.class, view).single();
+        assertThat(image.getParent().orElseThrow().isVisible()).isTrue();
+    }
+
+    @Test
+    void beforeEnter_withNoPictureOnTheStartLocation_hidesTheImageRegion() {
+        stubOpeningRoom("A grand throne room.", null);
+
+        enterViaAuthorRoute();
+
+        assertThat(find(com.vaadin.flow.component.html.Image.class, view).exists()).isFalse();
+    }
+
+    @Test
+    void aPictureAction_persistsThroughAnUnrelatedSubsequentCommand() {
+        stubOpeningRoom("A grand throne room.", null);
+        enterViaAuthorRoute();
+        when(session.submit("look at chest")).thenReturn(new RunResult(List.of("A dusty chest."), false));
+        when(gameContext.getCurrentPictureId()).thenReturn("pic-1");
+
+        MessageInput messageInput = find(MessageInput.class, view).single();
+        test(messageInput).send("look at chest");
+
+        com.vaadin.flow.component.html.Image image = find(com.vaadin.flow.component.html.Image.class, view).single();
+        assertThat(image.getParent().orElseThrow().isVisible()).isTrue();
+
+        // An unrelated command follows - the mocked GameContext keeps returning "pic-1" since
+        // nothing in this test resets it, exactly mirroring how the real GameContext leaves
+        // currentPictureId untouched by a command that isn't a move, a look, or a PICTURE action.
+        when(session.submit("take sword")).thenReturn(new RunResult(List.of("Taken."), false));
+        test(messageInput).send("take sword");
+
+        assertThat(image.getParent().orElseThrow().isVisible()).isTrue();
+    }
+
+    @Test
+    void aFailedMove_leavesThePreviouslyShownPictureUnchanged() {
+        stubOpeningRoom("A grand throne room.", "pic-1");
+        enterViaAuthorRoute();
+        when(session.submit("go north")).thenReturn(new RunResult(List.of("You can't go that way."), false));
+        // GameContext mock keeps returning "pic-1" since nothing changed it - a failed move never
+        // reaches the code path that would call setCurrentPictureId.
+
+        MessageInput messageInput = find(MessageInput.class, view).single();
+        test(messageInput).send("go north");
+
+        com.vaadin.flow.component.html.Image image = find(com.vaadin.flow.component.html.Image.class, view).single();
+        assertThat(image.getParent().orElseThrow().isVisible()).isTrue();
+    }
+
+    @Test
+    void aPictureThatNoLongerExistsInTheAdventure_doesNotCrash_andHidesTheImageRegion() {
+        stubOpeningRoom("A grand throne room.", "missing-picture-id");
+
+        enterViaAuthorRoute();
+
+        assertThat(find(com.vaadin.flow.component.html.Image.class, view).exists()).isFalse();
     }
 }

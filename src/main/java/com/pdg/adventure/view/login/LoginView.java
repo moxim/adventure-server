@@ -23,7 +23,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
 
-        add(new H1("Adventure Builder"), login);
+        add(new H1("There be Adventures"), login);
     }
 
     @Override

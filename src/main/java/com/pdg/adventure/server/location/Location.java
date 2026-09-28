@@ -29,6 +29,7 @@ public class Location extends Thing implements Visitable {
     // light while it's being carried, not just while it's lying on the floor.
     private Container carriedItems;
     private long timesVisited;
+    private String pictureId;
 
     public Location(DescriptionProvider aDescriptionProvider) {
         super(aDescriptionProvider);
@@ -98,14 +99,30 @@ public class Location extends Thing implements Visitable {
         return availableCommands;
     }
 
+    public record LocationDescription(String text, String pictureId) {}
+
     /**
      * The description shown when the player arrives at this location: the full (long)
      * description on the very first visit, the short one on every later visit. Exits and
-     * visible items are always listed.
+     * visible items are always listed. The picture is included only on the very first visit
+     * (and only if the location isn't too dark to see) - a repeat visit explicitly carries a
+     * {@code null} pictureId so the caller can clear whatever picture was showing before.
      */
-    public String getArrivalDescription() {
-        String body = timesVisited == 0 ? super.getLongDescription() : getShortDescription();
-        return renderDescription(body);
+    public LocationDescription getArrivalDescription() {
+        boolean firstVisit = timesVisited == 0;
+        String body = firstVisit ? super.getLongDescription() : getShortDescription();
+        String pictureIdToShow = firstVisit ? pictureIdIfVisible() : null;
+        return new LocationDescription(renderDescription(body), pictureIdToShow);
+    }
+
+    /**
+     * The full description plus this location's picture, shown whenever the player explicitly
+     * describes or examines this location - regardless of how often it has already been
+     * visited. The picture is included every time (subject to the darkness gate), unlike
+     * {@link #getArrivalDescription()}'s first-visit-only picture.
+     */
+    public LocationDescription getLookDescription() {
+        return new LocationDescription(getLongDescription(), pictureIdIfVisible());
     }
 
     /**
@@ -146,6 +163,10 @@ public class Location extends Thing implements Visitable {
 
     private boolean isTooDarkToSee() {
         return getPerceivedLight() < MINIMUM_LIGHT_TO_SEE;
+    }
+
+    private String pictureIdIfVisible() {
+        return isTooDarkToSee() ? null : pictureId;
     }
 
     private String renderDescription(String aBody) {
@@ -201,5 +222,13 @@ public class Location extends Thing implements Visitable {
 
     public void setItemContainer(final Container aItemContainer) {
         itemContainer = aItemContainer;
+    }
+
+    public void setPictureId(String aPictureId) {
+        pictureId = aPictureId;
+    }
+
+    public String getPictureId() {
+        return pictureId;
     }
 }

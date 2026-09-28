@@ -100,21 +100,26 @@ public class CommandExecutor {
     // sharing a noun, or a generic fallback chain overlapping a more specific one via the
     // empty-noun wildcard), rank each by how strongly its OWN state-dependent preconditions
     // currently back it, and keep only the best-ranked tier:
-    //   1 (best):  has a currently-satisfied, precondition-gated command with a real action -
-    //              e.g. "jump sea" while wearing the wetsuit: the move actually applies.
-    //   2 (middle): neither of the others - the chain's outcome doesn't depend on any
-    //              precondition that currently discriminates it. Covers both a "real" branch
-    //              with no precondition of its own (drop's success command has no
-    //              CarriedCondition - see ItemEditorView.createPickupCommands) and a fully
-    //              unconditional fallback chain (a bare unqualified "jump").
-    //   3 (worst): has a currently-satisfied, precondition-gated command whose only actions are
-    //              informational - e.g. "you don't have a suit": an explicit, state-dependent
-    //              reason this candidate is wrong.
-    // A precondition-less command carries no discriminating information regardless of whether
-    // its actions are real or informational, so it never affects the rank - this is what stops
-    // an unconditional "also here" flavour message (jump-sea's third command) from being
-    // mistaken for a competing excuse against the wildcard "jump" chain's own unconditional
-    // message. Leaves the list untouched when every candidate ranks equally (genuine ambiguity).
+    //   1 (best):   has a currently-satisfied, precondition-gated command with a real action -
+    //               e.g. "jump sea" while wearing the wetsuit: the move actually applies.
+    //   2:          has at least one genuinely unconditional command (no preconditions of its
+    //               own - drop's success command has no CarriedCondition, see
+    //               ItemEditorView.createPickupCommands - or a fully unconditional fallback
+    //               chain like a bare unqualified "jump") and no currently-satisfied excuse.
+    //               This always applies regardless of state, so it beats a chain that currently
+    //               has nothing applicable at all.
+    //   3:          has a currently-satisfied, precondition-gated command whose only actions are
+    //               informational - e.g. "you don't have a suit": an explicit, state-dependent
+    //               reason this candidate is wrong. Beats an incidental unconditional command
+    //               sitting in the same chain (e.g. drop's precondition-less "real drop" command
+    //               alongside a currently-true "you don't have it" excuse) - the excuse is a
+    //               stronger, state-dependent signal that this candidate is the wrong one.
+    //   4 (worst):  every command in the chain is precondition-gated and none of those
+    //               preconditions currently hold - this chain simply does not apply right now
+    //               (e.g. an item's "use spanner WITH MACHINE" easter egg when no second noun
+    //               was given at all: its only command's Noun2Condition can't be satisfied, so
+    //               it must not tie with a sibling location chain's genuine no-noun2 fallback).
+    // Leaves the list untouched when every candidate ranks equally (genuine ambiguity).
     private void reduceToBestRankedChains(List<CommandChain> availableCommandChains) {
         if (availableCommandChains.size() <= 1) {
             return;
@@ -135,9 +140,16 @@ public class CommandExecutor {
     private static int rankOf(CommandChain aChain) {
         boolean hasGatedRealAction = false;
         boolean hasGatedExcuse = false;
+        boolean hasUnconditional = false;
         for (Command command : aChain.getCommands()) {
-            if (command.getPreconditions().isEmpty() || !preconditionsCurrentlyHold(command)
-                    || command.getActions().isEmpty()) {
+            if (command.getActions().isEmpty()) {
+                continue;
+            }
+            if (command.getPreconditions().isEmpty()) {
+                hasUnconditional = true;
+                continue;
+            }
+            if (!preconditionsCurrentlyHold(command)) {
                 continue;
             }
             if (command.getActions().stream().allMatch(Action::isInformationalOnly)) {
@@ -149,7 +161,10 @@ public class CommandExecutor {
         if (hasGatedRealAction) {
             return 1;
         }
-        return hasGatedExcuse ? 3 : 2;
+        if (hasGatedExcuse) {
+            return 3;
+        }
+        return hasUnconditional ? 2 : 4;
     }
 
     // Only safe to call for a dry-run decision (as opposed to real execution) when every

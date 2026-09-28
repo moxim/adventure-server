@@ -159,7 +159,7 @@ class LocationTest {
         Location room = roomWithDescriptions("The short room.", "The long, richly detailed room.");
         assertThat(room.getTimesVisited()).isZero();
 
-        assertThat(room.getArrivalDescription())
+        assertThat(room.getArrivalDescription().text())
                 .contains("The long, richly detailed room.")
                 .doesNotContain("The short room.");
     }
@@ -169,7 +169,7 @@ class LocationTest {
         Location room = roomWithDescriptions("The short room.", "The long, richly detailed room.");
         room.setTimesVisited(1);
 
-        assertThat(room.getArrivalDescription())
+        assertThat(room.getArrivalDescription().text())
                 .contains("The short room.")
                 .doesNotContain("The long, richly detailed room.");
     }
@@ -217,9 +217,56 @@ class LocationTest {
         Location room = roomWithDescriptions("The short room.", "The long, richly detailed room.");
         room.setLight(0);
 
-        assertThat(room.getArrivalDescription())
+        assertThat(room.getArrivalDescription().text())
                 .isEqualTo(System.lineSeparator() + SystemMessageKey.SM0.defaultText())
                 .doesNotContain("The long, richly detailed room.");
+    }
+
+    private Location roomWithDescriptionsAndPicture(String aShortDescription, String aLongDescription,
+                                                     String aPictureId) {
+        Location room = roomWithDescriptions(aShortDescription, aLongDescription);
+        room.setPictureId(aPictureId);
+        return room;
+    }
+
+    @Test
+    void getArrivalDescription_onFirstVisit_includesTheLocationsPicture() {
+        Location room = roomWithDescriptionsAndPicture("short", "long", "treasure-chest");
+
+        assertThat(room.getArrivalDescription().pictureId()).isEqualTo("treasure-chest");
+    }
+
+    @Test
+    void getArrivalDescription_afterTheFirstVisit_hasNoPicture() {
+        Location room = roomWithDescriptionsAndPicture("short", "long", "treasure-chest");
+        room.setTimesVisited(1);
+
+        assertThat(room.getArrivalDescription().pictureId()).isNull();
+    }
+
+    @Test
+    void getArrivalDescription_whenTooDarkToSee_hasNoPictureEvenOnFirstVisit() {
+        Location room = roomWithDescriptionsAndPicture("short", "long", "treasure-chest");
+        room.setLight(0);
+
+        assertThat(room.getArrivalDescription().pictureId()).isNull();
+    }
+
+    @Test
+    void getLookDescription_alwaysIncludesTheLocationsPicture_regardlessOfVisitCount() {
+        Location room = roomWithDescriptionsAndPicture("short", "long", "treasure-chest");
+        room.setTimesVisited(5);
+
+        assertThat(room.getLookDescription().pictureId()).isEqualTo("treasure-chest");
+        assertThat(room.getLookDescription().text()).contains("long");
+    }
+
+    @Test
+    void getLookDescription_whenTooDarkToSee_hasNoPicture() {
+        Location room = roomWithDescriptionsAndPicture("short", "long", "treasure-chest");
+        room.setLight(0);
+
+        assertThat(room.getLookDescription().pictureId()).isNull();
     }
 
     @Test

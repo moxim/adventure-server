@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.model.basic.DatedData;
 import com.pdg.adventure.server.storage.mongo.CascadeDelete;
 import com.pdg.adventure.server.storage.mongo.CascadeSave;
@@ -27,6 +28,10 @@ public class AdventureData extends DatedData {
     @CascadeSave
     @CascadeDelete
     private Map<String, LocationData> locationData;
+
+    @DBRef(lazy = false)
+    @CascadeDelete
+    private Map<String, PictureData> pictureData;
     private String currentLocationId;
 
     @DBRef(lazy = false)
@@ -52,6 +57,7 @@ public class AdventureData extends DatedData {
         title = "";
         playerPocket = new ItemContainerData("your pocket");
         locationData = new HashMap<>();
+        pictureData = new HashMap<>();
         vocabularyData = aVocabularyData;
         messages = new HashMap<>();
         systemMessages = new HashMap<>();

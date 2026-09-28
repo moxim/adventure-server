@@ -131,7 +131,7 @@ class AdventureDeleteCascadeTest {
         // when: deleting one location the way LocationsMenuView does — remove it from the
         // adventure's map, delete the location, save the adventure
         AdventureService adventureService = new AdventureService(locationRepository, adventureRepository,
-                                                                 null, null, null, null, cascadeDeleteHelper);
+                                                                 null, null, cascadeDeleteHelper, null);
         adventure.getLocationData().remove(doomedLocation.getId());
         adventureService.deleteLocation(doomedLocation.getId());
         adventureService.saveAdventureData(adventure);

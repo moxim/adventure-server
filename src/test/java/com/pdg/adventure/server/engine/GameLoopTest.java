@@ -89,18 +89,42 @@ class GameLoopTest {
         cellar.setTimesVisited(1);
         gameContext.setCurrentLocation(cellar);
 
-        // Mirror production wiring: LoadAdventureAction registers an examine fallback on every location.
-        VocabularyData vocabularyData = new VocabularyData();
-        Word describeWord = vocabularyData.createWord("describe", Word.Type.VERB);
-        vocabularyData.setExamineWord(describeWord);
-        new CommandFactory( gameContext, vocabularyData).applyExamineFallback(List.of(cellar));
-
+        // No examine fallback registered here: LoadAdventureAction no longer registers one on
+        // locations (see describe_onARevisitedLocationWithExamineWordSetToDescribe_stillSetsThePicture
+        // for why), so the built-in "describe" workflow Response (wired in setUp()) is the only
+        // thing this test exercises, and it must still show the long description on its own.
         GameLoop.CommandOutcome outcome = gameLoop.processCommand("describe");
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
         assertThat(told.toString())
                 .contains("A dank cellar reeking of old wine and mould.")
                 .doesNotContain("The dark cellar.");
+    }
+
+    @Test
+    void describe_onARevisitedLocationWithExamineWordSetToDescribe_stillSetsThePicture() {
+        // Root cause of a reported bug: when an adventure's author-configured "examine word"
+        // is literally "describe" (a real, persisted demo-adventure configuration) and
+        // LoadAdventureAction also registered an examine fallback for every location, that
+        // fallback matched a bare "describe"/"look" locally in CommandExecutor - since an empty
+        // command noun trivially satisfies CommandHandler.ownerNounMatches() - winning over the
+        // built-in workflow Response before it's ever consulted. The fallback only ever returns
+        // text, so the picture-setting lambda in CommandFactory.setUpWorkflowCommands never ran,
+        // even though the text looked identical (both ultimately call getLongDescription()).
+        // Fixed by no longer registering locations for the examine fallback (LoadAdventureAction);
+        // this test pins that down by NOT registering one here either, matching current
+        // production wiring, and confirms the built-in Response alone sets the picture.
+        DescriptionProvider cellarDescription = new DescriptionProvider("dark", "cellar");
+        cellarDescription.setLongDescription("A dank cellar reeking of old wine and mould.");
+        Location cellar = new Location(cellarDescription,
+                                      new GenericContainer(new DescriptionProvider("cellar items"), 10));
+        cellar.setTimesVisited(1);
+        cellar.setPictureId("pic-1");
+        gameContext.setCurrentLocation(cellar);
+
+        gameLoop.processCommand("describe");
+
+        assertThat(gameContext.getCurrentPictureId()).isEqualTo("pic-1");
     }
 
     @Test

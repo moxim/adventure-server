@@ -1,6 +1,8 @@
 package com.pdg.adventure.view.adventure;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.messages.MessageInput;
 import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
@@ -10,10 +12,12 @@ import jakarta.annotation.security.RolesAllowed;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.engine.AdventureRunSession;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
@@ -59,8 +63,12 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     private final transient VariableProvider variableProvider;
     private final MessageList messageList = new MessageList();
     private final MessageInput messageInput = new MessageInput();
+    private final Image pictureDisplay = new Image();
+    private final Div pictureContainer = new Div(pictureDisplay);
 
     private transient AdventureRunSession session;
+    private transient AdventureData adventureData;
+    private String displayedPictureId;
     private String adventureId;
     private String pageTitle = "Adventure";
     private Origin origin = Origin.EDITOR;
@@ -75,27 +83,59 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         messageInput.setWidthFull();
         messageInput.focus();
         messageInput.addSubmitListener(this::handleSubmit);
+        // Fixed row: never let the flex algorithm shrink this to make room for playSection.
+        messageInput.getStyle().set("flex-shrink", "0");
 
         Button backButton = new Button("Back", _ -> navigateBack());
+        // Fixed row: never let the flex algorithm shrink this to make room for playSection.
+        backButton.getStyle().set("flex-shrink", "0");
 
         // Its own scrollable region, independent of the page: as the conversation grows, this
-        // scrolls internally instead of pushing the Back button or MessageInput out of view.
+        // scrolls internally instead of pushing the picture, Back button or MessageInput out of
+        // view. Sized by playSection.expand() below - grows to fill whatever room the picture
+        // (when shown) doesn't need, and shrinks to make room for it otherwise.
         VerticalLayout messageListContainer = new VerticalLayout(messageList);
-        messageListContainer.setSizeFull();
-        messageListContainer.setMaxHeight("80%");
+        messageListContainer.setWidthFull();
         messageListContainer.setPadding(false);
         messageListContainer.getStyle().set("overflow-y", "auto");
         messageListContainer.getStyle().set("border", "1px solid #e0e0e0");
 
-        VerticalLayout chatLayout = new VerticalLayout(messageListContainer, messageInput);
-        chatLayout.setSizeFull();
-        chatLayout.setPadding(false);
-        chatLayout.expand(messageListContainer);
+        pictureContainer.setWidthFull();
+        pictureContainer.getStyle().set("flex", "0 0 auto");
+        pictureContainer.setVisible(false);
+        pictureDisplay.getStyle().set("max-width", "640px");
+        pictureDisplay.getStyle().set("max-height", "480px");
+        pictureDisplay.getStyle().set("width", "100%");
+        pictureDisplay.getStyle().set("height", "auto");
+        pictureDisplay.getStyle().set("object-fit", "contain");
+        pictureDisplay.getStyle().set("display", "block");
+        pictureDisplay.getStyle().set("margin", "0 auto");
 
+        // The combined picture+description section: the picture (when shown) takes only the
+        // natural space it needs (capped at 640x480 above), and the description always fills
+        // whatever is left - the full section when there's no picture, a shrunk remainder when
+        // there is.
+        VerticalLayout playSection = new VerticalLayout(pictureContainer, messageListContainer);
+        playSection.setWidthFull();
+        playSection.setPadding(false);
+        playSection.expand(messageListContainer);
+        playSection.getStyle().set("border", "1px solid #e0e0e0");
+        // A flex child's default min-height is "auto" (its content's natural size), not 0 - so
+        // without this, playSection refuses to shrink below its content's height and can blow
+        // out the root layout, pushing the Back button off screen (root's overflow:hidden plus
+        // messageInput.focus() scrolling the page down to keep the input visible is what actually
+        // hides it - see backButton/messageInput's flex-shrink:0 below for the other half of the
+        // fix).
+        playSection.getStyle().set("min-height", "0");
+
+        // Back button, play section and input are direct siblings of the same fixed-height root,
+        // with only the play section allowed to grow/shrink - so all three stay on screen
+        // together and only messageListContainer ever scrolls internally.
         setSizeFull();
         setPadding(true);
-        add(backButton, chatLayout);
-        expand(chatLayout);
+        getStyle().set("overflow", "hidden");
+        add(backButton, playSection, messageInput);
+        expand(playSection);
     }
 
     /** AdventureEditorView's "Test" button should navigate here. */
@@ -131,7 +171,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             }
             return;
         }
-        AdventureData adventureData = resolvedAdventure.get();
+        adventureData = resolvedAdventure.get();
         adventureId = adventureData.getId();
         pageTitle = (origin == Origin.LIBRARY ? "Playing: " : "Test: ") + adventureData.getTitle();
 
@@ -146,6 +186,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
                                                                  session.getGameContext(), variableProvider);
         ExecutionResult result = movePlayerAction.execute();
         renderNarratorLines(List.of(result.getResultMessage()));
+        refreshPictureDisplay();
     }
 
     private static Origin resolveOrigin(Location location) {
@@ -169,6 +210,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     private void handleInput(final String input) {
         RunResult result = session.submit(input);
         renderNarratorLines(result.lines());
+        refreshPictureDisplay();
         messageInput.setEnabled(!result.gameOver());
     }
 
@@ -176,7 +218,28 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         if (lines.isEmpty()) {
             return;
         }
-        messageList.addItem(new MessageListItem(String.join("\n", lines), Instant.now(), NARRATOR));
+        messageList.addItem(new MessageListItem(String.join("\n", lines))); //, Instant.now(), NARRATOR));
+    }
+
+    private void refreshPictureDisplay() {
+        String pictureId = session.getGameContext().getCurrentPictureId();
+        if (Objects.equals(pictureId, displayedPictureId)) {
+            return;
+        }
+        displayedPictureId = pictureId;
+
+        PictureData picture = pictureId == null ? null : adventureData.getPictureData().get(pictureId);
+        if (picture == null) {
+            pictureContainer.setVisible(false);
+            return;
+        }
+
+        pictureDisplay.setSrc(event -> {
+            event.inline();
+            event.setContentType(picture.getContentType());
+            event.getOutputStream().write(picture.getContent());
+        });
+        pictureContainer.setVisible(true);
     }
 
     private void navigateBack() {

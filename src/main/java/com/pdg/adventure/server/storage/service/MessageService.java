@@ -126,12 +126,11 @@ public class MessageService {
      *
      * @param adventureId The adventure ID
      * @param messageId   The message ID
-     * @return The message text, or null if not found
+     * @return Optional containing the message text if found
      */
-    public String getMessageText( String adventureId,  String messageId) {
+    public Optional<String> getMessageText( String adventureId,  String messageId) {
         return getMessageByIdForAdventure(adventureId, messageId)
-                .map(MessageData::getText)
-                .orElse(null);
+                .map(MessageData::getText);
     }
 
     /**

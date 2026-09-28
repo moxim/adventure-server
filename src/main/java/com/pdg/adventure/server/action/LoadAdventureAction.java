@@ -97,8 +97,15 @@ public class LoadAdventureAction extends AbstractAction {
 
         final var adventureLocations = savedAdventure.getLocations();
 
+        // Locations deliberately don't get an examine fallback: the built-in "describe"/"look"
+        // workflow Response (CommandFactory.setUpWorkflowCommands) already shows the long
+        // description on every explicit look, regardless of visit count, and also sets the
+        // location's picture and runs arrival processes. Registering an examine fallback here
+        // too let it shadow that Response whenever the author's examine word matches "describe"
+        // (or one of its synonyms, e.g. "look") - CommandExecutor tries local commands first, and
+        // the fallback's empty-noun match wins before the workflow Response is ever consulted,
+        // silently losing the picture and skipped arrival processes.
         CommandFactory commandFactory = new CommandFactory(gameContext, adventureData.getVocabularyData());
-        commandFactory.applyExamineFallback(adventureConfig.allLocations().values());
         List<Thing> loadedItems = adventureLocations.stream()
                 .filter(loc -> loc.getItemContainer() != null)
                 .flatMap(loc -> loc.getItemContainer().getContents().stream())

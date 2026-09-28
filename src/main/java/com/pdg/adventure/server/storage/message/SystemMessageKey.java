@@ -124,7 +124,7 @@ public enum SystemMessageKey {
      * "currently loaded adventure" state (see {@code GameContext}, {@code MessagesHolder}) -
      * installed once per adventure (re)load by {@code LoadAdventureAction}, not per turn.
      */
-    private static volatile Map<String, String> overridesByKeyId = Map.of();
+    private static Map<String, String> overridesByKeyId = Map.of();
 
     private final String id;
     private final String defaultText;

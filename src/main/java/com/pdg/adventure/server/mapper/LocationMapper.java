@@ -59,6 +59,7 @@ public class LocationMapper implements Mapper<LocationData, Location> {
 
         location.setLight(aLocationData.getLumen());
         location.setTimesVisited(aLocationData.getTimesVisited());
+        location.setPictureId(aLocationData.getPictureId());
         return location;
     }
 
@@ -66,6 +67,7 @@ public class LocationMapper implements Mapper<LocationData, Location> {
         LocationData result = new LocationData();
         result.setId(aLocation.getId());
         result.setLumen(aLocation.getLight());
+        result.setPictureId(aLocation.getPictureId());
         result.setDescriptionData(descriptionMapper.mapToDO(aLocation.getDescriptionProvider()));
         result.setItemContainerData(itemContainerMapper.mapToDO(aLocation.getItemContainer()));
 //        for (DirectionData directionData : directionMapper.mapToDOs(aLocation.getDirections())) {

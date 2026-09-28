@@ -23,6 +23,8 @@ import com.pdg.adventure.model.action.LightActionData;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
+import com.pdg.adventure.model.PictureData;
+import com.pdg.adventure.model.action.PictureActionData;
 import com.pdg.adventure.model.action.QuitActionData;
 import com.pdg.adventure.model.action.RemoveActionData;
 import com.pdg.adventure.model.action.SetVariableActionData;
@@ -54,10 +56,12 @@ import com.pdg.adventure.view.support.ViewSupporter;
 public class PreconditionActionFormatter {
     private final Map<String, ItemData> itemsById;
     private final Map<String, LocationData> locationsById;
+    private final Map<String, PictureData> picturesById;
 
     public PreconditionActionFormatter(AdventureData adventureData) {
         itemsById = indexItems(adventureData);
         locationsById = adventureData.getLocationData() == null ? Map.of() : adventureData.getLocationData();
+        picturesById = adventureData.getPictureData() == null ? Map.of() : adventureData.getPictureData();
     }
 
     public List<String> formatConditions(List<PreConditionData> conditions) {
@@ -172,6 +176,9 @@ public class PreconditionActionFormatter {
         if (a instanceof DescribeActionData de) {
             return "DESCRIBE " + resolveName(de.getTargetId());
         }
+        if (a instanceof PictureActionData p) {
+            return "PICTURE " + resolvePictureName(p.getPictureId());
+        }
         if (a instanceof InventoryActionData) {
             return "INVENTORY";
         }
@@ -182,6 +189,14 @@ public class PreconditionActionFormatter {
             return "BREAK";
         }
         return a.getActionName().replace("ActionData", "").toUpperCase(Locale.ROOT);
+    }
+
+    private String resolvePictureName(String pictureId) {
+        if (pictureId == null || pictureId.isBlank()) {
+            return "?";
+        }
+        PictureData picture = picturesById.get(pictureId);
+        return picture == null ? "?" : picture.getName();
     }
 
     private String resolveName(String id) {

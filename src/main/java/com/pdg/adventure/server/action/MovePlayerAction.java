@@ -26,8 +26,10 @@ public class MovePlayerAction extends AbstractAction {
     @Override
     public ExecutionResult execute() {
         gameContext.setCurrentLocation(destination);
-        final DescribeAction describeAction = new DescribeAction(destination::getArrivalDescription);
+        Location.LocationDescription description = destination.getArrivalDescription();
+        final DescribeAction describeAction = new DescribeAction(description::text);
         ExecutionResult result = describeAction.execute();
+        gameContext.setCurrentPictureId(description.pictureId());
         variableProvider.set(new Variable(VariableProvider.VISITED_VARIABLE_NAME, (int) destination.getTimesVisited()));
         destination.setTimesVisited(destination.getTimesVisited() + 1);
         String arrivalMessage = gameContext.runArrivalProcesses().getResultMessage();

@@ -21,12 +21,14 @@ public final class LocationViewModel {
     private Word adjective;
     private String shortDescription;
     private String longDescription;
+    private String pictureId;
 
     public LocationViewModel(LocationData aLocationData) {
         data = aLocationData;
         numberOfExits = data.getDirectionsData().size();
         id = data.getId();
         lumen = data.getLumen();
+        pictureId = data.getPictureId();
         noun = data.getDescriptionData().getNoun();
         adjective = data.getDescriptionData().getAdjective();
         shortDescription = data.getDescriptionData().getShortDescription();
@@ -41,6 +43,11 @@ public final class LocationViewModel {
     public void setLumen(Integer aValue) {
         lumen = aValue;
         data.setLumen(aValue);
+    }
+
+    public void setPictureId(String aPictureId) {
+        this.pictureId = aPictureId;
+        data.setPictureId(aPictureId);
     }
 
     public void setNoun(Word aNoun) {

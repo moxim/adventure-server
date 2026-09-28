@@ -23,6 +23,7 @@ public class LocationData extends ThingData {
 
     private int timesVisited;
     private int lumen = 50;
+    private String pictureId;
 
     public LocationData() {
         timesVisited = 0;

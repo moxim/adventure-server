@@ -24,6 +24,7 @@ public class GameContext {
     private String currentAdverb = VocabularyData.EMPTY_STRING;
     private String currentNoun2 = VocabularyData.EMPTY_STRING;
     private String currentAdjective2 = VocabularyData.EMPTY_STRING;
+    private String currentPictureId;
 
     public void show(Describable aThing) {
         tell(aThing.getLongDescription());
@@ -111,6 +112,14 @@ public class GameContext {
 
     public String getCurrentAdjective2() {
         return currentAdjective2;
+    }
+
+    public void setCurrentPictureId(String aPictureId) {
+        currentPictureId = aPictureId;
+    }
+
+    public String getCurrentPictureId() {
+        return currentPictureId;
     }
 
     public Workflow setUpWorkflows() {

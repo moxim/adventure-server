@@ -71,7 +71,10 @@ class AdventureRunSessionFactoryTest {
 
         when(adventureService.findAdventureById("adv-1")).thenReturn(Optional.of(adventureData));
         when(startLocation.getId()).thenReturn("loc-1");
-        when(startLocation.getLongDescription()).thenReturn("A grand throne room.");
+        // "look" resolves through getLookDescription() (see CommandFactory), not
+        // getLongDescription() - stub it so the mocked Location doesn't return null.
+        when(startLocation.getLookDescription())
+                .thenReturn(new Location.LocationDescription("A grand throne room.", null));
         // Precompute the stubbed return value before opening when(...): calling a mock (getId()
         // etc., inside adventureBoundTo) while a when(...) stubbing is still "armed" waiting for
         // its thenReturn() throws UnfinishedStubbingException.
@@ -104,13 +107,34 @@ class AdventureRunSessionFactoryTest {
     }
 
     @Test
+    void start_lookThenUnrelatedCommand_picturePersistsAcrossTheUnrelatedCommand() {
+        AdventureData adventureData = adventureWithOneLocation("adv-1", "loc-1");
+        when(adventureService.findAdventureById("adv-1")).thenReturn(Optional.of(adventureData));
+        when(startLocation.getId()).thenReturn("loc-1");
+        when(startLocation.getLookDescription())
+                .thenReturn(new Location.LocationDescription("A grand throne room.", "pic-1"));
+        Adventure adventure = adventureBoundTo(startLocation, "loc-1");
+        when(adventureMapper.mapToBO(adventureData)).thenReturn(adventure);
+
+        AdventureRunSession session = factory.start(adventureData);
+        session.submit("look");
+        assertThat(gameContext.getCurrentPictureId()).isEqualTo("pic-1");
+
+        session.submit("inventory");
+        assertThat(gameContext.getCurrentPictureId()).isEqualTo("pic-1");
+    }
+
+    @Test
     void start_compoundCommand_runsBothSubCommandsThroughTheRealSeededVocabulary() {
         // "and" must be seeded by the real registerBaseVerbs() production path, not just by a
         // hand-built test Vocabulary - this is the browser/"Run Adventure" entry point.
         AdventureData adventureData = adventureWithOneLocation("adv-1", "loc-1");
         when(adventureService.findAdventureById("adv-1")).thenReturn(Optional.of(adventureData));
         when(startLocation.getId()).thenReturn("loc-1");
-        when(startLocation.getLongDescription()).thenReturn("A grand throne room.");
+        // "describe" resolves through getLookDescription() (see CommandFactory), not
+        // getLongDescription() - stub it so the mocked Location doesn't return null.
+        when(startLocation.getLookDescription())
+                .thenReturn(new Location.LocationDescription("A grand throne room.", null));
         Adventure adventure = adventureBoundTo(startLocation, "loc-1");
         when(adventureMapper.mapToBO(adventureData)).thenReturn(adventure);
 
