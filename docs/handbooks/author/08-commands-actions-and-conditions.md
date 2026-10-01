@@ -55,12 +55,13 @@ and **Delete** removes that one variant. Order matters — the engine runs the
 *first* variant whose preconditions pass, so put your more specific,
 precondition-gated variants above the catch-all one.
 
-> **Note:** You've already met the Command Chain pattern without knowing
-> it, if you've checked **Can be picked up** on an item — see
-> [Chapter 6](06-items.md#checking-can-be-picked-up). That checkbox
-> generates a small chain automatically: a variant that fires when you
-> already have the item, one for when it's not actually here, and a
-> variant that succeeds — a real, working example of exactly this pattern.
+> **Note:** A typical chain is a "take the key" command: one variant that
+> fires when the player already has it (*"I already have the key."*), one for
+> when it's not actually here, and a variant that succeeds. For taking,
+> dropping, wearing and removing, the **AUTOT / AUTOD / AUTOW / AUTOR**
+> actions in [Chapter 9](09-workflow.md#one-response-for-every-item-the-wildcard-noun)
+> do that whole job for every item at once, so you don't have to build such a
+> chain by hand for each one.
 
 ### Preconditions
 

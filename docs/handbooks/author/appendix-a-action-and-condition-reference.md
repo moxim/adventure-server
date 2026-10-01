@@ -12,6 +12,10 @@ order, when that command fires.
 
 | Action | What it does | What you configure |
 |--------|----------------|----------------------|
+| **AUTOD (Auto Drop)** | Player drops the item named by the noun they typed; refuses if it's worn | Nothing — use it in a Response with the noun `~` |
+| **AUTOR (Auto Remove)** | Player takes off the worn item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
+| **AUTOT (Auto Take)** | Player picks up the item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
+| **AUTOW (Auto Wear)** | Player puts on the carried item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
 | **Break** | Stops the rest of this action list — and the rest of the command chain — immediately | Nothing — pair it with a **Message** action if you want it to say something as it stops |
 | **Create Item** | Places an item into a location (bringing it into play) | The item; the destination location |
 | **Decrement Variable** | Subtracts an amount from a named variable | Variable name; amount |
@@ -30,10 +34,19 @@ order, when that command fires.
 | **Take** | Player picks up an item into their pocket | The item |
 | **Wear** | Player puts on a wearable item | The item |
 
+Variable names are chosen from a dropdown, not typed. **Set Variable** is the
+action that creates a variable: pick an existing name or type a new one. Once
+a command with that action is saved, the name shows up in the dropdowns of
+**Increment Variable**, **Decrement Variable** and the variable conditions
+(**Equals**, **Greater Than**, **Less Than**, **Same**), which accept only
+names that are already set somewhere. The engine's own `VISITED` counter is
+always listed. A condition that still names a variable nothing sets (for
+example after you delete the Set action) is flagged as invalid when you open it.
+
 Variables are your own free-form named counters — use them for anything
 that needs to be remembered across turns: a score, a flag ("door_unlocked"),
-a counter of attempts, and so on. Nothing pre-declares them; the first
-action that sets or changes one effectively creates it.
+a counter of attempts, and so on. Nothing pre-declares them; a Set Variable
+action creates one.
 
 ## PreConditions
 

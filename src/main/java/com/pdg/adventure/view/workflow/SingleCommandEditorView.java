@@ -67,6 +67,7 @@ public class SingleCommandEditorView extends VerticalLayout
     private final VocabularyPicker verbSelector;
     private final VocabularyPicker adjectiveSelector;
     private final VocabularyPicker nounSelector;
+    private final boolean offersWildcardNoun;
     private final Span preconditionAndActionHolder;
     private PreconditionActionEditor preconditionActionEditor;
     private Button saveButton;
@@ -90,6 +91,7 @@ public class SingleCommandEditorView extends VerticalLayout
         listAccessor = aListAccessor;
         listViewClass = aListViewClass;
         binder = new Binder<>(CommandViewModel.class);
+        offersWildcardNoun = aCommandListType == CommandListType.RESPONSE;
 
         Span helpText = new Span("Entering verb / adjective / noun combos here is optional " +
                         "and serves only as a hint for you. They are not evaluated against the player's input.");
@@ -249,6 +251,10 @@ public class SingleCommandEditorView extends VerticalLayout
         }
 
         VocabularyData vocabularyData = adventureData.getVocabularyData();
+        if (offersWildcardNoun) {
+            // Persisted with the adventure on save, like any word an author creates.
+            vocabularyData.ensureWildcardNoun();
+        }
         verbSelector.populate(vocabularyData.getWords(VERB).stream().filter(word -> word.getSynonym() == null).toList());
         adjectiveSelector.populate(vocabularyData.getWords(ADJECTIVE).stream().filter(word -> word.getSynonym() == null).toList());
         nounSelector.populate(vocabularyData.getWords(NOUN).stream().filter(word -> word.getSynonym() == null).toList());

@@ -4,8 +4,6 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
@@ -18,7 +16,6 @@ import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,15 +23,7 @@ import static com.pdg.adventure.model.Word.Type.ADJECTIVE;
 import static com.pdg.adventure.model.Word.Type.NOUN;
 
 import com.pdg.adventure.model.*;
-import com.pdg.adventure.model.action.DropActionData;
-import com.pdg.adventure.model.action.MessageActionData;
-import com.pdg.adventure.model.action.TakeActionData;
-import com.pdg.adventure.model.basic.CommandDescriptionData;
-import com.pdg.adventure.model.condition.CarriedConditionData;
-import com.pdg.adventure.model.condition.HereConditionData;
-import com.pdg.adventure.model.condition.NotConditionData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
-import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
@@ -43,7 +32,6 @@ import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
-import com.pdg.adventure.view.support.ShowNotification;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 @Route(value = "author/adventures/:adventureId/locations/:locationId/items/:itemId/edit", layout = ItemsMainLayout.class)
@@ -169,14 +157,6 @@ public class ItemEditorView extends VerticalLayout
 
             if (Boolean.TRUE.equals(event.getValue())) {
                 binder.writeBeanIfValid(ivm);
-                // Checkbox was checked - show verb selection dialog
-                if (!tryToAddPickUpCommands(itemData, adventureData.getVocabularyData())) {
-                    // Revert checkbox state if adding commands failed
-                    isContainableCheckbox.setValue(false);
-                }
-            } else {
-                // Checkbox was unchecked - remove take/drop commands
-                removePickupCommands(itemData, ShowNotification.SHOW_NOTIFICATION);
             }
         });
 
@@ -254,136 +234,6 @@ public class ItemEditorView extends VerticalLayout
 //                  new RouteParam(RouteIds.ITEM_ID.getValue(), itemId),
                   new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
                   new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
-    }
-
-    private boolean tryToAddPickUpCommands(final ItemData anItemData, final VocabularyData aVocabularyData) {
-        Word takeVerb = aVocabularyData.getTakeWord();
-        Word dropVerb = aVocabularyData.getDropWord();
-        if (dropVerb == null || takeVerb == null) {
-            Notification notification = Notification.show(
-                    "Please select verbs to allow a player to handle this item in the vocabulary section.",
-                    5000, Notification.Position.MIDDLE);
-            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return false;
-        } else {
-            LOG.info("Selected verbs: {} and {} for item: {}", takeVerb.getText(), dropVerb.getText(),
-                     anItemData.getId());
-            createPickupCommands(takeVerb, dropVerb, anItemData);
-            Notification notification = Notification.show("Take and drop commands added", 2000, Notification.Position.BOTTOM_START);
-            notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-        }
-        return true;
-    }
-
-    private void removePickupCommands(ItemData anItemData, final ShowNotification aRequestForNotification) {
-        if (anItemData == null || anItemData.getCommandProviderData() == null) {
-            return;
-        }
-
-        CommandProviderData commandProvider = anItemData.getCommandProviderData();
-        String takeVerbText = wordText(adventureData.getVocabularyData().getTakeWord());
-        String dropVerbText = wordText(adventureData.getVocabularyData().getDropWord());
-
-        // Iterate through all command chains and remove take/drop actions. Matched by verb
-        // alone, not the full verb/adjective/noun spec: a chain generated before the item's
-        // adjective was set (or changed since) would otherwise no longer match a freshly
-        // rebuilt spec and get left behind as a duplicate instead of being replaced.
-        commandProvider.getAvailableCommands().entrySet().removeIf(entry -> {
-            CommandChainData commandChain = entry.getValue();
-            if (commandChain == null || commandChain.getCommands() == null) {
-                return false;
-            }
-
-            // Remove commands with TakeActionData or DropActionData
-            commandChain.getCommands().removeIf(command -> {
-                if (command.getActions().isEmpty()) {
-                    return false;
-                }
-                String verbText = wordText(command.getCommandDescription().getVerb());
-                return verbText.equals(takeVerbText) || verbText.equals(dropVerbText);
-            });
-
-            // Remove the entire command chain if it's now empty
-            return commandChain.getCommands().isEmpty();
-        });
-
-        LOG.info("Removed take/drop commands from item: {}", anItemData.getId());
-        if (aRequestForNotification.equals(ShowNotification.SHOW_NOTIFICATION)) {
-            Notification notification = Notification.show("Take and drop commands removed", 2000, Notification.Position.BOTTOM_START);
-            notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-        }
-    }
-
-    private void createPickupCommands(final Word aTakeVerb, final Word aDropVerb, final ItemData anItemData) {
-        // First remove any existing take/drop commands to avoid duplicates
-        removePickupCommands(anItemData, ShowNotification.HIDE_NOTIFICATION);
-
-        String itemDescription = ViewSupporter.formatDescription(anItemData);
-
-        CarriedConditionData carriedCondition = new CarriedConditionData();
-        carriedCondition.setItemId(anItemData.getId());
-        NotConditionData notCarriedCondition = new NotConditionData();
-        notCarriedCondition.setPreCondition(carriedCondition);
-
-        HereConditionData hereCondition = new HereConditionData();
-        hereCondition.setThingId(anItemData.getId());
-        NotConditionData notHereCondition = new NotConditionData();
-        notHereCondition.setPreCondition(hereCondition);
-
-        final CommandData takeCommandFailedBecauseAlreadyCarried = createTakeCommandData(aTakeVerb, anItemData);
-        takeCommandFailedBecauseAlreadyCarried.getPreConditions().add(carriedCondition);
-        MessageActionData messageDataBecauseAlreadyCarried = new MessageActionData();
-        messageDataBecauseAlreadyCarried.setMessageId(SystemMessageKey.SM25.defaultText().formatted(itemDescription));
-        takeCommandFailedBecauseAlreadyCarried.setActions(new ArrayList<>(List.of(messageDataBecauseAlreadyCarried)));
-        anItemData.getCommandProviderData().add(takeCommandFailedBecauseAlreadyCarried);
-
-        // no need to check for "not here" on take: if the item is not here,
-        // the engine would never even reach this command (in the item).
-
-        final CommandData takeCommandData = createTakeCommandData(aTakeVerb, anItemData);
-        takeCommandData.getPreConditions().add(hereCondition);
-        anItemData.getCommandProviderData().add(takeCommandData);
-
-        final CommandData dropCommandFailedBecauseNotCarried = createDropCommandData(aDropVerb, anItemData);
-        dropCommandFailedBecauseNotCarried.getPreConditions().add(notCarriedCondition);
-        MessageActionData messageDataBecauseNotCarried = new MessageActionData();
-        messageDataBecauseNotCarried.setMessageId(SystemMessageKey.SM28.defaultText().formatted(itemDescription));
-        dropCommandFailedBecauseNotCarried.setActions(new ArrayList<>(List.of(messageDataBecauseNotCarried)));
-        anItemData.getCommandProviderData().add(dropCommandFailedBecauseNotCarried);
-
-        final CommandData dropCommandData = createDropCommandData(aDropVerb, anItemData);
-        dropCommandData.getPreConditions().add(carriedCondition);
-        anItemData.getCommandProviderData().add(dropCommandData);
-    }
-
-    private CommandData createTakeCommandData(final Word aVerb, final ItemData anItem) {
-        final var takeCommandData = getRawCommandData(aVerb, anItem);
-        final var takeActionData = new TakeActionData();
-        takeActionData.setThingId(anItem.getId());
-        takeCommandData.setActions(new ArrayList<>(List.of(takeActionData)));
-        return takeCommandData;
-    }
-
-    private CommandData createDropCommandData(final Word aVerb, final ItemData anItem) {
-        final var dropCommandData = getRawCommandData(aVerb, anItem);
-        DropActionData dropActionData = new DropActionData();
-        dropActionData.setThingId(anItem.getId());
-        dropCommandData.setActions(new ArrayList<>(List.of(dropActionData)));
-        return dropCommandData;
-    }
-
-    // Item-scoped commands (take/drop) don't restate the item's adjective/noun: the command
-    // already lives on this specific item, and GenericCommandProvider treats an empty stored
-    // noun as a wildcard, so it matches regardless of the item's current description. This is
-    // what stops the command's identity from silently drifting out of sync when an author
-    // edits the item afterwards.
-    private CommandData getRawCommandData(final Word aTakeVerb, final ItemData anItem) {
-        CommandDescriptionData commandDescription = new CommandDescriptionData(aTakeVerb, null, null);
-        return new CommandData(commandDescription);
-    }
-
-    private static String wordText(final Word aWord) {
-        return aWord == null || aWord.getText() == null ? "" : aWord.getText();
     }
 
     private void validateSave(ItemViewModel anItemViewModel) {
@@ -480,7 +330,7 @@ public class ItemEditorView extends VerticalLayout
         }
         nounSelector.populate(vocabularyData.getWords(NOUN));
         if (itemData.getDescriptionData() != null && itemData.getDescriptionData().getNoun() == null) {
-            nounSelector.setHelperText("Give this a descriptive name.");;
+            nounSelector.setHelperText("Give this a descriptive name.");
         }
 
         saveButton.setEnabled(false);

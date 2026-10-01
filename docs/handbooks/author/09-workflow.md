@@ -66,7 +66,9 @@ with its own reminder:
 > still overrides that built-in for this adventure."*
 
 Use Responses for adventure-wide commands that nothing else defines: a
-custom `help` text, a `pray` verb that works anywhere, a `score` command.
+custom `help` text, a `pray` verb that works anywhere, a `score` command —
+or, with the wildcard noun `~`, take/drop/wear/remove for every item at once
+(see [below](#one-response-for-every-item-the-wildcard-noun)).
 The **Verb** *is* required. When the player types something that matches a
 Response's verb (and adjective/noun, if you set them):
 
@@ -85,6 +87,30 @@ still **replaces** the built-in for your adventure. But if *you* give a
 location or an item a command with the same verb/adjective/noun as one of
 your Responses, that local command now wins and the Response won't fire
 there.
+
+## One Response for every item: the wildcard noun
+
+Set a Response's **Noun** to `~` and it answers for **any** noun the player
+types — including none, and including words the game doesn't know. It's the
+same idea as the `_` in the original Professional Adventure Writer: *"`GET _`
+matches whatever the player wants to get."* A Response for an exact noun
+(say `take lamp`) always beats the `~` one.
+
+Pair it with the automatic item actions, which find the item the player named
+by themselves (carried items first, then the ones in the room):
+
+| Response (verb + noun) | Action | What the player sees |
+|------------------------|--------|----------------------|
+| `take` + `~` | **AUTOT** | *"I now have the …"*; *"I already have the …"*; *"There isn't one of those here."*; *"I can't carry any more things."*; *"I can't do that."* if the word isn't an item |
+| `drop` + `~` | **AUTOD** | *"I've dropped the …"*; *"I can't. I am wearing the …"* (it won't drop what you're wearing); *"I don't have the …"* (it's here, not carried); *"I don't have one of those."* |
+| `wear` + `~` | **AUTOW** | *"I am now wearing the …"*; *"I'm already wearing the …"*; *"I can't wear the …"*; *"I don't have the …"*; *"I don't have one of those."* |
+| `remove` + `~` | **AUTOR** | *"I've removed the …"*; *"I'm not wearing the …"*; *"I am not wearing any of those."* |
+
+Add each as its own Response (Verb, Noun `~`, and a single AUTO action — they
+take no settings). The first time you open a Response for editing, the `~` noun
+is added to your vocabulary for you. One caveat: because items' own commands
+are tried first, an item that still has its own `take` or `drop` command
+answers itself and the wildcard Response never sees it.
 
 ## What's next
 

@@ -74,14 +74,13 @@ four of them:
 
 | Field on screen | Wires up |
 |-----------------|-----------|
-| **Taker** | The word players use to pick things up (`take`, `get`, whatever you choose). Required before "Can be picked up" items can auto-generate their `take`/`drop` commands — see [Chapter 6](06-items.md#checking-can-be-picked-up). |
+| **Taker** | The word players use to pick things up (`take`, `get`, whatever you choose). |
 | **Dropper** | The word for putting something down. |
 | **Loader** | The word for loading a saved game. |
 | **Examiner** | The word used for examining things in detail. |
 
 Each one can be changed freely — *unless* it's currently the verb on a
-command belonging to one of your items (most commonly because it's doing
-double duty as an auto-generated take/drop verb). Try to change or clear a
+command belonging to one of your items. Try to change or clear a
 special word that's in use, and Adventure Builder blocks it and shows you
 exactly which items are relying on it, so you can update them first.
 
@@ -92,6 +91,15 @@ exactly which items are relying on it, so you can update them first.
 > adventure, `look`, `inventory`, `help`, and `quit` (plus a few synonyms
 > like `l`, `x`, `i`, `exit`, `bye`) always work automatically, independent
 > of vocabulary setup — see [Chapter 11](11-testing-and-running.md).
+
+## The wildcard noun `~`
+
+The noun `~` is a special word that means *"any noun"*. It appears in your
+vocabulary automatically the first time you open a Response for editing, and
+you can pick it in a Response's **Noun** field. It can't be renamed, retyped
+or made a synonym — Adventure Builder blocks that. See
+[Chapter 9](09-workflow.md#one-response-for-every-item-the-wildcard-noun) for
+how to use it.
 
 ## What's next
 

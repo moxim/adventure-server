@@ -3,7 +3,6 @@ package com.pdg.adventure.view.command.action;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
-import com.vaadin.flow.component.textfield.TextField;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.action.SetVariableActionData;
+import com.pdg.adventure.view.command.VariableNameSelector;
 
 class ActionListEditorTest {
 
@@ -36,7 +36,7 @@ class ActionListEditorTest {
         assertThat(row.getSummaryText()).isEqualTo("SetVariable: (none)");
 
         // Simulate the user typing into the editor's fields — no manual refresh.
-        List<TextField> textFields = textFieldsOf(row);
+        List<VariableNameSelector> textFields = textFieldsOf(row);
         textFields.getFirst().setValue("score");
 
         List<IntegerField> integerFields = integerFieldsOf(row);
@@ -56,8 +56,8 @@ class ActionListEditorTest {
                 .orElseThrow();
     }
 
-    // ActionRow (Details) -> Div -> ActionEditorComponent -> TextField fields
-    private List<TextField> textFieldsOf(ActionRow row) {
+    // ActionRow (Details) -> Div -> ActionEditorComponent -> variable-name dropdown
+    private List<VariableNameSelector> textFieldsOf(ActionRow row) {
         ActionEditorComponent editor = row.getChildren()
                 .filter(c -> c instanceof Div).findFirst()
                 .flatMap(div -> ((Div) div).getChildren()
@@ -65,8 +65,8 @@ class ActionListEditorTest {
                 .map(c -> (ActionEditorComponent) c)
                 .orElseThrow();
         return editor.getChildren()
-                .filter(c -> c instanceof TextField)
-                .map(c -> (TextField) c)
+                .filter(c -> c instanceof VariableNameSelector)
+                .map(c -> (VariableNameSelector) c)
                 .toList();
     }
 

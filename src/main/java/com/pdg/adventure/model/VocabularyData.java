@@ -49,6 +49,12 @@ public class VocabularyData extends DatedData {
     public static final String DUPLICATE_WORD_TEXT = "Word '%s' is already present!";
     public static final String EMPTY_STRING = "";
 
+    /**
+     * The wildcard noun an author can pick in the response table: a response keyed on it matches
+     * any noun the player typed (or none), like the "_" of the original PAW's "GET _ AUTOG".
+     */
+    public static final String WILDCARD_NOUN = "~";
+
     @DBRef(lazy = false)
     @CascadeSave
     @CascadeDelete
@@ -99,6 +105,16 @@ public class VocabularyData extends DatedData {
             }
         }
         return newWord;
+    }
+
+    /**
+     * Makes sure the wildcard noun exists as a real, persistable word so the response editor can
+     * offer it and a command's {@code @DBRef} noun can point at it. Own guard instead of a
+     * "seeded once" flag, so adventures created before the wildcard existed pick it up too, and an
+     * existing word of the same text is never retyped or repointed.
+     */
+    public Word ensureWildcardNoun() {
+        return findWord(WILDCARD_NOUN).orElseGet(() -> createWord(WILDCARD_NOUN, Word.Type.NOUN));
     }
 
     public Optional<Word> removeWord(String aWordText) {

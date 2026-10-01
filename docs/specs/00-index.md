@@ -83,7 +83,7 @@ This list is just the most-cross-referenced terms.
 | **Direction** | An exit from a location; resolved by a verb-noun command. |
 | **Vocabulary** | The set of `Word`s an adventure understands, plus the canonical *special verbs* (take, drop, look, etc.). |
 | **Command** | A vocabulary-described trigger that, when matched, runs an `Action` after passing all `PreCondition`s. |
-| **Action** | An executable side-effect (move player, take item, set variable, break the chain, …). 17 concrete kinds today; 16 are author-placeable (`LoadAdventureAction` is engine-managed). |
+| **Action** | An executable side-effect (move player, take item, set variable, break the chain, …). 23 concrete kinds today; 22 are author-placeable (`LoadAdventureAction` is engine-managed). |
 | **PreCondition** | A boolean predicate gating an Action (carried, here, worn, variable comparisons, `not` composite). 11 concrete kinds today; 10 are author-selectable (`NotCondition` is applied via a per-row Negate toggle). |
 | **Mapper** | A bidirectional translator between a `*Data` document and a business object. Auto-registered via `@AutoRegisterMapper`. |
 | **Workflow** | The engine subsystem holding an adventure's *global* commands: **Processes** (run before every parsed sub-command) and **Responses** (a *fallback* tried only when no location/item command matched the typed verb — help, inventory, quit, look, plus any the author adds). Authored via `WorkflowEditorView` / `ResponsesEditorView`. |

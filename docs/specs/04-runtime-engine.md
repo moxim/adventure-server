@@ -5,7 +5,7 @@
 This chapter explains how the system *plays* an adventure: how a typed line becomes
 a *sequence* of parsed sub-commands, how each is dispatched, and how `Action` and
 `PreCondition` co-operate through the engine's data model. It also catalogs every
-concrete `Action` (17) and `PreCondition` (11) so a rebuild reproduces the
+concrete `Action` (23) and `PreCondition` (11) so a rebuild reproduces the
 behaviour faithfully. Of these, 16 Actions and 10 PreConditions are directly
 selectable in the authoring UI (see
 [`07-ui-and-navigation.md` § Action editor factory](07-ui-and-navigation.md#action-editor-factory));
@@ -245,7 +245,8 @@ names for the maps are `processes` and `responses`.
   after `CommandExecutor` (pocket + current location) has been tried and
   returned `FAILURE` with the `SM8` sentinel text — i.e. only when nothing
   local matched the sub-command's verb at all. Match by exact
-  `CommandDescription`. `CommandFactory` plants these built-ins:
+  `CommandDescription` first; failing that, by **wildcard noun** (see below).
+  `CommandFactory` plants these built-ins:
 
 | Verb | Default Response behaviour |
 |------|---------------------------|
@@ -274,6 +275,32 @@ else `SM8`). The runtime map is named `responses` and its lookup is
 model field on `WorkflowData` keeps its older name `interceptorCommands` — a
 document-schema rename is a separate migration.)
 
+### Wildcard noun `~`
+
+`VocabularyData.WILDCARD_NOUN` (`"~"`) is the engine's equivalent of PAW's
+`_` ("any word") in a Response. `Workflow.respondTo` resolves a Response in
+this order and takes the first hit:
+
+1. exact `(verb, adjective, noun)`;
+2. `(verb, adjective, "~")`;
+3. `(verb, "", "~")`.
+
+`~` also matches an **empty** input noun. That is deliberate: `Parser` silently
+drops words that are not in the vocabulary, so `take xyzzy` reaches the engine
+as a bare `take` — PAW's "unknown word" case, which likewise triggers `GET _`.
+An exact Response therefore always beats a wildcard one. (`Workflow.processes`
+also contains an unrelated sentinel keyed `("~", "~", "~")` — the turn prompt;
+Processes and Responses are separate tables, so they never collide.)
+
+`~` is a real, persisted NOUN `Word` in each adventure's vocabulary, because a
+command's noun is a `@DBRef` and `CommandDescriptionMapper` resolves it with
+`findWord(...)`. `VocabularyData.ensureWildcardNoun()` creates it on demand
+(its own "does it exist?" guard rather than a seeded-once flag, so adventures
+that pre-date it pick it up, and an existing same-text word is never retyped);
+the Response editor (`SingleCommandEditorView`, RESPONSE type only) calls it
+on load, and it is saved with the adventure. `WordEditorDialogue` refuses to
+rename, retype or turn `~` into a synonym.
+
 ## CommandFactory: wiring conventions
 
 `CommandFactory.java` is the canonical source for *how* the engine assembles
@@ -295,6 +322,12 @@ Both always yield the **full** description. Only `MovePlayerAction` uses the
 visit-aware `Location.getArrivalDescription()`.
 
 ### Take / Drop (with worn handling)
+
+> **Scope note.** This is the `CommandFactory` (console / demo-adventure) wiring.
+> The authoring UI's `ItemEditorView` no longer generates take/drop commands for
+> items; browser-authored adventures use the `~` Responses with the AUTOT / AUTOD
+> / AUTOW / AUTOR actions instead (see
+> [§ Auto item actions](#auto-item-actions-autot-autod-autow-autor)).
 
 For each item, `setUpTakeCommands(item)` registers four commands on the item:
 
@@ -365,7 +398,7 @@ the same kind to behave equivalently. Fixed engine feedback text now comes from
 `SystemMessageKey.SMnn.defaultText().formatted(...)` rather than
 `MessagesHolder` negative-id lookups; the SM ids below are the current wiring.
 
-17 concrete kinds; all except `LoadAdventureAction` (engine-managed) are
+23 concrete kinds; all except `LoadAdventureAction` (engine-managed) are
 author-placeable:
 
 | Action | One-line role |
@@ -374,6 +407,12 @@ author-placeable:
 | `DescribeAction(supplier)` | Emit `supplier.get()` (used for thing & location descriptions). AI augmentation is wired but commented out. |
 | `TakeAction(item, pocket, msgs)` | Move `item` into the pocket via `MoveItemAction`; emits `SM36` (taken) / `SM26` (not here). Used by the `get` command. |
 | `DropAction(item, container, msgs)` | Move `item` into the supplied container via `MoveItemAction`, and automatically remove it from its parent container; emits `SM39` + the item description. Used by the `drop` commands. |
+| `AutoTakeAction(gameContext, allItems)` | **AUTOT.** Resolve the item from the typed noun and take it — see [§ Auto item actions](#auto-item-actions-autot-autod-autow-autor). |
+| `AutoDropAction(gameContext, allItems)` | **AUTOD.** Resolve the item from the typed noun and drop it into the current location. |
+| `AutoWearAction(gameContext, allItems)` | **AUTOW.** Resolve the item from the typed noun and wear it (delegates to `WearAction`). |
+| `AutoRemoveAction(gameContext, allItems)` | **AUTOR.** Resolve the item from the typed noun and take it off (delegates to `RemoveAction`). |
+| `LightAction(item, lumen)` | Set the item's light level absolutely; emits `SM66`. |
+| `PictureAction(pictureId, gameContext)` | Set `gameContext.currentPictureId` so the play screen shows that picture; always SUCCESS with no text (informational-only). |
 | `MoveItemAction(item, dest, msgs)` | The primitive: remove the item from its parent if any, add it to `dest` if not full. Emits `SM54` (moved) / `SM55` (full) / `SM56` (can't). |
 | `WearAction(wearable, msgs)` | If `isWearable && !isWorn`, set `isWorn=true`, `SUCCESS` + `SM37`; else `FAILURE` + `SM40`. Interpolates `thing.getStrippedBasicDescription()` (article-less — the `SMnn` texts already carry *"the %s"*). |
 | `RemoveAction(wearable, msgs)` | Inverse of `WearAction`; clears `isWorn`; `SUCCESS` + `SM38` / `FAILURE` + `SM41`. Also interpolates the *stripped* (article-less) description. |
@@ -413,6 +452,50 @@ configured examine verb; it has no DO and is never persisted.
   no locations) by **returning normally** — the factory unwraps this into a
   plain `IllegalStateException`. The old player-facing `load <ulid>` command
   went away with the CLI runner.
+
+### Auto item actions (AUTOT, AUTOD, AUTOW, AUTOR)
+
+Modelled on PAW's `AUTOG`/`AUTOD`/`AUTOW`/`AUTOR` (see
+`docs/specs/ProfessionalAdventureWriter_TechnicalGuide.html`). Unlike
+`TakeAction` etc., they are **not bound to one item**: they take the item from
+what the player typed. The intended use is a single Response keyed on the
+wildcard noun (see [§ Wildcard noun](#wildcard-noun-)) — e.g. `take ~ → AUTOT`,
+`drop ~ → AUTOD`, `wear ~ → AUTOW`, `remove ~ → AUTOR` — which then serves
+every item in the adventure. They carry no parameters (`AutoTakeActionData`
+etc. are empty).
+
+All four extend the package-private `AbstractNounItemAction`, which reads
+`GameContext.getCurrentNoun()` / `getCurrentAdjective()` and searches, in this
+order, the **pocket**, then the **current location's item container**, then
+(for "does this noun name an object at all?") the adventure-wide `allItems`
+registry. A matching adjective narrows the match; otherwise the noun alone
+decides (the same leniency as `ItemIdentifier`). Failures return `FAILURE`, so
+a `GenericCommand` stops its chain, and `GameLoop` prints the message.
+
+| Situation | AUTOT | AUTOD | AUTOW | AUTOR |
+|-----------|-------|-------|-------|-------|
+| success | `SM36` (moved to pocket via `MoveItemAction`) | `SM39` (moved to location) | `SM37` | `SM38` (stays in pocket) |
+| already in the target state | carried/worn → `SM25` | — | worn → `SM29` | carried/here but not worn → `SM50` |
+| item is here, not carried | (the normal case) | `SM49` | `SM49` | `SM50` |
+| item exists in the game, but elsewhere | `SM26` | `SM28` | `SM28` | `SM23` |
+| no noun (incl. an unknown word) | `SM26` | `SM28` | `SM28` | `SM23` |
+| noun names no item (a plain vocabulary word) | `SM8` | `SM8` | `SM8` | `SM8` |
+| other refusals | non-containable → `SM8`; pocket full → `SM27` | worn → `SM24` (**refuses**; `DropAction` silently un-wears) | carried but not wearable → `SM40` | — |
+
+Deliberate gaps and choices relative to PAW:
+
+- **No weight limit.** PAW's `SM43` check is absent because the project has no
+  weight system (`// TODO: Review needed` in `AutoTakeAction`).
+- **AUTOR has no `SM41`/`SM42` case.** Only wearable items can be worn, and
+  worn items stay in the pocket and already count toward its limit, so
+  removing never needs extra room.
+- **`SM8` for a non-item word in AUTOR** is an extension by analogy; PAW's
+  AUTOR text specifies only the `SM23` case.
+- **Precedence.** Responses are consulted only after local (location/item)
+  dispatch fails with the `SM8` sentinel, so an item that still carries its
+  own `take`/`drop` commands answers first. `ItemEditorView` no longer
+  generates those commands; adventures rely on the AUTO* Responses (or
+  hand-built commands) instead.
 
 ## PreCondition catalog
 
@@ -470,6 +553,8 @@ logic is expressed as separate Command Chain variants (see
   imported). Passing `null` restores the default.
 - `setUpWorkflows()` — instantiates a fresh `Workflow`.
 - `runProcesses()` / `respondTo(cmd)` — delegate to the workflow.
+
+- `currentNoun` / `currentAdjective` — the primary noun and adjective of the sub-command being dispatched (`setCurrentNoun` / `setCurrentAdjective`), set fresh by `GameLoop.processCommand` before each sub-command alongside preposition, adverb, `noun2` and `adjective2`. Actions receive no arguments, so the AUTO* actions read the typed noun from here.
 
 `Workflow.runProcesses()` walks all `processes` **in alphabetical (verb,
 adjective, noun) order** and tells each result; `GameLoop.processCommand`

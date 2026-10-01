@@ -244,7 +244,7 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     row in the Command Chain grid.
   - Action sub-editors are pluggable via an annotation-driven registry
     (`@AutoRegisterActionEditor`, discovered by `ActionEditorRegistry`) /
-    `ActionSelector`; all 17 authorable action types have editors —
+    `ActionSelector`; all 22 authorable action types have editors —
     Message, Describe, Take, Drop, Wear, Remove, MovePlayer, MoveItem,
     Inventory, Quit, SetVariable, IncrementVariable, DecrementVariable,
     Create, Destroy, Light, and Break (`LoadAdventureAction` is
@@ -463,7 +463,8 @@ should be enforced by the implementation, not just by the UI:
    `ContainerFullException`. Items that are not `Containable` raise
    `NotContainableException`.
 7. **Worn items are carried.** Dropping a worn item triggers a follow-up
-   `RemoveAction` (built by `CommandFactory.setUpDropCommand`).
+   `RemoveAction` (built by `CommandFactory.setUpDropCommand`); the noun-driven
+   `AutoDropAction` (AUTOD) instead *refuses* to drop a worn item (`SM24`).
 8. **Special words exist.** Each adventure's `VocabularyData` MUST have a
    non-null reference for every special-word slot before play begins.
 

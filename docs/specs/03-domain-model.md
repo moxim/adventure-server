@@ -265,10 +265,11 @@ The class also exposes a comprehensive list of **string constants** for UI
 labels (e.g. `BACK_TEXT`, `SAVE_TEXT`, `UNKNOWN_WORD_TEXT`). Centralising these
 makes the domain text translatable in one place.
 
-Key query method:
+Key methods:
 
 | Method | Returns |
 |--------|---------|
+| `ensureWildcardNoun()` | The `Word` `"~"` (`WILDCARD_NOUN`, type `NOUN`), creating it if absent; an existing same-text word is returned untouched (never retyped or repointed). Called by the Response editor so a Response can be keyed on "any noun". |
 | `findWordsBySynonym(Word aTarget)` | `List<Word>` of all words whose `synonym` field points to `aTarget` (excludes `aTarget` itself). Used by `WordEditorDialogue` to detect cascade-affected words when a synonym is reassigned. |
 
 ### CommandDescriptionData
@@ -325,7 +326,10 @@ to one `Thing`. Two independent lists:
 - **`interceptorCommands` — Responses.** Tried only as a **fallback**, after
   pocket/location dispatch has failed to match the verb at all. An exact
   `(verb, adjective, noun)` match that a location or item command also
-  carries loses to that local command. The verb is required. (This
+  carries loses to that local command. The verb is required. The noun may be
+  the wildcard `~` (`VocabularyData.WILDCARD_NOUN`, a persisted NOUN `Word`
+  created on demand by `ensureWildcardNoun()`), which matches any typed noun
+  or none — see [`04-runtime-engine.md` § Wildcard noun](04-runtime-engine.md#wildcard-noun-). (This
   *persisted* field name predates the engine rename — the runtime table is
   now `Workflow.responses`.)
 
@@ -407,6 +411,7 @@ this chapter only documents the storage shape.
 | `CreateActionData`, `DestroyActionData` | `CreateAction` (add to a container), `DestroyAction` (remove from its parent container) — both authorable via the Action editor ("Create Item" / "Destroy") |
 | `DescribeActionData` | `DescribeAction` |
 | `DropActionData`, `TakeActionData`, `WearActionData`, `RemoveActionData` | inventory-handling actions |
+| `AutoTakeActionData`, `AutoDropActionData`, `AutoWearActionData`, `AutoRemoveActionData` | AUTOT / AUTOD / AUTOW / AUTOR — parameterless; the item is resolved at runtime from the typed noun (see [`04-runtime-engine.md` § Auto item actions](04-runtime-engine.md#auto-item-actions-autot-autod-autow-autor)) |
 | `MovePlayerActionData`, `MoveItemActionData` | spatial actions |
 | `MessageActionData` | text emission |
 | `InventoryActionData` | print pocket |
