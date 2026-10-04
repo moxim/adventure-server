@@ -328,4 +328,26 @@ class AdventureRunViewTest extends BrowserlessTest {
 
         assertThat(find(com.vaadin.flow.component.html.Image.class, view).exists()).isFalse();
     }
+
+    @Test
+    void theAdventuresFont_isAppliedToTheGameTextAndTheInput() {
+        stubOpeningRoom("A grand throne room.");
+        adventureData.setFont(com.pdg.adventure.model.AdventureFont.CINZEL);
+
+        enterViaAuthorRoute();
+
+        String expected = com.pdg.adventure.model.AdventureFont.CINZEL.cssFontFamily().orElseThrow();
+        assertThat(find(MessageList.class, view).single().getStyle().get("--lumo-font-family")).isEqualTo(expected);
+        assertThat(find(MessageInput.class, view).single().getStyle().get("--lumo-font-family")).isEqualTo(expected);
+    }
+
+    @Test
+    void theDefaultFont_leavesTheApplicationFontAlone() {
+        stubOpeningRoom("A grand throne room.");
+
+        enterViaAuthorRoute();
+
+        assertThat(find(MessageList.class, view).single().getStyle().get("--lumo-font-family")).isNull();
+        assertThat(find(MessageInput.class, view).single().getStyle().get("--lumo-font-family")).isNull();
+    }
 }

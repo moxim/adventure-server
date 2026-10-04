@@ -53,6 +53,10 @@ public class AdventureData extends DatedData {
 
     private WorkflowData workflowData;
 
+    // The font of the run view's game text. Stored as the constant's name; documents saved before fonts
+    // existed have no such field and keep the constructor's DEFAULT.
+    private AdventureFont font;
+
     public AdventureData() {
         this(new VocabularyData());
     }
@@ -69,6 +73,16 @@ public class AdventureData extends DatedData {
         notes = "";
         workflowData = new WorkflowData();
         variableData = new VariableData(new HashMap<>());
+        font = AdventureFont.DEFAULT;
+    }
+
+    /** Never null: an absent or null stored value means {@link AdventureFont#DEFAULT}. */
+    public AdventureFont getFont() {
+        return font == null ? AdventureFont.DEFAULT : font;
+    }
+
+    public void setFont(AdventureFont aFont) {
+        font = aFont == null ? AdventureFont.DEFAULT : aFont;
     }
 
     /** The names of all variables defined for this adventure. */

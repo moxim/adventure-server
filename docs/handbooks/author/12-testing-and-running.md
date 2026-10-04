@@ -39,6 +39,15 @@ your starting location's description, spoken by **Narrator**. From then on,
 whatever you type is echoed into the transcript under your own username,
 and the game's response appears as the next Narrator line.
 
+The transcript and the text input use the adventure's **Run Font**, chosen in the
+[Adventure Editor](04-the-adventure-editor.md#the-fields). Adventures that never
+picked one keep the application's normal font, so a clean look (*Inter*, *Lora*)
+a fantasy one (*MedievalSharp*, *Cinzel*) a futuristic one (*Oxanium*, *Share Tech Mono*) or a typewritten or old-print one (*Special Elite*, *Courier Prime*, *IM Fell English*) is a per-adventure choice. The
+buttons, the picture panel and every editor screen always keep the standard font.
+The fonts are bundled with the application, so they look the same on every
+player's machine and need no internet connection. Characters outside the Latin
+alphabet (for example Cyrillic or Greek) are drawn in a system font instead.
+
 When the current location (or a **Picture** action) has a [picture](11-pictures.md)
 to show, a picture panel appears above the transcript, scaled to fit. It
 updates after every command and disappears when there's nothing to show.

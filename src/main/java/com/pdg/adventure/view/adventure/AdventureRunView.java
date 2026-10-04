@@ -1,5 +1,6 @@
 package com.pdg.adventure.view.adventure;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
@@ -17,6 +18,7 @@ import java.util.Optional;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.AdventureFont;
 import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.engine.AdventureRunSession;
@@ -55,6 +57,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     private static final String PLAYER_ROUTE_PREFIX = "player/";
     private static final String FROM_QUERY_PARAM = "from";
     private static final String FROM_MENU = "menu";
+    private static final String LUMO_FONT_FAMILY = "--lumo-font-family";
 
     private enum Origin { EDITOR, MENU, LIBRARY }
 
@@ -174,6 +177,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         adventureData = resolvedAdventure.get();
         adventureId = adventureData.getId();
         pageTitle = (origin == Origin.LIBRARY ? "Playing: " : "Test: ") + adventureData.getTitle();
+        applyFont(adventureData.getFont());
 
         try {
             session = sessionFactory.start(adventureData);
@@ -187,6 +191,20 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         ExecutionResult result = movePlayerAction.execute();
         renderNarratorLines(List.of(result.getResultMessage()));
         refreshPictureDisplay();
+    }
+
+    /**
+     * Sets Lumo's font-family property on the game text and the input only (not on the Back button or
+     * the page), so the rest of the app keeps its font. DEFAULT removes the override.
+     * <p>
+     * TODO: Review needed — scope is the message list and input; the picture and the Back button keep the app font.
+     */
+    private void applyFont(AdventureFont aFont) {
+        for (Component gameText : List.of(messageList, messageInput)) {
+            aFont.cssFontFamily().ifPresentOrElse(
+                    family -> gameText.getStyle().set(LUMO_FONT_FAMILY, family),
+                    () -> gameText.getStyle().remove(LUMO_FONT_FAMILY));
+        }
     }
 
     private static Origin resolveOrigin(Location location) {

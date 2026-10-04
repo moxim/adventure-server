@@ -17,6 +17,7 @@ players carry).
 |-------|----------------|
 | **Adventure ID** | Read-only. Assigned automatically. |
 | **Title** | Required — you can't save without one. |
+| **Run Font** | The font of the game text when the adventure is run — see [Chapter 12](12-testing-and-running.md#the-play-screen). Pick from *Default (system)*, *Inter* (clean), *Lora* (serif), *IBM Plex Mono* (terminal), *MedievalSharp* and *Cinzel* (both fantasy), *Oxanium* (futuristic), *Share Tech Mono* (futuristic terminal), *Special Elite* (worn typewriter), *IM Fell English* (old print) and *Courier Prime* (typewriter); every entry in the list is drawn in its own font so you can see what you are choosing. Like any other edit it needs a **Save**. |
 | **Start Location** | Read-only summary of your adventure's starting room. Set indirectly — see [Chapter 5](05-locations-and-exits.md#choosing-the-starting-location). |
 | **Total Locations** | Read-only count, for orientation. |
 | **Total Items** | Read-only count, for orientation. |
