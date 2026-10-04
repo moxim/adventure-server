@@ -134,7 +134,7 @@ public class SystemMessagesView extends VerticalLayout implements HasDynamicTitl
             if (message == null) {
                 // First time this adventure has customized this key - create its own override
                 // row now; until this point no row existed for it at all (sparse storage).
-                message = new SystemMessageData(adventureData.getId(), anId, aNewText);
+                message = new SystemMessageData(anId, aNewText);
                 overrides.put(anId, message);
             } else {
                 message.setText(aNewText);

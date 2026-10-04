@@ -101,7 +101,7 @@ class SystemMessagesViewTest extends BrowserlessTest {
     @DisplayName("Entering the view never touches an already-customized message, and doesn't materialize the other 35")
     void beforeEnter_preservesAlreadyEditedMessage_andLeavesEverythingElseSparse() {
         adventureData.getSystemMessages().put(SystemMessageKey.SM40.id(),
-                new SystemMessageData("adv-1", SystemMessageKey.SM40.id(), "Du kannst %s nicht tragen."));
+                new SystemMessageData(SystemMessageKey.SM40.id(), "Du kannst %s nicht tragen."));
 
         enterWithAdventure();
 
@@ -191,7 +191,7 @@ class SystemMessagesViewTest extends BrowserlessTest {
     @DisplayName("Saving a second edit for an already-customized message updates the existing row instead of duplicating it")
     void save_validEdit_updatesExistingOverrideRow_whenOneAlreadyExists() {
         adventureData.getSystemMessages().put(SystemMessageKey.SM40.id(),
-                new SystemMessageData("adv-1", SystemMessageKey.SM40.id(), "Du kannst %s nicht tragen."));
+                new SystemMessageData(SystemMessageKey.SM40.id(), "Du kannst %s nicht tragen."));
         enterWithAdventure();
 
         int wearRowIndex = gridIndexOf(SystemMessageKey.SM40.id());

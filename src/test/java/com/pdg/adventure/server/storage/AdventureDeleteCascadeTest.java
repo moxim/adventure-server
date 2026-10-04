@@ -64,7 +64,7 @@ class AdventureDeleteCascadeTest {
         MessageData message = new MessageData("greeting", "hello");
         adventure.getMessages().put(message.getMessageId(), message);
 
-        SystemMessageData override = new SystemMessageData(adventure.getId(), "0", "It's pitch black.");
+        SystemMessageData override = new SystemMessageData("0", "It's pitch black.");
         adventure.getSystemMessages().put(override.getKey(), override);
 
         mongoTemplate.save(adventure);

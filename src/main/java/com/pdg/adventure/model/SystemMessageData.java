@@ -19,15 +19,13 @@ import com.pdg.adventure.model.basic.DatedData;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SystemMessageData extends DatedData {
 
-    private String adventureId;
     private String key;
     private String text;
 
     public SystemMessageData() {
     }
 
-    public SystemMessageData(String anAdventureId, String aKey, String aText) {
-        adventureId = anAdventureId;
+    public SystemMessageData(String aKey, String aText) {
         key = aKey;
         text = aText;
     }
