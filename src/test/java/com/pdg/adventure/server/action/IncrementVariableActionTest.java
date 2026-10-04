@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
 class IncrementVariableActionTest {
@@ -15,12 +14,12 @@ class IncrementVariableActionTest {
     @Test
     void executeWithNumericString() {
         // given
-        variableProvider.set(new Variable(VAR_NAME, 2));
+        variableProvider.set(VAR_NAME, 2);
 
         // when
         sut.execute();
 
         // then
-        assertThat(variableProvider.get(VAR_NAME).value()).isEqualTo(3);
+        assertThat(variableProvider.get(VAR_NAME).get().value()).isEqualTo(3);
     }
 }

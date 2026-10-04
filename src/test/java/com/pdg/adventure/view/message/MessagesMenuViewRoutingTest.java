@@ -22,31 +22,25 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.support.FlashNotifier;
 import com.pdg.adventure.view.support.RouteIds;
 
 class MessagesMenuViewRoutingTest extends BrowserlessTest {
 
-    private MessageService messageService;
     private AdventureService adventureService;
     private AdventureAccessService accessService;
     private MessagesMenuView view;
 
     @BeforeEach
     void setUp() {
-        messageService = mock(MessageService.class);
         adventureService = mock(AdventureService.class);
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
@@ -54,7 +48,7 @@ class MessagesMenuViewRoutingTest extends BrowserlessTest {
         testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
-        view = new MessagesMenuView(messageService, adventureService, accessService);
+        view = new MessagesMenuView(adventureService, accessService);
         UI.getCurrent().add(view);
     }
 
@@ -94,7 +88,7 @@ class MessagesMenuViewRoutingTest extends BrowserlessTest {
     @Test
     void confirmingDeleteDialog_removesTheMessage_andDoesNotConsultMessageService() {
         Map<String, MessageData> messages = new HashMap<>();
-        messages.put("msg-1", new MessageData("adv-1", "msg-1", "Welcome!"));
+        messages.put("msg-1", new MessageData("msg-1", "Welcome!"));
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
         adventure.setTitle("The Demo");
@@ -113,7 +107,6 @@ class MessagesMenuViewRoutingTest extends BrowserlessTest {
 
         assertThat(adventure.getMessages()).doesNotContainKey("msg-1");
         verify(adventureService).saveAdventureData(adventure);
-        verify(messageService, never()).deleteMessage(any(), any());
     }
 
     @Test

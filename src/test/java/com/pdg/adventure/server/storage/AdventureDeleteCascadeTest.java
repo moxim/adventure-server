@@ -61,7 +61,7 @@ class AdventureDeleteCascadeTest {
         ItemData pocketItem = new ItemData();
         adventure.getPlayerPocket().getItems().add(pocketItem);
 
-        MessageData message = new MessageData(adventure.getId(), "greeting", "hello");
+        MessageData message = new MessageData("greeting", "hello");
         adventure.getMessages().put(message.getMessageId(), message);
 
         SystemMessageData override = new SystemMessageData(adventure.getId(), "0", "It's pitch black.");

@@ -6,7 +6,6 @@ import lombok.Getter;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
@@ -30,7 +29,7 @@ public class MovePlayerAction extends AbstractAction {
         final DescribeAction describeAction = new DescribeAction(description::text);
         ExecutionResult result = describeAction.execute();
         gameContext.setCurrentPictureId(description.pictureId());
-        variableProvider.set(new Variable(VariableProvider.VISITED_VARIABLE_NAME, (int) destination.getTimesVisited()));
+        variableProvider.set(VariableProvider.VISITED_VARIABLE_NAME, (int) destination.getTimesVisited());
         destination.setTimesVisited(destination.getTimesVisited() + 1);
         String arrivalMessage = gameContext.runArrivalProcesses().getResultMessage();
         if (!arrivalMessage.isEmpty()) {

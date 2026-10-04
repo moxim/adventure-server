@@ -29,7 +29,8 @@ public class Vocabulary extends BasicData implements Ided {
       rabbit   NOUN           null   <- createWord(word, type)
       put      VERB           null   <- createWord(word, type)
       take     VERB            get   <- createWord(word, synonym)
-      small    ADJECTIVE     small   <- createWord(word, type)
+      small    ADJECTIVE      null   <- createWord(word, type)
+      little   ADJECTIVE      small   <- createWord(word, synonym)
      */
 
     public Vocabulary() {

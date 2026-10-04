@@ -11,6 +11,10 @@ import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.action.ActionData;
+import com.pdg.adventure.model.action.AutoDropActionData;
+import com.pdg.adventure.model.action.AutoRemoveActionData;
+import com.pdg.adventure.model.action.AutoTakeActionData;
+import com.pdg.adventure.model.action.AutoWearActionData;
 import com.pdg.adventure.model.action.BreakActionData;
 import com.pdg.adventure.model.action.CreateActionData;
 import com.pdg.adventure.model.action.DecrementVariableActionData;
@@ -178,6 +182,18 @@ public class PreconditionActionFormatter {
         }
         if (a instanceof PictureActionData p) {
             return "PICTURE " + resolvePictureName(p.getPictureId());
+        }
+        if (a instanceof AutoTakeActionData) {
+            return "AUTOT";
+        }
+        if (a instanceof AutoDropActionData) {
+            return "AUTOD";
+        }
+        if (a instanceof AutoWearActionData) {
+            return "AUTOW";
+        }
+        if (a instanceof AutoRemoveActionData) {
+            return "AUTOR";
         }
         if (a instanceof InventoryActionData) {
             return "INVENTORY";

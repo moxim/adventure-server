@@ -35,13 +35,15 @@ order, when that command fires.
 | **Wear** | Player puts on a wearable item | The item |
 
 Variable names are chosen from a dropdown, not typed. **Set Variable** is the
-action that creates a variable: pick an existing name or type a new one. Once
-a command with that action is saved, the name shows up in the dropdowns of
+action that creates a variable: pick an existing name or type a new one. As
+soon as you enter the name in that action, it shows up in the dropdowns of
 **Increment Variable**, **Decrement Variable** and the variable conditions
 (**Equals**, **Greater Than**, **Less Than**, **Same**), which accept only
 names that are already set somewhere. The engine's own `VISITED` counter is
-always listed. A condition that still names a variable nothing sets (for
-example after you delete the Set action) is flagged as invalid when you open it.
+always listed. The variable is stored with the adventure when you save the
+command, and it stays defined even if you later delete the Set action. A
+condition naming a variable that was never defined is flagged as invalid when
+you open it.
 
 Variables are your own free-form named counters — use them for anything
 that needs to be remembered across turns: a score, a flag ("door_unlocked"),

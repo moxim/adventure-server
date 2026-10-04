@@ -420,7 +420,10 @@ author-placeable:
 | `InventoryAction(consumer, pocketSupplier, msgs)` | Print the carried-items header (`SM9`) followed by `pocket.listContents()`. |
 | `QuitAction(msgs)` | Throw `QuitException` carrying the supplied bye message. |
 | `LoadAdventureAction(service, mapper, config, gameContext)` | Resolve an `adventureId`, load and map the `AdventureData`, throw `ReloadAdventureException` on success (returns normally on failure). Engine-managed — no DO, no editor. |
-| `SetVariableAction(name, value, vars, msgs)` | Write `Variable(name, value)` into the `VariableProvider`. |
+| `SetVariableAction(name, value, vars, msgs)` | Write `Variable(name, value)` into the `VariableProvider`. 
+The variable itself is *defined* at authoring time (`AdventureData.variables`); at load, `AdventureMapper.mapToBO` 
+clears the shared `VariableProvider` and defines each authored `VariableData` at its initial value (via `VariableMapper`),
+ so every game starts from the authored state. |
 | `IncrementVariableAction(name, vars, msgs)` | Read the variable, parse it as an integer, write `+1`. |
 | `DecrementVariableAction(name, vars, msgs)` | Same, `-1`. |
 | `CreateAction(thing, containerSupplier, msgs)` | Add `thing` to the supplied container; emits `SM58`. Authorable via the "Create Item" action editor. |

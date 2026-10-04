@@ -3,9 +3,11 @@ package com.pdg.adventure.view.command.action;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.IntegerField;
-import com.vaadin.flow.component.textfield.TextField;
 
+import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.action.DecrementVariableActionData;
+import com.pdg.adventure.view.command.VariableNameSelector;
+import com.pdg.adventure.view.support.VariableChoices;
 
 /**
  * Editor component for DecrementVariableActionData.
@@ -14,12 +16,19 @@ import com.pdg.adventure.model.action.DecrementVariableActionData;
 @AutoRegisterActionEditor
 public class DecrementVariableActionEditor extends ActionEditorComponent<DecrementVariableActionData> {
     private final DecrementVariableActionData decrementVariableActionData;
-    private TextField nameField;
+    private VariableNameSelector nameField;
+    private final AdventureData adventureData;
     private IntegerField valueField;
 
     public DecrementVariableActionEditor(DecrementVariableActionData aDecrementVariableActionData) {
+        this(aDecrementVariableActionData, null);
+    }
+
+    public DecrementVariableActionEditor(DecrementVariableActionData aDecrementVariableActionData,
+                                         AdventureData anAdventureData) {
         super(aDecrementVariableActionData);
         decrementVariableActionData = aDecrementVariableActionData;
+        adventureData = anAdventureData;
         // UI will be built when initialize() is called
     }
 
@@ -29,10 +38,11 @@ public class DecrementVariableActionEditor extends ActionEditorComponent<Decreme
         Span description = new Span("Decrement a named variable by the specified amount");
         description.getStyle().set("color", "var(--lumo-secondary-text-color)");
 
-        nameField = new TextField("Variable Name");
-        nameField.setPlaceholder("Enter variable name");
-        nameField.setWidthFull();
-        nameField.setRequired(true);
+        nameField = new VariableNameSelector("Variable Name",
+                adventureData == null ? null : () -> VariableChoices.of(adventureData), false,
+                decrementVariableActionData.getName());
+        nameField.setPlaceholder("Select a variable");
+        nameField.setHelperText("Only defined variables can be chosen - a Set Variable action defines one.");
 
         valueField = new IntegerField("Decrement Amount");
         valueField.setPlaceholder("Enter decrement amount");
@@ -40,9 +50,6 @@ public class DecrementVariableActionEditor extends ActionEditorComponent<Decreme
         valueField.setRequired(true);
 
         // Pre-populate fields if actionData already has values
-        if (decrementVariableActionData.getName() != null) {
-            nameField.setValue(decrementVariableActionData.getName());
-        }
         if (decrementVariableActionData.getValue() != null) {
             valueField.setValue(decrementVariableActionData.getValue());
         }
@@ -56,13 +63,8 @@ public class DecrementVariableActionEditor extends ActionEditorComponent<Decreme
 
     @Override
     public boolean validate() {
-        boolean nameValid = nameField.getValue() != null && !nameField.getValue().isBlank();
+        boolean nameValid = nameField.validateSelection();
         boolean valueValid = valueField.getValue() != null;
-
-        nameField.setInvalid(!nameValid);
-        if (!nameValid) {
-            nameField.setErrorMessage("Please enter a variable name");
-        }
 
         valueField.setInvalid(!valueValid);
         if (!valueValid) {
@@ -74,8 +76,8 @@ public class DecrementVariableActionEditor extends ActionEditorComponent<Decreme
 
     @Override
     public String getActionSummary() {
-        String name = (nameField != null && !nameField.getValue().isEmpty())
-                ? nameField.getValue() : "";
+        String name = (nameField != null && !nameField.selectedName().isEmpty())
+                ? nameField.selectedName() : "";
         String amount = (valueField != null && valueField.getValue() != null)
                 ? valueField.getValue().toString() : "";
         if (name.isEmpty()) return "(none)";

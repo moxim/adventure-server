@@ -86,7 +86,7 @@ final class ConditionEditorRegistry {
             }
             result.put((Class<? extends PreConditionData>) dataClass, (Class<? extends ConditionEditorComponent<?>>) editorClass);
         }
-        logger.info("Auto-registered {} condition editors", result.size());
+        logger.debug("Auto-registered {} condition editors", result.size());
         return Collections.unmodifiableMap(result);
     }
 

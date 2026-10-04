@@ -29,6 +29,7 @@ import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.condition.CarriedConditionMapper;
 import com.pdg.adventure.server.support.MapperSupporter;
+import com.pdg.adventure.server.support.VariableProvider;
 
 /**
  * Integration tests for reference resolution during adventure mapping.
@@ -44,7 +45,7 @@ import com.pdg.adventure.server.support.MapperSupporter;
          AdventureMapper.class, VocabularyMapper.class, LocationMapper.class, ItemContainerMapper.class,
          ItemMapper.class, DirectionMapper.class, CommandMapper.class, CommandDescriptionMapper.class,
          CommandChainMapper.class, CommandProviderMapper.class, DescriptionMapper.class,
-         CarriedConditionMapper.class})
+         CarriedConditionMapper.class, VariableMapper.class})
 class AdventureMapperReferenceResolutionTest {
 
     @MockitoBean
@@ -52,6 +53,9 @@ class AdventureMapperReferenceResolutionTest {
 
     @Autowired
     private AdventureMapper adventureMapper;
+
+    @Autowired
+    private AdventureConfig adventureConfig;
 
     @Test
     @DisplayName("direction condition referencing an item in the same location resolves the item")
@@ -119,6 +123,32 @@ class AdventureMapperReferenceResolutionTest {
         assertThatThrownBy(() -> adventureMapper.mapToBO(adventureData))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("no-such-item");
+    }
+
+    @Test
+    @DisplayName("mapping an adventure defines exactly its variables in the shared VariableProvider")
+    void mapToBO_definesTheAdventuresVariables_andForgetsThoseOfTheOneBefore() {
+        AdventureData first = new AdventureData();
+        first.setId("adv-1");
+        first.setCurrentLocationId("hall");
+        first.getLocationData().put("hall", createLocation("hall"));
+        first.getVariableData().addVariable("lives", 3);
+        first.getVariableData().addVariable("Intoxication");
+        Adventure firstAdventure = adventureMapper.mapToBO(first);
+
+        VariableProvider provider = firstAdventure.getVariableProvider();
+        assertThat(provider.get("lives").get().value()).isEqualTo(3);
+        assertThat(provider.isDefined("Intoxication")).isTrue();
+
+        AdventureData second = new AdventureData();
+        second.setId("adv-2");
+        second.setCurrentLocationId("hall");
+        second.getLocationData().put("hall", createLocation("hall"));
+        second.getVariableData().addVariable("score");
+        Adventure secondAdventure = adventureMapper.mapToBO(second);
+
+        assertThat(provider.getAll()).extracting(com.pdg.adventure.server.support.Variable::name)
+                                     .containsExactly("lives", "Intoxication");
     }
 
     private ItemData createItem(String anId, String anAdjective, String aNoun) {

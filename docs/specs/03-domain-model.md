@@ -132,6 +132,7 @@ Fields:
 | `messages` | `@DBRef(lazy=true) Map<String, MessageData>` | Author-authored reusable text. Cascade save & delete. |
 | `systemMessages` | `@DBRef(lazy=true) Map<String, SystemMessageData>` | Sparse per-adventure overrides of engine text; keyed by `SystemMessageKey.id()`. Cascade save & delete. A key with no entry reads as its catalog default. See [§ System messages](#system-messages) below. |
 | `notes` | `String` | Free-text outline; not used at runtime. Surfaced as a quick preview in `AdventuresMenuView`'s right-click context menu. |
+| `variables` | `List<VariableData>`, default empty | The variables the author has defined — embedded (owned 1:1 by the adventure, like `messages`), as a list rather than a map because variable names are free text and may be illegal as Mongo field names. `defineVariable(name)` adds one (trimmed, case-sensitive, idempotent); `variableNames()` lists them. Created when a Set Variable action names a variable, see [`07-ui-and-navigation.md`](07-ui-and-navigation.md). |
 | `workflowData` | `WorkflowData`, default `new WorkflowData()` | The adventure's global commands — **Processes** (`commands`) and **Responses** (`interceptorCommands`). Plain embedded field — no `@DBRef`, no cascade annotations (unlike every other nested collection above); it round-trips as part of the `AdventureData` document itself. See [§ Workflow](#workflow) below. |
 
 Constructors initialise empty maps (including `systemMessages`) and an empty
@@ -392,12 +393,20 @@ reworded message can't trigger a `MissingFormatArgumentException` at runtime.
 The catalog is fixed — the screen can edit an entry but never create, delete,
 or rename one.
 
+### VariableData
+
+`model/VariableData.java`, extends `BasicData`, embedded in `AdventureData.variables` (no collection
+of its own). Fields: `name` (the identity — `equals`/`hashCode` use it only) and `initialValue`
+(`int`, default 0; the value a game starts with — not yet editable in the UI). `VariableMapper`
+(`server/mapper/`) maps it to the runtime `Variable` and back.
+
 ### VariableProvider / Variable
 
 `server/support/VariableProvider.java`, `Variable.java`. Holds named
 variables consumed by the `*VariableAction` and `*VariableCondition` families.
-Variables are **not persisted** today; they are runtime-only state created and
-reset per game session.
+Variables must be defined or added first through the SetVariableAction before they 
+can be used in any other action or condition. Propper mapping between the `VariableProvider` and
+the `VariableData` is available trhough the `VariableMapper`.
 
 ## Action and PreCondition data
 

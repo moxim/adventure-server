@@ -26,7 +26,6 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.support.RouteIds;
 
 /**
@@ -39,9 +38,6 @@ class MessageEditorViewTest {
 
     @Mock
     private AdventureService adventureService;
-
-    @Mock
-    private MessageService messageService;
 
     @Mock
     private AdventureAccessService accessService;
@@ -83,7 +79,7 @@ class MessageEditorViewTest {
     @Test
     void constructor_shouldCreateViewWithAllComponents() {
         // when
-        view = new MessageEditorView(adventureService, messageService, accessService);
+        view = new MessageEditorView(adventureService, accessService);
 
         // then
         assertThat(view).isNotNull();
@@ -92,7 +88,7 @@ class MessageEditorViewTest {
     @Test
     void setData_shouldPopulateAdventureData() {
         // given
-        view = new MessageEditorView(adventureService, messageService, accessService);
+        view = new MessageEditorView(adventureService, accessService);
 
         // when
         enterWithMessageId(null);
@@ -112,7 +108,7 @@ class MessageEditorViewTest {
     @Test
     void getPageTitle_shouldReturnNullBeforeRouteEnter() {
         // given
-        view = new MessageEditorView(adventureService, messageService, accessService);
+        view = new MessageEditorView(adventureService, accessService);
 
         // when
         String title = view.getPageTitle();

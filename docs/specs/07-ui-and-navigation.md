@@ -399,9 +399,20 @@ grid/dialog read-model record.
 | `DecrementVariableActionEditor` | Variable name text field. |
 | `SetVariableActionEditor` | Variable name + value text fields. |
 | `BreakActionEditor` | No extra input (stops command chain execution immediately). |
-| `AutoTakeActionEditor` / `AutoDropActionEditor` / `AutoWearActionEditor` / `AutoRemoveActionEditor` | No extra input — informational panel only (AUTOT / AUTOD / AUTOW / AUTOR resolve the item from the typed noun at runtime; see [`04-runtime-engine.md` § Auto item actions](04-runtime-engine.md#auto-item-actions-autot-autod-autow-autor)). Shown in the selector as "AUTOT (Auto Take)", "AUTOD (Auto Drop)", "AUTOW (Auto Wear)", "AUTOR (Auto Remove)". |
-| `SetVariableActionEditor` / `IncrementVariableActionEditor` / `DecrementVariableActionEditor`, and the `Equals`/`GreaterThan`/`LessThan`/`Same` condition editors | Variable names come from `VariableNameSelector` (`view/command/`), a `ComboBox<String>` fed by `DefinedVariables.in(adventureData)` (`view/support/`) — every name written by a Set/Increment/Decrement action anywhere in the adventure, plus the engine's `VISITED`. Set Variable allows typing a new name (it defines the variable); the others accept only defined names, and a stored name that is no longer defined fails `validate()`. Derived from authored data, not from the runtime `VariableProvider`, which is empty at authoring time and shared across adventures. A defining action becomes visible once its command is saved. |
-| `LightActionEditor` | Item selector + a 0–100 lumen `IntegerField` (not via `AbstractSingleItemActionEditor`, since it needs two fields). Sets an item's light level. |
+| `AutoTakeActionEditor` / `AutoDropActionEditor` / `AutoWearActionEditor` / `AutoRemoveActionEditor` | 
+No extra input — informational panel only (AUTOT / AUTOD / AUTOW / AUTOR resolve the item from the typed noun at 
+runtime; see [`04-runtime-engine.md` § Auto item actions](04-runtime-engine.md#auto-item-actions-autot-autod-autow-autor)).
+ Shown in the selector as "AUTOT (Auto Take)", "AUTOD (Auto Drop)", "AUTOW (Auto Wear)", "AUTOR (Auto Remove)". |
+| `SetVariableActionEditor` / `IncrementVariableActionEditor` / `DecrementVariableActionEditor`, and the 
+`Equals`/`GreaterThan`/`LessThan`/`Same` condition editors | Variable names come from `VariableNameSelector` 
+(`view/command/`), a `ComboBox<String>` fed live (re-read on focus) by `VariableChoices.of(adventureData)` 
+(`view/support/`): the adventure's `AdventureData.variables` plus the engine's `VISITED`. Set Variable allows typing a 
+new name and calls `adventureData.defineVariable(name)` the moment the name is entered (and again on `validate()`), so 
+conditions can pick it before the command is saved; it is persisted with the adventure on the next save. The others 
+accept only defined names, and a stored name that is no longer defined fails `validate()`. Increment/Decrement do not 
+define variables. |
+| `LightActionEditor` | Item selector + a 0–100 lumen `IntegerField` (not via `AbstractSingleItemActionEditor`, since 
+it needs two fields). Sets an item's light level. |
 
 ### Condition editor factory
 

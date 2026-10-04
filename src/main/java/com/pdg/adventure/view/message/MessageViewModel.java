@@ -64,8 +64,6 @@ public class MessageViewModel {
         this.messageText = messageData.getText() != null ? messageData.getText() : "";
         this.isNew = false;
         this.usageCount = 0;
-        this.category = messageData.getCategory();
-        this.notes = messageData.getNotes();
     }
 
     /**

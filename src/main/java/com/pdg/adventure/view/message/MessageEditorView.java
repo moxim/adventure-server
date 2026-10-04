@@ -27,7 +27,6 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
@@ -46,7 +45,6 @@ public class MessageEditorView extends VerticalLayout
     private static final String FONT_SECONDARY_COLOR_TEXT = "var(--lumo-secondary-text-color)";
 
     private final transient AdventureService adventureService;
-    private final transient MessageService messageService;
     private final transient AdventureAccessService accessService;
     private final Binder<MessageViewModel> binder;
 
@@ -62,16 +60,13 @@ public class MessageEditorView extends VerticalLayout
     private transient AdventureData adventureData;
     private transient MessageViewModel mvm;
 
-    public MessageEditorView(AdventureService anAdventureService, MessageService aMessageService,
-                             AdventureAccessService anAccessService) {
-        setSizeFull();
-
+    public MessageEditorView(AdventureService anAdventureService, AdventureAccessService anAccessService) {
         adventureService = anAdventureService;
-        messageService = aMessageService;
         accessService = anAccessService;
         binder = new Binder<>(MessageViewModel.class);
 
         // Build UI
+        setSizeFull();
         H4 title = new H4("Message Editor");
 
         final TextField messageIdField;
@@ -203,9 +198,6 @@ public class MessageEditorView extends VerticalLayout
                 // Create or update message
                 MessageData message = createRequiredMessage();
 
-                // Update message properties
-                updateMessageMetaData(message);
-
                 // If message ID changed, remove old entry
                 if (originalMessageId != null && !originalMessageId.equals(mvm.getId())) {
                     adventureData.getMessages().remove(originalMessageId);
@@ -236,26 +228,17 @@ public class MessageEditorView extends VerticalLayout
         }
     }
 
-    private void updateMessageMetaData(final MessageData message) {
-        if (mvm.getCategory() != null) {
-            message.setCategory(mvm.getCategory());
-        }
-        if (mvm.getNotes() != null) {
-            message.setNotes(mvm.getNotes());
-        }
-    }
-
     private MessageData createRequiredMessage() {
         MessageData message;
         if (mvm.isNew()) {
             // Create new message
-            message = new MessageData(adventureData.getId(), mvm.getId(), mvm.getMessageText());
+            message = new MessageData(mvm.getId(), mvm.getMessageText());
         } else {
             // Get existing message or create new one
             message = adventureData.getMessages()
                                    .get(originalMessageId != null ? originalMessageId : mvm.getId());
             if (message == null) {
-                message = new MessageData(adventureData.getId(), mvm.getId(), mvm.getMessageText());
+                message = new MessageData(mvm.getId(), mvm.getMessageText());
             } else {
                 message.setMessageId(mvm.getId());
                 message.setText(mvm.getMessageText());

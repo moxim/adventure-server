@@ -22,17 +22,13 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.support.FlashNotifier;
 import com.pdg.adventure.view.support.RouteIds;
@@ -40,21 +36,19 @@ import com.pdg.adventure.view.support.RouteIds;
 class MessageEditorViewRoutingTest extends BrowserlessTest {
 
     private AdventureService adventureService;
-    private MessageService messageService;
     private AdventureAccessService accessService;
     private MessageEditorView view;
 
     @BeforeEach
     void setUp() {
         adventureService = mock(AdventureService.class);
-        messageService = mock(MessageService.class);
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
         testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
-        view = new MessageEditorView(adventureService, messageService, accessService);
+        view = new MessageEditorView(adventureService, accessService);
         UI.getCurrent().add(view);
     }
 
@@ -112,7 +106,7 @@ class MessageEditorViewRoutingTest extends BrowserlessTest {
     @Test
     void messageIdField_rejectsIdAlreadyUsedByAnotherMessage_withoutConsultingMessageService() {
         Map<String, MessageData> messages = new HashMap<>();
-        messages.put("existing_id", new MessageData("adv-1", "existing_id", "Already here."));
+        messages.put("existing_id", new MessageData("existing_id", "Already here."));
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
         adventure.setMessages(messages);
@@ -126,7 +120,6 @@ class MessageEditorViewRoutingTest extends BrowserlessTest {
 
         assertThat(messageIdField.isInvalid()).isTrue();
         assertThat(messageIdField.getErrorMessage()).isEqualTo("A message with this ID already exists");
-        verify(messageService, never()).messageExists(any(), any());
     }
 
     @Test

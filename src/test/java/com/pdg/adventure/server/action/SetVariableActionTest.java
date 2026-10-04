@@ -23,7 +23,7 @@ class SetVariableActionTest {
         new SetVariableAction("score", 100, variableProvider).execute();
 
         ArgumentCaptor<Variable> captor = ArgumentCaptor.forClass(Variable.class);
-        verify(variableProvider).set(captor.capture());
+        verify(variableProvider).define(captor.capture());
         assertThat(captor.getValue().name()).isEqualTo("score");
         assertThat(captor.getValue().value()).isEqualTo(100);
     }

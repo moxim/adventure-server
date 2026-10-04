@@ -412,7 +412,7 @@ class LocationMapperTest {
         return locationData;
     }
 
-    private Location createLocation(String id, int light, long timesVisited) {
+    private Location createLocation(String id, int light, int timesVisited) {
         Location location = new Location(descriptionProvider, itemContainer);
         location.setId(id);
         location.setLight(light);

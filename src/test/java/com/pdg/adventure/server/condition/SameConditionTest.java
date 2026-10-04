@@ -17,9 +17,9 @@ class SameConditionTest {
         Variable v2 = new Variable("two", 2);
         Variable v3 = new Variable("oneToo", 1);
 
-        vp.set(v1);
-        vp.set(v2);
-        vp.set(v3);
+        vp.set("one", 1);
+        vp.set("two", 2);
+        vp.set("oneToo", 1);
     }
 
     @Test

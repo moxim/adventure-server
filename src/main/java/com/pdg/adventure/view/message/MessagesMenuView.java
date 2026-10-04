@@ -28,7 +28,6 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.GridProvider;
@@ -38,7 +37,6 @@ import com.pdg.adventure.view.support.ViewSupporter;
 @Route(value = "author/adventures/:adventureId/messages", layout = MessagesMainLayout.class)
 @RolesAllowed("ROLE_AUTHOR")
 public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle, BeforeEnterObserver {
-    private final transient MessageService messageService;
     private final transient AdventureService adventureService;
     private final transient AdventureAccessService accessService;
     private final Grid<MessageDescriptionAdapter> grid;
@@ -46,9 +44,8 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
     private String pageTitle;
     private transient ListDataProvider<MessageDescriptionAdapter> dataProvider;
 
-    public MessagesMenuView(MessageService aMessageService, AdventureService anAdventureService,
+    public MessagesMenuView(AdventureService anAdventureService,
                             AdventureAccessService anAccessService) {
-        messageService = aMessageService;
         adventureService = anAdventureService;
         accessService = anAccessService;
         setSizeFull();
@@ -175,14 +172,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
             newId = original.getId() + "_copy" + counter++;
         }
 
-        MessageData newMessage = new MessageData(adventureData.getId(), newId, original.getMessageText());
-
-        if (original.getCategory() != null) {
-            newMessage.setCategory(original.getCategory());
-        }
-        if (original.getNotes() != null) {
-            newMessage.setNotes(original.getNotes());
-        }
+        MessageData newMessage = new MessageData(newId, original.getMessageText());
 
         adventureData.getMessages().put(newId, newMessage);
         adventureService.saveAdventureData(adventureData);

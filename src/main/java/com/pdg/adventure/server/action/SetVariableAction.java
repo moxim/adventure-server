@@ -23,7 +23,12 @@ public class SetVariableAction extends AbstractVariableAction {
 
     @Override
     public ExecutionResult execute() {
-        variableProvider.set(new Variable(variableName, variableValue));
+        changeValue(variableValue);
         return new CommandExecutionResult(ExecutionResult.State.SUCCESS);
+    }
+
+    @Override
+    protected void changeValue(final Integer aBaseValue) {
+        variableProvider.define(new Variable(variableName, variableValue));
     }
 }

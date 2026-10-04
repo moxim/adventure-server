@@ -59,9 +59,7 @@ class MessageViewModelTest {
     @Test
     void constructor_fromMessageData_shouldMapAllFields() {
         // Given
-        MessageData messageData = new MessageData("adventure-123", "test_msg", "Test message");
-        messageData.setCategory("greetings");
-        messageData.setNotes("Test notes");
+        MessageData messageData = new MessageData("test_msg", "Test message");
 
         // When
         MessageViewModel viewModel = new MessageViewModel(messageData);
@@ -71,14 +69,12 @@ class MessageViewModelTest {
         assertThat(viewModel.getMessageText()).isEqualTo("Test message");
         assertThat(viewModel.isNew()).isFalse();
         assertThat(viewModel.getUsageCount()).isZero();
-        assertThat(viewModel.getCategory()).isEqualTo("greetings");
-        assertThat(viewModel.getNotes()).isEqualTo("Test notes");
     }
 
     @Test
     void constructor_fromMessageDataWithUsage_shouldMapAllFieldsIncludingUsage() {
         // Given
-        MessageData messageData = new MessageData("adventure-123", "test_msg", "Test message");
+        MessageData messageData = new MessageData("test_msg", "Test message");
         int usageCount = 10;
 
         // When
