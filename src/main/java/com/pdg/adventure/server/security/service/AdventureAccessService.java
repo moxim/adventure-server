@@ -15,6 +15,7 @@ import com.pdg.adventure.security.model.Role;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.repository.AdventureAuthorRepository;
 import com.pdg.adventure.server.security.repository.AdventurePlayerRepository;
+import com.pdg.adventure.server.storage.service.AdventureDuplicator;
 import com.pdg.adventure.server.storage.service.AdventureService;
 
 /**
@@ -32,13 +33,16 @@ import com.pdg.adventure.server.storage.service.AdventureService;
 public class AdventureAccessService {
 
     private final AdventureService adventureService;
+    private final AdventureDuplicator adventureDuplicator;
     private final AdventureAuthorRepository authorRepository;
     private final AdventurePlayerRepository playerRepository;
 
     public AdventureAccessService(AdventureService adventureService,
+                                  AdventureDuplicator adventureDuplicator,
                                   AdventureAuthorRepository authorRepository,
                                   AdventurePlayerRepository playerRepository) {
         this.adventureService = adventureService;
+        this.adventureDuplicator = adventureDuplicator;
         this.authorRepository = authorRepository;
         this.playerRepository = playerRepository;
     }
@@ -97,6 +101,38 @@ public class AdventureAccessService {
         adventureService.saveAdventureData(adventure);
         authorRepository.save(new AdventureAuthor(adventure.getId(), author));
         return adventure;
+    }
+
+    /**
+     * Copies the adventure (all locations, items, pictures, vocabulary, ...) under new ids and makes
+     * the given user the copy's AUTHOR. Requires write access to the source: ADMIN or AUTHOR ownership.
+     * <p>
+     * TODO: Review needed — requires write access (not just read), so an assigned PLAYER cannot copy an
+     * adventure's content; alternative: allow anyone who can read it.
+     * TODO: Review needed — assigned players are not copied; the copy starts with its author only.
+     * TODO: Review needed — when an ADMIN duplicates, the admin (not the original author) owns the copy.
+     *
+     * @return the new adventure, titled "<original title> (copy)"
+     */
+    @Transactional
+    public AdventureData duplicateAdventure(String adventureId, UserData user) {
+        if (!canWrite(adventureId, user)) {
+            throw new AccessDeniedException("No write access to adventure: " + adventureId);
+        }
+        AdventureData source = adventureService.findAdventureById(adventureId).orElseThrow(
+                () -> new IllegalArgumentException("Adventure not found: " + adventureId));
+
+        String copyId = adventureDuplicator.duplicate(adventureId, source.getTitle() + " (copy)");
+        try {
+            // flush so a failing INSERT surfaces here, not at commit time after this catch
+            authorRepository.saveAndFlush(new AdventureAuthor(copyId, user));
+        } catch (RuntimeException e) {
+            // MongoDB and MySQL cannot share a transaction: don't leave an author-less copy behind
+            adventureService.deleteAdventure(copyId);
+            throw e;
+        }
+        return adventureService.findAdventureById(copyId).orElseThrow(
+                () -> new IllegalStateException("Duplicated adventure vanished: " + copyId));
     }
 
     /**

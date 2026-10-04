@@ -162,6 +162,11 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     `AdventureData` in MongoDB AND an `AdventureAuthor` row in MySQL pointing the
     current user at the new adventure id (handled by
     `AdventureAccessService.createAdventure`, `@Transactional` over the JPA write).
+  - The grid's right-click menu offers **Duplicate**: it creates a complete,
+    independent copy titled `"<title> (copy)"` (all locations, items, pictures,
+    vocabulary, messages under new ids), owned by the current user, and adds it
+    to the grid (`AdventureAccessService.duplicateAdventure`). Requires write
+    access to the source; deleting either adventure never affects the other.
   - Editing navigates to `/author/adventures/:adventureId/edit`. Title, notes,
     starting-location reference, and other top-level metadata can be modified.
     This editor's button bar is Back/Test/Save (not the four-button

@@ -150,6 +150,7 @@ Its rules are normative.
 | `findAdventureById(id, user)` | Returns `Optional.empty()` if `canRead` is false; otherwise delegates to `AdventureService.findAdventureById`. |
 | `saveAdventureData(data, user)` | Throws `AccessDeniedException` if `canWrite` is false; otherwise delegates. |
 | `createAdventure(data, author)` | `@Transactional`. Saves the `AdventureData` first (so the ULID id is fixed), then inserts an `AdventureAuthor(adventureId, author)` row. The MongoDB write is *outside* the JPA transaction; on JPA rollback, the document is orphaned. |
+| `duplicateAdventure(id, user)` | `@Transactional`. Verifies write access (a PLAYER cannot copy). Loads the source for its title, has `AdventureDuplicator` copy it as `"<title> (copy)"`, inserts an `AdventureAuthor(copyId, user)` row (the *calling* user owns the copy, also for an ADMIN; assigned players are not copied), and returns the reloaded copy. If the author row cannot be written the MongoDB copy is deleted again. |
 | `deleteAdventure(id, user)` | `@Transactional`. Verifies write access. Deletes `AdventureAuthor` and all `AdventurePlayer` rows, then `AdventureService.deleteAdventure(id)` cascades the document tree. |
 
 ### Assignment methods (ADMIN-only — *callers must verify the role*)

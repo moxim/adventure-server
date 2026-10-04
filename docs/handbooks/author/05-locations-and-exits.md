@@ -72,9 +72,9 @@ its **Command** (the verb/adjective/noun that triggers it) and its
 search field (filters by id, noun, or short description). Double-click a
 row, or right-click it for **Edit**, to open the exit editor; right-click
 → **Delete** removes it immediately, with no confirmation and no check for
-what else might reference it — a second spot in the app (alongside
-[deleting an adventure](03-your-adventures.md#deleting-an-adventure)) where
-there's no safety net.
+what else might reference it — unlike nearly every other delete in the
+app (including [deleting an adventure](03-your-adventures.md#deleting-an-adventure),
+which asks first), there's no safety net here.
 
 The exit editor:
 
