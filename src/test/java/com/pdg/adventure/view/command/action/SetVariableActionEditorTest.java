@@ -11,7 +11,7 @@ class SetVariableActionEditorTest {
     @Test
     void validate_withNoNameAndNoValue_shouldReturnFalse() {
         SetVariableActionData actionData = new SetVariableActionData(null, null);
-        SetVariableActionEditor editor = new SetVariableActionEditor(actionData);
+        SetVariableActionEditor editor = new SetVariableActionEditor(actionData, null);
         editor.initialize();
 
         assertThat(editor.validate()).isFalse();
@@ -20,7 +20,7 @@ class SetVariableActionEditorTest {
     @Test
     void validate_withNameButNoValue_shouldReturnFalse() {
         SetVariableActionData actionData = new SetVariableActionData("score", null);
-        SetVariableActionEditor editor = new SetVariableActionEditor(actionData);
+        SetVariableActionEditor editor = new SetVariableActionEditor(actionData, null);
         editor.initialize();
 
         assertThat(editor.validate()).isFalse();
@@ -29,7 +29,7 @@ class SetVariableActionEditorTest {
     @Test
     void validate_withNameAndValue_shouldReturnTrue() {
         SetVariableActionData actionData = new SetVariableActionData("score", 100);
-        SetVariableActionEditor editor = new SetVariableActionEditor(actionData);
+        SetVariableActionEditor editor = new SetVariableActionEditor(actionData, null);
         editor.initialize();
 
         assertThat(editor.validate()).isTrue();
@@ -38,7 +38,7 @@ class SetVariableActionEditorTest {
     @Test
     void constructor_shouldSetActionData() {
         SetVariableActionData actionData = new SetVariableActionData(null, null);
-        SetVariableActionEditor editor = new SetVariableActionEditor(actionData);
+        SetVariableActionEditor editor = new SetVariableActionEditor(actionData, null);
 
         assertThat(editor.getActionData()).isSameAs(actionData);
     }
@@ -46,7 +46,7 @@ class SetVariableActionEditorTest {
     @Test
     void initialize_shouldBuildUI() {
         SetVariableActionData actionData = new SetVariableActionData(null, null);
-        SetVariableActionEditor editor = new SetVariableActionEditor(actionData);
+        SetVariableActionEditor editor = new SetVariableActionEditor(actionData, null);
 
         editor.initialize();
 
@@ -56,7 +56,7 @@ class SetVariableActionEditorTest {
     @Test
     void getActionSummary_withNoName_returnsNone() {
         SetVariableActionData actionData = new SetVariableActionData(null, null);
-        SetVariableActionEditor editor = new SetVariableActionEditor(actionData);
+        SetVariableActionEditor editor = new SetVariableActionEditor(actionData, null);
         editor.initialize();
 
         assertThat(editor.getActionSummary()).isEqualTo("(none)");
@@ -65,7 +65,7 @@ class SetVariableActionEditorTest {
     @Test
     void getActionSummary_withNameAndValue_returnsAssignment() {
         SetVariableActionData actionData = new SetVariableActionData("score", 100);
-        SetVariableActionEditor editor = new SetVariableActionEditor(actionData);
+        SetVariableActionEditor editor = new SetVariableActionEditor(actionData, null);
         editor.initialize();
 
         assertThat(editor.getActionSummary()).isEqualTo("score = 100");

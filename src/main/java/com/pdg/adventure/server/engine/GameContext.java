@@ -24,6 +24,8 @@ public class GameContext {
     private String currentAdverb = VocabularyData.EMPTY_STRING;
     private String currentNoun2 = VocabularyData.EMPTY_STRING;
     private String currentAdjective2 = VocabularyData.EMPTY_STRING;
+    private String currentNoun = VocabularyData.EMPTY_STRING;
+    private String currentAdjective = VocabularyData.EMPTY_STRING;
     private String currentPictureId;
 
     public void show(Describable aThing) {
@@ -112,6 +114,28 @@ public class GameContext {
 
     public String getCurrentAdjective2() {
         return currentAdjective2;
+    }
+
+    /**
+     * The primary noun of the sub-command currently being dispatched - set fresh by GameLoop
+     * before each sub-command so noun-driven actions (AutoTakeAction/AutoDropAction) can see what
+     * the player typed. Never null; VocabularyData.EMPTY_STRING when the input had no noun.
+     */
+    public void setCurrentNoun(String aNoun) {
+        currentNoun = aNoun == null ? VocabularyData.EMPTY_STRING : aNoun;
+    }
+
+    public String getCurrentNoun() {
+        return currentNoun;
+    }
+
+    /** The adjective belonging to {@link #getCurrentNoun()}; EMPTY_STRING when none was typed. */
+    public void setCurrentAdjective(String anAdjective) {
+        currentAdjective = anAdjective == null ? VocabularyData.EMPTY_STRING : anAdjective;
+    }
+
+    public String getCurrentAdjective() {
+        return currentAdjective;
     }
 
     public void setCurrentPictureId(String aPictureId) {

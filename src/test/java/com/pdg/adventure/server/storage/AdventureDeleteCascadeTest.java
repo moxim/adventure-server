@@ -61,10 +61,10 @@ class AdventureDeleteCascadeTest {
         ItemData pocketItem = new ItemData();
         adventure.getPlayerPocket().getItems().add(pocketItem);
 
-        MessageData message = new MessageData(adventure.getId(), "greeting", "hello");
-        adventure.getMessages().put(message.getMessageId(), message);
+        MessageData message = new MessageData("greeting", "hello");
+        adventure.getMessages().put(message.getId(), message);
 
-        SystemMessageData override = new SystemMessageData(adventure.getId(), "0", "It's pitch black.");
+        SystemMessageData override = new SystemMessageData("0", "It's pitch black.");
         adventure.getSystemMessages().put(override.getKey(), override);
 
         mongoTemplate.save(adventure);
@@ -83,7 +83,7 @@ class AdventureDeleteCascadeTest {
         // the embedded messages/systemMessages round-trip as plain fields of the adventure
         // document — no lazy DBRef proxy, no risk of a dangling-reference crash on access
         assertSoftly(softly -> {
-            softly.assertThat(reloaded.getMessages().get("greeting")).extracting(MessageData::getText)
+            softly.assertThat(reloaded.getMessages().get(message.getId())).extracting(MessageData::getText)
                   .as("embedded message survives a save/reload round trip").isEqualTo("hello");
             softly.assertThat(reloaded.getSystemMessages().get("0")).extracting(SystemMessageData::getText)
                   .as("embedded system message override survives a save/reload round trip")

@@ -1,7 +1,7 @@
 package com.pdg.adventure.api;
 
 public interface Visitable {
-    long getTimesVisited();
+    int getTimesVisited();
 
-    void setTimesVisited(long aNumberOfTimesThisHasBeenVisited);
+    void setTimesVisited(int aNumberOfTimesThisHasBeenVisited);
 }

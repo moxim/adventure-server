@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.testhelper.TestSupporter;
 
@@ -16,7 +15,7 @@ class LessThanConditionTest {
     @Test
     void testVariableMeetsCondition() {
         // given
-        variableProvider.set(new Variable(varName, 1));
+        variableProvider.set(varName, 1);
 
         // when
 
@@ -27,7 +26,7 @@ class LessThanConditionTest {
     @Test
     void testVariableFailsCondition() {
         // given
-        variableProvider.set(new Variable(varName, 3));
+        variableProvider.set(varName, 3);
 
         // when
 

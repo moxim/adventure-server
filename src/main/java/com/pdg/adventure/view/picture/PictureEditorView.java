@@ -82,7 +82,7 @@ public class PictureEditorView extends VerticalLayout
             try {
                 byte[] bytes = uploadBuffer.getInputStream().readAllBytes();
                 if (bytes.length > MAX_FILE_SIZE_BYTES) {
-                    Notification notification = Notification.show("The uploaded file is too large.", 5000,
+                    Notification notification = Notification.show("Pictures must be less than 2MB in size", 5000,
                                                                    Notification.Position.MIDDLE);
                     notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
                     return;

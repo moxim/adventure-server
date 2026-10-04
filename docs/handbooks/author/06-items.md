@@ -5,11 +5,11 @@ up, carry, drop, or wear.
 
 ## Two ways to see your items
 
-- **Manage Items** on the Adventure Editor opens **every item in the
+- **Items** on the Adventure Editor opens **every item in the
   adventure**, across all locations, with a **Location** column so you can
   see where each one lives. It also has a **Create in Location** picker —
   choose the location first, then create the item into it.
-- **Manage Items** on a *location* editor (via **Manage Locations** →
+- **Manage Items** on a *location* editor (via **Locations** →
   select a location) opens just that location's items.
 
 Either grid shows **Adjective**, **Noun**, **Short Description**, and
@@ -41,19 +41,22 @@ on a brand-new, unsaved one.
 
 ## Checking "Can be picked up"
 
-Checking **Containable** doesn't just flag the item — it generates the
-`take` and `drop` commands for it automatically, so you don't have to build
-those by hand for every pickable item.
+Checking **Can be picked up / Is containable** only flags the item as
+something that can be carried and put in containers. It does **not** create
+any `take` or `drop` commands for the item.
 
-> **Note:** This depends on your adventure already having its **Taker**
-> and **Dropper** special words set (see
-> [Chapter 7](07-vocabulary-and-words.md#special-words)). If they aren't
-> set yet, you'll see: *"Please select verbs to allow a player to handle
-> this item in the vocabulary section."* — and the checkbox reverts to
-> unchecked. Set your special words first, then come back.
->
-> Unchecking it again removes exactly the take/drop commands it added —
-> anything else you've built for this item is left alone.
+To let players actually pick things up and put them down, add a few
+**Responses** once for the whole adventure, using the wildcard noun `~`
+(*"any item"*) and the automatic actions **AUTOT**, **AUTOD**, **AUTOW** and
+**AUTOR** — see
+[Chapter 9](09-workflow.md#one-response-for-every-item-the-wildcard-noun) and
+the [Action reference](appendix-a-action-and-condition-reference.md).
+
+> **Note:** If you built an adventure with an earlier version, its items may
+> still carry old, hand-generated `take`/`drop` commands. Those are ordinary
+> item commands and keep working, and because item commands are tried before
+> Responses, they win over the wildcard Responses for that item. Delete them
+> in **Manage Commands** if you'd rather have the Responses handle it.
 
 ## What's next
 

@@ -7,6 +7,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.action.*;
 
 class PreconditionActionFormatterActionsTest {
@@ -40,6 +41,25 @@ class PreconditionActionFormatterActionsTest {
         MessageActionData a = new MessageActionData();
         a.setMessageId("cage_opened");
         assertThat(formatter.formatAction(a)).isEqualTo("MESSAGE cage_opened");
+    }
+
+    @Test
+    void message_showsTheSummaryOfTheReferencedMessage() {
+        MessageData message = new MessageData("Cage opens", "The cage swings open.");
+        adventureData.getMessages().put(message.getId(), message);
+        MessageActionData a = new MessageActionData();
+        a.setMessageId(message.getId());
+        assertThat(formatter.formatAction(a)).isEqualTo("MESSAGE Cage opens");
+    }
+
+    @Test
+    void message_withBlankSummary_showsTheMessageId() {
+        MessageData message = new MessageData(" ", "The cage swings open.");
+        adventureData.getMessages().put(message.getId(), message);
+        MessageActionData a = new MessageActionData();
+        a.setMessageId(message.getId());
+        assertThat(new PreconditionActionFormatter(adventureData).formatAction(a))
+                .isEqualTo("MESSAGE " + message.getId());
     }
 
     @Test

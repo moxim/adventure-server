@@ -2,7 +2,7 @@
 
 This is mission control for one adventure — the screen you land on from
 **Create Adventure** or from editing an existing one. Every other authoring
-screen (locations, items, vocabulary, messages, workflow) is one click away
+screen (locations, items, vocabulary, messages, pictures, workflow) is one click away
 from here, and every one of those screens brings you back here when you're
 done.
 
@@ -30,13 +30,15 @@ These are your doors into the rest of the adventure:
 
 | Button | Takes you to |
 |--------|----------------|
-| **Manage Vocabulary** | [Vocabulary & Words](07-vocabulary-and-words.md) |
-| **Manage Messages** | [Messages](10-messages.md) |
-| **Manage System Messages** | [Messages → the built-in engine messages](10-messages.md#editing-the-built-in-system-messages) |
-| **Manage Locations** | [Locations & Exits](05-locations-and-exits.md) |
-| **Manage Items** | [Items](06-items.md) (every item across the whole adventure) |
-| **Manage Processes** | [Workflow → Processes](09-workflow.md#processes-run-every-turn) |
-| **Manage Responses** | [Workflow → Responses](09-workflow.md#responses-a-fallback-for-a-typed-command) |
+| **Vocabulary** | [Vocabulary & Words](07-vocabulary-and-words.md) |
+| **Messages** | [Messages](10-messages.md) |
+| **System Messages** | [Messages → the built-in engine messages](10-messages.md#editing-the-built-in-system-messages) |
+| **Locations** | [Locations & Exits](05-locations-and-exits.md) |
+| **Items** | [Items](06-items.md) (every item across the whole adventure) |
+| **Pictures** | [Pictures](11-pictures.md) |
+| **Workflow I** | [Workflow → Arrival Processes](09-workflow.md#arrival-processes-run-when-a-location-is-described) |
+| **Workflow II** | [Workflow → Processes](09-workflow.md#processes-run-every-turn) |
+| **Responses** | [Workflow → Responses](09-workflow.md#responses-a-fallback-for-a-typed-command) |
 
 > **Note:** Clicking any of these silently saves valid changes to the fields
 > above first (if your title etc. currently pass validation), so you won't
@@ -55,7 +57,7 @@ Cancel/Reset/Back/Save bar described in later chapters.
 - **Save** is disabled until you've typed a **Title**, and persists your
   changes.
 - **Test** launches your adventure in a live play session — see
-  [Chapter 11](11-testing-and-running.md). It's disabled until:
+  [Chapter 12](12-testing-and-running.md). It's disabled until:
   1. This is not a brand-new, never-saved adventure,
   2. you have no unsaved changes (its tooltip says *"Save your changes
      before testing."* until then), and

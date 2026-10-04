@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.WorkflowData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.server.Adventure;
@@ -45,13 +46,14 @@ class LoadAdventureActionTest {
     @Mock
     private Location startLocation;
 
+    private final MessagesHolder messagesHolder = new MessagesHolder();
     private GameContext gameContext;
     private LoadAdventureAction loadAdventureAction;
 
     @BeforeEach
     void setUp() {
         gameContext = new GameContext();
-        lenient().when(adventureConfig.allMessages()).thenReturn(new MessagesHolder());
+        lenient().when(adventureConfig.allMessages()).thenReturn(messagesHolder);
         lenient().when(adventureConfig.allLocations()).thenReturn(new HashMap<>());
         lenient().when(adventureConfig.allItems()).thenReturn(new HashMap<>());
         lenient().when(adventureConfig.allContainers()).thenReturn(new HashMap<>());
@@ -94,6 +96,26 @@ class LoadAdventureActionTest {
                 .isInstanceOf(ReloadAdventureException.class);
 
         verify(startLocation).setCarriedItems(gameContext.getPocket());
+    }
+
+    @Test
+    void loadAdventure_registersEachMessageUnderItsId_notItsSummary() {
+        AdventureData adventureData = new AdventureData();
+        adventureData.setId("adv-1");
+        adventureData.setCurrentLocationId("loc-1");
+        LocationData locationData = new LocationData();
+        locationData.setId("loc-1");
+        adventureData.getLocationData().put("loc-1", locationData);
+        MessageData message = new MessageData("Greeting", "Welcome!");
+        adventureData.getMessages().put(message.getId(), message);
+
+        stubSuccessfulLoad(adventureData);
+
+        assertThatThrownBy(() -> loadAdventureAction.loadAdventure("adv-1"))
+                .isInstanceOf(ReloadAdventureException.class);
+
+        assertThat(messagesHolder.getMessage(message.getId())).isEqualTo("Welcome!");
+        assertThat(messagesHolder.getMessage("Greeting")).isNull();
     }
 
     private void stubSuccessfulLoad(AdventureData anAdventureData) {

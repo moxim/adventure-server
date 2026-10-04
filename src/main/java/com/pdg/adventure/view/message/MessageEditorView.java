@@ -8,7 +8,6 @@ import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
@@ -27,7 +26,6 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
@@ -46,7 +44,6 @@ public class MessageEditorView extends VerticalLayout
     private static final String FONT_SECONDARY_COLOR_TEXT = "var(--lumo-secondary-text-color)";
 
     private final transient AdventureService adventureService;
-    private final transient MessageService messageService;
     private final transient AdventureAccessService accessService;
     private final Binder<MessageViewModel> binder;
 
@@ -58,29 +55,25 @@ public class MessageEditorView extends VerticalLayout
     private String pageTitle;
 
     private transient String messageId;
-    private transient String originalMessageId; // Store original ID for updates
     private transient AdventureData adventureData;
     private transient MessageViewModel mvm;
 
-    public MessageEditorView(AdventureService anAdventureService, MessageService aMessageService,
-                             AdventureAccessService anAccessService) {
-        setSizeFull();
-
+    public MessageEditorView(AdventureService anAdventureService, AdventureAccessService anAccessService) {
         adventureService = anAdventureService;
-        messageService = aMessageService;
         accessService = anAccessService;
         binder = new Binder<>(MessageViewModel.class);
 
         // Build UI
+        setSizeFull();
         H4 title = new H4("Message Editor");
 
-        final TextField messageIdField;
-        messageIdField = new TextField("Message ID");
-        messageIdField.setPlaceholder("e.g., welcome_message, door_locked");
-        messageIdField.setHelperText("Alphanumeric characters and underscores only");
-        messageIdField.setWidthFull();
-        messageIdField.setRequired(true);
-        messageIdField.setValueChangeMode(ValueChangeMode.EAGER);
+        final TextField summaryField;
+        summaryField = new TextField("Summary");
+        summaryField.setPlaceholder("e.g., Welcome to the island, The door is locked");
+        summaryField.setHelperText("A short note on what the message says - helps you find it again");
+        summaryField.setWidthFull();
+        summaryField.setRequired(true);
+        summaryField.setValueChangeMode(ValueChangeMode.EAGER);
 
         messageTextField = new TextArea("Message Text");
         messageTextField.setPlaceholder("Enter the message text that will be displayed to the player");
@@ -118,11 +111,9 @@ public class MessageEditorView extends VerticalLayout
         final ResetBackSaveView resetBackSaveView = setUpNavigationButtons();
 
         // Bind fields
-        binder.forField(messageIdField).asRequired("Message ID is required")
-              .withValidator(id -> id != null && id.matches("^[a-zA-Z0-9_]+$"),
-                             "Message ID must contain only letters, numbers, and underscores")
-              .withValidator(this::isMessageIdUnique, "A message with this ID already exists")
-              .bind(MessageViewModel::getId, MessageViewModel::setId);
+        binder.forField(summaryField).asRequired("Summary is required")
+              .withValidator(summary -> summary != null && !summary.trim().isEmpty(), "Summary cannot be empty")
+              .bind(MessageViewModel::getSummary, MessageViewModel::setSummary);
 
         binder.forField(messageTextField).asRequired("Message text is required")
               .withValidator(text -> text != null && !text.trim().isEmpty(), "Message text cannot be empty")
@@ -139,10 +130,7 @@ public class MessageEditorView extends VerticalLayout
             resetButton.setEnabled(hasChanges);
         });
 
-        HorizontalLayout fieldsLayout = new HorizontalLayout(messageIdField, messageTextField);
-        fieldsLayout.setWidthFull();
-
-        add(title, messageIdField, messageTextField, previewSection, usageSection, resetBackSaveView);
+        add(title, summaryField, messageTextField, previewSection, usageSection, resetBackSaveView);
     }
 
     private ResetBackSaveView setUpNavigationButtons() {
@@ -170,20 +158,6 @@ public class MessageEditorView extends VerticalLayout
                   new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
     }
 
-    private boolean isMessageIdUnique(String id) {
-        if (id == null || id.trim().isEmpty()) {
-            return false;
-        }
-
-        // If we're editing an existing message with the same ID, that's okay
-        if (originalMessageId != null && originalMessageId.equals(id)) {
-            return true;
-        }
-
-        // Check if another message with this ID exists
-        return adventureData == null || !adventureData.getMessages().containsKey(id);
-    }
-
     private void updatePreview() {
         String text = messageTextField.getValue();
         if (text == null || text.trim().isEmpty()) {
@@ -203,23 +177,15 @@ public class MessageEditorView extends VerticalLayout
                 // Create or update message
                 MessageData message = createRequiredMessage();
 
-                // Update message properties
-                updateMessageMetaData(message);
-
-                // If message ID changed, remove old entry
-                if (originalMessageId != null && !originalMessageId.equals(mvm.getId())) {
-                    adventureData.getMessages().remove(originalMessageId);
-                }
-
-                // Add/update message in adventure's messages Map
-                adventureData.getMessages().put(mvm.getId(), message);
+                // Add/update message in adventure's messages Map, keyed by its id
+                adventureData.getMessages().put(message.getId(), message);
 
                 // Save adventure (triggers cascade save for message via @CascadeSave)
                 adventureService.saveAdventureData(adventureData);
 
                 // Update tracking variables
-                originalMessageId = mvm.getId();
-                messageId = mvm.getId();
+                mvm.setId(message.getId());
+                messageId = message.getId();
 
                 // Mark as no longer new
                 mvm.setNew(false);
@@ -236,32 +202,14 @@ public class MessageEditorView extends VerticalLayout
         }
     }
 
-    private void updateMessageMetaData(final MessageData message) {
-        if (mvm.getCategory() != null) {
-            message.setCategory(mvm.getCategory());
-        }
-        if (mvm.getNotes() != null) {
-            message.setNotes(mvm.getNotes());
-        }
-    }
-
     private MessageData createRequiredMessage() {
-        MessageData message;
         if (mvm.isNew()) {
-            // Create new message
-            message = new MessageData(adventureData.getId(), mvm.getId(), mvm.getMessageText());
-        } else {
-            // Get existing message or create new one
-            message = adventureData.getMessages()
-                                   .get(originalMessageId != null ? originalMessageId : mvm.getId());
-            if (message == null) {
-                message = new MessageData(adventureData.getId(), mvm.getId(), mvm.getMessageText());
-            } else {
-                message.setMessageId(mvm.getId());
-                message.setText(mvm.getMessageText());
-                message.touch();
-            }
+            return new MessageData(mvm.getSummary(), mvm.getMessageText());
         }
+        MessageData message = adventureData.getMessages().get(mvm.getId());
+        message.setSummary(mvm.getSummary());
+        message.setText(mvm.getMessageText());
+        message.touch();
         return message;
     }
 
@@ -314,17 +262,8 @@ public class MessageEditorView extends VerticalLayout
         if (resolvedAdventure.isEmpty()) {
             return;
         }
-        final Optional<String> optionalMessageId = event.getRouteParameters().get(RouteIds.MESSAGE_ID.getValue());
-        if (optionalMessageId.isPresent()) {
-            // Message ids are constrained to [a-zA-Z0-9_]+ by the UI binder, so decoding is a
-            // no-op for UI-created ids; legacy/imported data has no such guarantee, and cold-load
-            // navigation may deliver this route parameter percent-encoded.
-            messageId = AdventureRouteResolver.decodeRouteParam(optionalMessageId.get());
-            pageTitle = "Edit Message: " + messageId;
-        } else {
-            messageId = null;
-            pageTitle = "New Message";
-        }
+        // The message id is a ULID, so the route parameter needs no percent-decoding.
+        messageId = event.getRouteParameters().get(RouteIds.MESSAGE_ID.getValue()).orElse(null);
         setData(resolvedAdventure.get());
     }
 
@@ -337,15 +276,16 @@ public class MessageEditorView extends VerticalLayout
         adventureData = anAdventureData;
 
         // Load existing message or create new one
-        if (messageId != null && !messageId.isEmpty()) {
-            // Load from adventure's messages Map (loaded via @DBRef)
-            MessageData messageData = adventureData.getMessages().getOrDefault(messageId, new MessageData());
-            mvm = new MessageViewModel(messageData);
-            messageId = messageData.getMessageId();
-            originalMessageId = messageId;
+        MessageData existing = messageId == null ? null : adventureData.getMessages().get(messageId);
+        // TODO: Review needed — a route id that matches no message (e.g. a stale link to a deleted
+        //  message) silently opens an empty "new message" form; should it notify and forward instead?
+        if (existing != null) {
+            mvm = new MessageViewModel(existing);
+            pageTitle = "Edit Message: " + mvm.getSummary();
         } else {
-            // Creating a new message
+            messageId = null;
             mvm = new MessageViewModel();
+            pageTitle = "New Message";
         }
 
         binder.readBean(mvm);

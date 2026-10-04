@@ -73,6 +73,7 @@ primary route.
 | ↳ alias `player/library/:adventureId/run` | `AdventureRunView` | `AdventuresMainLayout` | `ROLE_AUTHOR`, `ROLE_PLAYER` |
 | `author/adventures/:adventureId/workflow` | `WorkflowEditorView` (Processes) | `WorkflowMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/responses` | `ResponsesEditorView` | `WorkflowMainLayout` | `ROLE_AUTHOR` |
+| `author/adventures/:adventureId/arrival` | `ArrivalProcessesEditorView` (Arrival Processes) | `WorkflowMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/system-messages` | `SystemMessagesView` | `AdventuresMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/locations` | `LocationsMenuView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
 | ↳ alias `author/adventures/locations` | `LocationsMenuView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
@@ -95,6 +96,9 @@ primary route.
 | `author/adventures/:adventureId/messages` | `MessagesMenuView` | `MessagesMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/messages/:messageId/edit` | `MessageEditorView` | `MessagesMainLayout` | `ROLE_AUTHOR` |
 | ↳ alias `author/adventures/:adventureId/messages/new` | `MessageEditorView` | `MessagesMainLayout` | `ROLE_AUTHOR` |
+| `author/adventures/:adventureId/pictures` | `PictureMenuView` | `PicturesMainLayout` | `ROLE_AUTHOR` |
+| `author/adventures/:adventureId/pictures/:pictureId/edit` | `PictureEditorView` | `PicturesMainLayout` | `ROLE_AUTHOR` |
+| ↳ alias `author/adventures/:adventureId/pictures/new` | `PictureEditorView` | `PicturesMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/vocabulary` | `VocabularyMenuView` | `VocabularyMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/vocabulary/special` | `SpecialWordsView` | `VocabularyMainLayout` | `ROLE_AUTHOR` |
 | `player/library` | `PlayerLibraryView` | `AdventuresMainLayout` | `ROLE_PLAYER` |
@@ -146,6 +150,7 @@ themed image:
 | `DirectionsMainLayout` | `icons/path.gif` | (none) |
 | `CommandMainLayout` | `icons/to-do-list.gif` | (none) — note: `CommandsMenuView` currently uses `AdventuresMainLayout` instead |
 | `MessagesMainLayout` | `icons/scroll-with-quill.gif` | (none) |
+| `PicturesMainLayout` | (none — drawer titled "Pictures" only) | (none) |
 | `VocabularyMainLayout` | `icons/grammar.gif` | (none) |
 | `WorkflowMainLayout` | `icons/to-do-list.gif` | (none) — used by `WorkflowEditorView` (Processes) and `ResponsesEditorView` |
 
@@ -216,7 +221,7 @@ unsaved-change dialog only fires once.
 | Class | Role |
 |-------|------|
 | `ViewSupporter` | Cross-cutting helpers: current user lookup (`getCurrentUser` — throws if no security context), id formatter (truncates ULIDs to 26 chars), location/description/word formatters used by grids, two-way `Binder` wiring helpers for vocabulary pickers, the standard `getConfirmDialog()`, and `setSize(grid)` defaults (`1024 px` max width, `640 px` max height). Aggregate collection helpers: `collectAllItems(AdventureData)`, `collectAllContainers(AdventureData)`, `collectAllLocations(AdventureData)` — gather items / containers / locations across all locations for multi-location pickers. Constants: `MAX_TEXT_IN_GRID = 32`, `MAX_ID_LENGTH = 26`. |
-| `RouteIds` | Enum mapping logical route parameter names → string keys: `ADVENTURE_ID`, `LOCATION_ID`, `COMMAND_ID`, `DIRECTION_ID`, `MESSAGE_ID`, `ITEM_ID`. |
+| `RouteIds` | Enum mapping logical route parameter names → string keys: `ADVENTURE_ID`, `LOCATION_ID`, `COMMAND_ID`, `DIRECTION_ID`, `MESSAGE_ID`, `PICTURE_ID`, `ITEM_ID`. |
 | `GridProvider` | Lazy-loading data-provider helpers for grids. |
 | `TrackedUsage` | Interface for usage trackers (see below). |
 
@@ -232,7 +237,18 @@ adventure and surfaces them via `ViewSupporter.showUsages(...)`.
 | `WordUsageTracker` (`view/vocabulary/`) | Commands, item descriptions, location descriptions, direction descriptions referencing a word. |
 | `LocationUsageTracker` (`view/location/`) | Directions targeting a location; commands using `MovePlayerAction` to it. |
 | `ItemUsageTracker` (`view/item/`) | Commands referencing an item by id. |
-| `MessageUsageTracker` (`view/message/`) | `MessageAction`s referencing a message by id. |
+| `PictureUsageTracker` (`view/picture/`) | A location's default picture, and `PictureAction`s anywhere a command can hold actions (see below). |
+| `MessageUsageTracker` (`view/message/`) | `MessageAction`s referencing a message by its id, anywhere a command can hold actions (see below). |
+
+`MessageUsageTracker` and `PictureUsageTracker` share one traversal,
+`view/support/ActionScanner`, which finds every action of a given type in the
+six places a command can live: a location's own commands, its exits, items lying
+in a location (including items nested in containers), items in the player's
+pocket, and the Workflow / Response / Arrival Process lists. An item reachable
+twice is visited once, and an unresolved (`null`) item is skipped. Each usage
+names its source, e.g. `Item 'brass key' in 'Hall'`, `Direction 'north' in
+'Hall'`, `Item 'torch' (in pocket)` or `Arrival Process`. (The word, location
+and item trackers still scan locations only.)
 
 A delete attempt that finds a non-empty usage list MUST refuse the delete
 and present the usages in a `Dialog`.
@@ -356,9 +372,46 @@ text, `CommandListType`, and which `WorkflowData` list they read/write):
 |----------|----------|-------|----------------|
 | `WorkflowEditorView` | `…/workflow` | `WorkflowData.commands` (Processes) | no |
 | `ResponsesEditorView` | `…/responses` | `WorkflowData.interceptorCommands` (Responses) | yes |
+| `ArrivalProcessesEditorView` | `…/arrival` | `WorkflowData.arrivalProcesses` (Arrival Processes) | no |
 
 Both reuse `PreconditionActionEditor` / `PreconditionActionFormatter` from
 `view/command/`.
+
+### Pictures: `PictureMenuView` and `PictureEditorView`
+
+`view/picture/`, layout `PicturesMainLayout`.
+
+- **`PictureMenuView`** (`…/pictures`) — left column: a **Pictures: N** count,
+  **Edit Picture** (enabled when a row is selected), **Create Picture** and
+  **Back**. Right: a hint ("any JPG, PNG or WebP image … smaller than 2MB"), a
+  name search field and a `Grid<PictureData>` with **Preview** (a 48 px
+  thumbnail rendered from the stored bytes), **Name** (sortable) and **Used**
+  (`PictureUsageTracker` count). Double-click or the context menu →
+  **Edit**, **Find Usage**, **Delete**. Deleting a picture that has usages shows
+  the usage dialog instead of a confirmation; otherwise the confirm dialog
+  removes it from `AdventureData.pictureData`, saves the adventure and deletes the
+  `PictureData` document (`AdventureService.deletePicture`).
+- **`PictureEditorView`** (`…/pictures/:pictureId/edit`, alias
+  `…/pictures/new`) — a required **Name** `TextField` and a single-file
+  `Upload` (accepts `image/png`, `image/jpeg`, `image/webp`; at most 2 MB; held
+  in a `MemoryBuffer`) with a 300 px preview. A succeeded upload is **staged**
+  (`stagePendingUpload`), not written: the size is checked again and the
+  content type is **sniffed from the bytes' magic numbers** (PNG, JPEG, WebP), so
+  a mislabelled file is rejected with an error notification. **Save** is enabled
+  only when the name is valid, an image exists (stored or staged) and something
+  changed; saving applies the staged bytes, puts the `PictureData` into
+  `AdventureData.pictureData`, then calls `AdventureService.savePictureData`
+  followed by `saveAdventureData`. **Reset** drops the staged upload; leaving
+  with a staged upload or edited name raises the unsaved-changes prompt.
+- **Where pictures are chosen** — `LocationEditorView` has an optional
+  **Default Picture** `ComboBox<PictureData>` (labelled by name) bound to
+  `LocationViewModel.pictureId`; `PictureActionEditor` (below) has a required
+  **Picture** combo box. `PreconditionActionFormatter` renders a Picture action
+  as `PICTURE <name>` (`?` for an unknown id).
+- **Where they are shown** — `AdventureRunView` has a picture panel above the
+  transcript (an `Image`, at most 640×480, hidden when empty) refreshed by
+  `refreshPictureDisplay()` after each submit. The rules for what is shown when
+  are in [`04-runtime-engine.md` § Pictures](04-runtime-engine.md#pictures).
 
 ### System-messages editor: `SystemMessagesView`
 
@@ -380,10 +433,11 @@ grid/dialog read-model record.
 |-------|------|
 | `ActionEditorComponent` | Abstract base for all per-action sub-editors. |
 | `AbstractSingleItemActionEditor<T extends ActionData>` | Generic abstract mid-layer for the 8 editors that need one `ItemData` selector (title, description, label, placeholder, error text customised per subclass). |
-| `ActionSelector` | A combo-box of the 17 authorable `Action` kinds, sorted alphabetically by display name. Picking one and clicking **Add** doesn't build an editor itself — it calls `ActionEditorSelectedListener.onEditorSelected(ActionData)` with a freshly-constructed, empty `ActionData`; the listener (`ActionListEditor`) turns that into the matching editor via `ActionEditorFactory`. This mirrors `ConditionSelector` / `ConditionListEditor` exactly. |
-| `ActionEditorFactory` | `createEditor(ActionData, AdventureData)` — the stable entry point every call site uses. Delegates lookup to `ActionEditorRegistry` (package-private); covers all 17 authorable action types. |
+| `ActionSelector` | A combo-box of the 22 authorable `Action` kinds, sorted alphabetically by display name. Picking one and clicking **Add** doesn't build an editor itself — it calls `ActionEditorSelectedListener.onEditorSelected(ActionData)` with a freshly-constructed, empty `ActionData`; the listener (`ActionListEditor`) turns that into the matching editor via `ActionEditorFactory`. This mirrors `ConditionSelector` / `ConditionListEditor` exactly. |
+| `ActionEditorFactory` | `createEditor(ActionData, AdventureData)` — the stable entry point every call site uses. Delegates lookup to `ActionEditorRegistry` (package-private); covers all 22 authorable action types. |
 | `ActionEditorRegistry` | One-time classpath scan (`ClassPathScanningCandidateComponentProvider`) for `@AutoRegisterActionEditor`-annotated `ActionEditorComponent`s, keyed by the `ActionData` subtype resolved from each editor's generic type argument. Replaced a hand-maintained `switch` statement — adding a new action editor means writing the class and annotating it, not touching the factory. Reflectively picks a `(ActionData)` or `(ActionData, AdventureData)` constructor to instantiate. |
-| `MessageActionEditor` | Inline text field for the message body. |
+| `PictureActionEditor` | Required **Picture** combo box over the adventure's pictures (sorted by name, labelled by name); stores the picture's id. |
+| `MessageActionEditor` | Combo box over the adventure's messages — stores the chosen message's id, shows its summary — with a live preview of the text. A typed custom value is kept as literal text. |
 | `MoveItemActionEditor` | Item selector (uses `ViewSupporter.collectAllItems`). |
 | `MovePlayerActionEditor` | Location selector (uses `ViewSupporter.collectAllLocations`). |
 | `WearActionEditor` | Item selector (wearable items only, via `AbstractSingleItemActionEditor`). |
@@ -399,7 +453,20 @@ grid/dialog read-model record.
 | `DecrementVariableActionEditor` | Variable name text field. |
 | `SetVariableActionEditor` | Variable name + value text fields. |
 | `BreakActionEditor` | No extra input (stops command chain execution immediately). |
-| `LightActionEditor` | Item selector + a 0–100 lumen `IntegerField` (not via `AbstractSingleItemActionEditor`, since it needs two fields). Sets an item's light level. |
+| `AutoTakeActionEditor` / `AutoDropActionEditor` / `AutoWearActionEditor` / `AutoRemoveActionEditor` | 
+No extra input — informational panel only (AUTOT / AUTOD / AUTOW / AUTOR resolve the item from the typed noun at 
+runtime; see [`04-runtime-engine.md` § Auto item actions](04-runtime-engine.md#auto-item-actions-autot-autod-autow-autor)).
+ Shown in the selector as "AUTOT (Auto Take)", "AUTOD (Auto Drop)", "AUTOW (Auto Wear)", "AUTOR (Auto Remove)". |
+| `SetVariableActionEditor` / `IncrementVariableActionEditor` / `DecrementVariableActionEditor`, and the 
+`Equals`/`GreaterThan`/`LessThan`/`Same` condition editors | Variable names come from `VariableNameSelector` 
+(`view/command/`), a `ComboBox<String>` fed live (re-read on focus) by `VariableChoices.of(adventureData)` 
+(`view/support/`): the adventure's `AdventureData.variables` plus the engine's `VISITED`. Set Variable allows typing a 
+new name and calls `adventureData.defineVariable(name)` the moment the name is entered (and again on `validate()`), so 
+conditions can pick it before the command is saved; it is persisted with the adventure on the next save. The others 
+accept only defined names, and a stored name that is no longer defined fails `validate()`. Increment/Decrement do not 
+define variables. |
+| `LightActionEditor` | Item selector + a 0–100 lumen `IntegerField` (not via `AbstractSingleItemActionEditor`, since 
+it needs two fields). Sets an item's light level. |
 
 ### Condition editor factory
 
@@ -469,12 +536,14 @@ swapping the brand image per layout and using `LumoUtility` classes.
 - `src/main/java/com/pdg/adventure/view/author/AuthorDashboardView.java`
 - `src/main/java/com/pdg/adventure/view/player/PlayerLibraryView.java`
 - `src/main/java/com/pdg/adventure/view/adventure/{AdventuresMainLayout,AdventuresMenuView,AdventureEditorView,AdventureRunView}.java`
-- `src/main/java/com/pdg/adventure/view/workflow/{WorkflowMainLayout,CommandListEditorView,WorkflowEditorView,ResponsesEditorView}.java`
+- `src/main/java/com/pdg/adventure/view/workflow/{WorkflowMainLayout,CommandListEditorView,WorkflowEditorView,ResponsesEditorView,ArrivalProcessesEditorView}.java`
 - `src/main/java/com/pdg/adventure/view/systemmessage/{SystemMessagesView,SystemMessageEntry}.java`
 - `src/main/java/com/pdg/adventure/view/location/{LocationsMainLayout,LocationsMenuView,LocationEditorView,LocationMapView,LocationViewModel,LocationDescriptionAdapter,LocationProvider,LocationUsageTracker}.java`
 - `src/main/java/com/pdg/adventure/view/item/*.java`
 - `src/main/java/com/pdg/adventure/view/direction/*.java`
 - `src/main/java/com/pdg/adventure/view/command/*.java` (and `command/action/`, `command/condition/`)
+- `src/main/java/com/pdg/adventure/view/support/ActionScanner.java` — the shared traversal behind `MessageUsageTracker` and `PictureUsageTracker`.
+- `src/main/java/com/pdg/adventure/view/picture/{PictureMenuView,PictureEditorView,PictureViewModel,PictureUsageTracker,PicturesMainLayout}.java`
 - `src/main/java/com/pdg/adventure/view/message/*.java`
 - `src/main/java/com/pdg/adventure/view/vocabulary/*.java`
 - `src/main/resources/META-INF/resources/{images,icons}/` — assets.

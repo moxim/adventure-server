@@ -2,35 +2,42 @@ package com.pdg.adventure.view.message;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.CommandChainData;
-import com.pdg.adventure.model.CommandData;
-import com.pdg.adventure.model.LocationData;
-import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.action.MessageActionData;
+import com.pdg.adventure.view.support.ActionScanner;
 import com.pdg.adventure.view.support.TrackedUsage;
 
 /**
  * Utility class for tracking message usage throughout an adventure.
- * Scans all locations, commands, and actions to find references to specific messages.
+ * Scans every place a command can hold actions (see {@link ActionScanner}) to find references to a message.
  */
 public class MessageUsageTracker {
 
     /**
-         * Data class representing a single usage of a message.
-         */
-        public record MessageUsage(String locationId, String locationDescription, String commandSpecification,
-                                   String actionType, String context) implements TrackedUsage {
+     * Data class representing a single usage of a message.
+     *
+     * @param source where the command lives when that is not a location's own command list, e.g.
+     *               {@code Item 'brass key'} or {@code Arrival Process}; {@code null} for a location's own command
+     */
+    public record MessageUsage(String locationId, String locationDescription, String commandSpecification,
+                               String actionType, String context, String source) implements TrackedUsage {
+
+        /** A usage in a command of a location itself. */
+        public MessageUsage(String locationId, String locationDescription, String commandSpecification,
+                            String actionType, String context) {
+            this(locationId, locationDescription, commandSpecification, actionType, context, null);
+        }
 
         public String getDisplayText() {
-                return "Location: %s | Command: %s | %s".formatted(
-                        locationDescription != null ? locationDescription : locationId,
-                        commandSpecification,
-                        context);
+            String location = locationDescription != null ? locationDescription : locationId;
+            if (source == null) {
+                return "Location: %s | Command: %s | %s".formatted(location, commandSpecification, context);
             }
+            return "%s%s | Command: %s | %s".formatted(source, location == null ? "" : " in '" + location + "'",
+                                                       commandSpecification, context);
         }
+    }
 
     /**
      * Find all usages of a specific message in an adventure.
@@ -46,70 +53,15 @@ public class MessageUsageTracker {
             return usages;
         }
 
-        // Scan through all locations
-        Map<String, LocationData> locations = adventureData.getLocationData();
-        if (locations != null) {
-            for (Map.Entry<String, LocationData> locationEntry : locations.entrySet()) {
-                LocationData location = locationEntry.getValue();
-                String locationDesc = location.getDescriptionData() != null ?
-                                      location.getDescriptionData().getShortDescription() : null;
-
-                // Check commands in this location
-                if (location.getCommandProviderData() != null &&
-                    location.getCommandProviderData().getAvailableCommands() != null) {
-
-                    addUsagesInLocaitonCommands(messageId, locationEntry, location, locationDesc, usages);
-                }
+        for (ActionScanner.ScannedAction scanned : ActionScanner.scan(adventureData, MessageActionData.class)) {
+            if (messageId.equals(((MessageActionData) scanned.action()).getMessageId())) {
+                ActionScanner.Origin origin = scanned.origin();
+                usages.add(new MessageUsage(origin.locationId(), origin.locationDescription(),
+                                            scanned.commandSpecification(), "Message Action",
+                                            "Action #" + scanned.actionNumber(), origin.source()));
             }
         }
-
         return usages;
-    }
-
-    private static void addUsagesInLocaitonCommands(final String messageId,
-                                                    final Map.Entry<String, LocationData> locationEntry,
-                                                    final LocationData location, final String locationDesc,
-                                                    final List<MessageUsage> usages) {
-        Map<String, CommandChainData> commands = location.getCommandProviderData().getAvailableCommands();
-
-        for (CommandChainData chain : commands.values()) {
-            if (chain != null && chain.getCommands() != null && !chain.getCommands().isEmpty()) {
-                String commandSpec = chain.getCommands().getFirst().getCommandDescription().getCommandSpecification();
-                addUsagesInCommands(messageId, locationEntry, chain, locationDesc, commandSpec, usages);
-            }
-        }
-    }
-
-    private static void addUsagesInCommands(final String messageId, final Map.Entry<String, LocationData> locationEntry,
-                                            final CommandChainData chain, final String locationDesc,
-                                            final String commandSpec,
-                                            final List<MessageUsage> usages) {
-        for (CommandData command : chain.getCommands()) {
-            int actionIndex = 1;
-            for (ActionData action : command.getActions()) {
-                checkAction(action, locationEntry.getKey(), locationDesc,
-                            commandSpec, "Action #" + actionIndex, messageId, usages);
-                actionIndex++;
-            }
-        }
-    }
-
-    /**
-     * Check if an action uses the specified message and add to usages list if it does.
-     */
-    private static void checkAction(ActionData action, String locationId, String locationDesc,
-                                    String commandSpec, String context, String messageId,
-                                    List<MessageUsage> usages) {
-        if (action instanceof MessageActionData messageAction && messageId.equals(messageAction.getMessageId())) {
-            usages.add(new MessageUsage(
-                    locationId,
-                    locationDesc,
-                    commandSpec,
-                    "Message Action",
-                    context
-            ));
-        }
-
     }
 
     /**

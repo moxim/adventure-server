@@ -10,7 +10,9 @@ import com.pdg.adventure.model.MessageData;
  */
 @Data
 public class MessageViewModel {
+    /** The message's id; empty until a new message has been created. Never editable. */
     private String id;
+    private String summary;
     private String messageText;
     private boolean isNew;
     private int usageCount;
@@ -22,6 +24,7 @@ public class MessageViewModel {
      */
     public MessageViewModel() {
         this.id = "";
+        this.summary = "";
         this.messageText = "";
         this.isNew = true;
         this.usageCount = 0;
@@ -30,11 +33,13 @@ public class MessageViewModel {
     /**
      * Constructor for editing an existing message.
      *
-     * @param messageId   The message ID
+     * @param id          The message id
+     * @param summary     The message summary
      * @param messageText The message text
      */
-    public MessageViewModel(String messageId, String messageText) {
-        this.id = messageId;
+    public MessageViewModel(String id, String summary, String messageText) {
+        this.id = id;
+        this.summary = summary != null ? summary : "";
         this.messageText = messageText != null ? messageText : "";
         this.isNew = false;
         this.usageCount = 0;
@@ -43,14 +48,13 @@ public class MessageViewModel {
     /**
      * Constructor for editing an existing message with usage count.
      *
-     * @param messageId   The message ID
+     * @param id          The message id
+     * @param summary     The message summary
      * @param messageText The message text
      * @param usageCount  Number of times this message is used
      */
-    public MessageViewModel(String messageId, String messageText, int usageCount) {
-        this.id = messageId;
-        this.messageText = messageText != null ? messageText : "";
-        this.isNew = false;
+    public MessageViewModel(String id, String summary, String messageText, int usageCount) {
+        this(id, summary, messageText);
         this.usageCount = usageCount;
     }
 
@@ -60,12 +64,7 @@ public class MessageViewModel {
      * @param messageData The message data from database
      */
     public MessageViewModel(MessageData messageData) {
-        this.id = messageData.getMessageId();
-        this.messageText = messageData.getText() != null ? messageData.getText() : "";
-        this.isNew = false;
-        this.usageCount = 0;
-        this.category = messageData.getCategory();
-        this.notes = messageData.getNotes();
+        this(messageData.getId(), messageData.getSummary(), messageData.getText());
     }
 
     /**
@@ -93,14 +92,5 @@ public class MessageViewModel {
             return messageText;
         }
         return messageText.substring(0, maxLength) + "…";
-    }
-
-    /**
-     * Check if the message ID is valid (not empty, alphanumeric with underscores).
-     *
-     * @return true if valid
-     */
-    public boolean isValidId() {
-        return id != null && !id.trim().isEmpty() && id.matches("^[a-zA-Z0-9_]+$");
     }
 }

@@ -18,7 +18,9 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 import jakarta.annotation.security.RolesAllowed;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,16 +88,26 @@ public class PictureMenuView extends VerticalLayout implements BeforeLeaveObserv
         gridContainer = new Div();
         gridContainer.setSizeFull();
 
-        VerticalLayout rightSide = new VerticalLayout(searchField, gridContainer);
-        rightSide.setSizeFull();
 
-        HorizontalLayout mainRow = new HorizontalLayout(leftSide, rightSide);
-        mainRow.setSizeFull();
+        var mainRow = getMainRow(leftSide);
 
         setMargin(true);
         setPadding(true);
 
         add(mainRow);
+    }
+
+    private @NonNull HorizontalLayout getMainRow(final VerticalLayout leftSide) {
+        Span hint = new Span("Pictures can be any JPG, PNG or WebP image, but must be smaller than 2MB. " +
+                             "You can double-click a picture to edit it, or right-click for more options.");
+        hint.addClassNames(LumoUtility.TextColor.SECONDARY, LumoUtility.FontSize.SMALL);
+
+        VerticalLayout rightSide = new VerticalLayout(hint, searchField, gridContainer);
+        rightSide.setSizeFull();
+
+        HorizontalLayout mainRow = new HorizontalLayout(leftSide, rightSide);
+        mainRow.setSizeFull();
+        return mainRow;
     }
 
     @Override

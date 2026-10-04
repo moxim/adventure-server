@@ -85,7 +85,7 @@ final class ActionEditorRegistry {
             }
             result.put((Class<? extends ActionData>) dataClass, (Class<? extends ActionEditorComponent<?>>) editorClass);
         }
-        logger.info("Auto-registered {} action editors", result.size());
+        logger.debug("Auto-registered {} action editors", result.size());
         return Collections.unmodifiableMap(result);
     }
 

@@ -1,14 +1,14 @@
 # 10. Messages
 
-A **Message** is a reusable piece of text with an id, printed by a
-**Message** action wherever you reference that id. Useful for anything
+A **Message** is a reusable piece of text with a short summary, printed by a
+**Message** action wherever you pick it. Useful for anything
 you'll want to say more than once, or want to tweak in one place later
 (flavor text, recurring hints, an ending).
 
-**Manage Messages** on the Adventure Editor opens the list: **Create
+**Messages** on the Adventure Editor opens the list: **Create
 Message**, **Back**, and a running **Total messages: N** count on the
-left; a search field (filters by id or text) and the grid on the right,
-with columns **Message ID**, **Message Text**, **Length**, and **Used**
+left; a search field (filters by summary or text) and the grid on the right,
+with columns **Summary**, **Message Text**, **Length**, and **Used**
 (how many commands reference it).
 
 Right-click a row for a small menu: a preview of the full message text,
@@ -20,7 +20,7 @@ how many places still use it, so clean those up first.
 
 | Field | Notes |
 |-------|-------|
-| **Message ID** | Alphanumeric characters and underscores only (the field's own helper text says so). This is what a Message action references. |
+| **Summary** | A short note on what the message says, in your own words. It is only a label to help you find the message in lists and in the Message action's drop-down: it doesn't have to be unique, and changing it later never breaks anything that uses the message. |
 | **Message Text** | The body. |
 | **Preview** | A live preview of the text as you type it. |
 | **Usage** | Lists every place this message is referenced, under a *"Used in N location(s):"* heading — or, if nothing references it yet, *"This message is not currently used anywhere in the adventure."* A quick way to spot dead messages before you clean them up. (On a brand-new, unsaved message, this just says usage info will be available after saving.) |
@@ -34,7 +34,7 @@ situations so a fresh adventure never shows a blank response to a reasonable
 action.
 
 You can't add or remove these, but you **can reword or translate them**, per
-adventure, from the Adventure Editor's **Manage System Messages** button.
+adventure, from the Adventure Editor's **System Messages** button.
 That opens a screen headed *"System Messages for {your title}"* — a grid of
 every built-in message with its **Key** and **Current Text**. Double-click a
 row to edit it. The dialog shows:
@@ -52,5 +52,5 @@ row to edit it. The dialog shows:
 
 ## What's next
 
-You've now covered every editing screen. [Chapter 11](11-testing-and-running.md)
-covers actually playing what you've built.
+[Chapter 11: Pictures](11-pictures.md) covers the last editing screen — the
+images your adventure can show alongside its text.

@@ -7,14 +7,15 @@ import java.util.*;
 
 import com.pdg.adventure.api.Mapper;
 import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.VariableData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.Adventure;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
+import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
@@ -27,11 +28,14 @@ public class AdventureMapper implements Mapper<AdventureData, Adventure> {
     private final Mapper<VocabularyData, Vocabulary> vocabularyMapper;
     private final LocationMapper locationMapper;
     private final ItemContainerMapper containerMapper;
+    private final Mapper<VariableData, VariableProvider> variableMapper;
 
     public AdventureMapper(MapperSupporter aMapperSupporter,
                            VocabularyMapper aVocabularyMapper,
                            LocationMapper aLocationMapper,
-                           ItemContainerMapper aContainerMapper) {
+                           ItemContainerMapper aContainerMapper,
+                           VariableMapper aVariableMapper) {
+        variableMapper = aVariableMapper;
         mapperSupporter = aMapperSupporter;
         vocabularyMapper = aVocabularyMapper;
         locationMapper = aLocationMapper;
@@ -41,6 +45,8 @@ public class AdventureMapper implements Mapper<AdventureData, Adventure> {
     public Adventure mapToBO(AdventureData anAdventureData) {
         final Vocabulary vocabulary = vocabularyMapper.mapToBO(anAdventureData.getVocabularyData());
         Adventure adventure = new Adventure(vocabulary, new HashMap<>(4), new MessagesHolder(), new HashMap<>());
+        adventure.setVariableProvider(variableMapper.mapToBO(anAdventureData.getVariableData()));
+        variableMapper.mapToBO(anAdventureData.getVariableData());
         adventure.setId((anAdventureData.getId()));
         adventure.setTitle(anAdventureData.getTitle());
         Set<LocationData> locationDataSet = new HashSet<>(anAdventureData.getLocationData().values());
@@ -72,6 +78,8 @@ public class AdventureMapper implements Mapper<AdventureData, Adventure> {
         locationDataList.forEach(locationData -> adventureDataLocations.put(locationData.getId(), locationData));
         adventureData.setLocationData(adventureDataLocations);
         adventureData.setPlayerPocket(containerMapper.mapToDO(anAdventure.getPocket()));
+//        adventureData.setVariableData(variableMapper.mapToDOs()
         return adventureData;
     }
+
 }

@@ -5,7 +5,7 @@
 This chapter explains how the system *plays* an adventure: how a typed line becomes
 a *sequence* of parsed sub-commands, how each is dispatched, and how `Action` and
 `PreCondition` co-operate through the engine's data model. It also catalogs every
-concrete `Action` (17) and `PreCondition` (11) so a rebuild reproduces the
+concrete `Action` (23) and `PreCondition` (11) so a rebuild reproduces the
 behaviour faithfully. Of these, 16 Actions and 10 PreConditions are directly
 selectable in the authoring UI (see
 [`07-ui-and-navigation.md` § Action editor factory](07-ui-and-navigation.md#action-editor-factory));
@@ -225,11 +225,11 @@ supplies most of the narrative.
 
 ## Workflow: Processes and Responses
 
-The `Workflow` (`server/engine/Workflow.java`) holds two
-`TreeMap<CommandDescription, Command>`s. The domain names for the *authored*
-entries in each are **Processes** and **Responses**
+The `Workflow` (`server/engine/Workflow.java`) holds three
+`TreeMap<CommandDescription, …>` tables. The domain names for the *authored*
+entries in them are **Processes**, **Arrival Processes** and **Responses**
 ([`03-domain-model.md` § Workflow](03-domain-model.md#workflow)); the engine
-names for the maps are `processes` and `responses`.
+names for the maps are `processes`, `arrivalProcesses` and `responses`.
 
 - **`processes` (Processes + the prompt)** — every entry executed once
   *before each parsed sub-command* (`GameLoop.processCommand` calls
@@ -241,18 +241,35 @@ names for the maps are `processes` and `responses`.
   `("~", "~", "~")` so it sorts last and never collides with a real
   command. The author's Processes are layered on by
   `WorkflowMapper.populate`.
+- **`arrivalProcesses` (Arrival Processes)** — run whenever the current
+  location's description is (re)shown, via `GameContext.runArrivalProcesses()` →
+  `Workflow.runArrivalProcesses()`, which **returns** the matched entries'
+  joined message rather than telling it. Two callers append it *after* the
+  description: `MovePlayerAction` (arrival by movement, after the arrival
+  description) and `RunArrivalProcessesAction` (an extra action
+  `CommandFactory` adds to the built-in `describe` / `describe here` Responses,
+  so an explicit look re-fires them). They re-fire on every redescribe by
+  design; an author who wants "only once" adds a guard condition. The table is
+  adventure-wide, so an entry is scoped to a location with a *player is at*
+  precondition. **Known limitation:** the explicit-look path is bypassed when
+  an author defines their own `describe` Response (it replaces the built-in by
+  key), when a location / pocket command matches `describe` / `look` (it wins
+  before the Response is consulted), or when a `DescribeAction` is attached to
+  a command; firing on arrival by movement is unaffected. The author's Arrival
+  Processes are layered on by `WorkflowMapper.populate`.
 - **`responses` (Responses)** — consulted only as a *fallback*,
   after `CommandExecutor` (pocket + current location) has been tried and
   returned `FAILURE` with the `SM8` sentinel text — i.e. only when nothing
   local matched the sub-command's verb at all. Match by exact
-  `CommandDescription`. `CommandFactory` plants these built-ins:
+  `CommandDescription` first; failing that, by **wildcard noun** (see below).
+  `CommandFactory` plants these built-ins:
 
 | Verb | Default Response behaviour |
 |------|---------------------------|
 | `help` | `MessageAction` printing the canned help text. |
 | `inventory` | `InventoryAction` listing the player's pocket. |
 | `quit` | `QuitAction` (raises `QuitException`). |
-| `describe` (and `describe here`) | `DescribeAction` printing the current location's long description. |
+| `describe` (and `describe here`) | `DescribeAction` printing the current location's look description (`Location.getLookDescription()` — the full text), setting the current picture, then `RunArrivalProcessesAction` appending the Arrival Processes' output. |
 
   The author's Responses are layered on by `WorkflowMapper.populate`; one
   whose verb matches a built-in **replaces** it for that adventure (still
@@ -274,6 +291,63 @@ else `SM8`). The runtime map is named `responses` and its lookup is
 model field on `WorkflowData` keeps its older name `interceptorCommands` — a
 document-schema rename is a separate migration.)
 
+### Wildcard noun `~`
+
+`VocabularyData.WILDCARD_NOUN` (`"~"`) is the engine's equivalent of PAW's
+`_` ("any word") in a Response. `Workflow.respondTo` resolves a Response in
+this order and takes the first hit:
+
+1. exact `(verb, adjective, noun)`;
+2. `(verb, adjective, "~")`;
+3. `(verb, "", "~")`.
+
+`~` also matches an **empty** input noun. That is deliberate: `Parser` silently
+drops words that are not in the vocabulary, so `take xyzzy` reaches the engine
+as a bare `take` — PAW's "unknown word" case, which likewise triggers `GET _`.
+An exact Response therefore always beats a wildcard one. (`Workflow.processes`
+also contains an unrelated sentinel keyed `("~", "~", "~")` — the turn prompt;
+Processes and Responses are separate tables, so they never collide.)
+
+`~` is a real, persisted NOUN `Word` in each adventure's vocabulary, because a
+command's noun is a `@DBRef` and `CommandDescriptionMapper` resolves it with
+`findWord(...)`. `VocabularyData.ensureWildcardNoun()` creates it on demand
+(its own "does it exist?" guard rather than a seeded-once flag, so adventures
+that pre-date it pick it up, and an existing same-text word is never retyped);
+the Response editor (`SingleCommandEditorView`, RESPONSE type only) calls it
+on load, and it is saved with the adventure. `WordEditorDialogue` refuses to
+rename, retype or turn `~` into a synonym.
+
+## Pictures
+
+`GameContext` carries one piece of picture state, `currentPictureId`
+(`getCurrentPictureId()` / `setCurrentPictureId(id)`): the id of the picture
+the play screen should show, or `null` for none. It is session state only — the
+engine never reads it back. `AdventureRunView.refreshPictureDisplay()` compares
+it with what it last drew, after the opening arrival and after every submitted
+line, and shows or hides the picture panel (an id that matches no picture — one
+deleted meanwhile, say — just hides the panel).
+
+Three things write it:
+
+| Writer | When | Value set |
+|--------|------|-----------|
+| `MovePlayerAction` | The player walks into a location (including the opening arrival of a run) | `Location.getArrivalDescription().pictureId()` — the location's default picture on the **first** visit only; `null` on every repeat visit, which *clears* whatever was showing |
+| built-in `describe` / `describe here` Response (`CommandFactory`) | An explicit look / describe | `Location.getLookDescription().pictureId()` — the default picture **every** time |
+| `PictureAction` | An author-placed action | Its own `pictureId`, kept until the next move, look or Picture action |
+
+Both description methods return a `Location.LocationDescription(text,
+pictureId)` record. In both, the picture is withheld (`null`) when the player
+cannot see: `Location.getPerceivedLight()` — the location's own `lumen` plus
+the `lumen` of every light-emitting item lying in the location *or* carried —
+is below `MINIMUM_LIGHT_TO_SEE` (10). A location's default `lumen` is 50, so
+only authored darkness hides a picture.
+
+Other describe paths — the per-thing examine fallback and author-placed
+`DescribeAction`s — never touch the picture. `PictureAction` is
+`isInformationalOnly()` (like `MessageAction`): when the dispatcher ranks
+candidate commands, a gated command made only of informational actions counts as
+an *excuse*, not a real action (see [§ CommandExecutor](#commandexecutor)).
+
 ## CommandFactory: wiring conventions
 
 `CommandFactory.java` is the canonical source for *how* the engine assembles
@@ -289,12 +363,20 @@ two wirings instead:
   [§ Examine fallback](#examine-fallback)), which emits `thing.getLongDescription()`.
 - The workflow `describe` / `describe here` Responses (see
   [§ Workflow](#workflow)), which emit the current `Location`'s
-  `getLongDescription()`.
+  `getLookDescription()` — the full `getLongDescription()` text plus the
+  location's picture — and then fire the Arrival Processes.
 
 Both always yield the **full** description. Only `MovePlayerAction` uses the
-visit-aware `Location.getArrivalDescription()`.
+visit-aware `Location.getArrivalDescription()`. Which of them also sets the
+picture, and when, is covered in [§ Pictures](#pictures).
 
 ### Take / Drop (with worn handling)
+
+> **Scope note.** This is the `CommandFactory` (console / demo-adventure) wiring.
+> The authoring UI's `ItemEditorView` no longer generates take/drop commands for
+> items; browser-authored adventures use the `~` Responses with the AUTOT / AUTOD
+> / AUTOW / AUTOR actions instead (see
+> [§ Auto item actions](#auto-item-actions-autot-autod-autow-autor)).
 
 For each item, `setUpTakeCommands(item)` registers four commands on the item:
 
@@ -335,22 +417,23 @@ description.
 `setUpWorkflowCommands(workflow)` adds `help`, `inventory`, `quit`,
 `describe` and `describe here` as **Responses** (`workflow.addResponse`), plus a
 `MessageAction(SystemMessageKey.SM2)` — *"What now?"* — as a **Process**
-(`workflow.addProcess`) keyed `("~", "~", "~")`. The author's own Processes and
-Responses are layered on afterwards by `WorkflowMapper.populate` (see
+(`workflow.addProcess`) keyed `("~", "~", "~")`. The author's own Processes, Arrival
+Processes and Responses are layered on afterwards by `WorkflowMapper.populate` (see
 [§ Workflow: Processes and Responses](#workflow-processes-and-responses)).
 
 The built-in `describe` / `describe here` Response wraps a `DescribeAction`
-over `gameContext.getCurrentLocation().getLongDescription()`, which always
-returns the **full** description. `Location` splits the two concerns:
+over `gameContext.getCurrentLocation().getLookDescription()`, whose text is
+always the **full** description; the action also stores the description's
+picture id in `gameContext.currentPictureId`. `Location` splits the concerns:
 
 - `getLongDescription()` — the full description (`super.getLongDescription()`
   plus exits and visible items). Used by every *explicit* describe/examine
-  path: this Response, the examine fallback, and author-placed
-  `DescribeAction`s.
+  path: the examine fallback and author-placed `DescribeAction`s, and — via
+  `getLookDescription()`, which pairs it with the picture — this Response.
 - `getArrivalDescription()` — visit-aware: the full description on the first
   visit (`timesVisited == 0`), the short description on every later visit,
-  plus exits and items. Used only by `MovePlayerAction` when the player walks
-  in.
+  plus exits and items — paired with the location's picture on the first
+  visit only. Used only by `MovePlayerAction` when the player walks in.
 
 `MovePlayerAction` still increments `timesVisited` *after* reading the arrival
 description, so the first walk-in shows the long form and the next shows the
@@ -365,7 +448,7 @@ the same kind to behave equivalently. Fixed engine feedback text now comes from
 `SystemMessageKey.SMnn.defaultText().formatted(...)` rather than
 `MessagesHolder` negative-id lookups; the SM ids below are the current wiring.
 
-17 concrete kinds; all except `LoadAdventureAction` (engine-managed) are
+23 concrete kinds; all except `LoadAdventureAction` (engine-managed) are
 author-placeable:
 
 | Action | One-line role |
@@ -374,14 +457,23 @@ author-placeable:
 | `DescribeAction(supplier)` | Emit `supplier.get()` (used for thing & location descriptions). AI augmentation is wired but commented out. |
 | `TakeAction(item, pocket, msgs)` | Move `item` into the pocket via `MoveItemAction`; emits `SM36` (taken) / `SM26` (not here). Used by the `get` command. |
 | `DropAction(item, container, msgs)` | Move `item` into the supplied container via `MoveItemAction`, and automatically remove it from its parent container; emits `SM39` + the item description. Used by the `drop` commands. |
+| `AutoTakeAction(gameContext, allItems)` | **AUTOT.** Resolve the item from the typed noun and take it — see [§ Auto item actions](#auto-item-actions-autot-autod-autow-autor). |
+| `AutoDropAction(gameContext, allItems)` | **AUTOD.** Resolve the item from the typed noun and drop it into the current location. |
+| `AutoWearAction(gameContext, allItems)` | **AUTOW.** Resolve the item from the typed noun and wear it (delegates to `WearAction`). |
+| `AutoRemoveAction(gameContext, allItems)` | **AUTOR.** Resolve the item from the typed noun and take it off (delegates to `RemoveAction`). |
+| `LightAction(item, lumen)` | Set the item's light level absolutely; emits `SM66`. |
+| `PictureAction(pictureId, gameContext)` | Set `gameContext.currentPictureId` so the play screen shows that picture; always SUCCESS with no text (informational-only). |
 | `MoveItemAction(item, dest, msgs)` | The primitive: remove the item from its parent if any, add it to `dest` if not full. Emits `SM54` (moved) / `SM55` (full) / `SM56` (can't). |
 | `WearAction(wearable, msgs)` | If `isWearable && !isWorn`, set `isWorn=true`, `SUCCESS` + `SM37`; else `FAILURE` + `SM40`. Interpolates `thing.getStrippedBasicDescription()` (article-less — the `SMnn` texts already carry *"the %s"*). |
 | `RemoveAction(wearable, msgs)` | Inverse of `WearAction`; clears `isWorn`; `SUCCESS` + `SM38` / `FAILURE` + `SM41`. Also interpolates the *stripped* (article-less) description. |
-| `MovePlayerAction(destination, msgs, gameContext)` | Set `gameContext.currentLocation = destination`, run `DescribeAction(destination::getArrivalDescription)` (visit-aware: long on first visit, short thereafter), then increment `timesVisited`. |
+| `MovePlayerAction(destination, gameContext, variableProvider)` | Set `gameContext.currentLocation = destination`, run `DescribeAction` over `destination.getArrivalDescription()` (visit-aware: long on first visit, short thereafter), set `gameContext.currentPictureId` from that description, record the `VISITED` variable, increment `timesVisited`, then append the Arrival Processes' output. |
 | `InventoryAction(consumer, pocketSupplier, msgs)` | Print the carried-items header (`SM9`) followed by `pocket.listContents()`. |
 | `QuitAction(msgs)` | Throw `QuitException` carrying the supplied bye message. |
 | `LoadAdventureAction(service, mapper, config, gameContext)` | Resolve an `adventureId`, load and map the `AdventureData`, throw `ReloadAdventureException` on success (returns normally on failure). Engine-managed — no DO, no editor. |
-| `SetVariableAction(name, value, vars, msgs)` | Write `Variable(name, value)` into the `VariableProvider`. |
+| `SetVariableAction(name, value, vars, msgs)` | Write `Variable(name, value)` into the `VariableProvider`. 
+The variable itself is *defined* at authoring time (`AdventureData.variables`); at load, `AdventureMapper.mapToBO` 
+clears the shared `VariableProvider` and defines each authored `VariableData` at its initial value (via `VariableMapper`),
+ so every game starts from the authored state. |
 | `IncrementVariableAction(name, vars, msgs)` | Read the variable, parse it as an integer, write `+1`. |
 | `DecrementVariableAction(name, vars, msgs)` | Same, `-1`. |
 | `CreateAction(thing, containerSupplier, msgs)` | Add `thing` to the supplied container; emits `SM58`. Authorable via the "Create Item" action editor. |
@@ -395,7 +487,10 @@ configured examine verb; it has no DO and is never persisted.
 ### Action behavioural detail
 
 - **`MessageAction`** has two forms in practice: a literal string supplied at
-  construction (used widely) and a runtime lookup against `MessagesHolder.getMessage(id)`.
+  construction (used widely) and a runtime lookup against
+  `MessagesHolder.getMessage(id)`, where `id` is the message's own id (the
+  key `LoadAdventureAction` registers it under). An id with no registered
+  message is used as the literal text.
 - **`DescribeAction`** uses a `Supplier<String>` so the description is computed
   at execute time. The current implementation simply returns
   `target.get()`; the commented-out `fillThroughAI(...)` calls Spring AI
@@ -413,6 +508,50 @@ configured examine verb; it has no DO and is never persisted.
   no locations) by **returning normally** — the factory unwraps this into a
   plain `IllegalStateException`. The old player-facing `load <ulid>` command
   went away with the CLI runner.
+
+### Auto item actions (AUTOT, AUTOD, AUTOW, AUTOR)
+
+Modelled on PAW's `AUTOG`/`AUTOD`/`AUTOW`/`AUTOR` (see
+`docs/specs/ProfessionalAdventureWriter_TechnicalGuide.html`). Unlike
+`TakeAction` etc., they are **not bound to one item**: they take the item from
+what the player typed. The intended use is a single Response keyed on the
+wildcard noun (see [§ Wildcard noun](#wildcard-noun-)) — e.g. `take ~ → AUTOT`,
+`drop ~ → AUTOD`, `wear ~ → AUTOW`, `remove ~ → AUTOR` — which then serves
+every item in the adventure. They carry no parameters (`AutoTakeActionData`
+etc. are empty).
+
+All four extend the package-private `AbstractNounItemAction`, which reads
+`GameContext.getCurrentNoun()` / `getCurrentAdjective()` and searches, in this
+order, the **pocket**, then the **current location's item container**, then
+(for "does this noun name an object at all?") the adventure-wide `allItems`
+registry. A matching adjective narrows the match; otherwise the noun alone
+decides (the same leniency as `ItemIdentifier`). Failures return `FAILURE`, so
+a `GenericCommand` stops its chain, and `GameLoop` prints the message.
+
+| Situation | AUTOT | AUTOD | AUTOW | AUTOR |
+|-----------|-------|-------|-------|-------|
+| success | `SM36` (moved to pocket via `MoveItemAction`) | `SM39` (moved to location) | `SM37` | `SM38` (stays in pocket) |
+| already in the target state | carried/worn → `SM25` | — | worn → `SM29` | carried/here but not worn → `SM50` |
+| item is here, not carried | (the normal case) | `SM49` | `SM49` | `SM50` |
+| item exists in the game, but elsewhere | `SM26` | `SM28` | `SM28` | `SM23` |
+| no noun (incl. an unknown word) | `SM26` | `SM28` | `SM28` | `SM23` |
+| noun names no item (a plain vocabulary word) | `SM8` | `SM8` | `SM8` | `SM8` |
+| other refusals | non-containable → `SM8`; pocket full → `SM27` | worn → `SM24` (**refuses**; `DropAction` silently un-wears) | carried but not wearable → `SM40` | — |
+
+Deliberate gaps and choices relative to PAW:
+
+- **No weight limit.** PAW's `SM43` check is absent because the project has no
+  weight system (`// TODO: Review needed` in `AutoTakeAction`).
+- **AUTOR has no `SM41`/`SM42` case.** Only wearable items can be worn, and
+  worn items stay in the pocket and already count toward its limit, so
+  removing never needs extra room.
+- **`SM8` for a non-item word in AUTOR** is an extension by analogy; PAW's
+  AUTOR text specifies only the `SM23` case.
+- **Precedence.** Responses are consulted only after local (location/item)
+  dispatch fails with the `SM8` sentinel, so an item that still carries its
+  own `take`/`drop` commands answers first. `ItemEditorView` no longer
+  generates those commands; adventures rely on the AUTO* Responses (or
+  hand-built commands) instead.
 
 ## PreCondition catalog
 
@@ -471,9 +610,13 @@ logic is expressed as separate Command Chain variants (see
 - `setUpWorkflows()` — instantiates a fresh `Workflow`.
 - `runProcesses()` / `respondTo(cmd)` — delegate to the workflow.
 
+- `currentNoun` / `currentAdjective` — the primary noun and adjective of the sub-command being dispatched (`setCurrentNoun` / `setCurrentAdjective`), set fresh by `GameLoop.processCommand` before each sub-command alongside preposition, adverb, `noun2` and `adjective2`. Actions receive no arguments, so the AUTO* actions read the typed noun from here.
+
 `Workflow.runProcesses()` walks all `processes` **in alphabetical (verb,
 adjective, noun) order** and tells each result; `GameLoop.processCommand`
-invokes it once per parsed sub-command. `Workflow.respondTo(cmd)` looks up an
+invokes it once per parsed sub-command. `Workflow.runArrivalProcesses()` walks
+`arrivalProcesses` the same way but returns the joined message instead of
+telling it (see [§ Workflow](#workflow-processes-and-responses)). `Workflow.respondTo(cmd)` looks up an
 exact `CommandDescription` match in `responses` and returns its `execute()`
 result, or a default `FAILURE` `CommandExecutionResult` when nothing matches —
 `GameLoop` calls this only after `CommandExecutor` has failed with the `SM8`

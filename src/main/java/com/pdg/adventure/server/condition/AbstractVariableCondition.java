@@ -3,6 +3,8 @@ package com.pdg.adventure.server.condition;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+import java.util.Optional;
+
 import com.pdg.adventure.server.exception.ConfigurationException;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
@@ -17,11 +19,11 @@ public abstract class AbstractVariableCondition extends AbstractCondition {
     }
 
     protected Variable getVariable(String aVariableName) {
-        final Variable envVariable = variableProvider.get(aVariableName);
-        if (envVariable == null) {
+        Optional<Variable> variableOptional = variableProvider.get(aVariableName);
+        if (variableOptional.isEmpty()) {
             throw new ConfigurationException("Variable " + aVariableName + " does not exist!");
         }
-        return envVariable;
+        return variableOptional.get();
     }
 
     protected int extractVariableValue(String aVariableName) {

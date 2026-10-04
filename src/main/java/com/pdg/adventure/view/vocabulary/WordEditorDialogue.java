@@ -319,6 +319,15 @@ public class WordEditorDialogue {
             return;
         }
 
+        if (VocabularyData.WILDCARD_NOUN.equals(currentWord.getText())
+                && (!VocabularyData.WILDCARD_NOUN.equals(newWordText)
+                    || synonyms.getValue() != null
+                    || typeSelector.getValue() != Word.Type.NOUN)) {
+            showErrorNotification("'" + VocabularyData.WILDCARD_NOUN
+                                  + "' is the wildcard noun for responses and must stay a noun of its own");
+            return;
+        }
+
         // Remove the old word
         Optional<Word> wordToEdit = vocabularyData.removeWord(currentWord.getText());
         if (wordToEdit.isEmpty()) {
@@ -502,8 +511,8 @@ public class WordEditorDialogue {
         saveButton.addClickShortcut(Key.ENTER);
     }
 
-    private void notifyListeners(boolean aFlagWhetherTheyShouldSaveAndUpdadeTheirGUI) {
-        if (aFlagWhetherTheyShouldSaveAndUpdadeTheirGUI) {
+    private void notifyListeners(boolean aFlagWhetherTheyShouldSaveAndUpdateTheirGUI) {
+        if (aFlagWhetherTheyShouldSaveAndUpdateTheirGUI) {
             for (GuiListener guiListener : guiListeners) {
                 guiListener.updateGui();
             }

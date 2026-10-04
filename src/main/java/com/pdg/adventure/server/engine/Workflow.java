@@ -10,6 +10,7 @@ import com.pdg.adventure.api.Command;
 import com.pdg.adventure.api.CommandChain;
 import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.parser.GenericCommandChain;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
@@ -127,10 +128,27 @@ public class Workflow {
 
     public ExecutionResult respondTo(CommandDescription aCommand) {
         ExecutionResult result = new CommandExecutionResult();
-        CommandChain chain = responses.get(aCommand);
+        CommandChain chain = findResponseChain(aCommand);
         if (chain != null) {
             result = chain.execute();
         }
         return result;
+    }
+
+    // An exact verb+adjective+noun response always wins. Failing that, a response whose noun is
+    // the wildcard (VocabularyData.WILDCARD_NOUN) answers for any noun - including none, which is
+    // what the parser hands over when the player typed a word it doesn't know (it drops those).
+    // A wildcard response for the same adjective is preferred over one without an adjective.
+    private CommandChain findResponseChain(CommandDescription aCommand) {
+        CommandChain chain = responses.get(aCommand);
+        if (chain == null) {
+            chain = responses.get(new GenericCommandDescription(aCommand.getVerb(), aCommand.getAdjective(),
+                                                                VocabularyData.WILDCARD_NOUN));
+        }
+        if (chain == null) {
+            chain = responses.get(new GenericCommandDescription(aCommand.getVerb(), VocabularyData.EMPTY_STRING,
+                                                                VocabularyData.WILDCARD_NOUN));
+        }
+        return chain;
     }
 }

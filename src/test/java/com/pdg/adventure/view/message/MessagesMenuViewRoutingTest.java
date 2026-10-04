@@ -22,31 +22,25 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.adventure.AdventuresMenuView;
 import com.pdg.adventure.view.support.FlashNotifier;
 import com.pdg.adventure.view.support.RouteIds;
 
 class MessagesMenuViewRoutingTest extends BrowserlessTest {
 
-    private MessageService messageService;
     private AdventureService adventureService;
     private AdventureAccessService accessService;
     private MessagesMenuView view;
 
     @BeforeEach
     void setUp() {
-        messageService = mock(MessageService.class);
         adventureService = mock(AdventureService.class);
         accessService = mock(AdventureAccessService.class);
         UserData testUser = new UserData();
@@ -54,7 +48,7 @@ class MessagesMenuViewRoutingTest extends BrowserlessTest {
         testUser.setRoles(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
-        view = new MessagesMenuView(messageService, adventureService, accessService);
+        view = new MessagesMenuView(adventureService, accessService);
         UI.getCurrent().add(view);
     }
 
@@ -72,11 +66,11 @@ class MessagesMenuViewRoutingTest extends BrowserlessTest {
 
     @Test
     void beforeEnter_validAdventureId_populatesMessagesGrid() {
-        MessageData message = new MessageData();
+        MessageData message = new MessageData("Greeting", "Welcome!");
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
         adventure.setTitle("The Demo");
-        adventure.setMessages(Map.of("msg-1", message));
+        adventure.setMessages(Map.of(message.getId(), message));
         when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
                 .thenReturn(Optional.of(adventure));
 
@@ -94,7 +88,8 @@ class MessagesMenuViewRoutingTest extends BrowserlessTest {
     @Test
     void confirmingDeleteDialog_removesTheMessage_andDoesNotConsultMessageService() {
         Map<String, MessageData> messages = new HashMap<>();
-        messages.put("msg-1", new MessageData("adv-1", "msg-1", "Welcome!"));
+        MessageData message = new MessageData("Greeting", "Welcome!");
+        messages.put(message.getId(), message);
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
         adventure.setTitle("The Demo");
@@ -104,16 +99,15 @@ class MessagesMenuViewRoutingTest extends BrowserlessTest {
         view.beforeEnter(eventWithAdventureId("adv-1"));
 
         MessageDescriptionAdapter adapter = new MessageDescriptionAdapter(
-                new MessageViewModel(messages.get("msg-1")));
+                new MessageViewModel(message));
         ConfirmDialog dialog = view.buildDeleteConfirmDialog(adapter);
         UI.getCurrent().add(dialog);
         dialog.open();
 
         test(dialog).confirm();
 
-        assertThat(adventure.getMessages()).doesNotContainKey("msg-1");
+        assertThat(adventure.getMessages()).doesNotContainKey(message.getId());
         verify(adventureService).saveAdventureData(adventure);
-        verify(messageService, never()).deleteMessage(any(), any());
     }
 
     @Test

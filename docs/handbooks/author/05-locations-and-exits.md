@@ -23,7 +23,7 @@ there unless a chapter says otherwise.
 
 ## The locations list
 
-**Manage Locations** (from the Adventure Editor) opens a grid of your
+**Locations** (on the Adventure Editor) opens a grid of your
 adventure's locations — a running **Locations: N** count, plus **Edit
 Location** (enabled once you select a row), **Create Location**, and
 **Back** on the left; a **Find location** search field (filters by id,
@@ -53,7 +53,8 @@ start** context-menu entry does the same thing.
 | **Noun** | Required, from your vocabulary — pick this before typing descriptions. |
 | **Short description** | If you leave this blank, it's derived from the Adjective/Noun you picked. |
 | **Long description** | Same auto-derivation if left blank. This is what a player reads when they arrive or `look`. |
-| **Lighting (Lumen)** | An integer, 0–100. |
+| **Lighting (Lumen)** | An integer, 0–100. Also decides whether a player can see this location's picture — see [Chapter 11](11-pictures.md#a-locations-default-picture). |
+| **Default Picture** | Optional. One of your adventure's [pictures](11-pictures.md), shown to the player when they arrive for the first time and whenever they `look`. |
 | **Number of exits** | Read-only. |
 | **Location ID** / **Adventure ID** | Read-only identifiers. |
 

@@ -3,9 +3,11 @@ package com.pdg.adventure.view.command.action;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.IntegerField;
-import com.vaadin.flow.component.textfield.TextField;
 
+import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.action.IncrementVariableActionData;
+import com.pdg.adventure.view.command.VariableNameSelector;
+import com.pdg.adventure.view.support.VariableChoices;
 
 /**
  * Editor component for IncrementVariableActionData.
@@ -14,12 +16,18 @@ import com.pdg.adventure.model.action.IncrementVariableActionData;
 @AutoRegisterActionEditor
 public class IncrementVariableActionEditor extends ActionEditorComponent<IncrementVariableActionData> {
     private final IncrementVariableActionData incrementActionData;
-    private TextField variableNameField;
+    private VariableNameSelector variableNameField;
+    private final AdventureData adventureData;
     private IntegerField incrementAmountField;
 
     public IncrementVariableActionEditor(IncrementVariableActionData actionData) {
+        this(actionData, null);
+    }
+
+    public IncrementVariableActionEditor(IncrementVariableActionData actionData, AdventureData anAdventureData) {
         super(actionData);
         this.incrementActionData = actionData;
+        this.adventureData = anAdventureData;
         // UI will be built when initialize() is called
     }
 
@@ -29,10 +37,11 @@ public class IncrementVariableActionEditor extends ActionEditorComponent<Increme
         Span description = new Span("Increment a named variable by the specified amount");
         description.getStyle().set("color", "var(--lumo-secondary-text-color)");
 
-        variableNameField = new TextField("Variable Name");
-        variableNameField.setPlaceholder("Enter variable name");
-        variableNameField.setWidthFull();
-        variableNameField.setRequired(true);
+        variableNameField = new VariableNameSelector("Variable Name",
+                adventureData == null ? null : () -> VariableChoices.of(adventureData), false,
+                incrementActionData.getName());
+        variableNameField.setPlaceholder("Select a variable");
+        variableNameField.setHelperText("Only defined variables can be chosen - a Set Variable action defines one.");
 
         incrementAmountField = new IntegerField("Increment Amount");
         incrementAmountField.setPlaceholder("Enter increment amount");
@@ -40,9 +49,6 @@ public class IncrementVariableActionEditor extends ActionEditorComponent<Increme
         incrementAmountField.setRequired(true);
 
         // Pre-populate if data fields are already set
-        if (incrementActionData.getName() != null) {
-            variableNameField.setValue(incrementActionData.getName());
-        }
         if (incrementActionData.getValue() != null) {
             incrementAmountField.setValue(incrementActionData.getValue());
         }
@@ -56,15 +62,8 @@ public class IncrementVariableActionEditor extends ActionEditorComponent<Increme
 
     @Override
     public boolean validate() {
-        boolean nameValid = variableNameField.getValue() != null && !variableNameField.getValue().trim().isEmpty();
+        boolean nameValid = variableNameField.validateSelection();
         boolean valueValid = incrementAmountField.getValue() != null;
-
-        if (!nameValid) {
-            variableNameField.setErrorMessage("Please enter a variable name");
-            variableNameField.setInvalid(true);
-        } else {
-            variableNameField.setInvalid(false);
-        }
 
         if (!valueValid) {
             incrementAmountField.setErrorMessage("Please enter an increment amount");
@@ -78,8 +77,8 @@ public class IncrementVariableActionEditor extends ActionEditorComponent<Increme
 
     @Override
     public String getActionSummary() {
-        String name = (variableNameField != null && !variableNameField.getValue().isEmpty())
-                ? variableNameField.getValue() : "";
+        String name = (variableNameField != null && !variableNameField.selectedName().isEmpty())
+                ? variableNameField.selectedName() : "";
         String amount = (incrementAmountField != null && incrementAmountField.getValue() != null)
                 ? incrementAmountField.getValue().toString() : "";
         if (name.isEmpty()) return "(none)";

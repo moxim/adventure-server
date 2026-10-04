@@ -41,7 +41,10 @@ public class Adventure implements Ided {
     private final transient MessagesHolder allMessages;
     private final Map<String, Item> allItems;
     private final Map<String, Container> allContainers;
-    private final transient VariableProvider variableProvider;
+
+    @Getter
+    @Setter
+    private VariableProvider variableProvider;
 
     // Todo: must I autowire? where?
     @Autowired

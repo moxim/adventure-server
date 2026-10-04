@@ -37,25 +37,22 @@ of `AdventureData` in MongoDB and also stored as a string column in
 
 | Collection | Document class | Notes |
 |------------|----------------|-------|
-| `adventures` | `AdventureData` | Root aggregate. References pocket, locations, vocabulary, messages by `@DBRef` with cascade. |
+| `adventures` | `AdventureData` | Root aggregate. References pocket, locations, vocabulary and pictures by `@DBRef`; cascade save covers all of them except pictures, cascade delete covers all of them. Messages and system messages are embedded in the document (no collection of their own). |
 | `locations` | `LocationData` | Individual locations; references one `ItemContainerData`. |
 | `containers` | `ItemContainerData` | Containers (incl. the player's pocket and per-location containers). References items by `@DBRef`. |
 | `items` | `ItemData` | Items, scoped per `(adventureId, locationId)` via compound index. |
 | `vocabularies` | `VocabularyData` | One per adventure. References `Word` documents and the special-word slots. |
 | `words` | `Word` | Vocabulary entries. Synonyms link via `@DBRef`. |
-| `messages` | `MessageData` | Author-authored reusable text. Compound unique index on `(adventureId, messageId)`. |
-| `systemMessages` | `SystemMessageData` | Sparse per-adventure overrides of `SystemMessageKey` catalog entries. Compound unique index on `(adventureId, key)`. |
+| `pictures` | `PictureData` | Uploaded images (`name`, `contentType`, `content` bytes, `adventureId`), one document per picture, referenced from `AdventureData.pictureData` by `@DBRef`. |
 
 ### Index conventions
 
 | Index | Definition | Where defined |
 |-------|------------|---------------|
 | `adventure_location_item_idx` (`ItemData`) | `{adventureId: 1, locationId: 1}` | `ItemData.@CompoundIndex` |
-| `adventure_message_idx` (`MessageData`) | `{adventureId: 1, messageId: 1}` UNIQUE | `MessageData.@CompoundIndex` |
-| `adventure_system_message_idx` (`SystemMessageData`) | `{adventureId: 1, key: 1}` UNIQUE | `SystemMessageData.@CompoundIndex` |
 
 Add additional indexes as queries demand; today the codebase relies on `@Id`
-lookups and these three compounds.
+lookups and this one compound index.
 
 ### Auditing
 
@@ -85,8 +82,6 @@ before saving the parent. This emulates `cascade=PERSIST` from JPA on top of
 | `AdventureData.playerPocket` (`@DBRef(lazy=true)`) | Saves the pocket container before the adventure. |
 | `AdventureData.locationData` (`@DBRef(lazy=false)`) — Map | Saves every location. |
 | `AdventureData.vocabularyData` (`@DBRef(lazy=false), transient`) | Saves the vocabulary. |
-| `AdventureData.messages` (`@DBRef(lazy=true)`) — Map | Saves every message document. |
-| `AdventureData.systemMessages` (`@DBRef(lazy=true)`) — Map | Saves every system-message override document. |
 | `LocationData.itemContainerData` (`@DBRef(lazy=false)`) | Saves the location's container. |
 | `ItemContainerData.items` (`@DBRef(lazy=false)`) — List | Saves every contained item. |
 | `VocabularyData.words` (`@DBRef(lazy=false)`) — Map | Saves every word. |
@@ -101,16 +96,24 @@ removed; it is not an event-driven listener. The helper uses
 `MongoTemplate.remove(Query.query(Criteria.where("_id").is(id)), childClass)`.
 
 `@CascadeDelete` applies to the same fields as `@CascadeSave` listed above,
-giving Adventure root-deletion these effects:
+plus `AdventureData.pictureData`, giving Adventure root-deletion these effects:
 
 ```
 delete adventures/<id>
   ├── delete containers/<pocketId>          (and nested items)
   ├── delete locations/<each>                (and each location's container & items)
   ├── delete vocabularies/<id>               (and every word in it)
-  ├── delete messages/<each>
-  └── delete systemMessages/<each>
+  └── delete pictures/<each>
 ```
+
+Pictures are the one `@DBRef` collection with delete-only cascade: there is no
+`@CascadeSave` on `AdventureData.pictureData`, so `PictureEditorView` saves each
+`PictureData` explicitly (`AdventureService.savePictureData`) before saving the
+adventure, and `PictureMenuView` removes the document itself
+(`AdventureService.deletePicture`) when a picture is deleted.
+
+`messages` and `systemMessages` are embedded in the adventure document, so they
+go with it and need neither cascade annotation.
 
 ### Word lifecycle
 
@@ -218,8 +221,8 @@ All MongoDB repositories sit in `server.storage.repository` and extend
 | `AdventureRepository` | `AdventureData` | (Spring Data defaults) |
 | `LocationRepository` | `LocationData` | (Spring Data defaults) |
 | `ItemRepository` | `ItemData` | `findByAdventureIdAndLocationId(...)`, `findByAdventureIdAndId(...)`, etc. (named-method derivations) |
-| `MessageRepository` | `MessageData` | `existsByAdventureIdAndMessageId(...)`, `findByAdventureId(...)` |
-| `VocabularyReporitory` | `VocabularyData` | (Spring Data defaults) — note the typo'd class name; fix on rebuild. |
+| `VocabularyRepository` | `VocabularyData` | (Spring Data defaults) |
+| `PictureRepository` | `PictureData` | (Spring Data defaults) |
 | `WordRepository` | `Word` | (Spring Data defaults) |
 
 All MySQL repositories sit in `server.security.repository` and extend
@@ -240,9 +243,8 @@ on this contract and never observe `null`.
 
 | Service | Responsibility |
 |---------|---------------|
-| `AdventureService` | Top-level CRUD over adventures, locations, vocabulary, words. Calls `CascadeDeleteHelper` before deleting an adventure. Saves emit DEBUG / INFO logs. Pre/post-process hooks (`preProcess`, `postProcess`) are present but currently empty (the previous logic is commented out, awaiting redesign). |
+| `AdventureService` | Top-level CRUD over adventures, locations, vocabulary, words and pictures (`savePictureData`, `deletePicture`). Calls `CascadeDeleteHelper` before deleting an adventure. Saves emit DEBUG / INFO logs. Pre/post-process hooks (`preProcess`, `postProcess`) are present but currently empty (the previous logic is commented out, awaiting redesign). |
 | `ItemService` | Item CRUD scoped by `(adventureId, locationId)`. `@Transactional updateItem(...)` reads the existing item then saves. |
-| `MessageService` | Message CRUD with uniqueness check on `(adventureId, messageId)` raising `IllegalArgumentException` on conflict. |
 
 `DataManager` exists in `server.storage` but is a thin wrapper / transitional
 class; new code should call the typed services above.
@@ -343,7 +345,7 @@ registration is performed by **one** `BeanPostProcessor`:
 | `CommandProviderMapper` | `CommandProviderData` ↔ `GenericCommandProvider` | |
 | `CommandDescriptionMapper` | `CommandDescriptionData` ↔ `GenericCommandDescription` | |
 | `DescriptionMapper` | `DescriptionData` ↔ runtime description |  |
-| `WorkflowMapper` | `WorkflowData` → `Workflow` (populate-only) | **Not** a `Mapper<DO,BO>` — `Workflow` needs its owning `GameContext`. `populate(WorkflowData, Workflow)` layers the author's `commands` (Processes) via `Workflow.addProcess` and `interceptorCommands` (Responses) via `Workflow.addResponse` onto an already-built runtime `Workflow`. |
+| `WorkflowMapper` | `WorkflowData` → `Workflow` (populate-only) | **Not** a `Mapper<DO,BO>` — `Workflow` needs its owning `GameContext`. `populate(WorkflowData, Workflow)` layers the author's `commands` (Processes) via `Workflow.addProcess`, `interceptorCommands` (Responses) via `Workflow.addResponse` and `arrivalProcesses` (Arrival Processes) via `Workflow.addArrivalProcess` onto an already-built runtime `Workflow`. |
 
 Plus `server/mapper/action/` and `server/mapper/condition/` with one mapper
 per concrete `*ActionData` / `*ConditionData` (incl. `BreakActionMapper`).
@@ -382,7 +384,7 @@ AdventureAccessService.createAdventure(data, currentUser)            ← @Transa
 AdventureService.saveAdventureData(data)
    ↓ (Mongo lifecycle)
    • UuidIdGenerationMongoEventListener fills missing ids
-   • CascadeSaveMongoEventListener saves children: pocket, locations, vocabulary, messages, systemMessages
+   • CascadeSaveMongoEventListener saves children: pocket, locations, vocabulary
    ↓
 AdventureRepository.save(data)
    ↓
@@ -415,7 +417,7 @@ AdventureAccessService deletes AdventureAuthor + AdventurePlayer rows
   `CascadeDelete.java`, `CascadeDeleteHelper.java`.
 - `src/main/java/com/pdg/adventure/server/storage/repository/` (Mongo repos).
 - `src/main/java/com/pdg/adventure/server/storage/service/` —
-  `AdventureService`, `ItemService`, `MessageService`, `DataManager`.
+  `AdventureService`, `ItemService`, `DataManager`.
 - `src/main/java/com/pdg/adventure/server/security/repository/` (JPA repos).
 - `src/main/java/com/pdg/adventure/server/security/service/` —
   `CustomUserDetailsService`, `UserService`, `AdventureAccessService`.
@@ -432,9 +434,6 @@ AdventureAccessService deletes AdventureAuthor + AdventurePlayer rows
 
 ## Known gaps
 
-- **`VocabularyReporitory` is misspelled.** The class name and import path
-  carry a typo. A rebuild SHOULD fix it (and there are several call-sites to
-  update in `AdventureService` etc.).
 - **`CommandMapper.mapToDO` is incomplete.** `mapToBO` now maps
   description + actions + preconditions; the reverse (`mapToDO`) still maps
   actions only (TODO in source). A rebuild MUST finish the DO direction.

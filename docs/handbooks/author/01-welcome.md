@@ -18,7 +18,7 @@ Admin  ⊃  Author  ⊃  Player
 | Role | What they do |
 |------|---------------|
 | **Admin** | Manages user accounts and decides which Author owns which adventure, and which Players may play it. Can do everything an Author or Player can. |
-| **Author** | Designs adventures: locations, items, vocabulary, commands, messages, and the workflow that ties it together. Can also play — their own and anyone else's they're assigned to. |
+| **Author** | Designs adventures: locations, items, vocabulary, commands, messages, pictures, and the workflow that ties it together. Can also play — their own and anyone else's they're assigned to. |
 | **Player** | Plays the adventures they've been assigned to, from a personal library. |
 
 You don't assign yourself an adventure to author — an **Admin** does that.
@@ -33,7 +33,7 @@ each time.
 
 | Term | Plain-language meaning |
 |------|------------------------|
-| **Adventure** | The whole game: its title, notes, locations, items, vocabulary, and messages, all in one place. |
+| **Adventure** | The whole game: its title, notes, locations, items, vocabulary, messages, and pictures, all in one place. |
 | **Location** | A room or place in your world. Players stand in exactly one location at a time. |
 | **Exit** (called *Direction* in a few older places) | A way to move from one location to another — `north`, `enter cave`, whatever verb you assign it. |
 | **Item** | An object in the world — something a player can look at, and often pick up, drop, or wear. |
@@ -53,6 +53,8 @@ explained where it's first used.
 These six pieces — Locations, Items, Vocabulary, Commands, Messages, and
 Workflow — are the building blocks of every adventure. Chapters 5 through 9
 cover them one at a time, in the order you'll typically build them.
+[Chapter 11](11-pictures.md) adds an optional extra on top: pictures to show
+alongside the text.
 
 ## What's next
 

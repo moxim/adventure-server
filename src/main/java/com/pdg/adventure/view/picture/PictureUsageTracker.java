@@ -4,32 +4,44 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.pdg.adventure.model.*;
-import com.pdg.adventure.model.action.ActionData;
+import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.action.PictureActionData;
+import com.pdg.adventure.view.support.ActionScanner;
 import com.pdg.adventure.view.support.TrackedUsage;
 
 /**
- * Utility class for tracking picture usage throughout an adventure. Scans every location's
- * default picture, and every PICTURE action attached to a location's own commands or to any of
- * its exits' commands. Mirrors {@link com.pdg.adventure.view.location.LocationUsageTracker}'s
- * scope exactly (same object graph, same coverage) - it does not scan item commands, matching
- * that class's existing, established scope rather than expanding it for this feature.
+ * Utility class for tracking picture usage throughout an adventure. Scans every location's default
+ * picture, and every PICTURE action wherever a command can hold actions (see {@link ActionScanner}):
+ * location commands, exits, items (in locations or the player's pocket) and the workflow lists.
  */
 public class PictureUsageTracker {
+    private static final String DEFAULT_PICTURE_TEXT = "Location Default Picture";
 
     public static class PictureUsage implements TrackedUsage {
         private final String usageType;
         private final String sourceLocationId;
         private final String sourceLocationDescription;
         private final String context;
+        private final String source;
 
+        /** A usage on a location itself: its default picture, or an action in one of its own commands. */
         public PictureUsage(String usageType, String sourceLocationId, String sourceLocationDescription,
                             String context) {
+            this(usageType, sourceLocationId, sourceLocationDescription, context, null);
+        }
+
+        /**
+         * @param source what holds the command when that is not a location's own command list, e.g.
+         *               {@code Item 'brass key'} or {@code Arrival Process}; {@code null} otherwise
+         */
+        public PictureUsage(String usageType, String sourceLocationId, String sourceLocationDescription,
+                            String context, String source) {
             this.usageType = usageType;
             this.sourceLocationId = sourceLocationId;
             this.sourceLocationDescription = sourceLocationDescription;
             this.context = context;
+            this.source = source;
         }
 
         public String getUsageType() {
@@ -38,12 +50,15 @@ public class PictureUsageTracker {
 
         @Override
         public String getDisplayText() {
-            if ("Location Default Picture".equals(usageType)) {
-                String locationName = sourceLocationDescription != null ? sourceLocationDescription : sourceLocationId;
+            String locationName = sourceLocationDescription != null ? sourceLocationDescription : sourceLocationId;
+            if (DEFAULT_PICTURE_TEXT.equals(usageType)) {
                 return usageType + ": is the default picture for '" + locationName + "'";
             }
-            String locationName = sourceLocationDescription != null ? sourceLocationDescription : sourceLocationId;
-            return usageType + ": from '" + locationName + "' | " + context;
+            if (source == null) {
+                return usageType + ": from '" + locationName + "' | " + context;
+            }
+            return usageType + ": from " + source + (locationName == null ? "" : " in '" + locationName + "'")
+                   + " | " + context;
         }
     }
 
@@ -58,65 +73,23 @@ public class PictureUsageTracker {
         if (locations != null) {
             for (Map.Entry<String, LocationData> entry : locations.entrySet()) {
                 LocationData location = entry.getValue();
-                String sourceLocationId = entry.getKey();
-                String sourceLocationDesc = location.getDescriptionData() != null
-                        ? location.getDescriptionData().getShortDescription() : null;
-
-                if (pictureId.equals(location.getPictureId())) {
-                    usages.add(new PictureUsage("Location Default Picture", sourceLocationId, sourceLocationDesc,
-                                                null));
+                if (location != null && pictureId.equals(location.getPictureId())) {
+                    String locationDesc = location.getDescriptionData() != null
+                            ? location.getDescriptionData().getShortDescription() : null;
+                    usages.add(new PictureUsage(DEFAULT_PICTURE_TEXT, entry.getKey(), locationDesc, null));
                 }
-
-                checkLocationCommands(location, sourceLocationId, sourceLocationDesc, pictureId, usages);
-                checkDirectionCommands(location, sourceLocationId, sourceLocationDesc, pictureId, usages);
             }
         }
 
+        for (ActionScanner.ScannedAction scanned : ActionScanner.scan(adventureData, PictureActionData.class)) {
+            if (pictureId.equals(((PictureActionData) scanned.action()).getPictureId())) {
+                ActionScanner.Origin origin = scanned.origin();
+                usages.add(new PictureUsage("Picture Action", origin.locationId(), origin.locationDescription(),
+                                            "Command '" + scanned.commandSpecification() + "', Action #"
+                                            + scanned.actionNumber(), origin.source()));
+            }
+        }
         return usages;
-    }
-
-    private static void checkLocationCommands(LocationData sourceLocation, String sourceLocationId,
-                                              String sourceLocationDesc, String pictureId,
-                                              List<PictureUsage> usages) {
-        if (sourceLocation.getCommandProviderData() == null
-            || sourceLocation.getCommandProviderData().getAvailableCommands() == null) {
-            return;
-        }
-        for (CommandChainData chain : sourceLocation.getCommandProviderData().getAvailableCommands().values()) {
-            if (chain == null || chain.getCommands() == null) {
-                continue;
-            }
-            for (CommandData command : chain.getCommands()) {
-                checkCommandActions(command, sourceLocationId, sourceLocationDesc, pictureId, usages);
-            }
-        }
-    }
-
-    private static void checkDirectionCommands(LocationData sourceLocation, String sourceLocationId,
-                                               String sourceLocationDesc, String pictureId,
-                                               List<PictureUsage> usages) {
-        if (sourceLocation.getDirectionsData() == null) {
-            return;
-        }
-        for (DirectionData direction : sourceLocation.getDirectionsData()) {
-            if (direction.getCommandData() != null) {
-                checkCommandActions(direction.getCommandData(), sourceLocationId, sourceLocationDesc, pictureId,
-                                    usages);
-            }
-        }
-    }
-
-    private static void checkCommandActions(CommandData command, String sourceLocationId, String sourceLocationDesc,
-                                            String pictureId, List<PictureUsage> usages) {
-        String commandSpec = command.getCommandDescription().getCommandSpecification();
-        int actionIndex = 1;
-        for (ActionData action : command.getActions()) {
-            if (action instanceof PictureActionData pictureAction && pictureId.equals(pictureAction.getPictureId())) {
-                usages.add(new PictureUsage("Picture Action", sourceLocationId, sourceLocationDesc,
-                                            "Command '" + commandSpec + "', Action #" + actionIndex));
-            }
-            actionIndex++;
-        }
     }
 
     public static int countPictureUsages(AdventureData adventureData, String pictureId) {

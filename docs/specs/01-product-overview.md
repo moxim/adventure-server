@@ -75,6 +75,10 @@ and into UI structure in [`07-ui-and-navigation.md`](07-ui-and-navigation.md).
     verb/adjective/noun form a **Command Chain**, tried in order until one
     passes.
   - **Messages** — reusable text snippets emitted by `MessageAction`.
+  - **Pictures** — images (PNG, JPEG or WebP, up to 2 MB) uploaded per adventure
+    via `PictureMenuView` ("Pictures") and shown in a panel above the play
+    transcript: a location's optional *default picture*, or any picture shown
+    by a **Picture** action.
   - **System messages** — the fixed catalog of built-in engine text
     (`SystemMessageKey`), reworded or translated per adventure via
     `SystemMessagesView` ("Manage System Messages"). Entries can only be
@@ -82,11 +86,15 @@ and into UI structure in [`07-ui-and-navigation.md`](07-ui-and-navigation.md).
     once an entry is changed from its default).
   - **Workflow** — the adventure's *global* commands, built from the same
     CommandDescription + PreConditions + Actions shape as location commands,
-    in two kinds:
-    - **Processes** (`WorkflowEditorView`, "Manage Processes") run
+    in three kinds:
+    - **Processes** (`WorkflowEditorView`, button "Workflow II") run
       automatically before every parsed sub-command, regardless of the
       player's location.
-    - **Responses** (`ResponsesEditorView`, "Manage Responses") are a
+    - **Arrival Processes** (`ArrivalProcessesEditorView`, button "Workflow I") run automatically
+      whenever a location's description is shown — on arrival by movement and
+      on an explicit look / describe. They apply to the whole adventure; a
+      *player is at* precondition scopes one to a location.
+    - **Responses** (`ResponsesEditorView`, button "Responses") are a
       *fallback*: one fires only when the player's verb (and adjective/noun,
       if set) matches exactly **and** no location or pocket command handled
       that verb. A Response matching a built-in verb (help, inventory, quit,
@@ -176,12 +184,13 @@ This is the canonical list. Other chapters reference it.
 | **Command** | A unit composed of a `CommandDescription` (verb/adjective/noun), a list of `PreCondition`s, and an ordered list of `Action`s (all run in sequence when the command fires). |
 | **Command Chain** | Multiple `Command`s that share one `CommandDescription`; the engine tries them in order and runs the first whose `PreCondition`s all pass. This is how one verb/noun pair can behave differently depending on game state. |
 | **CommandDescription** | A 3-slot tuple `(verb, adjective?, noun?)` produced by the parser and used by the matcher to find a `Command`. |
-| **Action** | A side-effect executed when a Command's PreConditions all pass. Returns an `ExecutionResult`. 17 concrete kinds, 16 of them directly authorable — `LoadAdventureAction` is engine-managed (see [`04-runtime-engine.md`](04-runtime-engine.md#action-catalog)). |
+| **Action** | A side-effect executed when a Command's PreConditions all pass. Returns an `ExecutionResult`. 23 concrete kinds, 22 of them directly authorable — `LoadAdventureAction` is engine-managed (see [`04-runtime-engine.md`](04-runtime-engine.md#action-catalog)). |
 | **PreCondition** | A boolean predicate evaluated in the current `GameContext`; gates an Action. 11 concrete kinds, 10 of them directly selectable — `NotCondition` is applied via a per-row Negate toggle instead (see [`04-runtime-engine.md`](04-runtime-engine.md#precondition-catalog)). |
 | **GameContext** | The runtime carrier: current location, player pocket, message holder, workflow, variable provider, and an injectable output sink (default `java.lang.IO::println`). |
 | **Workflow** | The engine's holder of an adventure's *global* commands: **Processes** (the `processes` table, run before every parsed sub-command) and **Responses** (the `responses` table, tried as a *fallback* only when no location/pocket command matched the typed verb). The built-in help / inventory / quit / look Responses and the "What now?" (SM2) prompt Process are planted by `CommandFactory.setUpWorkflowCommands`; the author's own are layered on by `WorkflowMapper.populate`. |
 | **Variable** | A named integer/value tracked in the `VariableProvider`; readable/writable by Actions and PreConditions. |
-| **Message** | A reusable text snippet keyed by ID; emitted via `MessageAction`. |
+| **Message** | A reusable text snippet with a generated id and a free-text summary; referenced by id from `MessageAction`. |
+| **Picture** | An uploaded image (`PictureData`) owned by one adventure. A location may name one as its default picture; a `PictureAction` shows one on demand. |
 | **Mapper** | A `Mapper<DO, BO>` bidirectional translator. Auto-registered into `MapperSupporter` by an `@AutoRegisterMapper` annotation processed by a `BeanPostProcessor`. |
 | **MapperSupporter** | The central registry of mappers and shared collections (locations, items, containers, vocabulary, messages, variables) used during BO ↔ DO conversion. |
 | **AdventureAuthor / AdventurePlayer** | JPA rows linking a `UserData` (MySQL) to an `AdventureData` (MongoDB) by adventure ID. Implements ownership and access rights respectively. |

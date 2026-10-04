@@ -12,7 +12,7 @@ class ActionRowTest {
     @Test
     void summaryText_withTargetSummary_showsTypeAndTarget() {
         SetVariableActionData data = new SetVariableActionData("score", 10);
-        SetVariableActionEditor editor = new SetVariableActionEditor(data);
+        SetVariableActionEditor editor = new SetVariableActionEditor(data, null);
         editor.initialize();
 
         ActionRow row = new ActionRow(editor, false);
@@ -22,8 +22,8 @@ class ActionRowTest {
 
     @Test
     void summaryText_withEmptyTarget_showsTypeAndNone() {
-        SetVariableActionData data = new SetVariableActionData(null, null);
-        SetVariableActionEditor editor = new SetVariableActionEditor(data);
+        SetVariableActionData data = new SetVariableActionData(null, 1);
+        SetVariableActionEditor editor = new SetVariableActionEditor(data, null);
         editor.initialize();
 
         ActionRow row = new ActionRow(editor, false);

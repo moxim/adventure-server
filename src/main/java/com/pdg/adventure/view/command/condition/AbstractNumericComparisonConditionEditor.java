@@ -1,22 +1,27 @@
 package com.pdg.adventure.view.command.condition;
 
 import com.vaadin.flow.component.textfield.IntegerField;
-import com.vaadin.flow.component.textfield.TextField;
 
+import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.condition.PreConditionData;
+import com.pdg.adventure.view.command.VariableNameSelector;
+import com.pdg.adventure.view.support.VariableChoices;
 
 public abstract class AbstractNumericComparisonConditionEditor<T extends PreConditionData>
         extends ConditionEditorComponent<T> {
 
     protected final T typedCondition;
     private final String operator;
-    private TextField variableNameField;
+    private VariableNameSelector variableNameField;
+    private final AdventureData adventureData;
     private IntegerField valueField;
 
-    protected AbstractNumericComparisonConditionEditor(T conditionData, String operator) {
+    protected AbstractNumericComparisonConditionEditor(T conditionData, String operator,
+                                                       AdventureData anAdventureData) {
         super(conditionData);
         this.typedCondition = conditionData;
         this.operator = operator;
+        this.adventureData = anAdventureData;
     }
 
     protected abstract String currentVariableName();
@@ -29,15 +34,13 @@ public abstract class AbstractNumericComparisonConditionEditor<T extends PreCond
 
     @Override
     protected final void buildUI() {
-        variableNameField = new TextField("Variable Name");
-        variableNameField.setWidthFull();
-        variableNameField.setRequired(true);
+        variableNameField = new VariableNameSelector("Variable Name",
+                adventureData == null ? null : () -> VariableChoices.of(adventureData), false, currentVariableName());
 
         valueField = new IntegerField("Value (number)");
         valueField.setWidthFull();
         valueField.setRequired(true);
 
-        if (currentVariableName() != null) variableNameField.setValue(currentVariableName());
         if (currentValue() != null) valueField.setValue(currentValue());
 
         variableNameField.addValueChangeListener(e -> applyVariableName(e.getValue()));
@@ -51,23 +54,21 @@ public abstract class AbstractNumericComparisonConditionEditor<T extends PreCond
 
     @Override
     public final boolean validate() {
-        boolean nameValid = variableNameField.getValue() != null && !variableNameField.getValue().trim().isEmpty();
+        boolean nameValid = variableNameField.validateSelection();
         boolean valValid = false;
         if (valueField.getValue() != null) {
             try { valueField.getValue(); valValid = true; }
             catch (NumberFormatException ignored) {}
         }
-        variableNameField.setInvalid(!nameValid);
         valueField.setInvalid(!valValid);
-        if (!nameValid) variableNameField.setErrorMessage("Please enter a variable name");
         if (!valValid) valueField.setErrorMessage("Please enter a valid number");
         return nameValid && valValid;
     }
 
     @Override
     public final String getConditionSummary() {
-        String var = (variableNameField != null && !variableNameField.getValue().isEmpty())
-                ? variableNameField.getValue() : "";
+        String var = (variableNameField != null && !variableNameField.selectedName().isEmpty())
+                ? variableNameField.selectedName() : "";
         String val = (valueField != null && valueField.getValue() != null)
                 ? valueField.getValue().toString() : "";
         if (var.isEmpty()) return "(none)";

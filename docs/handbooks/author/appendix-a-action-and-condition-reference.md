@@ -12,6 +12,10 @@ order, when that command fires.
 
 | Action | What it does | What you configure |
 |--------|----------------|----------------------|
+| **AUTOD (Auto Drop)** | Player drops the item named by the noun they typed; refuses if it's worn | Nothing — use it in a Response with the noun `~` |
+| **AUTOR (Auto Remove)** | Player takes off the worn item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
+| **AUTOT (Auto Take)** | Player picks up the item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
+| **AUTOW (Auto Wear)** | Player puts on the carried item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
 | **Break** | Stops the rest of this action list — and the rest of the command chain — immediately | Nothing — pair it with a **Message** action if you want it to say something as it stops |
 | **Create Item** | Places an item into a location (bringing it into play) | The item; the destination location |
 | **Decrement Variable** | Subtracts an amount from a named variable | Variable name; amount |
@@ -21,19 +25,31 @@ order, when that command fires.
 | **Increment Variable** | Adds an amount to a named variable | Variable name; amount |
 | **Inventory** | Lists everything the player carries | Nothing — fully automatic |
 | **Light** | Sets an item's light level (lumen), e.g. turning a lamp on or off | The item; a lumen value from 0 (dark) to 100 (full brightness) |
-| **Message** | Prints a message from your [message catalog](10-messages.md) | The message id |
+| **Message** | Prints a message from your [message catalog](10-messages.md) | The message (picked by its summary) |
 | **Move Item** | Moves an item into a different container | The item; the destination (a location or the player's pocket) |
 | **Move Player** | Moves the player to a location and shows its description | Destination location |
+| **Picture** | Shows a [picture](11-pictures.md) in the play screen's picture panel until the next move, look or Picture action | The picture |
 | **Quit** | Ends the game session | Nothing — pair it with a **Message** action for a farewell line |
 | **Remove** | Takes a worn item off the player | The item |
 | **Set Variable** | Sets a named variable to an exact value | Variable name; value |
 | **Take** | Player picks up an item into their pocket | The item |
 | **Wear** | Player puts on a wearable item | The item |
 
+Variable names are chosen from a dropdown, not typed. **Set Variable** is the
+action that creates a variable: pick an existing name or type a new one. As
+soon as you enter the name in that action, it shows up in the dropdowns of
+**Increment Variable**, **Decrement Variable** and the variable conditions
+(**Equals**, **Greater Than**, **Less Than**, **Same**), which accept only
+names that are already set somewhere. The engine's own `VISITED` counter is
+always listed. The variable is stored with the adventure when you save the
+command, and it stays defined even if you later delete the Set action. A
+condition naming a variable that was never defined is flagged as invalid when
+you open it.
+
 Variables are your own free-form named counters — use them for anything
 that needs to be remembered across turns: a score, a flag ("door_unlocked"),
-a counter of attempts, and so on. Nothing pre-declares them; the first
-action that sets or changes one effectively creates it.
+a counter of attempts, and so on. Nothing pre-declares them; a Set Variable
+action creates one.
 
 ## PreConditions
 

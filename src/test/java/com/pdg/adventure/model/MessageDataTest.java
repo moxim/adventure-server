@@ -3,8 +3,6 @@ package com.pdg.adventure.model;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.HashSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,36 +16,33 @@ class MessageDataTest {
         // Then
         assertThat(messageData.getCreatedAt()).isNotNull();
         assertThat(messageData.getUpdatedAt()).isNotNull();
-        assertThat(messageData.getTranslations()).isNotNull().isEmpty();
-        assertThat(messageData.getTags()).isNotNull().isEmpty();
     }
 
     @Test
     void constructor_withParameters_shouldSetFieldsCorrectly() {
         // Given
-        String adventureId = "adventure-123";
-        String messageId = "welcome_msg";
+        String summary = "Welcome on arrival";
         String text = "Welcome to the adventure!";
 
         // When
-        MessageData messageData = new MessageData(adventureId, messageId, text);
+        MessageData messageData = new MessageData(summary, text);
 
         // Then
-        assertThat(messageData.getAdventureId()).isEqualTo(adventureId);
-        assertThat(messageData.getMessageId()).isEqualTo(messageId);
+        assertThat(messageData.getSummary()).isEqualTo(summary);
         assertThat(messageData.getText()).isEqualTo(text);
         assertThat(messageData.getCreatedAt()).isNotNull();
         assertThat(messageData.getUpdatedAt()).isNotNull();
     }
 
     @Test
-    void constructor_withParameters_shouldInitializeCollections() {
+    void id_shouldBeGeneratedAndUniquePerMessage() {
         // When
-        MessageData messageData = new MessageData("adv-1", "msg-1", "Text");
+        MessageData first = new MessageData("same summary", "same text");
+        MessageData second = new MessageData("same summary", "same text");
 
-        // Then
-        assertThat(messageData.getTranslations()).isNotNull().isInstanceOf(HashMap.class);
-        assertThat(messageData.getTags()).isNotNull().isInstanceOf(HashSet.class);
+        // Then: the inherited id is the only unique reference - summaries may repeat
+        assertThat(first.getId()).isNotBlank();
+        assertThat(second.getId()).isNotBlank().isNotEqualTo(first.getId());
     }
 
     @Test
@@ -73,48 +68,12 @@ class MessageDataTest {
         MessageData messageData = new MessageData();
 
         // When
-        messageData.setAdventureId("adv-123");
-        messageData.setMessageId("msg-123");
+        messageData.setSummary("A short summary");
         messageData.setText("Message text");
-        messageData.setCategory("greetings");
-        messageData.setNotes("Some notes");
 
         // Then
-        assertThat(messageData.getAdventureId()).isEqualTo("adv-123");
-        assertThat(messageData.getMessageId()).isEqualTo("msg-123");
+        assertThat(messageData.getSummary()).isEqualTo("A short summary");
         assertThat(messageData.getText()).isEqualTo("Message text");
-        assertThat(messageData.getCategory()).isEqualTo("greetings");
-        assertThat(messageData.getNotes()).isEqualTo("Some notes");
-    }
-
-    @Test
-    void translations_shouldBeModifiable() {
-        // Given
-        MessageData messageData = new MessageData();
-
-        // When
-        messageData.getTranslations().put("de", "Willkommen!");
-        messageData.getTranslations().put("fr", "Bienvenue!");
-
-        // Then
-        assertThat(messageData.getTranslations()).hasSize(2);
-        assertThat(messageData.getTranslations()).containsEntry("de", "Willkommen!");
-        assertThat(messageData.getTranslations()).containsEntry("fr", "Bienvenue!");
-    }
-
-    @Test
-    void tags_shouldBeModifiable() {
-        // Given
-        MessageData messageData = new MessageData();
-
-        // When
-        messageData.getTags().add("intro");
-        messageData.getTags().add("quest");
-        messageData.getTags().add("important");
-
-        // Then
-        assertThat(messageData.getTags()).hasSize(3);
-        assertThat(messageData.getTags()).containsExactlyInAnyOrder("intro", "quest", "important");
     }
 
     @Test
@@ -148,43 +107,5 @@ class MessageDataTest {
         // Then
         assertThat(messageData.getCreatedAt()).isNotNull();
         assertThat(messageData.getUpdatedAt()).isBeforeOrEqualTo(Instant.now());
-    }
-
-    @Test
-    void setTranslations_shouldReplaceExistingMap() {
-        // Given
-        MessageData messageData = new MessageData();
-        messageData.getTranslations().put("en", "Hello");
-
-        HashMap<String, String> newTranslations = new HashMap<>();
-        newTranslations.put("de", "Hallo");
-        newTranslations.put("fr", "Bonjour");
-
-        // When
-        messageData.setTranslations(newTranslations);
-
-        // Then
-        assertThat(messageData.getTranslations()).hasSize(2);
-        assertThat(messageData.getTranslations()).doesNotContainKey("en");
-        assertThat(messageData.getTranslations()).containsKeys("de", "fr");
-    }
-
-    @Test
-    void setTags_shouldReplaceExistingSet() {
-        // Given
-        MessageData messageData = new MessageData();
-        messageData.getTags().add("old-tag");
-
-        HashSet<String> newTags = new HashSet<>();
-        newTags.add("new-tag-1");
-        newTags.add("new-tag-2");
-
-        // When
-        messageData.setTags(newTags);
-
-        // Then
-        assertThat(messageData.getTags()).hasSize(2);
-        assertThat(messageData.getTags()).doesNotContain("old-tag");
-        assertThat(messageData.getTags()).containsExactlyInAnyOrder("new-tag-1", "new-tag-2");
     }
 }

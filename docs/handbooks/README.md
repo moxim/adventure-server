@@ -21,7 +21,7 @@ handbook says so plainly rather than describing an aspirational version.
 
 Anyone signed in with the **Author** role. If you're an **Admin**, everything
 here applies to you too — Admins inherit every Author capability. If you're a
-**Player**, see the note in [Chapter 11](author/11-testing-and-running.md) —
+**Player**, see the note in [Chapter 12](author/12-testing-and-running.md) —
 most of this handbook is about *building* adventures, but the play screen
 itself is one you'll share with players.
 
@@ -37,10 +37,11 @@ itself is one you'll share with players.
 | 6 | [Items](author/06-items.md) | Things players can see, carry, and wear |
 | 7 | [Vocabulary & Words](author/07-vocabulary-and-words.md) | Teaching your adventure the words it understands |
 | 8 | [Commands, Actions & Conditions](author/08-commands-actions-and-conditions.md) | The heart of gameplay: what happens when a player types something |
-| 9 | [Workflow: Processes & Responses](author/09-workflow.md) | Global rules that apply no matter where the player is — every-turn Processes and command-intercepting Responses |
+| 9 | [Workflow: Processes, Arrival Processes & Responses](author/09-workflow.md) | Global rules that apply no matter where the player is — every-turn Processes, Arrival Processes that run when a location is described, and command-intercepting Responses |
 | 10 | [Messages](author/10-messages.md) | Reusable text snippets your commands can print, plus editing the built-in engine messages |
-| 11 | [Testing & Running your adventure](author/11-testing-and-running.md) | Playing your adventure from inside the editor, or from your adventure list |
-| 12 | [Tips, gotchas & current limits](author/12-tips-and-current-limits.md) | Honest notes on what's still rough around the edges |
+| 11 | [Pictures](author/11-pictures.md) | Uploading images and showing them — a location's default picture, or on demand with a Picture action |
+| 12 | [Testing & Running your adventure](author/12-testing-and-running.md) | Playing your adventure from inside the editor, or from your adventure list |
+| 13 | [Tips, gotchas & current limits](author/13-tips-and-current-limits.md) | Honest notes on what's still rough around the edges |
 | A | [Appendix: Action & Condition reference](author/appendix-a-action-and-condition-reference.md) | Every Action and PreCondition type, in one table |
 
 ## How to read this

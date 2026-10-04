@@ -28,7 +28,7 @@ public class Location extends Thing implements Visitable {
     // same instance) so a light-emitting item still counts toward this location's perceived
     // light while it's being carried, not just while it's lying on the floor.
     private Container carriedItems;
-    private long timesVisited;
+    private int timesVisited;
     private String pictureId;
 
     public Location(DescriptionProvider aDescriptionProvider) {
@@ -63,12 +63,12 @@ public class Location extends Thing implements Visitable {
     }
 
     @Override
-    public long getTimesVisited() {
+    public int getTimesVisited() {
         return timesVisited;
     }
 
     @Override
-    public void setTimesVisited(long aNumberOfTimesThisHasBeenVisited) {
+    public void setTimesVisited(int aNumberOfTimesThisHasBeenVisited) {
         timesVisited = aNumberOfTimesThisHasBeenVisited;
     }
 

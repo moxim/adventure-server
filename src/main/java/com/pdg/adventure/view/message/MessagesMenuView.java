@@ -28,7 +28,6 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.GridProvider;
@@ -38,7 +37,6 @@ import com.pdg.adventure.view.support.ViewSupporter;
 @Route(value = "author/adventures/:adventureId/messages", layout = MessagesMainLayout.class)
 @RolesAllowed("ROLE_AUTHOR")
 public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle, BeforeEnterObserver {
-    private final transient MessageService messageService;
     private final transient AdventureService adventureService;
     private final transient AdventureAccessService accessService;
     private final Grid<MessageDescriptionAdapter> grid;
@@ -46,9 +44,8 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
     private String pageTitle;
     private transient ListDataProvider<MessageDescriptionAdapter> dataProvider;
 
-    public MessagesMenuView(MessageService aMessageService, AdventureService anAdventureService,
+    public MessagesMenuView(AdventureService anAdventureService,
                             AdventureAccessService anAccessService) {
-        messageService = aMessageService;
         adventureService = anAdventureService;
         accessService = anAccessService;
         setSizeFull();
@@ -76,7 +73,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         TextField searchField = new TextField();
         searchField.setWidth("50%");
         searchField.setPlaceholder("Search messages");
-        searchField.setTooltipText("Find messages by ID or text content");
+        searchField.setTooltipText("Find messages by summary or text content");
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         searchField.setValueChangeMode(ValueChangeMode.EAGER);
         searchField.addValueChangeListener(e -> filterMessages(e.getValue()));
@@ -103,8 +100,10 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
 
     private Grid<MessageDescriptionAdapter> createGrid() {
         GridProvider<MessageDescriptionAdapter> gridProvider = new GridProvider<>(MessageDescriptionAdapter.class);
-        gridProvider.getGrid().getColumns().get(0).setHeader("Message ID").setFlexGrow(1);
-        gridProvider.getGrid().getColumns().get(1).setHeader("Message Text").setFlexGrow(3).setSortable(true);
+        gridProvider.hideIdColumn();
+        gridProvider.getGrid().getColumns().get(1).setHeader("Summary").setFlexGrow(1).setSortable(true);
+        gridProvider.addColumn(MessageDescriptionAdapter::getTextPreview, "Message Text");
+        gridProvider.getGrid().getColumns().get(2).setFlexGrow(3);
         gridProvider.addColumn(MessageDescriptionAdapter::getLength, "Length");
 
         Span usedHeader = new Span("Used");
@@ -168,21 +167,8 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
 
     private void duplicateMessage(MessageDescriptionAdapter adapter) {
         MessageViewModel original = adapter.getMessageViewModel();
-        String newId = original.getId() + "_copy";
-        int counter = 1;
-
-        while (adventureData.getMessages().containsKey(newId)) {
-            newId = original.getId() + "_copy" + counter++;
-        }
-
-        MessageData newMessage = new MessageData(adventureData.getId(), newId, original.getMessageText());
-
-        if (original.getCategory() != null) {
-            newMessage.setCategory(original.getCategory());
-        }
-        if (original.getNotes() != null) {
-            newMessage.setNotes(original.getNotes());
-        }
+        MessageData newMessage = new MessageData(original.getSummary() + " (copy)", original.getMessageText());
+        String newId = newMessage.getId();
 
         adventureData.getMessages().put(newId, newMessage);
         adventureService.saveAdventureData(adventureData);
@@ -195,18 +181,16 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
     }
 
     private void showMessageUsage(MessageDescriptionAdapter adapter) {
-        String messageId = adapter.getId();
         List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData,
-                                                                                              messageId);
-        ViewSupporter.showUsages("Message Usage", "message", messageId, usages);
+                                                                                              adapter.getId());
+        ViewSupporter.showUsages("Message Usage", "message", adapter.getShortDescription(), usages);
     }
 
     private void confirmDeleteMessage(MessageDescriptionAdapter adapter) {
-        String messageId = adapter.getId();
-        int usageCount = MessageUsageTracker.countMessageUsages(adventureData, messageId);
+        int usageCount = MessageUsageTracker.countMessageUsages(adventureData, adapter.getId());
 
         if (usageCount > 0) {
-            Notification notification = Notification.show("Cannot delete message '" + messageId +
+            Notification notification = Notification.show("Cannot delete message '" + adapter.getShortDescription() +
                                                          "' because it is stille referenced " + usageCount +
                                                          " times(s). . Please remove those references first.",
                                                          5000, Notification.Position.MIDDLE);
@@ -220,7 +204,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
     // item click has no reliable way to be triggered from such a test.
     ConfirmDialog buildDeleteConfirmDialog(MessageDescriptionAdapter adapter) {
         String messageId = adapter.getId();
-        final var dialog = ViewSupporter.getConfirmDialog("Delete Message", "message", messageId);
+        final var dialog = ViewSupporter.getConfirmDialog("Delete Message", "message", adapter.getShortDescription());
         dialog.addConfirmListener(_ -> {
             adventureData.getMessages().remove(messageId);
             adventureService.saveAdventureData(adventureData);
@@ -236,7 +220,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
             } else {
                 String lowerCaseSearchTerm = searchTerm.toLowerCase();
                 dataProvider.setFilter(adapter ->
-                        adapter.getId().toLowerCase().contains(lowerCaseSearchTerm) ||
+                        adapter.getShortDescription().toLowerCase().contains(lowerCaseSearchTerm) ||
                         adapter.getMessageViewModel().getMessageText().toLowerCase().contains(lowerCaseSearchTerm)
                 );
             }
@@ -250,7 +234,7 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
             List<MessageDescriptionAdapter> adapters = messageDataList.stream()
                     .map(msgData -> {
                         int usageCount = MessageUsageTracker.countMessageUsages(adventureData,
-                                                                                msgData.getMessageId());
+                                                                                msgData.getId());
                         return new MessageDescriptionAdapter(new MessageViewModel(msgData, usageCount));
                     })
                     .toList();

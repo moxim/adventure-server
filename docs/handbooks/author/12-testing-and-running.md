@@ -1,4 +1,4 @@
-# 11. Testing & Running your adventure
+# 12. Testing & Running your adventure
 
 Everything you've built comes together here: a live, playable session of
 your adventure, right in the browser.
@@ -38,6 +38,10 @@ opens, it automatically runs `look` for you, so the first thing you see is
 your starting location's description, spoken by **Narrator**. From then on,
 whatever you type is echoed into the transcript under your own username,
 and the game's response appears as the next Narrator line.
+
+When the current location (or a **Picture** action) has a [picture](11-pictures.md)
+to show, a picture panel appears above the transcript, scaled to fit. It
+updates after every command and disappears when there's nothing to show.
 
 **Back**, above the transcript, exits the session — see the table above for
 where it sends you.
@@ -91,6 +95,6 @@ navigate you anywhere; click **Back** when you're ready to leave.
 
 ## What's next
 
-[Chapter 12](12-tips-and-current-limits.md) rounds up honest notes on
+[Chapter 13](13-tips-and-current-limits.md) rounds up honest notes on
 what's still rough — worth a skim before you build something around a
 screen that isn't quite finished yet.

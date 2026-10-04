@@ -27,7 +27,6 @@ import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
-import com.pdg.adventure.server.storage.service.MessageService;
 import com.pdg.adventure.view.support.RouteIds;
 
 /**
@@ -40,9 +39,6 @@ class MessagesMenuViewTest {
 
     @Mock
     private AdventureService adventureService;
-
-    @Mock
-    private MessageService messageService;
 
     @Mock
     private AdventureAccessService accessService;
@@ -81,7 +77,7 @@ class MessagesMenuViewTest {
     @Test
     void constructor_shouldCreateViewWithAllComponents() {
         // when
-        view = new MessagesMenuView(messageService, adventureService, accessService);
+        view = new MessagesMenuView(adventureService, accessService);
 
         // then
         assertThat(view).isNotNull();
@@ -90,13 +86,13 @@ class MessagesMenuViewTest {
     @Test
     void setData_shouldPopulateGridWithMessages() {
         // given
-        view = new MessagesMenuView(messageService, adventureService, accessService);
+        view = new MessagesMenuView(adventureService, accessService);
 
-        MessageData welcomeMessage = createTestMessage("welcome_message", "Welcome to the adventure!");
-        MessageData farewellMessage = createTestMessage("farewell_message", "Goodbye, brave adventurer!");
+        MessageData welcomeMessage = createTestMessage("welcome message", "Welcome to the adventure!");
+        MessageData farewellMessage = createTestMessage("farewell message", "Goodbye, brave adventurer!");
 
-        adventureData.getMessages().put("welcome_message", welcomeMessage);
-        adventureData.getMessages().put("farewell_message", farewellMessage);
+        adventureData.getMessages().put(welcomeMessage.getId(), welcomeMessage);
+        adventureData.getMessages().put(farewellMessage.getId(), farewellMessage);
 
         // when
         enterWithAdventure();
@@ -104,23 +100,23 @@ class MessagesMenuViewTest {
         // then
         assertThat(adventureData.getMessages())
                 .hasSize(2)
-                .containsKeys("welcome_message", "farewell_message");
-        assertThat(adventureData.getMessages().get("welcome_message")).isEqualTo(welcomeMessage);
-        assertThat(adventureData.getMessages().get("farewell_message")).isEqualTo(farewellMessage);
+                .containsKeys(welcomeMessage.getId(), farewellMessage.getId());
+        assertThat(adventureData.getMessages().get(welcomeMessage.getId())).isEqualTo(welcomeMessage);
+        assertThat(adventureData.getMessages().get(farewellMessage.getId())).isEqualTo(farewellMessage);
     }
 
     @Test
     void setData_withMultipleMessages_shouldPreserveAllMessages() {
         // given
-        view = new MessagesMenuView(messageService, adventureService, accessService);
+        view = new MessagesMenuView(adventureService, accessService);
 
-        MessageData message1 = createTestMessage("intro_message", "Welcome to the adventure!");
-        MessageData message2 = createTestMessage("help_message", "Type 'help' for assistance");
-        MessageData message3 = createTestMessage("exit_message", "Thanks for playing!");
+        MessageData message1 = createTestMessage("intro message", "Welcome to the adventure!");
+        MessageData message2 = createTestMessage("help message", "Type 'help' for assistance");
+        MessageData message3 = createTestMessage("exit message", "Thanks for playing!");
 
-        adventureData.getMessages().put("intro_message", message1);
-        adventureData.getMessages().put("help_message", message2);
-        adventureData.getMessages().put("exit_message", message3);
+        adventureData.getMessages().put(message1.getId(), message1);
+        adventureData.getMessages().put(message2.getId(), message2);
+        adventureData.getMessages().put(message3.getId(), message3);
 
         // when
         enterWithAdventure();
@@ -128,13 +124,13 @@ class MessagesMenuViewTest {
         // then
         assertThat(adventureData.getMessages())
                 .hasSize(3)
-                .containsKeys("intro_message", "help_message", "exit_message");
+                .containsKeys(message1.getId(), message2.getId(), message3.getId());
     }
 
     @Test
     void setData_withEmptyAdventure_shouldHandleEmptyState() {
         // given
-        view = new MessagesMenuView(messageService, adventureService, accessService);
+        view = new MessagesMenuView(adventureService, accessService);
 
         // Adventure has empty messages map
         adventureData.setMessages(new HashMap<>());
@@ -146,11 +142,7 @@ class MessagesMenuViewTest {
         assertThat(adventureData.getMessages()).isEmpty();
     }
 
-    private MessageData createTestMessage(String messageId, String text) {
-        MessageData message = new MessageData();
-        message.setAdventureId("adventure-1");
-        message.setMessageId(messageId);
-        message.setText(text);
-        return message;
+    private MessageData createTestMessage(String summary, String text) {
+        return new MessageData(summary, text);
     }
 }

@@ -75,9 +75,11 @@ BasicData            (Ided; has @Id String id assigned to ULID)
 └── DatedData
     └── VocabularyData
 └── DatedData
-    └── MessageData       (+adventureId, messageId, text, category, tags, translations, notes)
+    └── MessageData       (summary, text)
+└── BasicData
+    └── PictureData       (+adventureId, name, content: byte[], contentType)
 └── DatedData
-    └── SystemMessageData (+adventureId, key, text — one editable override of a
+    └── SystemMessageData (key, text — one editable override of a
                             SystemMessageKey catalog entry; see "System messages" below)
 └── DatedData
     └── Word              (text, type, synonym)
@@ -89,6 +91,7 @@ BasicData            (Ided; has @Id String id assigned to ULID)
     └── CommandChainData  (+commands: List<CommandData>)
    (WorkflowData           +commands: List<CommandData> (Processes)
                            +interceptorCommands: List<CommandData> (Responses)
+                           +arrivalProcesses: List<CommandData> (Arrival Processes)
                             — a plain embedded field on AdventureData, not part of
                             the BasicData hierarchy; see "Workflow" below)
 └── BasicData
@@ -129,10 +132,12 @@ Fields:
 | `locationData` | `@DBRef(lazy=false) Map<String, LocationData>` | All locations, keyed by id. Cascade save & delete. |
 | `currentLocationId` | `String` | Resolves into `locationData`. |
 | `vocabularyData` | `@DBRef(lazy=false, transient) VocabularyData` | The adventure's vocabulary. Cascade save & delete. |
-| `messages` | `@DBRef(lazy=true) Map<String, MessageData>` | Author-authored reusable text. Cascade save & delete. |
-| `systemMessages` | `@DBRef(lazy=true) Map<String, SystemMessageData>` | Sparse per-adventure overrides of engine text; keyed by `SystemMessageKey.id()`. Cascade save & delete. A key with no entry reads as its catalog default. See [§ System messages](#system-messages) below. |
+| `messages` | `Map<String, MessageData>` | Author-authored reusable text, keyed by each message's `id`. Embedded (owned 1:1 by the adventure) — no `@DBRef`, no cascade annotations. See [§ MessageData](#messagedata). |
+| `systemMessages` | `Map<String, SystemMessageData>` | Sparse per-adventure overrides of engine text; keyed by `SystemMessageKey.id()`. Embedded — no `@DBRef`, no cascade annotations. A key with no entry reads as its catalog default. See [§ System messages](#system-messages) below. |
+| `pictureData` | `@DBRef(lazy=false) Map<String, PictureData>` | The adventure's uploaded pictures, keyed by id. `@CascadeDelete` only — **no** `@CascadeSave`: `PictureEditorView` saves each picture explicitly (`AdventureService.savePictureData`) before saving the adventure. See [§ PictureData](#picturedata). |
 | `notes` | `String` | Free-text outline; not used at runtime. Surfaced as a quick preview in `AdventuresMenuView`'s right-click context menu. |
-| `workflowData` | `WorkflowData`, default `new WorkflowData()` | The adventure's global commands — **Processes** (`commands`) and **Responses** (`interceptorCommands`). Plain embedded field — no `@DBRef`, no cascade annotations (unlike every other nested collection above); it round-trips as part of the `AdventureData` document itself. See [§ Workflow](#workflow) below. |
+| `variables` | `List<VariableData>`, default empty | The variables the author has defined — embedded (owned 1:1 by the adventure, like `messages`), as a list rather than a map because variable names are free text and may be illegal as Mongo field names. `defineVariable(name)` adds one (trimmed, case-sensitive, idempotent); `variableNames()` lists them. Created when a Set Variable action names a variable, see [`07-ui-and-navigation.md`](07-ui-and-navigation.md). |
+| `workflowData` | `WorkflowData`, default `new WorkflowData()` | The adventure's global commands — **Processes** (`commands`), **Responses** (`interceptorCommands`) and **Arrival Processes** (`arrivalProcesses`). Plain embedded field — no `@DBRef`, no cascade annotations (unlike every other nested collection above); it round-trips as part of the `AdventureData` document itself. See [§ Workflow](#workflow) below. |
 
 Constructors initialise empty maps (including `systemMessages`) and an empty
 `ItemContainerData("your pocket")`.
@@ -152,9 +157,10 @@ DO fields beyond `ThingData`:
 | `directionsData` | `Set<DirectionData>` | Exits (embedded, not @DBRef). |
 | `timesVisited` | `int` | Increments on entry. |
 | `lumen` | `int`, default 50 | Light level; see `HasLight` API and `DescribeAction` semantics. |
+| `pictureId` | `String`, optional | Id of the location's *default picture* (a key of `AdventureData.pictureData`); `null` = none. See [§ PictureData](#picturedata). |
 
 BO holds `directions: Container<Direction>`, `itemContainer: Container`,
-`timesVisited`, `lumen` and inherits the description and command map from `Thing`.
+`timesVisited`, `lumen`, `pictureId` and inherits the description and command map from `Thing`.
 
 ### Direction (BO) / DirectionData (DO)
 
@@ -265,10 +271,11 @@ The class also exposes a comprehensive list of **string constants** for UI
 labels (e.g. `BACK_TEXT`, `SAVE_TEXT`, `UNKNOWN_WORD_TEXT`). Centralising these
 makes the domain text translatable in one place.
 
-Key query method:
+Key methods:
 
 | Method | Returns |
 |--------|---------|
+| `ensureWildcardNoun()` | The `Word` `"~"` (`WILDCARD_NOUN`, type `NOUN`), creating it if absent; an existing same-text word is returned untouched (never retyped or repointed). Called by the Response editor so a Response can be keyed on "any noun". |
 | `findWordsBySynonym(Word aTarget)` | `List<Word>` of all words whose `synonym` field points to `aTarget` (excludes `aTarget` itself). Used by `WordEditorDialogue` to detect cascade-affected words when a synonym is reassigned. |
 
 ### CommandDescriptionData
@@ -311,13 +318,14 @@ subclass and not its own MongoDB collection:
 public class WorkflowData {
     private List<CommandData> commands = new ArrayList<>();             // Processes
     private List<CommandData> interceptorCommands = new ArrayList<>();  // Responses
+    private List<CommandData> arrivalProcesses = new ArrayList<>();     // Arrival Processes
 }
 ```
 
 It lives as a plain embedded field on `AdventureData.workflowData` (see the
 field table above) and holds the adventure's *global* commands — built from
 the identical `CommandData` shape as location/item commands, but not scoped
-to one `Thing`. Two independent lists:
+to one `Thing`. Three independent lists:
 
 - **`commands` — Processes.** Run automatically before **each parsed
   sub-command** of a turn, before that sub-command is dispatched. The verb
@@ -325,37 +333,69 @@ to one `Thing`. Two independent lists:
 - **`interceptorCommands` — Responses.** Tried only as a **fallback**, after
   pocket/location dispatch has failed to match the verb at all. An exact
   `(verb, adjective, noun)` match that a location or item command also
-  carries loses to that local command. The verb is required. (This
+  carries loses to that local command. The verb is required. The noun may be
+  the wildcard `~` (`VocabularyData.WILDCARD_NOUN`, a persisted NOUN `Word`
+  created on demand by `ensureWildcardNoun()`), which matches any typed noun
+  or none — see [`04-runtime-engine.md` § Wildcard noun](04-runtime-engine.md#wildcard-noun-). (This
   *persisted* field name predates the engine rename — the runtime table is
   now `Workflow.responses`.)
+- **`arrivalProcesses` — Arrival Processes.** Run automatically whenever the
+  current location's description is (re)shown: after a `MovePlayerAction`
+  walk-in (their output follows the destination's arrival description) and on
+  an explicit look / describe (`RunArrivalProcessesAction`, an extra action on
+  the built-in `describe` Responses). They re-fire on **every** redescribe by
+  design — an author who wants "only once" adds a guard condition. The list is
+  adventure-wide, not per location: gate an entry with a *player is at*
+  precondition. The verb is not required — verb / adjective / noun are not
+  matched against the player's input and only label the entry. See
+  [`04-runtime-engine.md` § Workflow](04-runtime-engine.md#workflow-processes-and-responses).
 
 At runtime, `WorkflowMapper.populate(WorkflowData, Workflow)` layers `commands`
-onto the engine `Workflow` (`server/engine/Workflow.java`) via `addProcess`
-and `interceptorCommands` via `addResponse`, after
+onto the engine `Workflow` (`server/engine/Workflow.java`) via `addProcess`,
+`interceptorCommands` via `addResponse` and `arrivalProcesses` via
+`addArrivalProcess`, after
 `GameContext.setUpWorkflows()` and on top of the built-ins planted by
 `CommandFactory.setUpWorkflowCommands` — see
 [`04-runtime-engine.md` § Workflow](04-runtime-engine.md#workflow-processes-and-responses).
 Authored via `WorkflowEditorView` (`author/adventures/:adventureId/workflow`,
 Processes) and `ResponsesEditorView`
-(`author/adventures/:adventureId/responses`, Responses), both built on the
-shared `CommandListEditorView`.
+(`author/adventures/:adventureId/responses`, Responses) and
+`ArrivalProcessesEditorView` (`author/adventures/:adventureId/arrival`, Arrival
+Processes), all built on the shared `CommandListEditorView`.
+
+## Pictures
+
+### PictureData
+
+`model/PictureData.java`, `@Document(collection = "pictures")`, extends
+`BasicData` (a ULID `id`; no timestamps). One document per uploaded image,
+owned by one adventure and referenced from `AdventureData.pictureData`.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `adventureId` | `String` | The owning adventure (set by `PictureEditorView`). |
+| `name` | `String` | Author-chosen label; required; shown in lists and pickers. Need not be unique. |
+| `content` | `byte[]` | The image bytes (stored inline in the document). |
+| `contentType` | `String` | `image/png`, `image/jpeg` or `image/webp` — sniffed from the bytes' magic numbers at upload, never taken from the file name. |
+
+Uploads are capped at 2 MB. A picture is referenced by its `id` from
+`LocationData.pictureId` (the location's *default picture*) and from
+`PictureActionData.pictureId`; nothing else holds one. At runtime the current
+picture is `GameContext.currentPictureId` — see
+[`04-runtime-engine.md` § Pictures](04-runtime-engine.md#pictures).
 
 ## Messages, variables, IO
 
 ### MessageData
 
-`model/MessageData.java`, collection `messages`, extends `DatedData`.
-Compound unique index on `(adventureId, messageId)`.
+`model/MessageData.java`, extends `DatedData`. Embedded in `AdventureData.messages`, a map keyed by the
+message's `id` — not a collection or document of its own.
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `adventureId` | `String` | Scope. |
-| `messageId` | `String` | Author-chosen logical id (e.g. `welcome_message`). |
+| `id` | `String` | Inherited from `BasicData` (a ULID, assigned on creation). The map key and the **only** reference to a message: `MessageActionData.messageId` holds it. Never edited. |
+| `summary` | `String` | A short, free-text label of what the message says, shown to authors in lists and pickers. Not a reference and not required to be unique. |
 | `text` | `String` | The message body. |
-| `category` | `String` | Optional grouping. |
-| `tags` | `Set<String>` | Optional metadata. |
-| `translations` | `Map<String, String>` | Locale → translated text. |
-| `notes` | `String` | Author notes. |
 
 ### MessagesHolder
 
@@ -375,12 +415,12 @@ Two collaborating types back the "Manage System Messages" screen:
   `description()`, `fromId(String)`. Engine code that used to hold raw
   literals now calls `SystemMessageKey.SMnn.defaultText().formatted(...)` —
   see [`04-runtime-engine.md`](04-runtime-engine.md#action-catalog).
-- **`model/SystemMessageData.java`** — `@Document(collection = "systemMessages")`,
-  extends `DatedData`, compound-unique index on `(adventureId, key)`. Stores
-  only the mutable text for one `(adventureId, key)` pair. Storage is
-  **sparse**: a row is written the first time an adventure edits a key away
-  from its default; an unedited key has no row. Held in
-  `AdventureData.systemMessages` (`@DBRef`, cascade save & delete).
+- **`model/SystemMessageData.java`** — extends `DatedData`, no collection of
+  its own. Stores only the mutable text for one catalog `key`. Storage is
+  **sparse**: an entry is written the first time an adventure edits a key away
+  from its default; an unedited key has no entry. Embedded in
+  `AdventureData.systemMessages` (a plain map — no `@DBRef`, no cascade), so
+  the overrides are per adventure by construction.
 
 `server/support/PlaceholderSpec.java` validates that an edited override keeps
 exactly the `%s` / `%n$s` argument positions of the catalog default, so a
@@ -388,12 +428,20 @@ reworded message can't trigger a `MissingFormatArgumentException` at runtime.
 The catalog is fixed — the screen can edit an entry but never create, delete,
 or rename one.
 
+### VariableData
+
+`model/VariableData.java`, extends `BasicData`, embedded in `AdventureData.variables` (no collection
+of its own). Fields: `name` (the identity — `equals`/`hashCode` use it only) and `initialValue`
+(`int`, default 0; the value a game starts with — not yet editable in the UI). `VariableMapper`
+(`server/mapper/`) maps it to the runtime `Variable` and back.
+
 ### VariableProvider / Variable
 
 `server/support/VariableProvider.java`, `Variable.java`. Holds named
 variables consumed by the `*VariableAction` and `*VariableCondition` families.
-Variables are **not persisted** today; they are runtime-only state created and
-reset per game session.
+Variables must be defined or added first through the SetVariableAction before they 
+can be used in any other action or condition. Propper mapping between the `VariableProvider` and
+the `VariableData` is available trhough the `VariableMapper`.
 
 ## Action and PreCondition data
 
@@ -406,7 +454,9 @@ this chapter only documents the storage shape.
 |------------|---------|
 | `CreateActionData`, `DestroyActionData` | `CreateAction` (add to a container), `DestroyAction` (remove from its parent container) — both authorable via the Action editor ("Create Item" / "Destroy") |
 | `DescribeActionData` | `DescribeAction` |
+| `PictureActionData` | `PictureAction` (`pictureId` — a key of `AdventureData.pictureData`) |
 | `DropActionData`, `TakeActionData`, `WearActionData`, `RemoveActionData` | inventory-handling actions |
+| `AutoTakeActionData`, `AutoDropActionData`, `AutoWearActionData`, `AutoRemoveActionData` | AUTOT / AUTOD / AUTOW / AUTOR — parameterless; the item is resolved at runtime from the typed noun (see [`04-runtime-engine.md` § Auto item actions](04-runtime-engine.md#auto-item-actions-autot-autod-autow-autor)) |
 | `MovePlayerActionData`, `MoveItemActionData` | spatial actions |
 | `MessageActionData` | text emission |
 | `InventoryActionData` | print pocket |
@@ -465,7 +515,7 @@ Cross-store
 ## Lifecycle and ownership invariants
 
 1. **Adventure-owned cascade.** Saving an `AdventureData` cascades to
-   `playerPocket`, `locationData`, `vocabularyData`, and `messages` via the
+   `playerPocket`, `locationData` and `vocabularyData` via the
    custom `@CascadeSave` machinery. Deleting cascades likewise via
    `@CascadeDelete` (see [`05-persistence-and-mappers.md`](05-persistence-and-mappers.md#cascade-save)).
 2. **Item scoping.** An `ItemData` is uniquely identified by its `id`, but
@@ -480,6 +530,10 @@ Cross-store
    `NotContainableException`.
 6. **Worn ⇒ Carried.** An item with `isWorn = true` MUST be in the player's
    pocket (or one of its sub-containers). Drop-while-worn auto-runs `RemoveAction`.
+7. **Pictures are saved explicitly and deleted by cascade.** `AdventureData.pictureData` carries
+   `@CascadeDelete` but not `@CascadeSave`: deleting an adventure removes its `pictures`
+   documents, while creating or changing one goes through `PictureEditorView` →
+   `AdventureService.savePictureData` (then the adventure is saved).
 
 ## Source pointers
 
@@ -514,9 +568,6 @@ Cross-store
 - **`Variable` state is in-memory only.** Persistence per save game is not yet
   designed. The intended `saveWord` / `loadWord` slots on `VocabularyData`
   imply a save-game story that is not implemented.
-- **`MessageData.translations`, `tags`, `category`, `notes` are not exposed in
-  the editor.** They exist in the document but the `MessageEditorView` only
-  edits `text` and `messageId`.
 - **`ItemContainerData.holdingDirections` flag is not consistently used.** It
   hints at a planned use (a container that holds directions) that is currently
   inactive.

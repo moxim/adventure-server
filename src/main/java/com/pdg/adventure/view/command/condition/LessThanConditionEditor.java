@@ -1,12 +1,17 @@
 package com.pdg.adventure.view.command.condition;
 
+import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.condition.LessThanConditionData;
 
 @AutoRegisterConditionEditor
 public class LessThanConditionEditor extends AbstractNumericComparisonConditionEditor<LessThanConditionData> {
 
     public LessThanConditionEditor(LessThanConditionData conditionData) {
-        super(conditionData, "<");
+        this(conditionData, null);
+    }
+
+    public LessThanConditionEditor(LessThanConditionData conditionData, AdventureData anAdventureData) {
+        super(conditionData, "<", anAdventureData);
     }
 
     @Override

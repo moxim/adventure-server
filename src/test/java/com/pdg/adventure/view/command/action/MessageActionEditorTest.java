@@ -26,17 +26,12 @@ class MessageActionEditorTest {
         adventureData.setId("test-adventure");
 
         // Create test messages
-        testMessage1 = new MessageData();
-        testMessage1.setMessageId("welcome");
-        testMessage1.setText("Welcome to the adventure!");
-
-        testMessage2 = new MessageData();
-        testMessage2.setMessageId("goodbye");
-        testMessage2.setText("Thanks for playing!");
+        testMessage1 = new MessageData("Welcome", "Welcome to the adventure!");
+        testMessage2 = new MessageData("Goodbye", "Thanks for playing!");
 
         Map<String, MessageData> messages = new HashMap<>();
-        messages.put(testMessage1.getMessageId(), testMessage1);
-        messages.put(testMessage2.getMessageId(), testMessage2);
+        messages.put(testMessage1.getId(), testMessage1);
+        messages.put(testMessage2.getId(), testMessage2);
         adventureData.setMessages(messages);
 
         messageActionData = new MessageActionData();
@@ -72,7 +67,7 @@ class MessageActionEditorTest {
     @Test
     void validate_withValidMessageId_shouldReturnTrue() {
         // Given
-        messageActionData.setMessageId("welcome");
+        messageActionData.setMessageId(testMessage1.getId());
         MessageActionEditor editor = new MessageActionEditor(messageActionData, adventureData);
         editor.initialize();
 
@@ -107,7 +102,7 @@ class MessageActionEditorTest {
     @Test
     void initialize_withPreselectedMessageId_shouldDisplayMessage() {
         // Given
-        messageActionData.setMessageId("welcome");
+        messageActionData.setMessageId(testMessage1.getId());
         MessageActionEditor editor = new MessageActionEditor(messageActionData, adventureData);
 
         // When
@@ -115,7 +110,50 @@ class MessageActionEditorTest {
 
         // Then
         assertThat(editor.getActionData()).isSameAs(messageActionData);
-        assertThat(messageActionData.getMessageId()).isEqualTo("welcome");
+        assertThat(messageActionData.getMessageId()).isEqualTo(testMessage1.getId());
+    }
+
+    @Test
+    void getActionSummary_withMessageId_shouldShowTheMessageSummaryNotTheId() {
+        // Given
+        messageActionData.setMessageId(testMessage2.getId());
+        MessageActionEditor editor = new MessageActionEditor(messageActionData, adventureData);
+        editor.initialize();
+
+        // When
+        String summary = editor.getActionSummary();
+
+        // Then
+        assertThat(summary).isEqualTo("Goodbye");
+    }
+
+    @Test
+    void getActionSummary_withMessageWithoutSummary_shouldFallBackToTextPreview() {
+        // Given
+        testMessage1.setSummary("  ");
+        messageActionData.setMessageId(testMessage1.getId());
+        MessageActionEditor editor = new MessageActionEditor(messageActionData, adventureData);
+        editor.initialize();
+
+        // When
+        String summary = editor.getActionSummary();
+
+        // Then
+        assertThat(summary).isEqualTo("Welcome to the adventure!");
+    }
+
+    @Test
+    void getActionSummary_withUnknownId_shouldShowItVerbatimBecauseTheEngineUsesItAsLiteralText() {
+        // Given
+        messageActionData.setMessageId("Just a literal text");
+        MessageActionEditor editor = new MessageActionEditor(messageActionData, adventureData);
+        editor.initialize();
+
+        // When
+        String summary = editor.getActionSummary();
+
+        // Then
+        assertThat(summary).isEqualTo("Just a literal text");
     }
 
     @Test
