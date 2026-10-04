@@ -36,7 +36,7 @@ public class GridProvider<T extends Describable> {
 
     /**
      * Hide the opaque internal-id column. Views whose entity id is a raw ULID call this to drop the
-     * noise; views whose id is a human-readable slug (e.g. messages) keep it. Hiding (rather than
+     * noise; views whose id is a human-readable slug keep it. Hiding (rather than
      * removing) keeps the column in {@code getGrid().getColumns()}, so callers' index-based header
      * tweaks stay valid.
      */

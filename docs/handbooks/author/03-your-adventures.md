@@ -48,7 +48,7 @@ Single-click a row to select it — this enables the **Run Adventure**
 button — then click the button. (Double-clicking a row opens the *editor*
 instead, so don't use double-click if you just want to play.) **Run
 Adventure** launches the same interactive play screen covered in
-[Chapter 11: Testing & Running](11-testing-and-running.md).
+[Chapter 12: Testing & Running](12-testing-and-running.md).
 
 ## Ownership
 

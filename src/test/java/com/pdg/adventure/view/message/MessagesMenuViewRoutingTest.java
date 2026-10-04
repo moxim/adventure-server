@@ -66,11 +66,11 @@ class MessagesMenuViewRoutingTest extends BrowserlessTest {
 
     @Test
     void beforeEnter_validAdventureId_populatesMessagesGrid() {
-        MessageData message = new MessageData();
+        MessageData message = new MessageData("Greeting", "Welcome!");
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
         adventure.setTitle("The Demo");
-        adventure.setMessages(Map.of("msg-1", message));
+        adventure.setMessages(Map.of(message.getId(), message));
         when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
                 .thenReturn(Optional.of(adventure));
 
@@ -88,7 +88,8 @@ class MessagesMenuViewRoutingTest extends BrowserlessTest {
     @Test
     void confirmingDeleteDialog_removesTheMessage_andDoesNotConsultMessageService() {
         Map<String, MessageData> messages = new HashMap<>();
-        messages.put("msg-1", new MessageData("msg-1", "Welcome!"));
+        MessageData message = new MessageData("Greeting", "Welcome!");
+        messages.put(message.getId(), message);
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
         adventure.setTitle("The Demo");
@@ -98,14 +99,14 @@ class MessagesMenuViewRoutingTest extends BrowserlessTest {
         view.beforeEnter(eventWithAdventureId("adv-1"));
 
         MessageDescriptionAdapter adapter = new MessageDescriptionAdapter(
-                new MessageViewModel(messages.get("msg-1")));
+                new MessageViewModel(message));
         ConfirmDialog dialog = view.buildDeleteConfirmDialog(adapter);
         UI.getCurrent().add(dialog);
         dialog.open();
 
         test(dialog).confirm();
 
-        assertThat(adventure.getMessages()).doesNotContainKey("msg-1");
+        assertThat(adventure.getMessages()).doesNotContainKey(message.getId());
         verify(adventureService).saveAdventureData(adventure);
     }
 

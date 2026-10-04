@@ -2,6 +2,7 @@ package com.pdg.adventure.view.message;
 
 import com.vaadin.browserless.BrowserlessTest;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
@@ -63,63 +64,116 @@ class MessageEditorViewRoutingTest extends BrowserlessTest {
         return event;
     }
 
-    @Test
-    void beforeEnter_validIds_populatesMessageTextFromResolvedAdventure() {
-        MessageData message = new MessageData();
-        message.setText("Welcome!");
+    private static AdventureData adventureWith(MessageData... messages) {
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
-        adventure.setMessages(Map.of("msg-1", message));
-        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+        Map<String, MessageData> byId = new HashMap<>();
+        for (MessageData message : messages) {
+            byId.put(message.getId(), message);
+        }
+        adventure.setMessages(byId);
+        return adventure;
+    }
+
+    private void enter(AdventureData adventure, RouteParam... extraParams) {
+        when(accessService.findAdventureById(eq(adventure.getId()), any(UserData.class)))
                 .thenReturn(Optional.of(adventure));
-
-        view.beforeEnter(eventWithParams(
-                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
-                new RouteParam(RouteIds.MESSAGE_ID.getValue(), "msg-1")));
-
-        TextArea messageText = find(TextArea.class, view).single();
-        assertThat(messageText.getValue()).isEqualTo("Welcome!");
+        RouteParam[] params = new RouteParam[extraParams.length + 1];
+        params[0] = new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventure.getId());
+        System.arraycopy(extraParams, 0, params, 1, extraParams.length);
+        view.beforeEnter(eventWithParams(params));
     }
 
     @Test
-    void beforeEnter_percentEncodedMessageId_decodesAndPopulates() {
-        // Simulates cold-load browser navigation: Vaadin hands beforeEnter the route
-        // parameter still percent-encoded (my%5Fmessage) instead of the raw messageId
-        // (my_message) that in-app navigate() preserves. Message ids are constrained to
-        // [a-zA-Z0-9_]+ by the UI binder, but legacy/imported data has no such guarantee.
-        MessageData message = new MessageData();
-        message.setText("Welcome!");
-        AdventureData adventure = new AdventureData();
-        adventure.setId("adv-1");
-        adventure.setMessages(Map.of("my_message", message));
-        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
-                .thenReturn(Optional.of(adventure));
+    void beforeEnter_validIds_populatesSummaryAndTextOfTheMessageWithThatId() {
+        MessageData message = new MessageData("Greeting", "Welcome!");
+        MessageData other = new MessageData("Other", "Something else");
+        enter(adventureWith(message, other), new RouteParam(RouteIds.MESSAGE_ID.getValue(), message.getId()));
 
-        view.beforeEnter(eventWithParams(
-                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
-                new RouteParam(RouteIds.MESSAGE_ID.getValue(), "my%5Fmessage")));
-
-        TextArea messageText = find(TextArea.class, view).single();
-        assertThat(messageText.getValue()).isEqualTo("Welcome!");
+        assertThat(find(TextField.class, view).single().getValue()).isEqualTo("Greeting");
+        assertThat(find(TextArea.class, view).single().getValue()).isEqualTo("Welcome!");
+        assertThat(view.getPageTitle()).isEqualTo("Edit Message: Greeting");
     }
 
     @Test
-    void messageIdField_rejectsIdAlreadyUsedByAnotherMessage_withoutConsultingMessageService() {
-        Map<String, MessageData> messages = new HashMap<>();
-        messages.put("existing_id", new MessageData("existing_id", "Already here."));
-        AdventureData adventure = new AdventureData();
-        adventure.setId("adv-1");
-        adventure.setMessages(messages);
-        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
-                .thenReturn(Optional.of(adventure));
+    void beforeEnter_withoutMessageId_opensEmptyNewMessageForm() {
+        enter(adventureWith(new MessageData("Greeting", "Welcome!")));
 
-        view.beforeEnter(eventWithParams(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1")));
+        assertThat(find(TextField.class, view).single().getValue()).isEmpty();
+        assertThat(find(TextArea.class, view).single().getValue()).isEmpty();
+        assertThat(view.getPageTitle()).isEqualTo("New Message");
+    }
 
-        TextField messageIdField = find(TextField.class, view).single();
-        messageIdField.setValue("existing_id");
+    @Test
+    void beforeEnter_messageIdMatchingNoMessage_opensEmptyNewMessageForm() {
+        enter(adventureWith(new MessageData("Greeting", "Welcome!")),
+              new RouteParam(RouteIds.MESSAGE_ID.getValue(), "no-such-id"));
 
-        assertThat(messageIdField.isInvalid()).isTrue();
-        assertThat(messageIdField.getErrorMessage()).isEqualTo("A message with this ID already exists");
+        assertThat(find(TextField.class, view).single().getValue()).isEmpty();
+        assertThat(view.getPageTitle()).isEqualTo("New Message");
+    }
+
+    @Test
+    void summaryField_acceptsASummaryAlreadyUsedByAnotherMessage() {
+        enter(adventureWith(new MessageData("Duplicate me", "Already here.")));
+
+        TextField summaryField = find(TextField.class, view).single();
+        summaryField.setValue("Duplicate me");
+
+        assertThat(summaryField.isInvalid()).isFalse();
+    }
+
+    @Test
+    void summaryField_acceptsFreeText_notJustAlphanumericIds() {
+        enter(adventureWith());
+
+        TextField summaryField = find(TextField.class, view).single();
+        summaryField.setValue("The door's locked - try the key!");
+
+        assertThat(summaryField.isInvalid()).isFalse();
+    }
+
+    @Test
+    void summaryField_rejectsBlankSummary() {
+        enter(adventureWith());
+
+        TextField summaryField = find(TextField.class, view).single();
+        summaryField.setValue("   ");
+
+        assertThat(summaryField.isInvalid()).isTrue();
+    }
+
+    @Test
+    void savingANewMessage_storesItUnderItsOwnId_andNeverUnderItsSummary() {
+        AdventureData adventure = adventureWith();
+        enter(adventure);
+
+        find(TextField.class, view).single().setValue("Locked door");
+        find(TextArea.class, view).single().setValue("The door is locked.");
+        test(find(Button.class, view).withText("Save").single()).click();
+
+        assertThat(adventure.getMessages()).hasSize(1);
+        Map.Entry<String, MessageData> stored = adventure.getMessages().entrySet().iterator().next();
+        assertThat(stored.getKey()).isEqualTo(stored.getValue().getId()).isNotEqualTo("Locked door");
+        assertThat(stored.getValue().getSummary()).isEqualTo("Locked door");
+        assertThat(stored.getValue().getText()).isEqualTo("The door is locked.");
+        verify(adventureService).saveAdventureData(adventure);
+    }
+
+    @Test
+    void changingTheSummaryOfAnExistingMessage_keepsItsIdAndMapKey() {
+        MessageData message = new MessageData("Old summary", "Some text");
+        String originalId = message.getId();
+        AdventureData adventure = adventureWith(message);
+        enter(adventure, new RouteParam(RouteIds.MESSAGE_ID.getValue(), originalId));
+
+        find(TextField.class, view).single().setValue("New summary");
+        test(find(Button.class, view).withText("Save").single()).click();
+
+        assertThat(adventure.getMessages()).containsOnlyKeys(originalId);
+        assertThat(adventure.getMessages().get(originalId).getId()).isEqualTo(originalId);
+        assertThat(adventure.getMessages().get(originalId).getSummary()).isEqualTo("New summary");
+        verify(adventureService).saveAdventureData(adventure);
     }
 
     @Test

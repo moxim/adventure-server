@@ -42,7 +42,11 @@ public class MessageDescriptionAdapter implements Describable {
 
     @Override
     public String getShortDescription() {
-        return messageViewModel.getPreview(30);
+        return messageViewModel.getSummary();
+    }
+
+    public String getTextPreview() {
+        return messageViewModel.getPreview(60);
     }
 
     @Override

@@ -1,9 +1,6 @@
 package com.pdg.adventure.view.message;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,39 +15,44 @@ class MessageViewModelTest {
 
         // Then
         assertThat(viewModel.getId()).isEmpty();
+        assertThat(viewModel.getSummary()).isEmpty();
         assertThat(viewModel.getMessageText()).isEmpty();
         assertThat(viewModel.isNew()).isTrue();
         assertThat(viewModel.getUsageCount()).isZero();
     }
 
     @Test
-    void constructor_withIdAndText_shouldCreateExistingMessage() {
+    void constructor_withIdSummaryAndText_shouldCreateExistingMessage() {
         // Given
-        String messageId = "welcome_msg";
+        String messageId = "01abc";
+        String summary = "Welcome on arrival";
         String messageText = "Welcome to the adventure!";
 
         // When
-        MessageViewModel viewModel = new MessageViewModel(messageId, messageText);
+        MessageViewModel viewModel = new MessageViewModel(messageId, summary, messageText);
 
         // Then
         assertThat(viewModel.getId()).isEqualTo(messageId);
+        assertThat(viewModel.getSummary()).isEqualTo(summary);
         assertThat(viewModel.getMessageText()).isEqualTo(messageText);
         assertThat(viewModel.isNew()).isFalse();
         assertThat(viewModel.getUsageCount()).isZero();
     }
 
     @Test
-    void constructor_withIdTextAndUsage_shouldSetAllFields() {
+    void constructor_withIdSummaryTextAndUsage_shouldSetAllFields() {
         // Given
-        String messageId = "door_locked";
+        String messageId = "01def";
+        String summary = "Locked door";
         String messageText = "The door is locked.";
         int usageCount = 5;
 
         // When
-        MessageViewModel viewModel = new MessageViewModel(messageId, messageText, usageCount);
+        MessageViewModel viewModel = new MessageViewModel(messageId, summary, messageText, usageCount);
 
         // Then
         assertThat(viewModel.getId()).isEqualTo(messageId);
+        assertThat(viewModel.getSummary()).isEqualTo(summary);
         assertThat(viewModel.getMessageText()).isEqualTo(messageText);
         assertThat(viewModel.isNew()).isFalse();
         assertThat(viewModel.getUsageCount()).isEqualTo(usageCount);
@@ -59,13 +61,14 @@ class MessageViewModelTest {
     @Test
     void constructor_fromMessageData_shouldMapAllFields() {
         // Given
-        MessageData messageData = new MessageData("test_msg", "Test message");
+        MessageData messageData = new MessageData("Test summary", "Test message");
 
         // When
         MessageViewModel viewModel = new MessageViewModel(messageData);
 
         // Then
-        assertThat(viewModel.getId()).isEqualTo("test_msg");
+        assertThat(viewModel.getId()).isEqualTo(messageData.getId());
+        assertThat(viewModel.getSummary()).isEqualTo("Test summary");
         assertThat(viewModel.getMessageText()).isEqualTo("Test message");
         assertThat(viewModel.isNew()).isFalse();
         assertThat(viewModel.getUsageCount()).isZero();
@@ -74,14 +77,15 @@ class MessageViewModelTest {
     @Test
     void constructor_fromMessageDataWithUsage_shouldMapAllFieldsIncludingUsage() {
         // Given
-        MessageData messageData = new MessageData("test_msg", "Test message");
+        MessageData messageData = new MessageData("Test summary", "Test message");
         int usageCount = 10;
 
         // When
         MessageViewModel viewModel = new MessageViewModel(messageData, usageCount);
 
         // Then
-        assertThat(viewModel.getId()).isEqualTo("test_msg");
+        assertThat(viewModel.getId()).isEqualTo(messageData.getId());
+        assertThat(viewModel.getSummary()).isEqualTo("Test summary");
         assertThat(viewModel.getMessageText()).isEqualTo("Test message");
         assertThat(viewModel.getUsageCount()).isEqualTo(usageCount);
     }
@@ -90,20 +94,20 @@ class MessageViewModelTest {
     void constructor_withNullMessageText_shouldHandleGracefully() {
         // Given
         String messageId = "null_msg";
-        String messageText = null;
 
         // When
-        MessageViewModel viewModel = new MessageViewModel(messageId, messageText);
+        MessageViewModel viewModel = new MessageViewModel(messageId, null, null);
 
         // Then
         assertThat(viewModel.getId()).isEqualTo(messageId);
+        assertThat(viewModel.getSummary()).isEmpty();
         assertThat(viewModel.getMessageText()).isEmpty();
     }
 
     @Test
     void getPreview_shouldReturnFullText_whenShorterThanMaxLength() {
         // Given
-        MessageViewModel viewModel = new MessageViewModel("id", "Short text");
+        MessageViewModel viewModel = new MessageViewModel("id", "summary", "Short text");
 
         // When
         String preview = viewModel.getPreview(50);
@@ -115,7 +119,7 @@ class MessageViewModelTest {
     @Test
     void getPreview_shouldReturnTruncatedText_whenLongerThanMaxLength() {
         // Given
-        MessageViewModel viewModel = new MessageViewModel("id", "This is a very long message that should be truncated");
+        MessageViewModel viewModel = new MessageViewModel("id", "summary", "This is a very long message that should be truncated");
 
         // When
         String preview = viewModel.getPreview(20);
@@ -129,7 +133,7 @@ class MessageViewModelTest {
     @Test
     void getPreview_shouldReturnEmptyMessageText_whenMessageIsEmpty() {
         // Given
-        MessageViewModel viewModel = new MessageViewModel("id", "");
+        MessageViewModel viewModel = new MessageViewModel("id", "summary", "");
 
         // When
         String preview = viewModel.getPreview(50);
@@ -149,47 +153,5 @@ class MessageViewModelTest {
 
         // Then
         assertThat(preview).isEqualTo("(empty message)");
-    }
-
-    @Test
-    void isValidId_shouldReturnTrue_forValidAlphanumericId() {
-        // Given
-        MessageViewModel viewModel = new MessageViewModel();
-        viewModel.setId("valid_message_123");
-
-        // When
-        boolean isValid = viewModel.isValidId();
-
-        // Then
-        assertThat(isValid).isTrue();
-    }
-
-    @Test
-    void isValidId_shouldReturnTrue_forValidUppercaseId() {
-        // Given
-        MessageViewModel viewModel = new MessageViewModel();
-        viewModel.setId("VALID_MESSAGE");
-
-        // When
-        boolean isValid = viewModel.isValidId();
-
-        // Then
-        assertThat(isValid).isTrue();
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"invalid message", "invalid-message!", "invalid@message", "invalid#message", "", "   ",
-                            "\t", "\n"})
-    @NullSource
-    void isValidId_shouldReturnFalse_forInvalidIds(String arg) {
-        // Given
-        MessageViewModel viewModel = new MessageViewModel();
-        viewModel.setId(arg);
-
-        // When
-        boolean isValid = viewModel.isValidId();
-
-        // Then
-        assertThat(isValid).isFalse();
     }
 }

@@ -5,11 +5,11 @@ up, carry, drop, or wear.
 
 ## Two ways to see your items
 
-- **Manage Items** on the Adventure Editor opens **every item in the
+- **Items** on the Adventure Editor opens **every item in the
   adventure**, across all locations, with a **Location** column so you can
   see where each one lives. It also has a **Create in Location** picker —
   choose the location first, then create the item into it.
-- **Manage Items** on a *location* editor (via **Manage Locations** →
+- **Manage Items** on a *location* editor (via **Locations** →
   select a location) opens just that location's items.
 
 Either grid shows **Adjective**, **Noun**, **Short Description**, and

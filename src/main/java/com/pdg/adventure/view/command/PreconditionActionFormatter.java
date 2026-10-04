@@ -10,6 +10,7 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.action.AutoDropActionData;
 import com.pdg.adventure.model.action.AutoRemoveActionData;
@@ -61,11 +62,13 @@ public class PreconditionActionFormatter {
     private final Map<String, ItemData> itemsById;
     private final Map<String, LocationData> locationsById;
     private final Map<String, PictureData> picturesById;
+    private final Map<String, MessageData> messagesById;
 
     public PreconditionActionFormatter(AdventureData adventureData) {
         itemsById = indexItems(adventureData);
         locationsById = adventureData.getLocationData() == null ? Map.of() : adventureData.getLocationData();
         picturesById = adventureData.getPictureData() == null ? Map.of() : adventureData.getPictureData();
+        messagesById = adventureData.getMessages() == null ? Map.of() : adventureData.getMessages();
     }
 
     public List<String> formatConditions(List<PreConditionData> conditions) {
@@ -148,7 +151,7 @@ public class PreconditionActionFormatter {
             return "DECVAR " + txt(dv.getName()) + " " + num(dv.getValue());
         }
         if (a instanceof MessageActionData m) {
-            return "MESSAGE " + txt(m.getMessageId());
+            return "MESSAGE " + resolveMessage(m.getMessageId());
         }
         if (a instanceof CreateActionData cr) {
             return "CREATE_ITEM " + resolveName(cr.getThingId());
@@ -213,6 +216,18 @@ public class PreconditionActionFormatter {
         }
         PictureData picture = picturesById.get(pictureId);
         return picture == null ? "?" : picture.getName();
+    }
+
+    /**
+     * The summary of the referenced message; an id that matches no message is shown verbatim,
+     * because at runtime it is then used as the literal message text.
+     */
+    private String resolveMessage(String id) {
+        MessageData message = id == null ? null : messagesById.get(id);
+        if (message != null && message.getSummary() != null && !message.getSummary().isBlank()) {
+            return message.getSummary();
+        }
+        return txt(id);
     }
 
     private String resolveName(String id) {

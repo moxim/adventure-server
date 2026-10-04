@@ -88,11 +88,11 @@ class MessagesMenuViewTest {
         // given
         view = new MessagesMenuView(adventureService, accessService);
 
-        MessageData welcomeMessage = createTestMessage("welcome_message", "Welcome to the adventure!");
-        MessageData farewellMessage = createTestMessage("farewell_message", "Goodbye, brave adventurer!");
+        MessageData welcomeMessage = createTestMessage("welcome message", "Welcome to the adventure!");
+        MessageData farewellMessage = createTestMessage("farewell message", "Goodbye, brave adventurer!");
 
-        adventureData.getMessages().put("welcome_message", welcomeMessage);
-        adventureData.getMessages().put("farewell_message", farewellMessage);
+        adventureData.getMessages().put(welcomeMessage.getId(), welcomeMessage);
+        adventureData.getMessages().put(farewellMessage.getId(), farewellMessage);
 
         // when
         enterWithAdventure();
@@ -100,9 +100,9 @@ class MessagesMenuViewTest {
         // then
         assertThat(adventureData.getMessages())
                 .hasSize(2)
-                .containsKeys("welcome_message", "farewell_message");
-        assertThat(adventureData.getMessages().get("welcome_message")).isEqualTo(welcomeMessage);
-        assertThat(adventureData.getMessages().get("farewell_message")).isEqualTo(farewellMessage);
+                .containsKeys(welcomeMessage.getId(), farewellMessage.getId());
+        assertThat(adventureData.getMessages().get(welcomeMessage.getId())).isEqualTo(welcomeMessage);
+        assertThat(adventureData.getMessages().get(farewellMessage.getId())).isEqualTo(farewellMessage);
     }
 
     @Test
@@ -110,13 +110,13 @@ class MessagesMenuViewTest {
         // given
         view = new MessagesMenuView(adventureService, accessService);
 
-        MessageData message1 = createTestMessage("intro_message", "Welcome to the adventure!");
-        MessageData message2 = createTestMessage("help_message", "Type 'help' for assistance");
-        MessageData message3 = createTestMessage("exit_message", "Thanks for playing!");
+        MessageData message1 = createTestMessage("intro message", "Welcome to the adventure!");
+        MessageData message2 = createTestMessage("help message", "Type 'help' for assistance");
+        MessageData message3 = createTestMessage("exit message", "Thanks for playing!");
 
-        adventureData.getMessages().put("intro_message", message1);
-        adventureData.getMessages().put("help_message", message2);
-        adventureData.getMessages().put("exit_message", message3);
+        adventureData.getMessages().put(message1.getId(), message1);
+        adventureData.getMessages().put(message2.getId(), message2);
+        adventureData.getMessages().put(message3.getId(), message3);
 
         // when
         enterWithAdventure();
@@ -124,7 +124,7 @@ class MessagesMenuViewTest {
         // then
         assertThat(adventureData.getMessages())
                 .hasSize(3)
-                .containsKeys("intro_message", "help_message", "exit_message");
+                .containsKeys(message1.getId(), message2.getId(), message3.getId());
     }
 
     @Test
@@ -142,10 +142,7 @@ class MessagesMenuViewTest {
         assertThat(adventureData.getMessages()).isEmpty();
     }
 
-    private MessageData createTestMessage(String messageId, String text) {
-        MessageData message = new MessageData();
-        message.setMessageId(messageId);
-        message.setText(text);
-        return message;
+    private MessageData createTestMessage(String summary, String text) {
+        return new MessageData(summary, text);
     }
 }

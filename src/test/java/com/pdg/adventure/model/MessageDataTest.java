@@ -21,17 +21,28 @@ class MessageDataTest {
     @Test
     void constructor_withParameters_shouldSetFieldsCorrectly() {
         // Given
-        String messageId = "welcome_msg";
+        String summary = "Welcome on arrival";
         String text = "Welcome to the adventure!";
 
         // When
-        MessageData messageData = new MessageData(messageId, text);
+        MessageData messageData = new MessageData(summary, text);
 
         // Then
-        assertThat(messageData.getMessageId()).isEqualTo(messageId);
+        assertThat(messageData.getSummary()).isEqualTo(summary);
         assertThat(messageData.getText()).isEqualTo(text);
         assertThat(messageData.getCreatedAt()).isNotNull();
         assertThat(messageData.getUpdatedAt()).isNotNull();
+    }
+
+    @Test
+    void id_shouldBeGeneratedAndUniquePerMessage() {
+        // When
+        MessageData first = new MessageData("same summary", "same text");
+        MessageData second = new MessageData("same summary", "same text");
+
+        // Then: the inherited id is the only unique reference - summaries may repeat
+        assertThat(first.getId()).isNotBlank();
+        assertThat(second.getId()).isNotBlank().isNotEqualTo(first.getId());
     }
 
     @Test
@@ -57,11 +68,11 @@ class MessageDataTest {
         MessageData messageData = new MessageData();
 
         // When
-        messageData.setMessageId("msg-123");
+        messageData.setSummary("A short summary");
         messageData.setText("Message text");
 
         // Then
-        assertThat(messageData.getMessageId()).isEqualTo("msg-123");
+        assertThat(messageData.getSummary()).isEqualTo("A short summary");
         assertThat(messageData.getText()).isEqualTo("Message text");
     }
 

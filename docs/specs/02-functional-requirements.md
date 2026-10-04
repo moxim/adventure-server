@@ -169,11 +169,12 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     [§ Editor navigation contract](#editor-navigation-contract)); **Test**
     launches `AdventureRunView` in place (route `…/test`) and is gated on the
     adventure being saved, unchanged since save, and having at least one
-    location. Its own body carries seven "Manage" buttons — Vocabulary,
-    Messages, System Messages, Locations, Items, Processes, Responses.
+    location. Its own body carries nine "Manage" buttons — Locations,
+    Vocabulary, Messages, Items, Pictures, System Messages, **Workflow I**
+    (Arrival Processes), **Workflow II** (Processes) and **Responses**.
   - Deleting an adventure (right-click a row → **Delete** on
     `/author/adventures`) removes the `AdventureData` and all owned
-    documents (locations, items, vocabulary, messages) via the
+    documents (locations, items, vocabulary) via the
     cascade-delete machinery, then removes the `AdventureAuthor` row and
     any `AdventurePlayer` rows. **This happens immediately with no
     confirmation dialog** — unlike location/item/word/message deletion
@@ -187,7 +188,9 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
   - `/author/adventures/:adventureId/locations` lists the adventure's locations.
   - `/author/adventures/:adventureId/locations/:locationId/edit` opens the
     location editor: noun & adjective (vocabulary pickers), short description,
-    long description, lumen (light level, integer), commands, directions, items.
+    long description, lumen (light level, integer), an optional **Default
+    Picture** (one of the adventure's pictures, see B13), commands, directions,
+    items.
   - The map view at `/author/map` visualises the adventure's locations.
   - A location MUST be referenced by the adventure's starting-location id or by
     at least one direction; orphan locations may exist during editing but are
@@ -271,8 +274,10 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
 
 - **Acceptance:**
   - `/author/adventures/:adventureId/messages` lists message snippets.
-  - The editor lets the author set the message id and body. Messages are
-    referenced by id from `MessageAction`.
+  - The editor lets the author set a summary (a short free-text label, not
+    required to be unique) and the body. Messages are referenced from
+    `MessageAction` by their generated id, so changing a summary never
+    breaks a reference.
 
 ### B9. Manage vocabulary
 
@@ -298,21 +303,21 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
 
 - **As** an AUTHOR
 - **I want** to define commands that apply no matter where the player is —
-  some that run every turn, some that answer specific typed commands nothing
-  local handles
+  some that run every turn, some that run whenever a location is described,
+  some that answer specific typed commands nothing local handles
 - **So that** I can build global mechanics — ambient events, hazards, a
   win/lose check — and adventure-wide overrides of built-in verbs, without
   repeating a command on every location
 - **Acceptance:**
-  - Both editors are built from one shared component,
+  - All three editors are built from one shared component,
     `CommandListEditorView` (grid of commands + a single-command editor),
     with a **Back / New / Delete / Save** button set. Delete prompts a
     `ConfirmDialog`. Each command is built the same way as a location
     command: `CommandDescription` + ordered PreConditions + ordered
-    Actions, using the same sub-editor components. Neither list has a
+    Actions, using the same sub-editor components. None of the lists has a
     Command Chain concept; each command stands alone.
   - **Processes** — `/author/adventures/:adventureId/workflow`
-    (`WorkflowEditorView`), reached via **Manage Processes** on
+    (`WorkflowEditorView`), reached via **Workflow II** on
     `AdventureEditorView`, edits `WorkflowData.commands`. These run
     automatically before **each parsed sub-command** (so a conjunction-joined
     turn runs them more than once), before that sub-command is dispatched.
@@ -322,7 +327,7 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     precondition is unmet. The editor's own help text warns of this
     explicitly.
   - **Responses** — `/author/adventures/:adventureId/responses`
-    (`ResponsesEditorView`), reached via **Manage Responses** on
+    (`ResponsesEditorView`), reached via **Responses** on
     `AdventureEditorView`, edits `WorkflowData.interceptorCommands`. A
     Response is tried only as a **fallback** — when the player's verb (and
     adjective/noun, if set) matches it exactly **and** nothing in the
@@ -331,6 +336,16 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     the Response. The verb **is** required. A Response whose verb matches a
     built-in (help, inventory, quit, look/describe) still overrides that
     built-in, since no location or item defines those verbs.
+  - **Arrival Processes** — `/author/adventures/:adventureId/arrival`
+    (`ArrivalProcessesEditorView`), reached via **Workflow I** on
+    `AdventureEditorView`, edits `WorkflowData.arrivalProcesses`. These run
+    automatically whenever a location's description is shown — on arrival by
+    movement and again on every explicit look / describe — after the
+    description itself. The list is adventure-wide, so an entry needs a
+    *player is at* precondition to apply to one location only, and there is
+    no "only once" behaviour unless the author adds a guard condition. The
+    verb is **not** required, and verb / adjective / noun are not matched
+    against the player's input (they only label the entry).
 
 ### B11. Manage system messages
 
@@ -362,6 +377,33 @@ access to (or, by hierarchy, all adventures); the player flow is described
 below.
 
 ---
+
+### B13. Manage pictures
+
+- **As** an AUTHOR
+- **I want** to upload illustrations for my adventure and show them to the player
+- **So that** locations (and scripted moments) have an image beside the text
+- **Acceptance:**
+  - **Pictures** on `AdventureEditorView` opens
+    `/author/adventures/:adventureId/pictures` (`PictureMenuView`): a **Pictures: N**
+    count, **Edit Picture**, **Create Picture**, **Back**, a name search, and a
+    grid with a thumbnail **Preview**, the **Name** and a **Used** count.
+    Double-click, or right-click → **Edit**, **Find Usage**, **Delete**.
+  - The editor (`…/pictures/:pictureId/edit`, alias `…/pictures/new`) takes a
+    required **Name** and one uploaded image: PNG, JPEG or WebP, **at most 2 MB**.
+    The file's content is checked by its magic bytes, not its name — a file
+    that is not really a PNG / JPEG / WebP, or one over 2 MB, is rejected with an
+    error notification. A preview shows the staged image. **Save** needs a name
+    and an image (stored or staged); **Reset** discards a staged upload.
+  - Deleting a picture that is still referenced (as a location's default
+    picture or by a Picture action) is refused: the usage list is shown instead
+    of the confirmation dialog. An unreferenced picture asks for confirmation,
+    then is removed from the adventure and from the database. "Referenced"
+    covers every place a command can hold actions: location commands, exits,
+    items (in locations or in the player's pocket) and the workflow lists.
+  - The **Picture** action ("Show a picture to the player until the next move,
+    look, or picture action") picks one picture of the adventure from a
+    required combo box.
 
 ## Role: PLAYER
 
@@ -416,6 +458,14 @@ author origins) differ by origin.
     vocabulary/special-word setup. `take`/`get`, `drop`, `wear`, `remove`
     work only for items the author has actually made
     containable/wearable.
+  - **Picture panel.** Above the transcript, a panel shows the *current
+    picture* (`GameContext.currentPictureId`), scaled to fit (at most 640×480),
+    and hides itself when there is none. It is refreshed after the opening
+    arrival and after every submitted line. The picture changes on arrival at
+    a location (its default picture on the **first** visit only — a repeat
+    visit clears it), on every explicit look / describe (unless the location
+    is too dark to see), and when a **Picture** action runs. See
+    [`04-runtime-engine.md` § Pictures](04-runtime-engine.md#pictures).
   - Re-renders the current location whenever the player moves
     (`MovePlayerAction`).
   - On `quit`, the session ends (input disabled, a farewell line shown);

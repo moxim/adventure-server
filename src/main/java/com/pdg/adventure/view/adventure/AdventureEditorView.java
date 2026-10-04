@@ -111,7 +111,7 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button workflowButton = new Button("Workflow", _ -> {
+        Button workflowButton = new Button("Workflow II", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(WorkflowEditorView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
@@ -119,7 +119,7 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button responsesButton = new Button("Response Processes ", _ -> {
+        Button responsesButton = new Button("Responses", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(ResponsesEditorView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
@@ -127,7 +127,7 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button arrivalButton = new Button("Arrival Processes", _ -> {
+        Button arrivalButton = new Button("Workflow I", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(ArrivalProcessesEditorView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),

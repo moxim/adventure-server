@@ -6,12 +6,14 @@ import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.dom.Style;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.action.MessageActionData;
+import com.pdg.adventure.view.message.MessageViewModel;
 
 /**
  * Editor component for MessageActionData.
@@ -37,15 +39,17 @@ public class MessageActionEditor extends ActionEditorComponent<MessageActionData
         Span description = new Span("Display a message to the player from the message catalog");
         description.getStyle().set("color", "var(--lumo-secondary-text-color)");
 
-        // Load available messages from adventure's messages Map (loaded via @DBRef)
+        // The combo box holds message ids (the only reference to a message) but shows their summaries
         List<String> messageIds = adventureData.getMessages().values().stream()
-                                               .map(MessageData::getMessageId)
-                                               .sorted()
+                                               .sorted(Comparator.comparing(this::labelOf,
+                                                                            String.CASE_INSENSITIVE_ORDER))
+                                               .map(MessageData::getId)
                                                .collect(Collectors.toList());
 
-        messageIdComboBox = new ComboBox<>("Message ID");
+        messageIdComboBox = new ComboBox<>("Message");
         messageIdComboBox.setPlaceholder("Select a message from the catalog");
         messageIdComboBox.setItems(messageIds);
+        messageIdComboBox.setItemLabelGenerator(this::label);
         messageIdComboBox.setWidthFull();
         messageIdComboBox.setRequired(true);
         messageIdComboBox.setAllowCustomValue(true);
@@ -112,7 +116,7 @@ public class MessageActionEditor extends ActionEditorComponent<MessageActionData
             Span textSpan = new Span(message.getText());
             messagePreview.add(textSpan);
         } else {
-            Span warningSpan = new Span("⚠ Message ID '" + messageId + "' not found in catalog");
+            Span warningSpan = new Span("⚠ Message '" + messageId + "' not found in catalog");
             setStyle(warningSpan.getStyle());
             messagePreview.add(warningSpan);
         }
@@ -127,7 +131,7 @@ public class MessageActionEditor extends ActionEditorComponent<MessageActionData
     public boolean validate() {
         boolean isValid = messageIdComboBox.getValue() != null && !messageIdComboBox.getValue().trim().isEmpty();
         if (!isValid) {
-            messageIdComboBox.setErrorMessage("Please select or enter a message ID");
+            messageIdComboBox.setErrorMessage("Please select a message");
             messageIdComboBox.setInvalid(true);
         } else {
             messageIdComboBox.setInvalid(false);
@@ -138,6 +142,22 @@ public class MessageActionEditor extends ActionEditorComponent<MessageActionData
     @Override
     public String getActionSummary() {
         String id = messageIdComboBox == null ? null : messageIdComboBox.getValue();
-        return (id == null || id.isBlank()) ? "(none)" : id;
+        return (id == null || id.isBlank()) ? "(none)" : label(id);
+    }
+
+    /**
+     * What an author sees for a message id: its summary, or a preview of its text when it has none.
+     * An id that matches no message is shown verbatim - the engine then uses it as literal text.
+     */
+    private String label(String messageId) {
+        MessageData message = adventureData.getMessages().get(messageId);
+        return message == null ? messageId : labelOf(message);
+    }
+
+    private String labelOf(MessageData message) {
+        if (message.getSummary() != null && !message.getSummary().isBlank()) {
+            return message.getSummary();
+        }
+        return new MessageViewModel(message).getPreview(40);
     }
 }

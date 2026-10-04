@@ -216,7 +216,181 @@ class MessageUsageTrackerTest {
         assertThat(displayText).contains("open door");
     }
 
+    // --- Sources other than a location's own commands: items, directions, pocket, workflow ---
+
+    @Test
+    void findMessageUsages_shouldFindUsageInCommandOfItemInLocation() {
+        // Given
+        ItemData key = itemNamed("brass key", commandWithMessage("unlock", "msg"));
+        LocationData location = locationNamed("loc1", "Hall");
+        location.getItemContainerData().getItems().add(key);
+        adventureData.getLocationData().put("loc1", location);
+
+        // When
+        List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData, "msg");
+
+        // Then
+        assertThat(usages).singleElement().satisfies(usage -> {
+            assertThat(usage.source()).isEqualTo("Item 'brass key'");
+            assertThat(usage.locationId()).isEqualTo("loc1");
+            assertThat(usage.commandSpecification()).isEqualTo("unlock||");
+            assertThat(usage.getDisplayText()).isEqualTo("Item 'brass key' in 'Hall' | Command: unlock|| | Action #1");
+        });
+    }
+
+    @Test
+    void findMessageUsages_shouldFindUsageInItemNestedInAContainer() {
+        // Given
+        ItemContainerData chest = new ItemContainerData("chest");
+        chest.getItems().add(itemNamed("gem", commandWithMessage("polish", "msg")));
+        LocationData location = locationNamed("loc1", "Hall");
+        location.getItemContainerData().getItems().add(chest);
+        adventureData.getLocationData().put("loc1", location);
+
+        // When
+        List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData, "msg");
+
+        // Then
+        assertThat(usages).extracting(MessageUsageTracker.MessageUsage::source).containsExactly("Item 'gem'");
+    }
+
+    @Test
+    void findMessageUsages_shouldFindUsageInItemCarriedInThePocket() {
+        // Given
+        adventureData.getPlayerPocket().getItems().add(itemNamed("torch", commandWithMessage("light", "msg")));
+
+        // When
+        List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData, "msg");
+
+        // Then
+        assertThat(usages).singleElement().satisfies(usage -> {
+            assertThat(usage.source()).isEqualTo("Item 'torch' (in pocket)");
+            assertThat(usage.getDisplayText()).isEqualTo("Item 'torch' (in pocket) | Command: light|| | Action #1");
+        });
+    }
+
+    @Test
+    void findMessageUsages_shouldNameAnItemWithoutDescriptionByItsId() {
+        // Given
+        ItemData nameless = new ItemData();
+        nameless.setId("item-42");
+        nameless.getCommandProviderData().add(commandWithMessage("use", "msg"));
+        adventureData.getPlayerPocket().getItems().add(nameless);
+
+        // When
+        List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData, "msg");
+
+        // Then
+        assertThat(usages).extracting(MessageUsageTracker.MessageUsage::source)
+                          .containsExactly("Item 'item-42' (in pocket)");
+    }
+
+    @Test
+    void findMessageUsages_shouldCountAnItemSharedByTwoPlacesOnlyOnce() {
+        // Given
+        ItemData shared = itemNamed("lamp", commandWithMessage("light", "msg"));
+        LocationData location = locationNamed("loc1", "Hall");
+        location.getItemContainerData().getItems().add(shared);
+        adventureData.getLocationData().put("loc1", location);
+        adventureData.getPlayerPocket().getItems().add(shared);
+
+        // When
+        int count = MessageUsageTracker.countMessageUsages(adventureData, "msg");
+
+        // Then
+        assertThat(count).isEqualTo(1);
+    }
+
+    @Test
+    void findMessageUsages_shouldSkipUnresolvedItemsAndMissingPocket() {
+        // Given
+        LocationData location = locationNamed("loc1", "Hall");
+        location.getItemContainerData().getItems().add(null);
+        adventureData.getLocationData().put("loc1", location);
+        adventureData.setPlayerPocket(null);
+
+        // When
+        List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData, "msg");
+
+        // Then
+        assertThat(usages).isEmpty();
+    }
+
+    @Test
+    void findMessageUsages_shouldFindUsageInDirectionCommand() {
+        // Given
+        DirectionData north = new DirectionData();
+        north.getDescriptionData().setShortDescription("north");
+        north.setCommandData(commandWithMessage("go north", "msg"));
+        LocationData location = locationNamed("loc1", "Hall");
+        location.getDirectionsData().add(north);
+        adventureData.getLocationData().put("loc1", location);
+
+        // When
+        List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData, "msg");
+
+        // Then
+        assertThat(usages).singleElement().satisfies(usage -> {
+            assertThat(usage.source()).isEqualTo("Direction 'north'");
+            assertThat(usage.locationId()).isEqualTo("loc1");
+            assertThat(usage.getDisplayText()).isEqualTo("Direction 'north' in 'Hall' | Command: go north|| | Action #1");
+        });
+    }
+
+    @Test
+    void findMessageUsages_shouldFindUsageInEachOfTheThreeWorkflowLists() {
+        // Given
+        WorkflowData workflow = new WorkflowData();
+        workflow.getCommands().add(commandWithMessage("tick", "msg"));
+        workflow.getInterceptorCommands().add(commandWithMessage("shiver", "msg"));
+        workflow.getArrivalProcesses().add(commandWithMessage("welcome", "msg"));
+        workflow.getArrivalProcesses().add(commandWithMessage("other", "different_msg"));
+        adventureData.setWorkflowData(workflow);
+
+        // When
+        List<MessageUsageTracker.MessageUsage> usages = MessageUsageTracker.findMessageUsages(adventureData, "msg");
+
+        // Then
+        assertThat(usages).extracting(MessageUsageTracker.MessageUsage::source)
+                          .containsExactly("Workflow Process", "Response Process", "Arrival Process");
+        assertThat(usages.get(2).getDisplayText()).isEqualTo("Arrival Process | Command: welcome|| | Action #1");
+    }
+
+    @Test
+    void isMessageUsed_shouldBeTrueForAMessageUsedOnlyInTheWorkflow() {
+        // Given
+        WorkflowData workflow = new WorkflowData();
+        workflow.getCommands().add(commandWithMessage("tick", "workflow_only"));
+        adventureData.setWorkflowData(workflow);
+
+        // Then: deleting such a message must be refused just like any other referenced one
+        assertThat(MessageUsageTracker.isMessageUsed(adventureData, "workflow_only")).isTrue();
+    }
+
     // Helper methods
+
+    private static CommandData commandWithMessage(String verb, String messageId) {
+        CommandData command = new CommandData(new CommandDescriptionData(new Word(verb, Word.Type.VERB), null, null));
+        MessageActionData action = new MessageActionData();
+        action.setMessageId(messageId);
+        command.addAction(action);
+        return command;
+    }
+
+    private static ItemData itemNamed(String name, CommandData command) {
+        ItemData item = new ItemData();
+        item.getDescriptionData().setShortDescription(name);
+        item.getCommandProviderData().add(command);
+        return item;
+    }
+
+    private static LocationData locationNamed(String id, String description) {
+        LocationData location = new LocationData();
+        location.setId(id);
+        location.getDescriptionData().setShortDescription(description);
+        location.setItemContainerData(new ItemContainerData("floor"));
+        return location;
+    }
 
     private LocationData createLocationWithMessage(String locationId, String description,
                                                    String commandSpec, String messageId) {

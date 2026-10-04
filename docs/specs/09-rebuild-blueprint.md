@@ -108,25 +108,27 @@ the `UuidIdGenerationMongoEventListener` (HIGHEST_PRECEDENCE), the
 2. Implement the documents in `model/`:
    `AdventureData`, `LocationData`, `ItemData`, `ItemContainerData`,
    `DirectionData`, `CommandData`, `CommandChainData`,
-   `CommandProviderData`, `MessageData`, `SystemMessageData` (collection
-   `systemMessages`; unique compound index `(adventureId, key)`),
+   `CommandProviderData`, `MessageData` and `SystemMessageData` (both embedded
+   in `AdventureData` as plain maps — no collection of their own, no `@DBRef`),
+   `PictureData` (collection `pictures`, held by `AdventureData.pictureData`
+   with cascade **delete** only — pictures are saved explicitly),
    `VocabularyData`, `Word`, `ThingData`,
    `WorkflowData` (a plain embedded field on `AdventureData` — no `@DBRef`,
-   no cascade annotations, unlike its siblings; holds `commands` (Processes)
-   and `interceptorCommands` (Responses); see
+   no cascade annotations, unlike its siblings; holds `commands` (Processes),
+   `interceptorCommands` (Responses) and `arrivalProcesses` (Arrival
+   Processes); see
    [`03-domain-model.md` § Workflow](03-domain-model.md#workflow)).
-   Apply the cascade annotations exactly as documented (incl.
-   `AdventureData.systemMessages`).
+   Apply the cascade annotations exactly as documented.
 3. Add the `*ActionData` (incl. `BreakActionData`) and `*ConditionData`
    subclasses under `model/action/` and `model/condition/`.
 4. Add MongoDB repositories under `server/storage/repository/`:
    `AdventureRepository`, `LocationRepository`, `ItemRepository`,
-   `MessageRepository`, `WordRepository`, `VocabularyRepository`
-   (rename — the current `VocabularyReporitory` typo SHOULD NOT be
-   carried over). System messages have **no** dedicated repository — they
-   round-trip only via the `AdventureData.systemMessages` `@DBRef` cascade.
-5. Add the storage services: `AdventureService`, `ItemService`,
-   `MessageService`. Wire `CascadeDeleteHelper` into `AdventureService.deleteAdventure`.
+   `PictureRepository`, `WordRepository`, `VocabularyRepository`. Messages and system messages have
+   **no** repository — they are embedded in `AdventureData` and round-trip with
+   the adventure document.
+5. Add the storage services: `AdventureService` (incl. `savePictureData` /
+   `deletePicture`), `ItemService`.
+   Wire `CascadeDeleteHelper` into `AdventureService.deleteAdventure`.
    Add `server/storage/message/SystemMessageKey` (the fixed engine-text
    catalog enum) and `server/support/PlaceholderSpec` (override validation).
 
@@ -273,11 +275,16 @@ and
      switch — see
      [`07-ui-and-navigation.md` § Action editor factory](07-ui-and-navigation.md#action-editor-factory)).
    - Workflow: `WorkflowMainLayout`, then `CommandListEditorView` and its
-     two subclasses `WorkflowEditorView` (`…/workflow`, Processes) and
-     `ResponsesEditorView` (`…/responses`, Responses) — they reuse the
+     three subclasses `WorkflowEditorView` (`…/workflow`, Processes),
+     `ResponsesEditorView` (`…/responses`, Responses) and
+     `ArrivalProcessesEditorView` (`…/arrival`, Arrival Processes) — they reuse the
      Command editor's `PreconditionActionEditor`, so build them after the
      Command views above, not in parallel with them.
    - Message: `MessagesMenuView`, `MessageEditorView`.
+   - Picture: `PicturesMainLayout`, `PictureMenuView`, `PictureEditorView` (upload
+     staging, magic-byte sniffing, 2 MB cap), plus the *Default Picture* selector in
+     `LocationEditorView`, `PictureActionEditor`, and the picture panel in
+     `AdventureRunView` (rules: [`04-runtime-engine.md` § Pictures](04-runtime-engine.md#pictures)).
    - System messages: `SystemMessagesView` (`…/system-messages`,
      `AdventuresMainLayout`) + `SystemMessageEntry`.
    - Vocabulary: `VocabularyMenuView`, `WordEditorDialogue` (VERB/NOUN/
@@ -356,7 +363,6 @@ table with severity and pointer:
 | **Critical** | Hardcoded remember-me key | Same — override via env / secret. |
 | **High** | `CommandMapper.mapToDO` incomplete | [`05-persistence-and-mappers.md`](05-persistence-and-mappers.md#known-gaps) — `mapToBO` is done; finish the DO direction (preconditions). |
 | **High** | `LocationMapper` destination resolution & `ItemContainerMapper` contents | Same. |
-| **High** | `VocabularyReporitory` class-name typo | Same. |
 | **Medium** | `GameContext`/`AdventureConfig` are process-wide singletons — no per-session engine isolation | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps) — at most one Test/Run session is meaningfully active server-wide at a time. |
 | **Medium** | NLP parser: no prepositions / multi-noun / articles (compound `and`/`then`/`.` and pronoun `it` are now handled) | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps). |
 | **Medium** | Spring AI / Ollama integration commented out, base URL hardcoded | Same. |
@@ -370,7 +376,6 @@ table with severity and pointer:
 | **Medium** | No account locking / failed-login throttling | Same. |
 | **Medium** | No audit log | Same. |
 | **Medium** | No HTTPS / HSTS enforcement | Same. |
-| **Low** | `MessageData.translations / tags / category / notes` not surfaced in editor | [`03-domain-model.md` § Known gaps](03-domain-model.md#known-gaps). |
 | **Low** | `ItemContainerData.holdingDirections` flag unused | Same. |
 | **Low** | `CommandDescriptionData.setCommandSpecification` bypasses Vocabulary | Same. |
 | **Low** | `AdventureService.preProcess`/`postProcess` empty | [`05-persistence-and-mappers.md` § Known gaps](05-persistence-and-mappers.md#known-gaps). |
@@ -424,8 +429,8 @@ Before declaring the rebuild done, walk this list:
       `AdventureRunView` (title `"Test: …"`) and plays through in the browser;
       **Run Adventure** from the adventures list and from a player's library
       both reach the identical view (the library one titled `"Playing: …"`).
-- [ ] A typed `take X and drop it.` runs as two sub-commands; **Manage
-      Processes** / **Manage Responses** / **Manage System Messages** all
+- [ ] A typed `take X and drop it.` runs as two sub-commands; **Workflow I**
+      / **Workflow II** / **Responses** / **Manage System Messages** all
       open from the Adventure Editor.
 - [ ] CI workflow on `main` is green.
 - [ ] `find server/docs/specs -name '*.md'` lists this 10-document suite

@@ -1,7 +1,7 @@
 # 7. Vocabulary & Words
 
 Adventure Builder's parser only understands words you've explicitly taught
-it. **Manage Vocabulary** on the Adventure Editor is where you build that
+it. **Vocabulary** on the Adventure Editor is where you build that
 dictionary.
 
 ## The vocabulary list
@@ -90,7 +90,7 @@ exactly which items are relying on it, so you can update them first.
 > In practice this rarely blocks you: when you **Test** or **Run** an
 > adventure, `look`, `inventory`, `help`, and `quit` (plus a few synonyms
 > like `l`, `x`, `i`, `exit`, `bye`) always work automatically, independent
-> of vocabulary setup — see [Chapter 11](11-testing-and-running.md).
+> of vocabulary setup — see [Chapter 12](12-testing-and-running.md).
 
 ## The wildcard noun `~`
 

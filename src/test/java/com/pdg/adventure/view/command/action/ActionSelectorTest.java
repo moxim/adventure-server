@@ -33,10 +33,8 @@ class ActionSelectorTest {
         adventureData.setLocationData(locations);
 
         Map<String, MessageData> messages = new HashMap<>();
-        MessageData message = new MessageData();
-        message.setMessageId("msg-1");
-        message.setText("Test message");
-        messages.put("msg-1", message);
+        MessageData message = new MessageData("A test message", "Test message");
+        messages.put(message.getId(), message);
         adventureData.setMessages(messages);
 
         ItemContainerData playerPocket = new ItemContainerData("player-pocket");

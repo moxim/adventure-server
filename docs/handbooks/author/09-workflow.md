@@ -1,17 +1,19 @@
-# 9. Workflow: Processes & Responses
+# 9. Workflow: Processes, Arrival Processes & Responses
 
 Everything in [Chapter 8](08-commands-actions-and-conditions.md) is scoped
 to one location or item. **Workflow** commands are the opposite: they apply
-no matter where the player is. There are two kinds, and they behave
+no matter where the player is. There are three kinds, and they behave
 differently:
 
 | Kind | When it runs | If its preconditions aren't met |
 |------|--------------|--------------------------------|
 | **Process** | Automatically, before **every command** the engine handles — and each part of an `and` / `then` sentence counts as its own command | Still runs — and any message it's set up to show appears **every time** |
+| **Arrival Process** | Automatically, right after a location's description is shown — when the player arrives there by moving, and again on every `look` | Does nothing that time — no error (unless a precondition carries its own failure message, which is then shown) |
 | **Response** | Only when the player types a command that **matches it exactly** *and* nothing in the current location or the player's pocket already handles that verb | The turn just fails for that verb (*"I can't do that"*, unless a precondition supplies its own message) |
 
-Both are reached from the [Adventure Editor](04-the-adventure-editor.md):
-**Manage Processes** and **Manage Responses**. Both screens look and work
+All three are reached from the [Adventure Editor](04-the-adventure-editor.md):
+**Workflow I** (Arrival Processes), **Workflow II** (Processes) and
+**Responses**. All three screens look and work
 the same way — a grid of commands on top, a single-command editor below,
 with **Back**, **New**, **Delete** (asks for confirmation), and **Save**
 buttons. Selecting a grid row loads it into the editor; the editor itself is
@@ -21,13 +23,13 @@ same Add/Up/Down/Remove controls, same **Negate** checkbox, same rules.
 **Save** commits the loaded command and resets the editor to a blank new
 one.
 
-There's no Command Chain concept in either screen — a Workflow command
+There's no Command Chain concept in any of these screens — a Workflow command
 doesn't share a verb/adjective/noun with variants the way a location command
 can. Each one stands alone.
 
 ## Processes: run every turn
 
-**Manage Processes** opens the screen headed *"Workflow for {your title}"*,
+**Workflow II** opens the screen headed *"Workflow for {your title}"*,
 with its own reminder:
 
 > *"Workflow commands run automatically every turn. Add preconditions to
@@ -54,9 +56,43 @@ That second sentence of the reminder is the single most common surprise:
 > want "only say something when a specific command is typed," you want a
 > **Response**, not a Process.
 
+## Arrival Processes: run when a location is described
+
+**Workflow I** opens the screen headed *"Arrival Processes for {your title}"*.
+Its own reminder says that *"an arrival process runs automatically after a
+location's description is shown"* — and that the **Verb / Adjective / Noun**
+are *not* matched against what the player types, they only label the entry for
+you. The **Verb** is not required here either.
+
+Use Arrival Processes for anything that belongs to *being in a place* rather
+than to a typed command: an ambient line ("Waves slap against the jetty."), an
+event the first time someone enters, or a [picture](11-pictures.md) you want on
+every visit.
+
+- **When they run.** After the description of the location is printed, so the
+  description comes first and the output of your Arrival Processes follows
+  it. That happens when the player **arrives by moving** (including the
+  automatic arrival when the play screen opens) and again on every explicit
+  **`look`**.
+- **They fire every time.** Looking around again fires them again; arriving a
+  second time fires them again. If you want something to happen only once,
+  guard it yourself — for example, an action that sets a variable the first
+  time, plus a variable condition that checks it.
+- **They apply to the whole adventure, not one location.** Add a **Player At**
+  precondition to limit an entry to a particular location. A precondition that
+  isn't met just means nothing happens that time; as with Processes, though, if
+  the precondition is set up to show a message on failure, you'll see it.
+
+> **Note:** Arrival by moving always fires them. The *explicit `look`* path can
+> be bypassed in three cases: you've defined your own Response for the verb
+> `describe`; a location or item command matches `describe` / `look`; or you've
+> attached a **Describe** action to one of your commands. In those cases a
+> `look` runs your version instead and the Arrival Processes aren't triggered by
+> it.
+
 ## Responses: a fallback for a typed command
 
-**Manage Responses** opens the screen headed *"Responses for {your title}"*,
+**Responses** opens the screen headed *"Responses for {your title}"*,
 with its own reminder:
 
 > *"A response is a fallback: it fires only when the player's verb (and
@@ -114,6 +150,7 @@ answers itself and the wildcard Response never sees it.
 
 ## What's next
 
-Both Processes and Responses often want to print text — [Chapter 10:
+Workflow commands often want to print text — [Chapter 10:
 Messages](10-messages.md) covers building a reusable library of it, and
-editing the engine's own built-in messages.
+editing the engine's own built-in messages — or show an image;
+[Chapter 11: Pictures](11-pictures.md) covers that.
