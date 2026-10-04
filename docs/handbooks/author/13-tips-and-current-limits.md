@@ -19,15 +19,12 @@ worth planning around.
 
 ## Things to plan around
 
-- **Two deletion paths skip confirmation entirely:** deleting an
-  **adventure** from Your Adventures, and deleting an **exit** from a
-  location's Exits list. Both remove the thing (and, for adventures,
-  everything inside it) immediately on right-click → **Delete**, with no
-  dialog and no undo. See
-  [Chapter 3](03-your-adventures.md#deleting-an-adventure) and
+- **Deleting an exit skips confirmation entirely:** right-click →
+  **Delete** in a location's Exits list removes the exit immediately, with
+  no dialog and no undo. See
   [Chapter 5](05-locations-and-exits.md#exits). Everything else described
-  in this handbook (locations, items, words, messages, pictures, workflow
-  commands) confirms before deleting.
+  in this handbook (adventures, locations, items, words, messages,
+  pictures, workflow commands) confirms before deleting.
 - **The World map isn't wired to your actual locations yet.** It's a
   placeholder illustration, not a live diagram of your world — see
   [Chapter 5](05-locations-and-exits.md#the-world-map).

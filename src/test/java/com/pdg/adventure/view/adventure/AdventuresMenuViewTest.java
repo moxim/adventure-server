@@ -121,4 +121,38 @@ class AdventuresMenuViewTest extends BrowserlessTest {
 
         verify(accessService, never()).deleteAdventure(any(), any());
     }
+
+    // Same limitation as for delete: the context-menu click can't be driven, so the action
+    // behind the "Duplicate" item (package-private duplicateAdventure) is called directly.
+    @SuppressWarnings("unchecked")
+    @Test
+    void duplicate_addsTheCopyToTheGridAndAsksTheAccessServiceToCopyTheSelectedAdventure() {
+        AdventureData copy = new AdventureData();
+        copy.setId("adv-2");
+        copy.setTitle("The Demo (copy)");
+        when(accessService.duplicateAdventure(eq("adv-1"), any(UserData.class))).thenReturn(copy);
+        AdventuresMenuView view = new AdventuresMenuView(accessService);
+        UI.getCurrent().add(view);
+        Grid<AdventureData> grid = (Grid<AdventureData>) find(Grid.class, view).single();
+
+        view.duplicateAdventure(adventure, grid);
+
+        verify(accessService).duplicateAdventure(eq("adv-1"), any(UserData.class));
+        assertThat(grid.getListDataView().getItems()).extracting(AdventureData::getId)
+                                                       .containsExactly("adv-1", "adv-2");
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void duplicate_whenTheCopyFails_leavesTheGridAsItWasAndDoesNotThrow() {
+        when(accessService.duplicateAdventure(any(), any(UserData.class)))
+                .thenThrow(new IllegalStateException("boom"));
+        AdventuresMenuView view = new AdventuresMenuView(accessService);
+        UI.getCurrent().add(view);
+        Grid<AdventureData> grid = (Grid<AdventureData>) find(Grid.class, view).single();
+
+        view.duplicateAdventure(adventure, grid);
+
+        assertThat(grid.getListDataView().getItems()).extracting(AdventureData::getId).containsExactly("adv-1");
+    }
 }

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.Order;
@@ -32,7 +33,11 @@ public class AutoMapperRegistrationProcessor implements BeanPostProcessor, Smart
     private final MapperSupporter mapperSupporter;
     private final List<PendingAutoRegistration> pendingRegistrations = new ArrayList<>();
 
-    public AutoMapperRegistrationProcessor(MapperSupporter mapperSupporter) {
+    // @Lazy: MapperSupporter needs AdventureConfig, and a BeanPostProcessor's constructor dependencies are
+    // created before all post-processors are registered. Eagerly injecting it made Spring warn that
+    // 'adventureConfig' was not eligible for getting processed by all BeanPostProcessors. It is only
+    // used in afterSingletonsInstantiated(), so a lazy proxy resolved on first use is enough.
+    public AutoMapperRegistrationProcessor(@Lazy MapperSupporter mapperSupporter) {
         this.mapperSupporter = mapperSupporter;
     }
 

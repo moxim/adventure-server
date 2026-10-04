@@ -255,6 +255,7 @@ class; new code should call the typed services above.
 |---------|---------------|
 | `CustomUserDetailsService` | Implements `UserDetailsService.loadUserByUsername`; throws `UsernameNotFoundException` on miss. |
 | `UserService` | User CRUD + role assignment; enforces username uniqueness; encodes passwords via `PasswordEncoder`. |
+| `AdventureDuplicator` | Copies an adventure at raw-document level: follows every `@DBRef` from the `adventures` document, gives each reached document a new ULID, and rewrites every string value and map key that equals an old id through one old→new map (so `destinationId`, `currentLocationId`, `adventureId`, the `locationData` keys and the DBRef `$id`s all point at the copy). Embedded documents keep their ids. Working on raw documents is deliberate: ids are fixed at construction and `save` upserts by id, so a copy that kept an id would overwrite the original. Inserts the copy collection by collection and removes the partial copy if an insert fails. |
 | `AdventureAccessService` | The cross-store coordinator. Read/write checks (`canRead`, `canWrite`); creates an adventure in MongoDB **then** writes the `AdventureAuthor` row in MySQL, all inside `@Transactional`. Lists adventures visible to a given user (ADMIN sees all; AUTHOR sees authored; PLAYER sees assigned). |
 
 ### Cross-store consistency

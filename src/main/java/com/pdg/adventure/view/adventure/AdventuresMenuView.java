@@ -17,6 +17,8 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParameters;
 import jakarta.annotation.security.RolesAllowed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +32,8 @@ import com.pdg.adventure.view.support.ViewSupporter;
 @Route(value = "author/adventures", layout = AdventuresMainLayout.class)
 @RolesAllowed("ROLE_AUTHOR")
 public class AdventuresMenuView extends VerticalLayout {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AdventuresMenuView.class);
 
     private final transient AdventureAccessService accessService;
 
@@ -107,6 +111,8 @@ public class AdventuresMenuView extends VerticalLayout {
                 navigateToAdventureEditor(targetAdventureId);
             }));
 
+            addItem("Duplicate", e -> e.getItem().ifPresent(adventure -> duplicateAdventure(adventure, target)));
+
             addComponent(new Hr());
 
             GridMenuItem<AdventureData> adventureDetailItem =
@@ -123,6 +129,30 @@ public class AdventuresMenuView extends VerticalLayout {
 
             addItem("Delete", e -> e.getItem().ifPresent(adventure ->
                     buildDeleteConfirmDialog(adventure, target).open()));
+        }
+    }
+
+    /**
+     * Package-private for testing, like {@link #buildDeleteConfirmDialog}: the context-menu click
+     * that triggers it can't be driven from a browserless test.
+     */
+    @SuppressWarnings("unchecked")
+    void duplicateAdventure(AdventureData adventure, Grid<AdventureData> grid) {
+        try {
+            AdventureData copy = accessService.duplicateAdventure(adventure.getId(), ViewSupporter.getCurrentUser());
+
+            ListDataProvider<AdventureData> dataProvider = (ListDataProvider<AdventureData>) grid.getDataProvider();
+            dataProvider.getItems().add(copy);
+            dataProvider.refreshAll();
+
+            Notification notification = Notification.show("Adventure '" + adventure.getTitle()
+                    + "' duplicated as '" + copy.getTitle() + "'.", 2000, Notification.Position.BOTTOM_START);
+            notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        } catch (RuntimeException e) {
+            LOG.error("Could not duplicate adventure {}", adventure.getId(), e);
+            Notification notification = Notification.show("Could not duplicate adventure '"
+                    + adventure.getTitle() + "'.", 5000, Notification.Position.MIDDLE);
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
     }
 
