@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.pdg.adventure.model.AdventureFont;
 import com.pdg.adventure.model.MessageData;
 
 class MessageViewModelTest {
@@ -153,5 +154,15 @@ class MessageViewModelTest {
 
         // Then
         assertThat(preview).isEqualTo("(empty message)");
+    }
+
+    @Test
+    void aViewModelBuiltFromMessageDataCarriesItsFont_andANewOneStartsWithTheDefault() {
+        MessageData note = new MessageData("The note", "Meet me at midnight.");
+        note.setFont(AdventureFont.COURIER_PRIME);
+
+        assertThat(new MessageViewModel(note).getFont()).isEqualTo(AdventureFont.COURIER_PRIME);
+        assertThat(new MessageViewModel(note, 3).getFont()).isEqualTo(AdventureFont.COURIER_PRIME);
+        assertThat(new MessageViewModel().getFont()).isEqualTo(AdventureFont.DEFAULT);
     }
 }

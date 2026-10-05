@@ -30,6 +30,7 @@ import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.model.AdventureFont;
 
 @ExtendWith(MockitoExtension.class)
 class LoadAdventureActionTest {
@@ -127,5 +128,28 @@ class LoadAdventureActionTest {
         adventure.setLocations(List.of(startLocation));
 
         when(adventureMapper.mapToBO(anAdventureData)).thenReturn(adventure);
+    }
+
+    @Test
+    void loadAdventure_registersEachMessagesFontWithItsText() {
+        AdventureData adventureData = new AdventureData();
+        adventureData.setId("adv-1");
+        adventureData.setCurrentLocationId("loc-1");
+        LocationData locationData = new LocationData();
+        locationData.setId("loc-1");
+        adventureData.getLocationData().put("loc-1", locationData);
+        MessageData note = new MessageData("The note", "Meet me at midnight.");
+        note.setFont(AdventureFont.SPECIAL_ELITE);
+        MessageData plain = new MessageData("Greeting", "Welcome!");
+        adventureData.getMessages().put(note.getId(), note);
+        adventureData.getMessages().put(plain.getId(), plain);
+
+        stubSuccessfulLoad(adventureData);
+
+        assertThatThrownBy(() -> loadAdventureAction.loadAdventure("adv-1"))
+                .isInstanceOf(ReloadAdventureException.class);
+
+        assertThat(messagesHolder.getFont(note.getId())).isEqualTo(AdventureFont.SPECIAL_ELITE);
+        assertThat(messagesHolder.getFont(plain.getId())).isEqualTo(AdventureFont.DEFAULT);
     }
 }

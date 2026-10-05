@@ -24,7 +24,8 @@ class AdventureFontTest {
     void constantNamesAreStableBecauseTheyArePersisted() {
         assertThat(Arrays.stream(AdventureFont.values()).map(Enum::name))
                 .containsExactly("DEFAULT", "INTER", "LORA", "IBM_PLEX_MONO", "MEDIEVAL_SHARP", "CINZEL", "OXANIUM", "SHARE_TECH_MONO",
-                              "SPECIAL_ELITE", "IM_FELL_ENGLISH", "COURIER_PRIME");
+                              "SPECIAL_ELITE", "IM_FELL_ENGLISH", "COURIER_PRIME",
+                              "ASIMOVIAN", "AUDIOWIDE", "UNIFRAKTUR_MAGUNTIA");
     }
 
     @Test
@@ -71,7 +72,8 @@ class AdventureFontTest {
     @Test
     void everyBundledFontShipsItsLicenceText() {
         assertSoftly(softly -> List.of("inter", "lora", "ibm-plex-mono", "medievalsharp", "cinzel", "oxanium", "share-tech-mono",
-                    "special-elite", "im-fell-english", "courier-prime").forEach(slug ->
+                    "special-elite", "im-fell-english", "courier-prime",
+                    "asimovian", "audiowide", "unifrakturmaguntia").forEach(slug ->
                 softly.assertThat(AdventureFontTest.class.getResource(
                               "/META-INF/resources/styles/fonts/LICENSE-" + slug + ".txt"))
                       .as("licence of %s", slug).isNotNull()));
@@ -82,5 +84,34 @@ class AdventureFontTest {
             assertThat(in).as(path).isNotNull();
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
+    }
+
+    @Test
+    void defaultHasNoMessageClassAndEveryOtherFontHasAUniqueOne() {
+        assertThat(AdventureFont.DEFAULT.cssClassName()).isEmpty();
+        assertThat(AdventureFont.SPECIAL_ELITE.cssClassName()).contains("run-font-special-elite");
+        assertThat(Arrays.stream(AdventureFont.values()).filter(f -> f != AdventureFont.DEFAULT)
+                         .map(f -> f.cssClassName().orElseThrow())).doesNotHaveDuplicates();
+    }
+
+    @Test
+    void everyNonDefaultFontHasAPerMessageRuleWithItsExactFontStack() throws IOException {
+        String css = readClasspath(STYLESHEET);
+
+        assertSoftly(softly -> Arrays.stream(AdventureFont.values()).filter(f -> f != AdventureFont.DEFAULT)
+                .forEach(font -> {
+                    String stack = font.cssFontFamily().orElseThrow();
+                    Matcher rule = Pattern.compile(
+                            "vaadin-message\\." + Pattern.quote(font.cssClassName().orElseThrow()) + "\\s*\\{([^}]*)\\}")
+                                          .matcher(css);
+                    boolean found = rule.find();
+                    softly.assertThat(found).as("rule for %s", font).isTrue();
+                    if (found) {
+                        // set both: the message element may take its font from the property or from font-family
+                        softly.assertThat(rule.group(1)).as("rule body of %s", font)
+                              .contains("font-family: " + stack + ";")
+                              .contains("--lumo-font-family: " + stack + ";");
+                    }
+                }));
     }
 }

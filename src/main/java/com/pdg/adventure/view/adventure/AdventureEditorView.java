@@ -4,7 +4,6 @@ import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
@@ -13,7 +12,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.*;
 import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
@@ -25,6 +23,7 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.AdventureFont;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
+import com.pdg.adventure.view.component.AdventureFontSelect;
 import com.pdg.adventure.view.item.AllItemsMenuView;
 import com.pdg.adventure.view.location.LocationsMenuView;
 import com.pdg.adventure.view.message.MessagesMenuView;
@@ -241,21 +240,8 @@ public class AdventureEditorView extends VerticalLayout
         return field;
     }
 
-    /**
-     * Each entry is drawn in its own font, so the author sees what they are choosing. The preview only
-     * works for fonts the page has loaded (adventure-fonts.css); an unloaded one shows the fallback.
-     */
     private Select<AdventureFont> getFontSelect() {
-        Select<AdventureFont> field = new Select<>();
-        field.setLabel("Run Font");
-        field.setItems(AdventureFont.values());
-        field.setEmptySelectionAllowed(false);
-        field.setItemLabelGenerator(AdventureFont::label);
-        field.setRenderer(new ComponentRenderer<>(font -> {
-            Span preview = new Span(font.label());
-            font.cssFontFamily().ifPresent(family -> preview.getStyle().set("font-family", family));
-            return preview;
-        }));
+        Select<AdventureFont> field = new AdventureFontSelect("Run Font", AdventureFont.DEFAULT.label());
         field.setWidth("230px");
         field.setHelperText("The font of the game text when this adventure is run.");
         field.setTooltipText("Players see the game text in this font. The editors keep the standard font.");

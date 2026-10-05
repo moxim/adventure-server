@@ -165,9 +165,10 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         contextMenu.addItem("Delete", event -> event.getItem().ifPresent(this::confirmDeleteMessage));
     }
 
-    private void duplicateMessage(MessageDescriptionAdapter adapter) {
+    void duplicateMessage(MessageDescriptionAdapter adapter) {
         MessageViewModel original = adapter.getMessageViewModel();
         MessageData newMessage = new MessageData(original.getSummary() + " (copy)", original.getMessageText());
+        newMessage.setFont(original.getFont());
         String newId = newMessage.getId();
 
         adventureData.getMessages().put(newId, newMessage);

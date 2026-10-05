@@ -15,6 +15,8 @@ import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
+import com.pdg.adventure.model.AdventureFont;
+import com.pdg.adventure.server.engine.FontMarkup;
 
 @ExtendWith(MockitoExtension.class)
 class MessageActionMapperTest {
@@ -87,5 +89,32 @@ class MessageActionMapperTest {
         assertThat(result).isNotNull();
         assertThat(result.getMessage()).isEqualTo(messageId);
         assertThat(result).isInstanceOf(MessageAction.class);
+    }
+
+    @Test
+    void mapToBO_carriesTheMessagesFontIntoTheAction() {
+        MessageActionData actionData = new MessageActionData();
+        actionData.setMessageId("note");
+        when(messagesHolder.getMessage("note")).thenReturn("Meet me at midnight.");
+        when(messagesHolder.getFont("note")).thenReturn(AdventureFont.SPECIAL_ELITE);
+
+        MessageAction result = mapper.mapToBO(actionData);
+
+        assertThat(result.getFont()).isEqualTo(AdventureFont.SPECIAL_ELITE);
+        assertThat(result.execute().getResultMessage())
+                .isEqualTo(FontMarkup.wrap("Meet me at midnight.", AdventureFont.SPECIAL_ELITE));
+    }
+
+    @Test
+    void mapToBO_treatsAMissingFontAsTheDefaultFont() {
+        // the holder here is a mock, whose getFont returns null - as does any holder that knows no font
+        MessageActionData actionData = new MessageActionData();
+        actionData.setMessageId("note");
+        when(messagesHolder.getMessage("note")).thenReturn("Plain text.");
+
+        MessageAction result = mapper.mapToBO(actionData);
+
+        assertThat(result.getFont()).isEqualTo(AdventureFont.DEFAULT);
+        assertThat(result.execute().getResultMessage()).isEqualTo("Plain text.");
     }
 }

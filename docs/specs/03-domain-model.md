@@ -135,7 +135,7 @@ Fields:
 | `messages` | `Map<String, MessageData>` | Author-authored reusable text, keyed by each message's `id`. Embedded (owned 1:1 by the adventure) — no `@DBRef`, no cascade annotations. See [§ MessageData](#messagedata). |
 | `systemMessages` | `Map<String, SystemMessageData>` | Sparse per-adventure overrides of engine text; keyed by `SystemMessageKey.id()`. Embedded — no `@DBRef`, no cascade annotations. A key with no entry reads as its catalog default. See [§ System messages](#system-messages) below. |
 | `pictureData` | `@DBRef(lazy=false) Map<String, PictureData>` | The adventure's uploaded pictures, keyed by id. `@CascadeDelete` only — **no** `@CascadeSave`: `PictureEditorView` saves each picture explicitly (`AdventureService.savePictureData`) before saving the adventure. See [§ PictureData](#picturedata). |
-| `font` | `AdventureFont`, default `DEFAULT` | The font of the run view's game text, stored as the constant's **name** (`DEFAULT`, `INTER`, `LORA`, `IBM_PLEX_MONO`, `MEDIEVAL_SHARP`, `CINZEL`, `OXANIUM`, `SHARE_TECH_MONO`, `SPECIAL_ELITE`, `IM_FELL_ENGLISH`, `COURIER_PRIME`) — never rename or remove a constant. `AdventureFont.cssFontFamily()` is empty for `DEFAULT` (no override). Documents saved before the field existed have no `font` and load as `DEFAULT`; `getFont()` never returns null. Applied by `AdventureRunView` as Lumo's `--lumo-font-family` on the message list and input only; the web fonts (latin subset, SIL OFL except Special Elite which is Apache 2.0, with licence texts) are bundled under `META-INF/resources/styles/fonts/` and declared in `styles/adventure-fonts.css`, loaded globally by `@StyleSheet` on `AdventureBuilderServer`. Edited with the "Run Font" `Select` in `AdventureEditorView`. |
+| `font` | `AdventureFont`, default `DEFAULT` | The font of the run view's game text, stored as the constant's **name** (`DEFAULT`, `INTER`, `LORA`, `IBM_PLEX_MONO`, `MEDIEVAL_SHARP`, `CINZEL`, `OXANIUM`, `SHARE_TECH_MONO`, `SPECIAL_ELITE`, `IM_FELL_ENGLISH`, `COURIER_PRIME`, `ASIMOVIAN`, `AUDIOWIDE`, `UNIFRAKTUR_MAGUNTIA`) — never rename or remove a constant. `AdventureFont.cssFontFamily()` is empty for `DEFAULT` (no override). Documents saved before the field existed have no `font` and load as `DEFAULT`; `getFont()` never returns null. Applied by `AdventureRunView` as Lumo's `--lumo-font-family` on the message list and input only; the web fonts (latin subset, SIL OFL except Special Elite which is Apache 2.0, with licence texts) are bundled under `META-INF/resources/styles/fonts/` and declared in `styles/adventure-fonts.css`, loaded globally by `@StyleSheet` on `AdventureBuilderServer`. Edited with the "Run Font" `Select` in `AdventureEditorView`. |
 | `notes` | `String` | Free-text outline; not used at runtime. Surfaced as a quick preview in `AdventuresMenuView`'s right-click context menu. |
 | `variables` | `List<VariableData>`, default empty | The variables the author has defined — embedded (owned 1:1 by the adventure, like `messages`), as a list rather than a map because variable names are free text and may be illegal as Mongo field names. `defineVariable(name)` adds one (trimmed, case-sensitive, idempotent); `variableNames()` lists them. Created when a Set Variable action names a variable, see [`07-ui-and-navigation.md`](07-ui-and-navigation.md). |
 | `workflowData` | `WorkflowData`, default `new WorkflowData()` | The adventure's global commands — **Processes** (`commands`), **Responses** (`interceptorCommands`) and **Arrival Processes** (`arrivalProcesses`). Plain embedded field — no `@DBRef`, no cascade annotations (unlike every other nested collection above); it round-trips as part of the `AdventureData` document itself. See [§ Workflow](#workflow) below. |
@@ -397,11 +397,29 @@ message's `id` — not a collection or document of its own.
 | `id` | `String` | Inherited from `BasicData` (a ULID, assigned on creation). The map key and the **only** reference to a message: `MessageActionData.messageId` holds it. Never edited. |
 | `summary` | `String` | A short, free-text label of what the message says, shown to authors in lists and pickers. Not a reference and not required to be unique. |
 | `text` | `String` | The message body. |
+| `font` | `AdventureFont`, default `DEFAULT` | The font this message is shown in when the adventure runs, stored as the constant's **name** (same stability rule as `AdventureData.font`). `DEFAULT` means "no override": the adventure's own `font` applies. Absent or null loads as `DEFAULT`; `getFont()` never returns null. Edited with the "Message Font" select in `MessageEditorView`. |
 
 ### MessagesHolder
 
 `server/storage/message/MessagesHolder.java` is the runtime cache of messages
-keyed by message id. `MessageAction` looks up text here.
+keyed by message id. `MessageAction` looks up text here. Text and font are one entry per id
+(`getMessage`, `getFont`; an unknown id has `DEFAULT`), filled by `LoadAdventureAction`.
+
+### Message fonts at run time (`FontMarkup`)
+
+Actions don't print: each returns a result message, a command's (or chain's) messages are joined into one
+string, and `GameLoop` prints that string once per turn. So a message's font has to travel inside the text.
+`MessageAction` (built by `MessageActionMapper` from the holder's text **and** font) wraps its text with
+`FontMarkup.wrap(text, font)` — `START <font name> SEP <text> END`, three Unicode private-use characters
+(`U+E000`–`U+E002`; control characters would be removed by the `String.trim()` in `Workflow`). `DEFAULT`
+and blank text are never wrapped, so adventures without message fonts produce byte-identical output.
+
+`AdventureRunView.renderNarratorLines` runs `FontMarkup.split` on the turn's text (both the per-turn lines and
+the opening room): text without markers is one message as before; with markers, each font run becomes its own
+`MessageListItem` tagged with the font's class (`AdventureFont.cssClassName()`, e.g. `run-font-special-elite`),
+which `styles/adventure-fonts.css` maps to the font on `vaadin-message`. The console's default sink uses
+`FontMarkup.strip`; a browser session's sink keeps the markers. Unknown font names (a retired font) fall back to
+`DEFAULT`. Only `MessageAction` text gets a font — location/item descriptions and system messages do not.
 
 ### System messages
 

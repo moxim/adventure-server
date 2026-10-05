@@ -13,7 +13,7 @@ import java.util.Optional;
  * {@code META-INF/resources/styles/adventure-fonts.css}; each family stack falls back to a system font,
  * which is also what shows for characters outside the latin subset.
  * <p>
- * TODO: Review needed — the font list (one clean sans, one serif, one terminal mono, two fantasy, two futuristic, three typewriter/old-print) and the
+ * TODO: Review needed — the font list (one clean sans, one serif, one terminal mono, two fantasy, four futuristic, three typewriter/old-print, one blackletter) and the
  * latin-only subset were my choices; adding a font means a new constant, @font-face rules and licence text.
  */
 public enum AdventureFont {
@@ -28,7 +28,10 @@ public enum AdventureFont {
     SHARE_TECH_MONO("Share Tech Mono (futuristic terminal)", "\"Share Tech Mono\", ui-monospace, monospace"),
     SPECIAL_ELITE("Special Elite (worn typewriter)", "\"Special Elite\", \"Courier New\", monospace"),
     IM_FELL_ENGLISH("IM Fell English (old print)", "\"IM Fell English\", Georgia, serif"),
-    COURIER_PRIME("Courier Prime (typewriter)", "\"Courier Prime\", \"Courier New\", monospace");
+    COURIER_PRIME("Courier Prime (typewriter)", "\"Courier Prime\", \"Courier New\", monospace"),
+    ASIMOVIAN("Asimovian (futuristic)", "\"Asimovian\", system-ui, sans-serif"),
+    AUDIOWIDE("Audiowide (retro-futuristic)", "\"Audiowide\", system-ui, sans-serif"),
+    UNIFRAKTUR_MAGUNTIA("UnifrakturMaguntia (blackletter)", "\"UnifrakturMaguntia\", Georgia, serif");
 
     private final String label;
     private final String cssFontFamily;
@@ -40,6 +43,15 @@ public enum AdventureFont {
 
     public String label() {
         return label;
+    }
+
+    /**
+     * The CSS class a single message carries to be shown in this font ({@code run-font-special-elite}), empty
+     * for {@link #DEFAULT}. {@code adventure-fonts.css} has a rule for each one.
+     */
+    public Optional<String> cssClassName() {
+        return cssFontFamily == null ? Optional.empty()
+                                     : Optional.of("run-font-" + name().toLowerCase().replace('_', '-'));
     }
 
     /** The CSS {@code font-family} value, empty for {@link #DEFAULT} (apply no override). */

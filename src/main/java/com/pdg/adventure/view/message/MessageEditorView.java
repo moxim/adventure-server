@@ -9,6 +9,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
@@ -20,13 +21,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.AdventureFont;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
+import com.pdg.adventure.view.component.AdventureFontSelect;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.RouteIds;
@@ -50,6 +54,7 @@ public class MessageEditorView extends VerticalLayout
     private Button saveButton;
     private Button resetButton;
     private final TextArea messageTextField;
+    private final Select<AdventureFont> fontSelect;
     private final Div previewDiv;
     private final Div usageInfoDiv;
     private String pageTitle;
@@ -83,10 +88,15 @@ public class MessageEditorView extends VerticalLayout
         messageTextField.setMaxHeight("400px");
         messageTextField.setValueChangeMode(ValueChangeMode.EAGER);
 
+        fontSelect = new AdventureFontSelect("Message Font", "Same as adventure");
+        fontSelect.setHelperText("The font this message is shown in when the adventure runs");
+        fontSelect.setWidth("280px");
+
         // Preview section
         Span previewLabel = new Span("Preview:");
         previewLabel.getStyle().set(FONT_WEIGHT_TEXT, "bold");
         previewDiv = new Div();
+        previewDiv.setId("message-preview");
         previewDiv.getStyle().set("border", "1px solid var(--lumo-contrast-20pct)")
                   .set("border-radius", "var(--lumo-border-radius-m)").set("padding", "var(--lumo-space-m)")
                   .set("background-color", "var(--lumo-contrast-5pct)").set("min-height", "60px")
@@ -119,8 +129,11 @@ public class MessageEditorView extends VerticalLayout
               .withValidator(text -> text != null && !text.trim().isEmpty(), "Message text cannot be empty")
               .bind(MessageViewModel::getMessageText, MessageViewModel::setMessageText);
 
-        // Update preview when message text changes
+        binder.bind(fontSelect, MessageViewModel::getFont, MessageViewModel::setFont);
+
+        // Update preview when message text or font changes
         messageTextField.addValueChangeListener(_ -> updatePreview());
+        fontSelect.addValueChangeListener(_ -> updatePreview());
 
         binder.addStatusChangeListener(event -> {
             boolean isValid = event.getBinder().isValid();
@@ -130,7 +143,7 @@ public class MessageEditorView extends VerticalLayout
             resetButton.setEnabled(hasChanges);
         });
 
-        add(title, summaryField, messageTextField, previewSection, usageSection, resetBackSaveView);
+        add(title, summaryField, messageTextField, fontSelect, previewSection, usageSection, resetBackSaveView);
     }
 
     private ResetBackSaveView setUpNavigationButtons() {
@@ -159,6 +172,13 @@ public class MessageEditorView extends VerticalLayout
     }
 
     private void updatePreview() {
+        // "Same as adventure" previews in the adventure's own font - what a player will actually see
+        // (the select has no value yet while the binder is still filling in the other fields)
+        AdventureFont chosen = Objects.requireNonNullElse(fontSelect.getValue(), AdventureFont.DEFAULT);
+        AdventureFont shown = chosen != AdventureFont.DEFAULT || adventureData == null
+                              ? chosen : adventureData.getFont();
+        shown.cssFontFamily().ifPresentOrElse(family -> previewDiv.getStyle().set("font-family", family),
+                                               () -> previewDiv.getStyle().remove("font-family"));
         String text = messageTextField.getValue();
         if (text == null || text.trim().isEmpty()) {
             previewDiv.setText("(empty message)");
@@ -204,11 +224,14 @@ public class MessageEditorView extends VerticalLayout
 
     private MessageData createRequiredMessage() {
         if (mvm.isNew()) {
-            return new MessageData(mvm.getSummary(), mvm.getMessageText());
+            MessageData created = new MessageData(mvm.getSummary(), mvm.getMessageText());
+            created.setFont(mvm.getFont());
+            return created;
         }
         MessageData message = adventureData.getMessages().get(mvm.getId());
         message.setSummary(mvm.getSummary());
         message.setText(mvm.getMessageText());
+        message.setFont(mvm.getFont());
         message.touch();
         return message;
     }

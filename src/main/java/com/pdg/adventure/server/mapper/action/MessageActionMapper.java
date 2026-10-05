@@ -38,6 +38,6 @@ public class MessageActionMapper extends ActionMapper<MessageActionData, Message
             //  no message is used as the text itself); undecided whether to keep it now that references are ids.
             message = actionData.getMessageId();
         }
-        return new MessageAction(message);
+        return new MessageAction(message, adventureConfig.allMessages().getFont(actionData.getMessageId()));
     }
 }

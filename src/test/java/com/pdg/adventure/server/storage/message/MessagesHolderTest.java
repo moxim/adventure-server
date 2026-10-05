@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import com.pdg.adventure.model.AdventureFont;
 
 class MessagesHolderTest {
 
@@ -53,5 +54,41 @@ class MessagesHolderTest {
 
         // Then
         assertThat(result).isNull();
+    }
+
+    @Test
+    void getFont_isDefaultForAMessageStoredWithoutOneAndForAnUnknownId() {
+        messagesHolder.addMessage("plain", "text");
+
+        assertThat(messagesHolder.getFont("plain")).isEqualTo(AdventureFont.DEFAULT);
+        assertThat(messagesHolder.getFont("unknown")).isEqualTo(AdventureFont.DEFAULT);
+    }
+
+    @Test
+    void addMessage_withFont_storesTextAndFontTogether() {
+        messagesHolder.addMessage("note", "Meet me at midnight.", AdventureFont.SPECIAL_ELITE);
+
+        assertThat(messagesHolder.getMessage("note")).isEqualTo("Meet me at midnight.");
+        assertThat(messagesHolder.getFont("note")).isEqualTo(AdventureFont.SPECIAL_ELITE);
+    }
+
+    @Test
+    void aNullFontMeansTheDefaultFont() {
+        messagesHolder.addMessage("note", "text", null);
+
+        assertThat(messagesHolder.getFont("note")).isEqualTo(AdventureFont.DEFAULT);
+    }
+
+    @Test
+    void removeAndClear_dropTheFontWithTheMessage() {
+        messagesHolder.addMessage("a", "text", AdventureFont.CINZEL);
+        messagesHolder.addMessage("b", "text", AdventureFont.CINZEL);
+
+        messagesHolder.removeMessage("a");
+        assertThat(messagesHolder.getFont("a")).isEqualTo(AdventureFont.DEFAULT);
+
+        messagesHolder.clear();
+        assertThat(messagesHolder.getFont("b")).isEqualTo(AdventureFont.DEFAULT);
+        assertThat(messagesHolder.getMessage("b")).isNull();
     }
 }

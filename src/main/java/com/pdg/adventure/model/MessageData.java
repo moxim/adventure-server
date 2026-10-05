@@ -24,11 +24,30 @@ public class MessageData extends DatedData {
      */
     private String text;
 
+    /**
+     * The font this message is shown in when the adventure runs. {@link AdventureFont#DEFAULT} means "no
+     * override": the message uses the adventure's own run font. Stored as the constant's name; a message
+     * saved before this field existed has none and loads as {@code DEFAULT}.
+     * <p>
+     * TODO: Review needed — {@code DEFAULT} means "use the adventure's font", so a message cannot force the
+     *  application's own font inside an adventure whose Run Font is something else.
+     */
+    private AdventureFont font = AdventureFont.DEFAULT;
+
     public MessageData(String summary, String text) {
         this.summary = summary;
         this.text = text;
     }
 
     public MessageData() {
+    }
+
+    /** Never null: an absent or null stored value means {@link AdventureFont#DEFAULT}. */
+    public AdventureFont getFont() {
+        return font == null ? AdventureFont.DEFAULT : font;
+    }
+
+    public void setFont(AdventureFont aFont) {
+        font = aFont == null ? AdventureFont.DEFAULT : aFont;
     }
 }

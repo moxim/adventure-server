@@ -41,9 +41,13 @@ and the game's response appears as the next Narrator line.
 
 The transcript and the text input use the adventure's **Run Font**, chosen in the
 [Adventure Editor](04-the-adventure-editor.md#the-fields). Adventures that never
-picked one keep the application's normal font, so a clean look (*Inter*, *Lora*)
-a fantasy one (*MedievalSharp*, *Cinzel*) a futuristic one (*Oxanium*, *Share Tech Mono*) or a typewritten or old-print one (*Special Elite*, *Courier Prime*, *IM Fell English*) is a per-adventure choice. The
-buttons, the picture panel and every editor screen always keep the standard font.
+picked one keep the application's normal font. A clean look (*Inter*, *Lora*), a
+fantasy one (*MedievalSharp*, *Cinzel*), a futuristic one (*Oxanium*, *Asimovian*, *Audiowide*, *Share Tech
+Mono*), a blackletter one (*UnifrakturMaguntia*) or a typewritten or old-print one (*Special Elite*, *Courier Prime*, *IM Fell
+English*) is a per-adventure choice. A [message](10-messages.md) can also have a
+font of its own, which then wins over the Run Font for that message only, shown as
+a separate entry in the transcript. The buttons, the picture panel and every
+editor screen always keep the standard font.
 The fonts are bundled with the application, so they look the same on every
 player's machine and need no internet connection. Characters outside the Latin
 alphabet (for example Cyrillic or Greek) are drawn in a system font instead.

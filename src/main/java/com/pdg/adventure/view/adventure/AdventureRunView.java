@@ -24,6 +24,7 @@ import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.engine.AdventureRunSession;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
 import com.pdg.adventure.server.engine.AdventureRunSessionFactory;
+import com.pdg.adventure.server.engine.FontMarkup;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.view.player.PlayerLibraryView;
@@ -236,7 +237,15 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         if (lines.isEmpty()) {
             return;
         }
-        messageList.addItem(new MessageListItem(String.join("\n", lines))); //, Instant.now(), NARRATOR));
+        // A message with its own font wraps its text in markers (FontMarkup); each font run becomes a message
+        // of its own, tagged with the font's CSS class. Text without markers is one message, as always.
+        // TODO: Review needed — one message bubble per font run: a marked message between plain lines splits the
+        //  turn into several bubbles instead of staying inside one.
+        for (FontMarkup.Segment segment : FontMarkup.split(String.join("\n", lines))) {
+            MessageListItem item = new MessageListItem(segment.text()); //, Instant.now(), NARRATOR));
+            segment.font().cssClassName().ifPresent(item::addClassNames);
+            messageList.addItem(item);
+        }
     }
 
     private void refreshPictureDisplay() {
