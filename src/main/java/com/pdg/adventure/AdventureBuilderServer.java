@@ -22,6 +22,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         offlineResources = {"./images/adventure.png"},
         offlinePath = "offline.html")
 @StyleSheet(Lumo.STYLESHEET)
+// The fonts an author can pick for running an adventure (AdventureFont). Only declares them: the
+// browser downloads a font file when something actually uses it.
+@StyleSheet("styles/adventure-fonts.css")
 @ColorScheme(ColorScheme.Value.LIGHT_DARK)
 public class AdventureBuilderServer implements AppShellConfigurator
         // extends SpringBootServletInitializer

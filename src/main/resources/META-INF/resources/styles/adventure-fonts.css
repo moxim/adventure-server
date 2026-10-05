@@ -1,0 +1,223 @@
+/* Fonts an author can pick for running an adventure (see AdventureFont).
+   Latin subset only (covers German umlauts and ß); other scripts fall back to the system font
+   through the family stack. All fonts are SIL Open Font License 1.1 except Special Elite (Apache 2.0) - see fonts/LICENSE-*.txt. */
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/inter-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/inter-latin-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Lora";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/lora-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Lora";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/lora-latin-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/ibm-plex-mono-latin-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MedievalSharp";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/medievalsharp-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Cinzel";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/cinzel-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Cinzel";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/cinzel-latin-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Oxanium";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/oxanium-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Oxanium";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/oxanium-latin-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Share Tech Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/share-tech-mono-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Special Elite";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/special-elite-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IM Fell English";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/im-fell-english-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Courier Prime";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/courier-prime-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Courier Prime";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/courier-prime-latin-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Asimovian";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/asimovian-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Audiowide";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/audiowide-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "UnifrakturMaguntia";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/unifrakturmaguntia-latin-400-normal.woff2") format("woff2");
+}
+
+/* One message in its own font (MessageData.font): AdventureRunView puts the font's class on that message.
+   Both properties are set because the message element may take its font from either. */
+
+vaadin-message.run-font-inter {
+  font-family: "Inter", system-ui, sans-serif;
+  --lumo-font-family: "Inter", system-ui, sans-serif;
+}
+
+vaadin-message.run-font-lora {
+  font-family: "Lora", Georgia, serif;
+  --lumo-font-family: "Lora", Georgia, serif;
+}
+
+vaadin-message.run-font-ibm-plex-mono {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  --lumo-font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+vaadin-message.run-font-medieval-sharp {
+  font-family: "MedievalSharp", Georgia, serif;
+  --lumo-font-family: "MedievalSharp", Georgia, serif;
+}
+
+vaadin-message.run-font-cinzel {
+  font-family: "Cinzel", Georgia, serif;
+  --lumo-font-family: "Cinzel", Georgia, serif;
+}
+
+vaadin-message.run-font-oxanium {
+  font-family: "Oxanium", system-ui, sans-serif;
+  --lumo-font-family: "Oxanium", system-ui, sans-serif;
+}
+
+vaadin-message.run-font-share-tech-mono {
+  font-family: "Share Tech Mono", ui-monospace, monospace;
+  --lumo-font-family: "Share Tech Mono", ui-monospace, monospace;
+}
+
+vaadin-message.run-font-special-elite {
+  font-family: "Special Elite", "Courier New", monospace;
+  --lumo-font-family: "Special Elite", "Courier New", monospace;
+}
+
+vaadin-message.run-font-im-fell-english {
+  font-family: "IM Fell English", Georgia, serif;
+  --lumo-font-family: "IM Fell English", Georgia, serif;
+}
+
+vaadin-message.run-font-courier-prime {
+  font-family: "Courier Prime", "Courier New", monospace;
+  --lumo-font-family: "Courier Prime", "Courier New", monospace;
+}
+
+vaadin-message.run-font-asimovian {
+  font-family: "Asimovian", system-ui, sans-serif;
+  --lumo-font-family: "Asimovian", system-ui, sans-serif;
+}
+
+vaadin-message.run-font-audiowide {
+  font-family: "Audiowide", system-ui, sans-serif;
+  --lumo-font-family: "Audiowide", system-ui, sans-serif;
+}
+
+vaadin-message.run-font-unifraktur-maguntia {
+  font-family: "UnifrakturMaguntia", Georgia, serif;
+  --lumo-font-family: "UnifrakturMaguntia", Georgia, serif;
+}

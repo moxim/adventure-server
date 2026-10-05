@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.AdventureFont;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
@@ -122,5 +123,31 @@ class MessagesMenuViewRoutingTest extends BrowserlessTest {
         FlashNotifier.showPending();
         Notification notification = find(Notification.class).single();
         assertThat(test(notification).getText()).isEqualTo("Adventure not found or access denied: missing");
+    }
+
+    // Like delete, duplicate sits behind a GridContextMenu click that a browserless test can't drive, so
+    // duplicateMessage is package-private and called directly.
+    @Test
+    void duplicatingAMessageKeepsItsFont() {
+        Map<String, MessageData> messages = new HashMap<>();
+        MessageData note = new MessageData("The note", "Meet me at midnight.");
+        note.setFont(AdventureFont.SPECIAL_ELITE);
+        messages.put(note.getId(), note);
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setTitle("The Demo");
+        adventure.setMessages(messages);
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+        view.beforeEnter(eventWithAdventureId("adv-1"));
+
+        view.duplicateMessage(new MessageDescriptionAdapter(new MessageViewModel(note)));
+
+        assertThat(adventure.getMessages().values()).hasSize(2)
+                .filteredOn(message -> !message.getId().equals(note.getId())).singleElement()
+                .satisfies(copy -> {
+                    assertThat(copy.getSummary()).isEqualTo("The note (copy)");
+                    assertThat(copy.getFont()).isEqualTo(AdventureFont.SPECIAL_ELITE);
+                });
     }
 }

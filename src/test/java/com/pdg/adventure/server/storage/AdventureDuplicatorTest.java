@@ -17,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.AdventureFont;
 import com.pdg.adventure.model.DirectionData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.ItemData;
@@ -66,6 +67,7 @@ class AdventureDuplicatorTest {
 
         original = new AdventureData();
         original.setTitle("Original");
+        original.setFont(AdventureFont.MEDIEVAL_SHARP);
 
         takeWord = original.getVocabularyData().createWord("take", Word.Type.VERB);
         grabWord = original.getVocabularyData().createSynonym("grab", takeWord);
@@ -164,6 +166,7 @@ class AdventureDuplicatorTest {
                                         .filter(l -> !l.getDirectionsData().isEmpty()).findFirst().orElseThrow();
         assertSoftly(softly -> {
             softly.assertThat(copy.getTitle()).isEqualTo("Copy of Original");
+            softly.assertThat(copy.getFont()).as("run font").isEqualTo(AdventureFont.MEDIEVAL_SHARP);
             softly.assertThat(copy.getLocationData()).hasSize(2);
             softly.assertThat(copy.getLocationData().keySet()).doesNotContainAnyElementsOf(originalLocationIds);
             copy.getLocationData().forEach((key, location) ->

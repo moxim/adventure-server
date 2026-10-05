@@ -22,8 +22,14 @@ how many places still use it, so clean those up first.
 |-------|-------|
 | **Summary** | A short note on what the message says, in your own words. It is only a label to help you find the message in lists and in the Message action's drop-down: it doesn't have to be unique, and changing it later never breaks anything that uses the message. |
 | **Message Text** | The body. |
-| **Preview** | A live preview of the text as you type it. |
+| **Message Font** | The font this message is shown in when the adventure runs — for example a typewriter font for the note on the table. *Same as adventure* (the default) uses the adventure's own [Run Font](04-the-adventure-editor.md#the-fields). Each entry in the list is drawn in its own font. |
+| **Preview** | A live preview of the text as you type it, in the font a player will see: the message's own font, or the adventure's Run Font for *Same as adventure*. |
 | **Usage** | Lists every place this message is referenced, under a *"Used in N location(s):"* heading — or, if nothing references it yet, *"This message is not currently used anywhere in the adventure."* A quick way to spot dead messages before you clean them up. (On a brand-new, unsaved message, this just says usage info will be available after saving.) |
+
+A message with its own font shows up in the play screen as a separate entry, so a turn that mixes plain
+lines and fonted messages appears as several entries in a row. **Duplicate** keeps the font. Only messages
+you write here get a font of their own; location and item descriptions and the built-in system messages
+use the adventure's Run Font.
 
 ## Editing the built-in system messages
 

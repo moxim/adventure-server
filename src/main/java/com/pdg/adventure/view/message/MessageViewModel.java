@@ -2,6 +2,7 @@ package com.pdg.adventure.view.message;
 
 import lombok.Data;
 
+import com.pdg.adventure.model.AdventureFont;
 import com.pdg.adventure.model.MessageData;
 
 /**
@@ -18,6 +19,8 @@ public class MessageViewModel {
     private int usageCount;
     private String category;
     private String notes;
+    /** The message's own font; {@code DEFAULT} means it uses the adventure's run font. */
+    private AdventureFont font = AdventureFont.DEFAULT;
 
     /**
      * Constructor for creating a new message.
@@ -65,6 +68,7 @@ public class MessageViewModel {
      */
     public MessageViewModel(MessageData messageData) {
         this(messageData.getId(), messageData.getSummary(), messageData.getText());
+        this.font = messageData.getFont();
     }
 
     /**

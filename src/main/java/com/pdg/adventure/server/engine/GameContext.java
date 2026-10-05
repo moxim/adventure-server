@@ -19,7 +19,10 @@ public class GameContext {
     private Location currentLocation;
     private Container pocket;
     private WorkflowData workflowData = new WorkflowData();
-    private Consumer<String> outputSink = IO::println;
+    // The console has no fonts: strip the markers a message with its own font carries (see FontMarkup).
+    private static final Consumer<String> CONSOLE = line -> IO.println(FontMarkup.strip(line));
+
+    private Consumer<String> outputSink = CONSOLE;
     private String currentPreposition = VocabularyData.EMPTY_STRING;
     private String currentAdverb = VocabularyData.EMPTY_STRING;
     private String currentNoun2 = VocabularyData.EMPTY_STRING;
@@ -43,7 +46,7 @@ public class GameContext {
      * right after — never leave a non-default sink installed between calls.
      */
     public void setOutputSink(Consumer<String> aSink) {
-        outputSink = aSink != null ? aSink : IO::println;
+        outputSink = aSink != null ? aSink : CONSOLE;
     }
 
     public void setCurrentLocation(Location aDestination) {

@@ -328,4 +328,75 @@ class AdventureRunViewTest extends BrowserlessTest {
 
         assertThat(find(com.vaadin.flow.component.html.Image.class, view).exists()).isFalse();
     }
+
+    @Test
+    void theAdventuresFont_isAppliedToTheGameTextAndTheInput() {
+        stubOpeningRoom("A grand throne room.");
+        adventureData.setFont(com.pdg.adventure.model.AdventureFont.CINZEL);
+
+        enterViaAuthorRoute();
+
+        String expected = com.pdg.adventure.model.AdventureFont.CINZEL.cssFontFamily().orElseThrow();
+        assertThat(find(MessageList.class, view).single().getStyle().get("--lumo-font-family")).isEqualTo(expected);
+        assertThat(find(MessageInput.class, view).single().getStyle().get("--lumo-font-family")).isEqualTo(expected);
+    }
+
+    @Test
+    void theDefaultFont_leavesTheApplicationFontAlone() {
+        stubOpeningRoom("A grand throne room.");
+
+        enterViaAuthorRoute();
+
+        assertThat(find(MessageList.class, view).single().getStyle().get("--lumo-font-family")).isNull();
+        assertThat(find(MessageInput.class, view).single().getStyle().get("--lumo-font-family")).isNull();
+    }
+
+    // A message with its own font arrives inside the turn's text, wrapped by FontMarkup (see MessageAction):
+    // the view shows each font run as a message of its own and tags it with the font's CSS class.
+    @Test
+    void aMessageWithItsOwnFont_isShownAsASeparateMessageCarryingThatFontsClass() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        String nl = System.lineSeparator();
+        String turn = "You read the note:" + nl
+                      + com.pdg.adventure.server.engine.FontMarkup.wrap(
+                              "Meet me at midnight.", com.pdg.adventure.model.AdventureFont.SPECIAL_ELITE)
+                      + nl + "You put it down.";
+        when(session.submit("read note")).thenReturn(new RunResult(List.of(turn), false));
+
+        test(find(MessageInput.class, view).single()).send("read note");
+
+        List<MessageListItem> items = test(find(MessageList.class, view).single()).getMessages();
+        assertThat(items).extracting(MessageListItem::getText).containsExactly(
+                "A grand throne room.", "read note", "You read the note:", "Meet me at midnight.", "You put it down.");
+        assertThat(items.get(3).hasClassName("run-font-special-elite")).isTrue();
+        assertThat(items).filteredOn(item -> !item.getText().equals("Meet me at midnight."))
+                         .noneMatch(item -> item.hasClassName("run-font-special-elite"));
+    }
+
+    @Test
+    void theOpeningRoomIsSplitByFontToo() {
+        stubOpeningRoom(com.pdg.adventure.server.engine.FontMarkup.wrap(
+                "A faded poster.", com.pdg.adventure.model.AdventureFont.CINZEL));
+
+        enterViaAuthorRoute();
+
+        List<MessageListItem> items = test(find(MessageList.class, view).single()).getMessages();
+        assertThat(items).extracting(MessageListItem::getText).containsExactly("A faded poster.");
+        assertThat(items.getFirst().hasClassName("run-font-cinzel")).isTrue();
+    }
+
+    @Test
+    void textWithoutAnyFontMarkerIsShownExactlyAsBefore_withNoFontClass() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(session.submit("look")).thenReturn(new RunResult(List.of("line one", "line two"), false));
+
+        test(find(MessageInput.class, view).single()).send("look");
+
+        List<MessageListItem> items = test(find(MessageList.class, view).single()).getMessages();
+        assertThat(items.getLast().getText()).isEqualTo("line one\nline two");
+        assertThat(items).noneMatch(item -> java.util.Arrays.stream(com.pdg.adventure.model.AdventureFont.values())
+                .anyMatch(font -> font.cssClassName().map(item::hasClassName).orElse(false)));
+    }
 }

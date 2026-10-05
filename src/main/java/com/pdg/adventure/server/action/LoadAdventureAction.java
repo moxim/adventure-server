@@ -77,7 +77,7 @@ public class LoadAdventureAction extends AbstractAction {
 
         adventureConfig.allMessages().clear();
         for (MessageData messageData : adventureData.getMessages().values()) {
-            adventureConfig.allMessages().addMessage(messageData.getId(), messageData.getText());
+            adventureConfig.allMessages().addMessage(messageData.getId(), messageData.getText(), messageData.getFont());
         }
 
         Map<String, String> systemMessageOverrides = new HashMap<>();

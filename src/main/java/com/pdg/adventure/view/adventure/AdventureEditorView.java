@@ -6,6 +6,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
@@ -19,8 +20,10 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.AdventureFont;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
+import com.pdg.adventure.view.component.AdventureFontSelect;
 import com.pdg.adventure.view.item.AllItemsMenuView;
 import com.pdg.adventure.view.location.LocationsMenuView;
 import com.pdg.adventure.view.message.MessagesMenuView;
@@ -159,7 +162,10 @@ public class AdventureEditorView extends VerticalLayout
         numberOfItems.setMaxWidth("100px");
         numberOfItems.setHelperText("The number of items in this adventure.");
 
+        Select<AdventureFont> fontSelect = getFontSelect();
+
         HorizontalLayout titleStartRow = new HorizontalLayout(adventureIdTF, title,
+                                                              fontSelect,
                                                               startLocation,
                                                               numberOfLocations,
                                                               numberOfItems);
@@ -230,6 +236,16 @@ public class AdventureEditorView extends VerticalLayout
         field.setErrorMessage("The title is required");
         binder.forField(field).asRequired("You must provide a title.");
         binder.forField(field).bind(AdventureData::getTitle, AdventureData::setTitle);
+        field.addValueChangeListener(this::onFieldValueChanged);
+        return field;
+    }
+
+    private Select<AdventureFont> getFontSelect() {
+        Select<AdventureFont> field = new AdventureFontSelect("Run Font", AdventureFont.DEFAULT.label());
+        field.setWidth("230px");
+        field.setHelperText("The font of the game text when this adventure is run.");
+        field.setTooltipText("Players see the game text in this font. The editors keep the standard font.");
+        binder.bind(field, AdventureData::getFont, AdventureData::setFont);
         field.addValueChangeListener(this::onFieldValueChanged);
         return field;
     }
