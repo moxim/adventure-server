@@ -24,7 +24,7 @@ import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 /**
- * Drives "take ~ -> AUTOT" and "drop ~ -> AUTOD" responses through the real GameLoop, the way PAW's
+ * Drives "take ~ -> AutoTake" and "drop ~ -> AutoDrop" responses through the real GameLoop, the way PAW's
  * "GET _ AUTOG" entry works: the items have no take/drop commands of their own, so the local
  * dispatch reports "nothing matched" and the response table's wildcard entry answers.
  */

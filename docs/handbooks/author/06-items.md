@@ -47,8 +47,8 @@ any `take` or `drop` commands for the item.
 
 To let players actually pick things up and put them down, add a few
 **Responses** once for the whole adventure, using the wildcard noun `~`
-(*"any item"*) and the automatic actions **AUTOT**, **AUTOD**, **AUTOW** and
-**AUTOR** — see
+(*"any item"*) and the automatic actions **AutoTake**, **AutoDrop**, **AutoWear** and
+**AutoRemove** — see
 [Chapter 9](09-workflow.md#one-response-for-every-item-the-wildcard-noun) and
 the [Action reference](appendix-a-action-and-condition-reference.md).
 

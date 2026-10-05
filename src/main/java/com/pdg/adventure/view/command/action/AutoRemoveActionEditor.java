@@ -6,7 +6,7 @@ import com.vaadin.flow.component.html.Span;
 import com.pdg.adventure.model.action.AutoRemoveActionData;
 
 /**
- * Editor component for AutoRemoveActionData (AUTOR).
+ * Editor component for AutoRemoveActionData (AutoRemove).
  * The action has no configurable parameters: it acts on whichever item the player named, so it is
  * meant for a response keyed on the wildcard noun (~), e.g. "REMOVE ~".
  */
@@ -19,7 +19,7 @@ public class AutoRemoveActionEditor extends ActionEditorComponent<AutoRemoveActi
 
     @Override
     protected void buildUI() {
-        H4 title = new H4("AUTOR Action");
+        H4 title = new H4("AutoRemove Action");
 
         Span description = new Span("The player removes the item they named. The item is found from the noun of "
                                     + "the player's input, so it can serve every item at once.");

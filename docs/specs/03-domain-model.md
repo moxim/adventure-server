@@ -475,7 +475,7 @@ this chapter only documents the storage shape.
 | `DescribeActionData` | `DescribeAction` |
 | `PictureActionData` | `PictureAction` (`pictureId` — a key of `AdventureData.pictureData`) |
 | `DropActionData`, `TakeActionData`, `WearActionData`, `RemoveActionData` | inventory-handling actions |
-| `AutoTakeActionData`, `AutoDropActionData`, `AutoWearActionData`, `AutoRemoveActionData` | AUTOT / AUTOD / AUTOW / AUTOR — parameterless; the item is resolved at runtime from the typed noun (see [`04-runtime-engine.md` § Auto item actions](04-runtime-engine.md#auto-item-actions-autot-autod-autow-autor)) |
+| `AutoTakeActionData`, `AutoDropActionData`, `AutoWearActionData`, `AutoRemoveActionData` | AutoTake / AutoDrop / AutoWear / AutoRemove — parameterless; the item is resolved at runtime from the typed noun (see [`04-runtime-engine.md` § Auto item actions](04-runtime-engine.md#auto-item-actions-autotake-autodrop-autowear-autoremove)) |
 | `MovePlayerActionData`, `MoveItemActionData` | spatial actions |
 | `MessageActionData` | text emission |
 | `InventoryActionData` | print pocket |

@@ -11,7 +11,7 @@ import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.tangible.Item;
 
 /**
- * AUTOR - the remove counterpart of {@link AutoTakeAction}: takes off the worn item the player
+ * AutoRemove - the remove counterpart of {@link AutoTakeAction}: takes off the worn item the player
  * named with the noun of the current sub-command. The item stays in the pocket.
  * <p>
  * Outcomes: removed (SM38); carried or here but not worn (SM50); no noun, or an item that is

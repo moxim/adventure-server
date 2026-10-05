@@ -519,7 +519,7 @@ should be enforced by the implementation, not just by the UI:
    `NotContainableException`.
 7. **Worn items are carried.** Dropping a worn item triggers a follow-up
    `RemoveAction` (built by `CommandFactory.setUpDropCommand`); the noun-driven
-   `AutoDropAction` (AUTOD) instead *refuses* to drop a worn item (`SM24`).
+   `AutoDropAction` (AutoDrop) instead *refuses* to drop a worn item (`SM24`).
 8. **Special words exist.** Each adventure's `VocabularyData` MUST have a
    non-null reference for every special-word slot before play begins.
 

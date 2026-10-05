@@ -22,7 +22,7 @@ import com.pdg.adventure.server.tangible.GenericContainer;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
-/** Drives "wear ~ -> AUTOW" and "remove ~ -> AUTOR" responses through the real GameLoop. */
+/** Drives "wear ~ -> AutoWear" and "remove ~ -> AutoRemove" responses through the real GameLoop. */
 class AutoWearRemoveGameLoopTest {
 
     private final StringBuilder told = new StringBuilder();

@@ -374,9 +374,9 @@ picture, and when, is covered in [§ Pictures](#pictures).
 
 > **Scope note.** This is the `CommandFactory` (console / demo-adventure) wiring.
 > The authoring UI's `ItemEditorView` no longer generates take/drop commands for
-> items; browser-authored adventures use the `~` Responses with the AUTOT / AUTOD
-> / AUTOW / AUTOR actions instead (see
-> [§ Auto item actions](#auto-item-actions-autot-autod-autow-autor)).
+> items; browser-authored adventures use the `~` Responses with the AutoTake / AutoDrop
+> / AutoWear / AutoRemove actions instead (see
+> [§ Auto item actions](#auto-item-actions-autotake-autodrop-autowear-autoremove)).
 
 For each item, `setUpTakeCommands(item)` registers four commands on the item:
 
@@ -457,10 +457,10 @@ author-placeable:
 | `DescribeAction(supplier)` | Emit `supplier.get()` (used for thing & location descriptions). AI augmentation is wired but commented out. |
 | `TakeAction(item, pocket, msgs)` | Move `item` into the pocket via `MoveItemAction`; emits `SM36` (taken) / `SM26` (not here). Used by the `get` command. |
 | `DropAction(item, container, msgs)` | Move `item` into the supplied container via `MoveItemAction`, and automatically remove it from its parent container; emits `SM39` + the item description. Used by the `drop` commands. |
-| `AutoTakeAction(gameContext, allItems)` | **AUTOT.** Resolve the item from the typed noun and take it — see [§ Auto item actions](#auto-item-actions-autot-autod-autow-autor). |
-| `AutoDropAction(gameContext, allItems)` | **AUTOD.** Resolve the item from the typed noun and drop it into the current location. |
-| `AutoWearAction(gameContext, allItems)` | **AUTOW.** Resolve the item from the typed noun and wear it (delegates to `WearAction`). |
-| `AutoRemoveAction(gameContext, allItems)` | **AUTOR.** Resolve the item from the typed noun and take it off (delegates to `RemoveAction`). |
+| `AutoTakeAction(gameContext, allItems)` | **AutoTake.** Resolve the item from the typed noun and take it — see [§ Auto item actions](#auto-item-actions-autotake-autodrop-autowear-autoremove). |
+| `AutoDropAction(gameContext, allItems)` | **AutoDrop.** Resolve the item from the typed noun and drop it into the current location. |
+| `AutoWearAction(gameContext, allItems)` | **AutoWear.** Resolve the item from the typed noun and wear it (delegates to `WearAction`). |
+| `AutoRemoveAction(gameContext, allItems)` | **AutoRemove.** Resolve the item from the typed noun and take it off (delegates to `RemoveAction`). |
 | `LightAction(item, lumen)` | Set the item's light level absolutely; emits `SM66`. |
 | `PictureAction(pictureId, gameContext)` | Set `gameContext.currentPictureId` so the play screen shows that picture; always SUCCESS with no text (informational-only). |
 | `MoveItemAction(item, dest, msgs)` | The primitive: remove the item from its parent if any, add it to `dest` if not full. Emits `SM54` (moved) / `SM55` (full) / `SM56` (can't). |
@@ -509,14 +509,14 @@ configured examine verb; it has no DO and is never persisted.
   plain `IllegalStateException`. The old player-facing `load <ulid>` command
   went away with the CLI runner.
 
-### Auto item actions (AUTOT, AUTOD, AUTOW, AUTOR)
+### Auto item actions (AutoTake, AutoDrop, AutoWear, AutoRemove)
 
 Modelled on PAW's `AUTOG`/`AUTOD`/`AUTOW`/`AUTOR` (see
 `docs/specs/ProfessionalAdventureWriter_TechnicalGuide.html`). Unlike
 `TakeAction` etc., they are **not bound to one item**: they take the item from
 what the player typed. The intended use is a single Response keyed on the
-wildcard noun (see [§ Wildcard noun](#wildcard-noun-)) — e.g. `take ~ → AUTOT`,
-`drop ~ → AUTOD`, `wear ~ → AUTOW`, `remove ~ → AUTOR` — which then serves
+wildcard noun (see [§ Wildcard noun](#wildcard-noun-)) — e.g. `take ~ → AutoTake`,
+`drop ~ → AutoDrop`, `wear ~ → AutoWear`, `remove ~ → AutoRemove` — which then serves
 every item in the adventure. They carry no parameters (`AutoTakeActionData`
 etc. are empty).
 
@@ -528,7 +528,7 @@ registry. A matching adjective narrows the match; otherwise the noun alone
 decides (the same leniency as `ItemIdentifier`). Failures return `FAILURE`, so
 a `GenericCommand` stops its chain, and `GameLoop` prints the message.
 
-| Situation | AUTOT | AUTOD | AUTOW | AUTOR |
+| Situation | AutoTake | AutoDrop | AutoWear | AutoRemove |
 |-----------|-------|-------|-------|-------|
 | success | `SM36` (moved to pocket via `MoveItemAction`) | `SM39` (moved to location) | `SM37` | `SM38` (stays in pocket) |
 | already in the target state | carried/worn → `SM25` | — | worn → `SM29` | carried/here but not worn → `SM50` |
@@ -542,10 +542,10 @@ Deliberate gaps and choices relative to PAW:
 
 - **No weight limit.** PAW's `SM43` check is absent because the project has no
   weight system (`// TODO: Review needed` in `AutoTakeAction`).
-- **AUTOR has no `SM41`/`SM42` case.** Only wearable items can be worn, and
+- **AutoRemove has no `SM41`/`SM42` case.** Only wearable items can be worn, and
   worn items stay in the pocket and already count toward its limit, so
   removing never needs extra room.
-- **`SM8` for a non-item word in AUTOR** is an extension by analogy; PAW's
+- **`SM8` for a non-item word in AutoRemove** is an extension by analogy; PAW's
   AUTOR text specifies only the `SM23` case.
 - **Precedence.** Responses are consulted only after local (location/item)
   dispatch fails with the `SM8` sentinel, so an item that still carries its
