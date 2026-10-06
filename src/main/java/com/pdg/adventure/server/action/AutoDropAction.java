@@ -11,7 +11,7 @@ import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.tangible.Item;
 
 /**
- * AUTOD - the adventure builder's counterpart of PAW's AUTOD: drops the carried item the player
+ * AutoDrop - the adventure builder's counterpart of PAW's AUTOD: drops the carried item the player
  * named with the noun of the current sub-command into the current location.
  * <p>
  * Outcomes: dropped (SM39); carried but worn (SM24 - unlike DropAction this refuses instead of

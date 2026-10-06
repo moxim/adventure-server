@@ -26,7 +26,7 @@ import com.pdg.adventure.server.mapper.action.AutoTakeActionMapper;
 import com.pdg.adventure.server.mapper.action.AutoWearActionMapper;
 import com.pdg.adventure.server.support.MapperSupporter;
 
-/** Proves AUTOT/AUTOD/AUTOW/AUTOR survive real CommandMapper dispatch, i.e. their mappers are auto-registered. */
+/** Proves AutoTake/AutoDrop/AutoWear/AutoRemove survive real CommandMapper dispatch, i.e. their mappers are auto-registered. */
 class AutoTakeDropRealDispatchTest {
 
     private AnnotationConfigApplicationContext context;

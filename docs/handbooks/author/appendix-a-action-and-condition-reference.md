@@ -12,10 +12,10 @@ order, when that command fires.
 
 | Action | What it does | What you configure |
 |--------|----------------|----------------------|
-| **AUTOD (Auto Drop)** | Player drops the item named by the noun they typed; refuses if it's worn | Nothing — use it in a Response with the noun `~` |
-| **AUTOR (Auto Remove)** | Player takes off the worn item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
-| **AUTOT (Auto Take)** | Player picks up the item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
-| **AUTOW (Auto Wear)** | Player puts on the carried item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
+| **AutoDrop** | Player drops the item named by the noun they typed; refuses if it's worn | Nothing — use it in a Response with the noun `~` |
+| **AutoRemove** | Player takes off the worn item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
+| **AutoTake** | Player picks up the item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
+| **AutoWear** | Player puts on the carried item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
 | **Break** | Stops the rest of this action list — and the rest of the command chain — immediately | Nothing — pair it with a **Message** action if you want it to say something as it stops |
 | **Create Item** | Places an item into a location (bringing it into play) | The item; the destination location |
 | **Decrement Variable** | Subtracts an amount from a named variable | Variable name; amount |

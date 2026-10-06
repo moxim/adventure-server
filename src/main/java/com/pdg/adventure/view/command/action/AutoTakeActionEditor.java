@@ -6,7 +6,7 @@ import com.vaadin.flow.component.html.Span;
 import com.pdg.adventure.model.action.AutoTakeActionData;
 
 /**
- * Editor component for AutoTakeActionData (AUTOT).
+ * Editor component for AutoTakeActionData (AutoTake).
  * The action has no configurable parameters: it acts on whichever item the player named, so it is
  * meant for a response keyed on the wildcard noun (~), e.g. "TAKE ~".
  */
@@ -19,7 +19,7 @@ public class AutoTakeActionEditor extends ActionEditorComponent<AutoTakeActionDa
 
     @Override
     protected void buildUI() {
-        H4 title = new H4("AUTOT Action");
+        H4 title = new H4("AutoTake Action");
 
         Span description = new Span("The player picks up the item they named. The item is found from the noun of "
                                     + "the player's input, so it can serve every item at once.");

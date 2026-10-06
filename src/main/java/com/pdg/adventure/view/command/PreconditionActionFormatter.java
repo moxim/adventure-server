@@ -187,16 +187,16 @@ public class PreconditionActionFormatter {
             return "PICTURE " + resolvePictureName(p.getPictureId());
         }
         if (a instanceof AutoTakeActionData) {
-            return "AUTOT";
+            return "AutoTake";
         }
         if (a instanceof AutoDropActionData) {
-            return "AUTOD";
+            return "AutoDrop";
         }
         if (a instanceof AutoWearActionData) {
-            return "AUTOW";
+            return "AutoWear";
         }
         if (a instanceof AutoRemoveActionData) {
-            return "AUTOR";
+            return "AutoRemove";
         }
         if (a instanceof InventoryActionData) {
             return "INVENTORY";

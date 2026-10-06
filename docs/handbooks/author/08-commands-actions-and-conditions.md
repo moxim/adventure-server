@@ -58,7 +58,7 @@ precondition-gated variants above the catch-all one.
 > **Note:** A typical chain is a "take the key" command: one variant that
 > fires when the player already has it (*"I already have the key."*), one for
 > when it's not actually here, and a variant that succeeds. For taking,
-> dropping, wearing and removing, the **AUTOT / AUTOD / AUTOW / AUTOR**
+> dropping, wearing and removing, the **AutoTake / AutoDrop / AutoWear / AutoRemove**
 > actions in [Chapter 9](09-workflow.md#one-response-for-every-item-the-wildcard-noun)
 > do that whole job for every item at once, so you don't have to build such a
 > chain by hand for each one.

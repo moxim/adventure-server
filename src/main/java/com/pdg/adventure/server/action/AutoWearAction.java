@@ -11,7 +11,7 @@ import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.tangible.Item;
 
 /**
- * AUTOW - the wear counterpart of {@link AutoTakeAction}: puts on the carried item the player named
+ * AutoWear - the wear counterpart of {@link AutoTakeAction}: puts on the carried item the player named
  * with the noun of the current sub-command.
  * <p>
  * Outcomes: worn (SM37); already worn (SM29); carried but not wearable (SM40); the item is here

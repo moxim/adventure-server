@@ -86,7 +86,7 @@ public enum SystemMessageKey {
     SM48(48, "'", "is the termination of a list of objects (printed by both LISTOBJ and LISTAT, so take care.) (')"),
     SM49(49, "I don't have the %s.", "is printed when the player wants to drop an item that is not carried. (I don't have the %s.)"),
     SM50(50, "I'm not wearing the %s.", "is printed when the player wants to remove an item that is not worn. (I'm not wearing the %s.)"),
-    SM51(51, ".", "is the termination for a compound sentence on PUTIN / TAKEOUT (and AUTOP / AUTOT) (.)"),
+    SM51(51, ".", "is the termination for a compound sentence on PUTIN / TAKEOUT (and AUTOP / AutoTake) (.)"),
     SM52(52, "There isn't one of those in the %s.",
          "is printed when the player tries to take an item that isn't in a container. (There isn't one of those in the %s.)"),
     SM53(53, "nothing.", "is the message for LISTAT action if no objects found. (nothing.)"),

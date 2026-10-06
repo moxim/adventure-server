@@ -11,7 +11,7 @@ import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.tangible.Item;
 
 /**
- * AUTOT - the adventure builder's counterpart of PAW's AUTOG: picks up the item the player named
+ * AutoTake - the adventure builder's counterpart of PAW's AUTOG: picks up the item the player named
  * with the noun of the current sub-command, moving it from the location into the pocket.
  * <p>
  * Outcomes: taken (SM36); already carried or worn (SM25); the noun names an item, but not one

@@ -15,7 +15,7 @@ import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.tangible.Item;
 
 /**
- * Base for the AUTOT/AUTOD actions, which - unlike Take/Drop - are not bound to one item: they
+ * Base for the AutoTake/AutoDrop actions, which - unlike Take/Drop - are not bound to one item: they
  * resolve the item from the noun (and adjective) the player typed in the current sub-command,
  * the way the original PAW's AUTOG/AUTOD look the noun up in the object word table.
  */

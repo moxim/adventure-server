@@ -454,9 +454,9 @@ grid/dialog read-model record.
 | `SetVariableActionEditor` | Variable name + value text fields. |
 | `BreakActionEditor` | No extra input (stops command chain execution immediately). |
 | `AutoTakeActionEditor` / `AutoDropActionEditor` / `AutoWearActionEditor` / `AutoRemoveActionEditor` | 
-No extra input — informational panel only (AUTOT / AUTOD / AUTOW / AUTOR resolve the item from the typed noun at 
-runtime; see [`04-runtime-engine.md` § Auto item actions](04-runtime-engine.md#auto-item-actions-autot-autod-autow-autor)).
- Shown in the selector as "AUTOT (Auto Take)", "AUTOD (Auto Drop)", "AUTOW (Auto Wear)", "AUTOR (Auto Remove)". |
+No extra input — informational panel only (AutoTake / AutoDrop / AutoWear / AutoRemove resolve the item from the typed noun at 
+runtime; see [`04-runtime-engine.md` § Auto item actions](04-runtime-engine.md#auto-item-actions-autotake-autodrop-autowear-autoremove)).
+ Shown in the selector as "AutoTake", "AutoDrop", "AutoWear", "AutoRemove". |
 | `SetVariableActionEditor` / `IncrementVariableActionEditor` / `DecrementVariableActionEditor`, and the 
 `Equals`/`GreaterThan`/`LessThan`/`Same` condition editors | Variable names come from `VariableNameSelector` 
 (`view/command/`), a `ComboBox<String>` fed live (re-read on focus) by `VariableChoices.of(adventureData)` 

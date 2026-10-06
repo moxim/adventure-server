@@ -137,10 +137,10 @@ by themselves (carried items first, then the ones in the room):
 
 | Response (verb + noun) | Action | What the player sees |
 |------------------------|--------|----------------------|
-| `take` + `~` | **AUTOT** | *"I now have the …"*; *"I already have the …"*; *"There isn't one of those here."*; *"I can't carry any more things."*; *"I can't do that."* if the word isn't an item |
-| `drop` + `~` | **AUTOD** | *"I've dropped the …"*; *"I can't. I am wearing the …"* (it won't drop what you're wearing); *"I don't have the …"* (it's here, not carried); *"I don't have one of those."* |
-| `wear` + `~` | **AUTOW** | *"I am now wearing the …"*; *"I'm already wearing the …"*; *"I can't wear the …"*; *"I don't have the …"*; *"I don't have one of those."* |
-| `remove` + `~` | **AUTOR** | *"I've removed the …"*; *"I'm not wearing the …"*; *"I am not wearing any of those."* |
+| `take` + `~` | **AutoTake** | *"I now have the …"*; *"I already have the …"*; *"There isn't one of those here."*; *"I can't carry any more things."*; *"I can't do that."* if the word isn't an item |
+| `drop` + `~` | **AutoDrop** | *"I've dropped the …"*; *"I can't. I am wearing the …"* (it won't drop what you're wearing); *"I don't have the …"* (it's here, not carried); *"I don't have one of those."* |
+| `wear` + `~` | **AutoWear** | *"I am now wearing the …"*; *"I'm already wearing the …"*; *"I can't wear the …"*; *"I don't have the …"*; *"I don't have one of those."* |
+| `remove` + `~` | **AutoRemove** | *"I've removed the …"*; *"I'm not wearing the …"*; *"I am not wearing any of those."* |
 
 Add each as its own Response (Verb, Noun `~`, and a single AUTO action — they
 take no settings). The first time you open a Response for editing, the `~` noun

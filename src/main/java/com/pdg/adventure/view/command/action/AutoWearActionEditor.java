@@ -6,7 +6,7 @@ import com.vaadin.flow.component.html.Span;
 import com.pdg.adventure.model.action.AutoWearActionData;
 
 /**
- * Editor component for AutoWearActionData (AUTOW).
+ * Editor component for AutoWearActionData (AutoWear).
  * The action has no configurable parameters: it acts on whichever item the player named, so it is
  * meant for a response keyed on the wildcard noun (~), e.g. "WEAR ~".
  */
@@ -19,7 +19,7 @@ public class AutoWearActionEditor extends ActionEditorComponent<AutoWearActionDa
 
     @Override
     protected void buildUI() {
-        H4 title = new H4("AUTOW Action");
+        H4 title = new H4("AutoWear Action");
 
         Span description = new Span("The player wears the item they named. The item is found from the noun of "
                                     + "the player's input, so it can serve every item at once.");

@@ -6,7 +6,7 @@ import com.vaadin.flow.component.html.Span;
 import com.pdg.adventure.model.action.AutoDropActionData;
 
 /**
- * Editor component for AutoDropActionData (AUTOD).
+ * Editor component for AutoDropActionData (AutoDrop).
  * The action has no configurable parameters: it acts on whichever item the player named, so it is
  * meant for a response keyed on the wildcard noun (~), e.g. "DROP ~".
  */
@@ -19,7 +19,7 @@ public class AutoDropActionEditor extends ActionEditorComponent<AutoDropActionDa
 
     @Override
     protected void buildUI() {
-        H4 title = new H4("AUTOD Action");
+        H4 title = new H4("AutoDrop Action");
 
         Span description = new Span("The player drops the item they named. The item is found from the noun of "
                                     + "the player's input, so it can serve every item at once.");

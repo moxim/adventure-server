@@ -28,7 +28,7 @@ worth planning around.
 - **The World map isn't wired to your actual locations yet.** It's a
   placeholder illustration, not a live diagram of your world — see
   [Chapter 5](05-locations-and-exits.md#the-world-map).
-- **Taking and carrying have no weight limit.** The AUTOT action only checks
+- **Taking and carrying have no weight limit.** The AutoTake action only checks
   how many things the player carries, not how heavy they are.
 - **Special Words only exposes 4 of the model's 10 slots** (Taker, Dropper,
   Loader, Examiner). The others exist but have no editor screen today — in
