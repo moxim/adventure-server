@@ -277,6 +277,43 @@ class AdventureRunViewTest extends BrowserlessTest {
                 .containsExactly("A grand throne room.");
     }
 
+    // focus() reaches the browser as a pending JavaScript invocation; reading them also clears the queue.
+    private static boolean aFocusCallIsPendingFor(MessageInput anInput) {
+        // A bare view call (unlike a tester interaction) does not run the deferred before-client-response tasks.
+        UI.getCurrent().getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        return UI.getCurrent().getInternals().dumpPendingJavaScriptInvocations().stream()
+                .map(pending -> pending.getInvocation())
+                .anyMatch(invocation -> invocation.getExpression().contains("focus")
+                                        && invocation.getParameters().contains(anInput.getElement()));
+    }
+
+    @Test
+    void confirmingTheTakeover_focusesTheMessageInput() {
+        stubOpeningRoom("A grand throne room.");
+        when(sessionFactory.startReplacingActive(eq(adventureData), any(RunOwner.class))).thenReturn(session);
+        AdventureRunView conflicted = enterWhileAnotherRunIsActive();
+        MessageInput conflictedInput = find(MessageInput.class, conflicted).single();
+        aFocusCallIsPendingFor(conflictedInput); // drop whatever was queued while the view was built
+
+        test(find(ConfirmDialog.class).single()).confirm();
+
+        assertThat(aFocusCallIsPendingFor(conflictedInput)).isTrue();
+    }
+
+    @Test
+    void enteringAgainAfterGameOver_focusesTheMessageInput() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(session.submit("quit")).thenReturn(new RunResult(List.of("Bye."), true));
+        MessageInput messageInput = find(MessageInput.class, view).single();
+        test(messageInput).send("quit");
+        aFocusCallIsPendingFor(messageInput);
+
+        view.beforeEnter(eventFor("author/adventures/adv-1/test"));
+
+        assertThat(aFocusCallIsPendingFor(messageInput)).isTrue();
+    }
+
     @Test
     void gameOver_releasesTheRun() {
         stubOpeningRoom("A grand throne room.");

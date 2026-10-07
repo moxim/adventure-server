@@ -217,7 +217,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             forwardToOrigin(event);
             return;
         }
-        messageInput.setEnabled(true);
+        enableAndFocusInput();
         renderOpeningRoom();
     }
 
@@ -260,6 +260,13 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         dialog.open();
     }
 
+    // A disabled element cannot take focus, so the constructor's focus() is lost whenever the input starts out
+    // disabled (after a conflict, or after a game over on a reused view): focus it again once it is enabled.
+    private void enableAndFocusInput() {
+        messageInput.setEnabled(true);
+        messageInput.focus();
+    }
+
     private void takeOverRun() {
         try {
             session = sessionFactory.startReplacingActive(adventureData, runOwner);
@@ -268,7 +275,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             navigateBack();
             return;
         }
-        messageInput.setEnabled(true);
+        enableAndFocusInput();
         renderOpeningRoom();
     }
 
