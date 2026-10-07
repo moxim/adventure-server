@@ -119,12 +119,12 @@ public enum SystemMessageKey {
               + "items, maybe wear items, enter or leave locations.\nOr quit.)");
 
     /**
-     * The currently loaded adventure's own edits (id -> text), sparse - a key with no entry here
-     * simply reads as {@link #defaultText()}. Process-wide, like the rest of the engine's
-     * "currently loaded adventure" state (see {@code GameContext}, {@code MessagesHolder}) -
-     * installed once per adventure (re)load by {@code LoadAdventureAction}, not per turn.
+     * The overrides (id -> text) of the adventure whose turn is running on this thread, sparse - a key with no
+     * entry reads as its built-in text. Overrides belong to an adventure definition (the same for every player
+     * and saved game of it), but different adventures can run at the same time, so they are bound per thread for
+     * the duration of a run's turn (see {@link #bindOverrides}) instead of process-wide.
      */
-    private static Map<String, String> overridesByKeyId = Map.of();
+    private static final ThreadLocal<Map<String, String>> BOUND_OVERRIDES = new ThreadLocal<>();
 
     private final String id;
     private final String defaultText;
@@ -152,7 +152,8 @@ public enum SystemMessageKey {
     }
 
     public String defaultText() {
-        return overridesByKeyId.getOrDefault(id, defaultText);
+        Map<String, String> bound = BOUND_OVERRIDES.get();
+        return bound == null ? defaultText : bound.getOrDefault(id, defaultText);
     }
 
     public String sourceLocation() {
@@ -167,8 +168,27 @@ public enum SystemMessageKey {
         return Arrays.stream(values()).filter(key -> key.id.equals(anId)).findFirst();
     }
 
-    /** Replaces the installed overrides wholesale - never merges with a previous install. */
-    public static void installOverrides(Map<String, String> anOverridesByKeyId) {
-        overridesByKeyId = Map.copyOf(anOverridesByKeyId);
+    /**
+     * Binds the given overrides to the current thread until the returned binding is closed. Closing restores
+     * whatever was bound before, so nested binds are safe. Always use try-with-resources: servlet threads are
+     * reused, and an unclosed binding would leak this adventure's wording into the next request on the thread.
+     */
+    public static Binding bindOverrides(Map<String, String> anOverridesByKeyId) {
+        Map<String, String> previous = BOUND_OVERRIDES.get();
+        BOUND_OVERRIDES.set(Map.copyOf(anOverridesByKeyId));
+        return () -> {
+            if (previous == null) {
+                BOUND_OVERRIDES.remove();
+            } else {
+                BOUND_OVERRIDES.set(previous);
+            }
+        };
+    }
+
+    /** Undoes a {@link #bindOverrides} call; unlike {@link AutoCloseable#close()} it throws nothing. */
+    @FunctionalInterface
+    public interface Binding extends AutoCloseable {
+        @Override
+        void close();
     }
 }
