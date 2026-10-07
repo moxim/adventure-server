@@ -109,6 +109,28 @@ public enum SystemMessageKey {
          "is printed when LightAction changes an item's lumen value. (The %1$s's light level is now %2$s.)"),
     SM67(67, " (lit)", "is printed when an item is lit. ( (lit))"),
 
+    // Saving and loading a game (SaveGameAction / LoadGameAction); descriptive ids, no PAW counterpart.
+    SAVE_DONE("Game saved in slot %s.", "SaveGameAction",
+              "is printed after a game was saved. (Game saved in slot %s.)"),
+    SAVE_FULL("All %s slots are taken. Use SAVE with a slot number (1-%s) to replace one.", "SaveGameAction",
+              "is printed when SAVE finds no free slot. (All %s slots are taken. Use SAVE with a slot number (1-%s) to replace one.)"),
+    SLOT_INVALID("There are only slots 1 to %s.", "SaveGameAction",
+                 "is printed when SAVE or LOAD gets something that is not a slot number. (There are only slots 1 to %s.)"),
+    SAVELOAD_UNAVAILABLE("Saving and loading are not available here.", "SaveGameAction",
+                         "is printed when SAVE or LOAD runs outside a play session. (Saving and loading are not available here.)"),
+    LOAD_LIST_HEADER("Saved games:", "LoadGameAction",
+                     "is printed above the list of saved games. (Saved games:)"),
+    LOAD_NONE("You have no saved games.", "LoadGameAction",
+              "is printed when LOAD finds no saved games. (You have no saved games.)"),
+    LOAD_DONE("Game restored from slot %s.", "LoadGameAction",
+              "is printed after a saved game was restored. (Game restored from slot %s.)"),
+    LOAD_EMPTY_SLOT("Slot %s holds no saved game.", "LoadGameAction",
+                    "is printed when LOAD names a slot without a saved game. (Slot %s holds no saved game.)"),
+    LOAD_CANNOT("That saved game can no longer be loaded.", "LoadGameAction",
+                "is printed when a saved game refers to a location that no longer exists. (That saved game can no longer be loaded.)"),
+    LOAD_VERSION_NOTE("(This game was saved with version %s; the adventure is now at version %s.)", "LoadGameAction",
+                      "is printed after a restore when the adventure changed version since the save. ((This game was saved with version %s; the adventure is now at version %s.))"),
+
     // Currently never registered for a real adventure - CommandFactory looks this id up
     // unconditionally, which NPEs outside the console demo. A live bug, outside this feature's
     // scope (that's the deferred engine-rewiring phase). Catalogued anyway so it's ready once fixed.
