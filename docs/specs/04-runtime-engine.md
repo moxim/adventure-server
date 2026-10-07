@@ -461,6 +461,8 @@ author-placeable:
 | `AutoDropAction(gameContext, allItems)` | **AutoDrop.** Resolve the item from the typed noun and drop it into the current location. |
 | `AutoWearAction(gameContext, allItems)` | **AutoWear.** Resolve the item from the typed noun and wear it (delegates to `WearAction`). |
 | `AutoRemoveAction(gameContext, allItems)` | **AutoRemove.** Resolve the item from the typed noun and take it off (delegates to `RemoveAction`). |
+| `SaveGameAction(gameContext, snapshotter, savedGameService)` | **SaveGame.** Save the running game into the typed slot or the first free one — see [§ Saving and loading games](#saving-and-loading-games). |
+| `LoadGameAction(gameContext, snapshotter, savedGameService)` | **LoadGame.** List the player's saves, or restore the typed slot in place. |
 | `LightAction(item, lumen)` | Set the item's light level absolutely; emits `SM66`. |
 | `PictureAction(pictureId, gameContext)` | Set `gameContext.currentPictureId` so the play screen shows that picture; always SUCCESS with no text (informational-only). |
 | `MoveItemAction(item, dest, msgs)` | The primitive: remove the item from its parent if any, add it to `dest` if not full. Emits `SM54` (moved) / `SM55` (full) / `SM56` (can't). |
@@ -628,6 +630,29 @@ as a vestigial stub with its old `GameLoop` wiring commented out). The only
 adventure boot today is `AdventureRunSessionFactory.start(AdventureData, RunOwner)` —
 see the next section.
 
+## Saving and loading games
+
+The author binds a Response for the verb `save` (noun `~`) to **SaveGame** and one for `load` (noun `~`)
+to **LoadGame**; the wildcard noun also matches "no noun".
+
+- `save` takes the lowest free slot of the player's 10 for this adventure (refused when all are taken),
+  `save N` overwrites slot N silently, `load` lists the saves as `N. <title> - yyyy-MM-dd HH:mm:ss`, and
+  `load N` restores slot N in place and describes the location. After `load` the player may type just the
+  number: the parser infers the verb.
+- A `GameStateSnapshotter` captures a `GameSnapshotData` (current location and picture id; every known item id;
+  the ordered contents of each registered container; worn flags; lumen; per-location visit counts; variables).
+  Placement is read from the containers, not from `getParentContainer()`, because `DestroyAction` leaves that
+  pointer stale. `restore` is best-effort: it checks the saved location first (and changes nothing if it is gone),
+  takes every known item out of its container, sets each saved container's contents in order, reapplies the item
+  state, visits and variables, and moves the player. Ids that no longer exist are skipped; what the save does
+  not mention is left alone.
+- `SavedGameData` (Mongo collection `savedgames`) has the deterministic id `<userId>:<adventureId>:<slot>`, so
+  saving into a slot is an upsert. `SavedGameService` implements the slot rules; the player comes from the
+  `GameContext.RunIdentity` the factory sets. A save records the adventure's `builderVersion`; `load` appends a
+  warning when both versions are known and differ.
+- All texts are `SystemMessageKey`s (`SAVE_DONE`, `SAVE_FULL`, `SLOT_INVALID`, `SAVELOAD_UNAVAILABLE`,
+  `LOAD_LIST_HEADER`, `LOAD_NONE`, `LOAD_DONE`, `LOAD_EMPTY_SLOT`, `LOAD_CANNOT`, `LOAD_VERSION_NOTE`).
+
 ## AdventureRunSession: the in-browser play surface
 
 `server/engine/AdventureRunSession.java` and `AdventureRunSessionFactory.java`
@@ -640,6 +665,8 @@ engine, without touching `GameLoop`/`GameContext` directly:
      this browser session already has an active run (`ActiveRun`).
      `startReplacingActive` is the explicit takeover and `release(RunOwner)`
      ends a run (owner-checked, and it clears the session's registries).
+   - Puts a `GameContext.RunIdentity` (player id, adventure id and title, builder
+     version) on the session's `GameContext`; `release` clears it.
    - Loads the adventure into the session's engine via `LoadAdventureAction`
      (its inverted success signal — throwing `ReloadAdventureException` on
      success, returning normally on failure — is unwrapped into a plain
@@ -648,7 +675,8 @@ engine, without touching `GameLoop`/`GameContext` directly:
    - `registerBaseVerbs` adds a small set of always-available words directly
      on the `Vocabulary` — `quit`/`exit`/`bye`,
      `describe`/`look`/`l`/`desc`/`examine`/`x`, `help`, `inventory`/`i`,
-     plus `and` (`CONJUNCTION`, synonym `then`) and `it` (`PRONOUN`) — so
+     plus `and` (`CONJUNCTION`, synonym `then`) `it` (`PRONOUN`) and the slot numbers `1`–`10` as nouns (the parser drops unknown
+     words, and SAVE/LOAD take their slot from the typed noun) — so
      compound commands and pronoun back-references work regardless of the
      author's own vocabulary/special-word setup. A run session is scoped to
      one adventure, so there is no adventure-switching / `load X` wiring.
@@ -726,11 +754,11 @@ conditions caught at the call site (no global `@ControllerAdvice`).
   verb/adjective/noun slots: multi-noun objects, prepositions ("put X in Y"),
   and articles are unsupported. A pluggable interface should be defined so a
   future implementation can replace `Parser.handle` without ripple changes.
-- **Save / Load game state.** `VocabularyData.saveWord` and `loadWord` slots
-  exist; `LoadAdventureAction` covers adventure-level reloading. There is no
-  per-game *save state* (variables, container snapshot) yet, and
-  `AdventureRunView`/`AdventureRunSession` do not wire `save`/`load` at all
-  — a run session is one continuous sitting.
+- **Saved games** are restored in place (see [Saving and loading games](#saving-and-loading-games)):
+  an item the author added after a save keeps its current position on `load`,
+  `save 11` behaves like a bare `save` (the parser drops unknown words), saves
+  cannot be deleted, and the `VocabularyData.saveWord` / `loadWord` slots are still
+  unused by the engine. `LoadAdventureAction` remains the adventure-level reload.
 - **`AmbiguousCommandException`** is declared but not used by `CommandExecutor`,
   which emits a literal clarification string instead. Either retire the
   exception or route the message through it.

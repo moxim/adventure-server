@@ -364,7 +364,7 @@ table with severity and pointer:
 | **Low** | Engine state is per Vaadin session, not per tab; no session persistence | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps) |
 | **Medium** | NLP parser: no prepositions / multi-noun / articles (compound `and`/`then`/`.` and pronoun `it` are now handled) | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps). |
 | **Medium** | Spring AI / Ollama integration commented out, base URL hardcoded | Same. |
-| **Medium** | No per-game save state (variables not persisted); `AdventureRunView` sessions don't wire save/load at all | [`03-domain-model.md` § Known gaps](03-domain-model.md#known-gaps), [`02-functional-requirements.md` § Known gaps](02-functional-requirements.md#known-gaps). |
+| **Low** | Saved games are restored in place (items the author added after a save keep their position); saves cannot be deleted; `saveWord` / `loadWord` slots unused | [`02-functional-requirements.md` § Known gaps](02-functional-requirements.md#known-gaps), [`04-runtime-engine.md` § Saving and loading games](04-runtime-engine.md#saving-and-loading-games). |
 | **Medium** | `AmbiguousCommandException` declared but unused | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps). |
 | **Low** | `LocationMapView` is a non-functional static-image placeholder, not bound to real location data | [`07-ui-and-navigation.md` § Known gaps](07-ui-and-navigation.md#known-gaps). |
 | **Low** | Deleting an adventure or an exit skips confirmation (every other delete path confirms) | Same. |

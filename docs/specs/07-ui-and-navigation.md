@@ -457,6 +457,7 @@ grid/dialog read-model record.
 No extra input — informational panel only (AutoTake / AutoDrop / AutoWear / AutoRemove resolve the item from the typed noun at 
 runtime; see [`04-runtime-engine.md` § Auto item actions](04-runtime-engine.md#auto-item-actions-autotake-autodrop-autowear-autoremove)).
  Shown in the selector as "AutoTake", "AutoDrop", "AutoWear", "AutoRemove". |
+| `SaveGameActionEditor` / `LoadGameActionEditor` | No extra input — informational panel only (SaveGame saves into the typed slot or the first free one; LoadGame lists the saves or restores the typed slot; both are meant for a Response on the wildcard noun `~`). Shown in the selector as "Save Game" and "Load Game". |
 | `SetVariableActionEditor` / `IncrementVariableActionEditor` / `DecrementVariableActionEditor`, and the 
 `Equals`/`GreaterThan`/`LessThan`/`Same` condition editors | Variable names come from `VariableNameSelector` 
 (`view/command/`), a `ComboBox<String>` fed live (re-read on focus) by `VariableChoices.of(adventureData)` 

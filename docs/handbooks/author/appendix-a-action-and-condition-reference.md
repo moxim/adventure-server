@@ -25,12 +25,14 @@ order, when that command fires.
 | **Increment Variable** | Adds an amount to a named variable | Variable name; amount |
 | **Inventory** | Lists everything the player carries | Nothing — fully automatic |
 | **Light** | Sets an item's light level (lumen), e.g. turning a lamp on or off | The item; a lumen value from 0 (dark) to 100 (full brightness) |
+| **Load Game** | Without a slot number lists the player's saved games; with one (`load 3`) restores that game and describes the place again | Nothing — use it in a Response with the verb `load` and the noun `~` |
 | **Message** | Prints a message from your [message catalog](10-messages.md) | The message (picked by its summary) |
 | **Move Item** | Moves an item into a different container | The item; the destination (a location or the player's pocket) |
 | **Move Player** | Moves the player to a location and shows its description | Destination location |
 | **Picture** | Shows a [picture](11-pictures.md) in the play screen's picture panel until the next move, look or Picture action | The picture |
 | **Quit** | Ends the game session | Nothing — pair it with a **Message** action for a farewell line |
 | **Remove** | Takes a worn item off the player | The item |
+| **Save Game** | Saves the running game into the slot the player typed (`save 3`), or the first free one; each player has 10 slots per adventure | Nothing — use it in a Response with the verb `save` and the noun `~` |
 | **Set Variable** | Sets a named variable to an exact value | Variable name; value |
 | **Take** | Player picks up an item into their pocket | The item |
 | **Wear** | Player puts on a wearable item | The item |

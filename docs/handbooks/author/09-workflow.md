@@ -148,6 +148,22 @@ is added to your vocabulary for you. One caveat: because items' own commands
 are tried first, an item that still has its own `take` or `drop` command
 answers itself and the wildcard Response never sees it.
 
+### Saving and loading
+
+The same wildcard lets players keep their progress. Create the verbs `save` and `load` in your vocabulary, then add
+two Responses, each with a single action that takes no settings:
+
+| Response (verb + noun) | Action | What the player can type |
+|------------------------|--------|--------------------------|
+| `save` + `~` | **Save Game** | `save` (first free slot), `save 3` (slot 3, replacing what was there) |
+| `load` + `~` | **Load Game** | `load` (lists the saved games), `load 3` (restores slot 3) — or `load`, then just `3` |
+
+Every player has 10 slots per adventure; the list reads *"1. The Demo - 2026-10-07 13:43:45"*. A load puts the game
+back in place — locations, items, what is worn, lights, variables — and describes where the player is. If you change the
+adventure after a player saved, things that no longer exist are skipped and a save whose location is gone says it can no
+longer be loaded. Items you added after the save stay where they are. Numbers above 10 are not words to the game, so
+`save 11` behaves like a plain `save`.
+
 ## What's next
 
 Workflow commands often want to print text — [Chapter 10:
