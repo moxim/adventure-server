@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Import;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.server.AdventureConfig;
+import com.pdg.adventure.support.FakeSessionScopeConfig;
 
 /**
  * Guards against the {@link VariableProvider} bean being registered twice in the real
@@ -20,7 +21,7 @@ import com.pdg.adventure.server.AdventureConfig;
 class VariableProviderWiringTest {
 
     @Configuration
-    @Import(AdventureConfig.class)
+    @Import({FakeSessionScopeConfig.class, AdventureConfig.class})
     @ComponentScan(basePackages = "com.pdg.adventure.server.support")
     static class ProbeConfig {
     }
@@ -29,7 +30,7 @@ class VariableProviderWiringTest {
     void onlyOneVariableProviderBeanExists() {
         try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ProbeConfig.class)) {
             String[] names = context.getBeanNamesForType(VariableProvider.class);
-            assertThat(names).hasSize(1);
+            assertThat(names).filteredOn(name -> !name.startsWith("scopedTarget.")).hasSize(1);
         }
     }
 }

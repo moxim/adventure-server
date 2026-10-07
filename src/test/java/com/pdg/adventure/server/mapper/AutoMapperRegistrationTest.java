@@ -18,9 +18,10 @@ import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
+import com.pdg.adventure.support.FakeSessionScopeConfig;
 
 @ExtendWith(SpringExtension.class)
-@Import({AdventureConfig.class, MapperSupporter.class, VocabularyMapper.class, DescriptionMapper.class, AutoMapperRegistrationProcessor.class})
+@Import({FakeSessionScopeConfig.class, AdventureConfig.class, MapperSupporter.class, VocabularyMapper.class, DescriptionMapper.class, AutoMapperRegistrationProcessor.class})
 class AutoMapperRegistrationTest {
 
     // AdventureConfig has a @Lazy GameContext constructor parameter; a mock satisfies the dependency

@@ -13,6 +13,7 @@ import com.pdg.adventure.model.WorkflowData;
 import com.pdg.adventure.server.location.Location;
 
 @Component
+@PerBrowserSession
 public class GameContext {
 
     private Workflow workflow;
@@ -41,7 +42,7 @@ public class GameContext {
 
     /**
      * Redirects tell() output, e.g. so a browser Test session can capture gameplay text
-     * instead of it going to the console. GameContext is a process-wide singleton, so callers
+     * instead of it going to the console. GameContext is scoped to the browser session, so callers
      * must install the sink immediately before driving the engine and clear it (pass null)
      * right after — never leave a non-default sink installed between calls.
      */

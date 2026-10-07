@@ -16,6 +16,7 @@ import com.pdg.adventure.server.annotation.AutoMapperRegistrationProcessor;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.mapper.action.BreakActionMapper;
 import com.pdg.adventure.server.support.MapperSupporter;
+import com.pdg.adventure.support.FakeSessionScopeConfig;
 
 /**
  * Proves a BreakActionData inside a CommandData survives real CommandMapper.mapToBO dispatch -
@@ -39,7 +40,8 @@ class BreakActionRealDispatchTest {
     @Test
     void breakActionData_dispatchesThroughTheRealMapperRegistry_insideACommand() {
         context = new AnnotationConfigApplicationContext();
-        context.register(GameContext.class, AdventureConfig.class, MapperSupporter.class,
+        context.register(FakeSessionScopeConfig.class, GameContext.class, AdventureConfig.class,
+                         MapperSupporter.class,
                          AutoMapperRegistrationProcessor.class, CommandDescriptionMapper.class,
                          CommandMapper.class, BreakActionMapper.class);
         context.refresh();
