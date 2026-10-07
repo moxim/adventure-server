@@ -16,6 +16,16 @@ class PreconditionActionFormatterActionsTest {
     private final PreconditionActionFormatter formatter = new PreconditionActionFormatter(adventureData);
 
     @Test
+    void saveGame() {
+        assertThat(formatter.formatAction(new SaveGameActionData())).isEqualTo("SAVE");
+    }
+
+    @Test
+    void loadGame() {
+        assertThat(formatter.formatAction(new LoadGameActionData())).isEqualTo("LOAD");
+    }
+
+    @Test
     void setVariable() {
         assertThat(formatter.formatAction(new SetVariableActionData("b_fill", 1))).isEqualTo("SETVAR b_fill 1");
     }
