@@ -23,14 +23,14 @@ class ActiveRunTest {
 
     @Test
     void aRegisteredRunWithALivingOwner_isActive() {
-        activeRun.register(newSession(), new RunOwner());
+        activeRun.register(newSession(), new RunOwner("player-1"));
 
         assertThat(activeRun.isActive()).isTrue();
     }
 
     @Test
     void whenTheOwnerIsGone_theRunIsNoLongerActive() {
-        RunOwner owner = new RunOwner();
+        RunOwner owner = new RunOwner("player-1");
         activeRun.register(newSession(), owner);
 
         owner.markGone();
@@ -41,7 +41,7 @@ class ActiveRunTest {
     @Test
     void whenTheGameIsOver_theRunIsNoLongerActive() {
         AdventureRunSession session = newSession();
-        activeRun.register(session, new RunOwner());
+        activeRun.register(session, new RunOwner("player-1"));
 
         session.supersede();
 
@@ -50,7 +50,7 @@ class ActiveRunTest {
 
     @Test
     void release_byTheOwner_clearsTheRun_andReportsTrue() {
-        RunOwner owner = new RunOwner();
+        RunOwner owner = new RunOwner("player-1");
         activeRun.register(newSession(), owner);
 
         assertThat(activeRun.release(owner)).isTrue();
@@ -59,16 +59,16 @@ class ActiveRunTest {
 
     @Test
     void release_byAnyoneElse_keepsTheRun_andReportsFalse() {
-        activeRun.register(newSession(), new RunOwner());
+        activeRun.register(newSession(), new RunOwner("player-1"));
 
-        assertThat(activeRun.release(new RunOwner())).isFalse();
+        assertThat(activeRun.release(new RunOwner("player-1"))).isFalse();
         assertThat(activeRun.isActive()).isTrue();
     }
 
     @Test
     void supersedeActive_endsTheActiveSession() {
         AdventureRunSession session = newSession();
-        activeRun.register(session, new RunOwner());
+        activeRun.register(session, new RunOwner("player-1"));
 
         activeRun.supersedeActive();
 

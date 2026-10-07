@@ -32,6 +32,12 @@ public class GameContext {
     private String currentAdjective = VocabularyData.EMPTY_STRING;
     private String currentPictureId;
 
+    /** Who is playing which adventure, and the builder version the adventure carried; set when a run starts. */
+    public record RunIdentity(String playerId, String adventureId, String adventureTitle, String builderVersion) {
+    }
+
+    private RunIdentity runIdentity;
+
     public void show(Describable aThing) {
         tell(aThing.getLongDescription());
     }
@@ -148,6 +154,14 @@ public class GameContext {
 
     public String getCurrentPictureId() {
         return currentPictureId;
+    }
+
+    public RunIdentity getRunIdentity() {
+        return runIdentity;
+    }
+
+    public void setRunIdentity(RunIdentity aRunIdentity) {
+        runIdentity = aRunIdentity;
     }
 
     public Workflow setUpWorkflows() {

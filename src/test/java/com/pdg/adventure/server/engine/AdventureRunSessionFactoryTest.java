@@ -93,7 +93,7 @@ class AdventureRunSessionFactoryTest {
         Adventure adventure = adventureBoundTo(startLocation, "loc-1");
         when(adventureMapper.mapToBO(adventureData)).thenReturn(adventure);
 
-        AdventureRunSession session = factory.start(adventureData, new RunOwner());
+        AdventureRunSession session = factory.start(adventureData, new RunOwner("player-1"));
         RunResult result = session.submit("look");
 
         assertThat(result.gameOver()).isFalse();
@@ -112,7 +112,7 @@ class AdventureRunSessionFactoryTest {
         Adventure adventure = adventureBoundTo(startLocation, "loc-1");
         when(adventureMapper.mapToBO(adventureData)).thenReturn(adventure);
 
-        AdventureRunSession session = factory.start(adventureData, new RunOwner());
+        AdventureRunSession session = factory.start(adventureData, new RunOwner("player-1"));
         RunResult result = session.submit("inventory");
 
         assertThat(result.lines()).contains(SystemMessageKey.SM9.defaultText());
@@ -128,7 +128,7 @@ class AdventureRunSessionFactoryTest {
         Adventure adventure = adventureBoundTo(startLocation, "loc-1");
         when(adventureMapper.mapToBO(adventureData)).thenReturn(adventure);
 
-        AdventureRunSession session = factory.start(adventureData, new RunOwner());
+        AdventureRunSession session = factory.start(adventureData, new RunOwner("player-1"));
         session.submit("look");
         assertThat(gameContext.getCurrentPictureId()).isEqualTo("pic-1");
 
@@ -150,7 +150,7 @@ class AdventureRunSessionFactoryTest {
         Adventure adventure = adventureBoundTo(startLocation, "loc-1");
         when(adventureMapper.mapToBO(adventureData)).thenReturn(adventure);
 
-        AdventureRunSession session = factory.start(adventureData, new RunOwner());
+        AdventureRunSession session = factory.start(adventureData, new RunOwner("player-1"));
         RunResult result = session.submit("describe and inventory");
 
         assertThat(result.lines()).anySatisfy(line -> assertThat(line).contains("A grand throne room."));
@@ -165,7 +165,7 @@ class AdventureRunSessionFactoryTest {
         Adventure adventure = adventureBoundTo(startLocation, "loc-1");
         when(adventureMapper.mapToBO(adventureData)).thenReturn(adventure);
 
-        factory.start(adventureData, new RunOwner());
+        factory.start(adventureData, new RunOwner("player-1"));
 
         assertThat(vocabulary.getType("it")).isEqualTo(Word.Type.PRONOUN);
     }
@@ -177,7 +177,7 @@ class AdventureRunSessionFactoryTest {
 
         when(adventureService.findAdventureById("missing-adv")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> factory.start(adventureData, new RunOwner()))
+        assertThatThrownBy(() -> factory.start(adventureData, new RunOwner("player-1")))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("missing-adv");
     }
@@ -194,9 +194,9 @@ class AdventureRunSessionFactoryTest {
     @Test
     void start_whileAnotherRunIsActive_throwsAndNeverTouchesTheEngineAgain() {
         AdventureData adventureData = startableAdventure();
-        factory.start(adventureData, new RunOwner());
+        factory.start(adventureData, new RunOwner("player-1"));
 
-        assertThatThrownBy(() -> factory.start(adventureData, new RunOwner()))
+        assertThatThrownBy(() -> factory.start(adventureData, new RunOwner("player-1")))
                 .isInstanceOf(RunAlreadyActiveException.class);
 
         verify(adventureMapper, times(1)).mapToBO(adventureData);
@@ -205,11 +205,11 @@ class AdventureRunSessionFactoryTest {
     @Test
     void start_afterTheOwnerIsGone_succeeds() {
         AdventureData adventureData = startableAdventure();
-        RunOwner first = new RunOwner();
+        RunOwner first = new RunOwner("player-1");
         factory.start(adventureData, first);
         first.markGone();
 
-        AdventureRunSession second = factory.start(adventureData, new RunOwner());
+        AdventureRunSession second = factory.start(adventureData, new RunOwner("player-1"));
 
         assertThat(second.isGameOver()).isFalse();
         verify(adventureMapper, times(2)).mapToBO(adventureData);
@@ -218,10 +218,10 @@ class AdventureRunSessionFactoryTest {
     @Test
     void start_afterTheRunEnded_succeeds() {
         AdventureData adventureData = startableAdventure();
-        AdventureRunSession first = factory.start(adventureData, new RunOwner());
+        AdventureRunSession first = factory.start(adventureData, new RunOwner("player-1"));
         first.submit("quit");
 
-        AdventureRunSession second = factory.start(adventureData, new RunOwner());
+        AdventureRunSession second = factory.start(adventureData, new RunOwner("player-1"));
 
         assertThat(second.isGameOver()).isFalse();
     }
@@ -229,9 +229,9 @@ class AdventureRunSessionFactoryTest {
     @Test
     void startReplacingActive_supersedesTheOldSession() {
         AdventureData adventureData = startableAdventure();
-        AdventureRunSession old = factory.start(adventureData, new RunOwner());
+        AdventureRunSession old = factory.start(adventureData, new RunOwner("player-1"));
 
-        AdventureRunSession replacement = factory.startReplacingActive(adventureData, new RunOwner());
+        AdventureRunSession replacement = factory.startReplacingActive(adventureData, new RunOwner("player-1"));
         RunResult oldResult = old.submit("look");
 
         assertThat(oldResult.gameOver()).isTrue();
@@ -242,7 +242,7 @@ class AdventureRunSessionFactoryTest {
     @Test
     void release_byTheCurrentOwner_clearsTheRegistriesAndTheContext_andAllowsANewStart() {
         AdventureData adventureData = startableAdventure();
-        RunOwner owner = new RunOwner();
+        RunOwner owner = new RunOwner("player-1");
         factory.start(adventureData, owner);
         items.put("sword", mock(Item.class));
         gameContext.setCurrentPictureId("pic-1");
@@ -252,22 +252,22 @@ class AdventureRunSessionFactoryTest {
         assertThat(items).isEmpty();
         assertThat(gameContext.getCurrentLocation()).isNull();
         assertThat(gameContext.getCurrentPictureId()).isNull();
-        assertThat(factory.start(adventureData, new RunOwner()).isGameOver()).isFalse();
+        assertThat(factory.start(adventureData, new RunOwner("player-1")).isGameOver()).isFalse();
     }
 
     @Test
     void release_byAStaleOwner_keepsTheNewerRunsRegistries() {
         AdventureData adventureData = startableAdventure();
-        RunOwner stale = new RunOwner();
+        RunOwner stale = new RunOwner("player-1");
         factory.start(adventureData, stale);
         stale.markGone();
-        factory.start(adventureData, new RunOwner());
+        factory.start(adventureData, new RunOwner("player-1"));
         items.put("sword", mock(Item.class));
 
         factory.release(stale);
 
         assertThat(items).containsKey("sword");
-        assertThatThrownBy(() -> factory.start(adventureData, new RunOwner()))
+        assertThatThrownBy(() -> factory.start(adventureData, new RunOwner("player-1")))
                 .isInstanceOf(RunAlreadyActiveException.class);
     }
 
@@ -276,7 +276,7 @@ class AdventureRunSessionFactoryTest {
         AdventureData adventureData = startableAdventure();
         adventureData.getSystemMessages().put("9", new SystemMessageData("9", "Carrying:"));
 
-        AdventureRunSession session = factory.start(adventureData, new RunOwner());
+        AdventureRunSession session = factory.start(adventureData, new RunOwner("player-1"));
 
         assertThat(session.runBound(SystemMessageKey.SM9::defaultText)).isEqualTo("Carrying:");
         assertThat(SystemMessageKey.SM9.defaultText()).isNotEqualTo("Carrying:");
@@ -295,10 +295,38 @@ class AdventureRunSessionFactoryTest {
             return adventure;
         });
 
-        factory.start(adventureData, new RunOwner());
+        factory.start(adventureData, new RunOwner("player-1"));
 
         assertThat(seenWhileMapping).containsExactly("Carrying:");
         assertThat(SystemMessageKey.SM9.defaultText()).isNotEqualTo("Carrying:");
+    }
+
+    @Test
+    void start_putsTheRunIdentityOnTheContext_andReleaseClearsIt() {
+        AdventureData adventureData = startableAdventure();
+        adventureData.setTitle("The Demo");
+        adventureData.setBuilderVersion("1.2.3");
+        RunOwner owner = new RunOwner("player-7");
+
+        factory.start(adventureData, owner);
+
+        assertThat(gameContext.getRunIdentity())
+                .isEqualTo(new GameContext.RunIdentity("player-7", "adv-1", "The Demo", "1.2.3"));
+
+        factory.release(owner);
+
+        assertThat(gameContext.getRunIdentity()).isNull();
+    }
+
+    @Test
+    void start_registersTheSlotNumbersOneToTenAsNouns() {
+        AdventureData adventureData = startableAdventure();
+
+        factory.start(adventureData, new RunOwner("player-1"));
+
+        for (int slot = 1; slot <= 10; slot++) {
+            assertThat(vocabulary.getType(Integer.toString(slot))).isEqualTo(Word.Type.NOUN);
+        }
     }
 
     private static AdventureData adventureWithOneLocation(String anAdventureId, String aLocationId) {

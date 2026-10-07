@@ -77,7 +77,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     private final Image pictureDisplay = new Image();
     private final Div pictureContainer = new Div(pictureDisplay);
 
-    private final RunOwner runOwner = new RunOwner();
+    private final RunOwner runOwner = new RunOwner(ViewSupporter.getCurrentUser().getId());
 
     private boolean runConflict;
     private transient AdventureRunSession session;

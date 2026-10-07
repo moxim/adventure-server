@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.pdg.adventure.CommandFactory;
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.SavedGameData;
 import com.pdg.adventure.model.SystemMessageData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.AdventureConfig;
@@ -92,6 +93,9 @@ public class AdventureRunSessionFactory {
         // that reads SystemMessageKey text keeps seeing the adventure's own wording.
         try (SystemMessageKey.Binding ignored = SystemMessageKey.bindOverrides(overrides)) {
             loadIntoSharedEngine(anAdventureData);
+            gameContext.setRunIdentity(new GameContext.RunIdentity(anOwner.getPlayerId(), anAdventureData.getId(),
+                                                                   anAdventureData.getTitle(),
+                                                                   anAdventureData.getBuilderVersion()));
 
             Vocabulary vocabulary = adventureConfig.allWords();
             registerBaseVerbs(vocabulary);
@@ -120,6 +124,7 @@ public class AdventureRunSessionFactory {
         gameContext.setCurrentLocation(null);
         gameContext.setPocket(null);
         gameContext.setCurrentPictureId(null);
+        gameContext.setRunIdentity(null);
     }
 
     private static Map<String, String> systemMessageOverrides(AdventureData anAdventureData) {
@@ -163,5 +168,12 @@ public class AdventureRunSessionFactory {
         aVocabulary.createNewWord("and", Word.Type.CONJUNCTION);
         aVocabulary.createSynonym("then", "and");
         aVocabulary.createNewWord("it", Word.Type.PRONOUN);
+        // The parser drops unknown words, so the slot numbers of SAVE/LOAD must be words.
+        for (int slot = 1; slot <= SavedGameData.SAVED_GAME_SLOTS; slot++) {
+            String digit = Integer.toString(slot);
+            if (aVocabulary.findWord(digit).isEmpty()) {
+                aVocabulary.createNewWord(digit, Word.Type.NOUN);
+            }
+        }
     }
 }
