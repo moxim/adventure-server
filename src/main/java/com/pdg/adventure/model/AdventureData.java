@@ -45,6 +45,10 @@ public class AdventureData extends DatedData {
 
     private Map<String, SystemMessageData> systemMessages;
 
+    // The builder version that last wrote this adventure (null until the first save by a version that stamps it);
+    // see AdventureService.saveAdventureData. Saved games record it so load can warn about a mismatch.
+    private String builderVersion;
+
     // Variable names are free text and may contain characters that are
     // illegal in Mongo field names ('.', leading '$').
     private VariableData variableData;

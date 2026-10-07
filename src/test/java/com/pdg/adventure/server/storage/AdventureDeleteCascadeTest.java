@@ -23,6 +23,7 @@ import com.pdg.adventure.server.storage.mongo.UuidIdGenerationMongoEventListener
 import com.pdg.adventure.server.storage.repository.AdventureRepository;
 import com.pdg.adventure.server.storage.repository.LocationRepository;
 import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.storage.service.BuilderVersion;
 
 /**
  * Deleting an adventure must remove every document that belongs to it: locations, their
@@ -131,7 +132,8 @@ class AdventureDeleteCascadeTest {
         // when: deleting one location the way LocationsMenuView does — remove it from the
         // adventure's map, delete the location, save the adventure
         AdventureService adventureService = new AdventureService(locationRepository, adventureRepository,
-                                                                 null, null, cascadeDeleteHelper, null);
+                                                                 null, null, cascadeDeleteHelper, null,
+                                                                 BuilderVersion.of(null));
         adventure.getLocationData().remove(doomedLocation.getId());
         adventureService.deleteLocation(doomedLocation.getId());
         adventureService.saveAdventureData(adventure);

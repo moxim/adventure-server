@@ -31,19 +31,22 @@ public class AdventureService {
     private final VocabularyRepository vocabularyRepository;
     private final CascadeDeleteHelper cascadeDeleteHelper;
     private final PictureRepository pictureRepository;
+    private final BuilderVersion builderVersion;
 
     public AdventureService(LocationRepository aLocationRepository,
                             AdventureRepository anAdventureRepository,
                             WordRepository aWordRepository,
                             VocabularyRepository aVocabularyRepository,
                             CascadeDeleteHelper aCascadeDeleteHelper,
-                            PictureRepository aPictureRepository) {
+                            PictureRepository aPictureRepository,
+                            BuilderVersion aBuilderVersion) {
         locationRepository = aLocationRepository;
         adventureRepository = anAdventureRepository;
         wordRepository = aWordRepository;
         vocabularyRepository = aVocabularyRepository;
         cascadeDeleteHelper = aCascadeDeleteHelper;
         pictureRepository = aPictureRepository;
+        builderVersion = aBuilderVersion;
     }
 
     public LocationData findLocationById(String id) {
@@ -89,6 +92,7 @@ public class AdventureService {
         LOG.debug("Saving adventure data: {}", anAdventure);
         LOG.info("Saving adventure data: {}", anAdventure.getId());
         preProcess(anAdventure);
+        builderVersion.current().ifPresent(anAdventure::setBuilderVersion);
         adventureRepository.save(anAdventure);
     }
 

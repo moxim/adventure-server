@@ -23,6 +23,7 @@ import com.pdg.adventure.server.storage.repository.PictureRepository;
 import com.pdg.adventure.server.storage.repository.VocabularyRepository;
 import com.pdg.adventure.server.storage.repository.WordRepository;
 import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.storage.service.BuilderVersion;
 
 @ExtendWith(MockitoExtension.class)
 class AdventureServiceTest {
@@ -39,7 +40,7 @@ class AdventureServiceTest {
     @BeforeEach
     void setUp() {
         adventureService = new AdventureService(locationRepository, adventureRepository, wordRepository,
-                vocabularyRepository, cascadeDeleteHelper, pictureRepository);
+                vocabularyRepository, cascadeDeleteHelper, pictureRepository, BuilderVersion.of("9.9.9"));
     }
 
     @Test
@@ -85,6 +86,30 @@ class AdventureServiceTest {
         when(locationRepository.findAll()).thenReturn(List.of(new LocationData(), new LocationData(), new LocationData()));
 
         assertThat(adventureService.getCountOfLocations()).isEqualTo(3);
+    }
+
+    @Test
+    void saveAdventureData_stampsTheBuilderVersion() {
+        AdventureData adventure = new AdventureData();
+        adventure.setBuilderVersion("0.0.1");
+
+        adventureService.saveAdventureData(adventure);
+
+        assertThat(adventure.getBuilderVersion()).isEqualTo("9.9.9");
+        verify(adventureRepository).save(adventure);
+    }
+
+    @Test
+    void saveAdventureData_withAnUnknownBuilderVersion_leavesTheStampAlone() {
+        AdventureService unknownVersion = new AdventureService(locationRepository, adventureRepository,
+                wordRepository, vocabularyRepository, cascadeDeleteHelper, pictureRepository,
+                BuilderVersion.of(null));
+        AdventureData adventure = new AdventureData();
+        adventure.setBuilderVersion("0.0.1");
+
+        unknownVersion.saveAdventureData(adventure);
+
+        assertThat(adventure.getBuilderVersion()).isEqualTo("0.0.1");
     }
 
     @Test
