@@ -41,27 +41,30 @@ Why this works for the singletons: `MapperSupporter` copies its references from 
 
 **Lifecycle:** created lazily on a session's first run; destroyed with the Vaadin session. A run can only be started or driven on a thread bound to a Vaadin session, which holds for UI event handlers. Plain unit tests that build objects by hand are unaffected.
 
-**To verify during implementation:**
+**Mechanics (checked while planning):**
 
-- The proxied classes must be non-final with no-arg constructors (`GameContext`, `Vocabulary`, `MessagesHolder`, `VariableProvider`).
-- If proxying the `Map<String, X>` return types misbehaves, wrap each registry in a small named class (e.g. `ItemRegistry`).
-- Tests that use real Spring wiring (`AdventureRunSessionFactoryTest`, the browserless view tests) may need a test registration of the session scope.
+- `@VaadinSessionScope` is just `@Scope("vaadin-session")` with **no proxy mode**, so it cannot be used as is. A small composed annotation, `@PerBrowserSession` (`@Scope(value = "vaadin-session", proxyMode = TARGET_CLASS)`), is used instead; it targets the same Vaadin-registered scope.
+- The `Map<String, X>` registry beans get an interface (JDK) proxy from Spring; no wrapper classes are needed.
+- No `final` methods exist on `GameContext`, `Vocabulary`, `BasicData`, `MessagesHolder` or `VariableProvider`, so CGLIB proxies intercept every call.
+- No startup, async or scheduled code dereferences these beans (`DataInitializer`, `AutoMapperRegistrationProcessor` and the `ai` package do not touch them), so no code path runs outside a bound Vaadin session. A call on a proxy outside a bound session throws; that is accepted.
+- Tests that build a plain Spring context need the scope registered: a test-only `FakeSessionScopeConfig` provides a switchable fake "vaadin-session" scope. It is also the vehicle for the two-sessions isolation tests.
+- Vaadin's docs say scoped beans must be serializable only when sessions are persisted (e.g. Kubernetes Kit). Session persistence is a non-goal (see above).
 
 ### 2. One active run per browser session
 
-A session-scoped bean, `ActiveRun`, holds the current `AdventureRunSession` and its owner. The owner is seen by the engine only as a `BooleanSupplier ownerAlive`, so the engine layer stays free of Vaadin types. A run counts as **active** only while `ownerAlive` is true (the owning `AdventureRunView` is attached) and the session is not game over.
+A session-scoped bean, `ActiveRun`, holds the current `AdventureRunSession` and its owner. The owner is a small Vaadin-free handle, `RunOwner`, that the view creates and flips to "gone" when it detaches (a flag set in `onDetach`; `isAttached()` cannot be used because a view is not attached yet while `beforeEnter` runs). A run counts as **active** only while its `RunOwner` is not gone and the session is not game over.
 
-**Starting.** `AdventureRunSessionFactory.start(adventureData, ownerAlive)` checks the guard **first**. If a run is active it throws `RunAlreadyActiveException` before touching any state, so the blocked tab cannot disturb the running game. `AdventureRunView` catches it and shows "You already have a game running in another tab." (This check-before-mutate order is the key behaviour change; today `start` mutates the shared engine immediately.)
+**Starting.** `AdventureRunSessionFactory.start(adventureData, owner)` checks the guard **first**. If a run is active it throws `RunAlreadyActiveException` before touching any state, so the blocked tab cannot disturb the running game. (This check-before-mutate order is the key behaviour change; today `start` mutates the shared engine immediately.)
 
-**Releasing.** A run releases itself:
+**Takeover (decided with the user).** Vaadin detects dead UIs only through missed heartbeats (5-minute interval, a UI expires after 3 missed ones), so a refreshed or crashed tab can still look alive for roughly 15 minutes. A pure block would lock a player out of their own game after F5. Therefore the view, on `RunAlreadyActiveException`, opens a `ConfirmDialog`: "You already have a game running in another tab." with **"End the other game and start here"** and **"Back"**. Confirming calls `startReplacingActive(adventureData, owner)`, which marks the old session as superseded (its next `submit` returns "This game was ended in another tab." with `gameOver = true`, which disables that tab's input) and then starts normally. Nothing is ever lost silently. If the takeover's load itself fails the old game stays ended; that is the price of an explicit takeover.
 
-- when it ends (`quit` / game over);
-- when its view detaches (Back, in-app navigation: the UI stays alive but the view goes away);
-- when the Vaadin session is destroyed (expiry), which destroys the scoped bean.
+**Releasing.** `factory.release(owner)` clears the guard and the session's registries **only if `owner` still owns the active run**. A late detach of an old view after a newer run started is therefore a no-op and cannot wipe the new game. It is called:
 
-Releasing also clears the session's registries so a finished game does not pin its adventure graph in memory until the browser session expires.
+- when the run ends (`quit` / game over);
+- when the owning view detaches (Back, in-app navigation: the UI stays alive but the view goes away);
+- and the scoped bean is destroyed with the Vaadin session (expiry).
 
-**Refresh / crashed tabs.** An F5 refresh creates a new view while the old one may not have detached yet. Because "active" means "owner still attached", the dead view reads as inactive and the new start takes over. A player cannot be locked out by their own refresh.
+Clearing the registries (locations, items, containers, messages, variables, vocabulary) stops a finished game pinning its adventure graph until the browser session expires.
 
 **Callers.** Only `AdventureRunView` calls `start`. Author Test and player Run share the path and get the same rule.
 
@@ -74,9 +77,11 @@ System-message overrides belong to the **adventure definition** (`AdventureData.
 - `defaultText()` reads the thread-local and falls back to the built-in text when nothing is bound.
 - `installOverrides(map)` is replaced by `bindOverrides(map)`, returning an `AutoCloseable`. Closing restores whatever was bound before, so nested binds are safe.
 - The factory passes the adventure's override map into `AdventureRunSession` at creation. `LoadAdventureAction` no longer installs overrides globally.
-- `AdventureRunSession.submit()` binds them with try-with-resources around the whole turn, including the opening `look`, `Parser`'s `SM51` terminator check and the `SM2` output filter, which all run inside a turn.
+- `AdventureRunSession.submit()` binds them with try-with-resources around the whole turn, including `Parser`'s `SM51` terminator check and the `SM2` output filter, which both run inside a turn.
+- **The opening room does not go through `submit()`.** `AdventureRunView` executes a `MovePlayerAction` directly. So the session also exposes `runBound(Supplier)`, which binds the same overrides, and the view renders the opening room through it.
+- Mapping/loading does not need the overrides: a search of the mappers, `CommandFactory` and `Adventure` found no override text captured at map time, so `start()` itself does not bind them.
 - Outside a run (the editor views) `defaultText()` returns the true built-in text. This also fixes the existing leak into the editors.
-- `LoadAdventureActionTest` currently expects the global install and will be updated.
+- No existing test references `installOverrides`, so removing it needs no test migration.
 
 ## Error handling
 
@@ -85,12 +90,15 @@ System-message overrides belong to the **adventure definition** (`AdventureData.
 
 ## Testing
 
-- Two simulated Vaadin sessions run different adventures at once with independent location, pocket, variables and output.
-- A second start in the same session is blocked and leaves the first game untouched.
-- A start succeeds after the owning view detaches (takeover), including the refresh case.
-- Overrides from adventure A do not appear in a turn of adventure B; the editor-style lookup outside a run sees built-in text.
+- Two fake sessions (switchable scope) hold independent `GameContext` fields and independent registries.
+- A second start in the same session is blocked and leaves the first game untouched (the mapper is not called again).
+- A start succeeds after the owning view is marked gone.
+- `startReplacingActive` supersedes the old session; its next `submit` reports the game as ended elsewhere.
+- Release by a stale owner after a newer run started does not clear the newer run's registries.
+- Overrides from adventure A do not appear in a turn of adventure B; a lookup outside a run sees built-in text; the opening room (`runBound`) sees the overrides.
 - A turn that throws leaves no overrides bound on the thread.
-- Existing engine/mapper/view tests pass unchanged apart from `LoadAdventureActionTest` and any test that needs the session scope registered.
+- The view shows the takeover dialog on conflict, takes over on confirm, and releases on detach and on game over.
+- Existing tests keep passing; the plain-Spring-context tests register the fake session scope, and `AdventureRunViewTest` / `AdventureRunSessionFactoryTest` are updated for the new `start` signature.
 
 ## Out of scope: follow-up spec
 
