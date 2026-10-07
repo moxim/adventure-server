@@ -24,13 +24,15 @@
 
 ## Review Focus
 
-Failure modes the spec implies that a person would hit (each has a test in the named task):
+Failure modes the spec implies that a person would hit (each has a test in the named task; the list grew to seven because planning found two more than the usual five):
 
 1. **F5 / crashed tab on the run page**: the old view still looks alive for ~15 minutes, so a pure block would lock the player out. Expected: a dialog offers "End the other game and start here" (Task 6 view test, Task 5 factory test).
 2. **A late detach of an old view after a newer run started** must not wipe the newer game's registries (Task 5 `release_byAStaleOwner_keepsTheNewerRunsRegistries`).
 3. **The opening room is rendered outside `submit()`**; it must still see the adventure's system-message overrides (Task 3 `runBound_...`, Task 6 view test verifies `runBound` is used).
 4. **A turn that throws** must leave no overrides bound on the pooled servlet thread (Task 3 `submit_unbindsEvenWhenTheTurnThrows`, Task 2 `closingAfterAnException_stillUnbinds`).
-5. **The superseded tab keeps typing**: its next input must report the game was ended elsewhere and disable itself, not play on against the new game (Task 3 `supersede_...`, Task 5 `startReplacingActive_supersedesTheOldSession`).
+5. **Text built while the adventure loads**: anything constructed during load/mapping/workflow set-up that reads system-message text must see the adventure's overrides, as it did when they were installed globally (Task 5 `start_hasTheOverridesBoundWhileTheAdventureIsMapped`).
+6. **The router reuses the view instance** (same route entered again, e.g. another adventure id): the view's own earlier run must not count as a conflict, and a conflict on an already-attached view must open the dialog right away (Task 6 `enteringAgainOnTheSameViewInstance_...`, `aConflictOnAnAlreadyAttachedView_...`).
+7. **The superseded tab keeps typing**: its next input must report the game was ended elsewhere and disable itself, not play on against the new game (Task 3 `supersede_...`, Task 5 `startReplacingActive_supersedesTheOldSession`).
 
 ---
 
@@ -1062,7 +1064,7 @@ and in `setUp()` replace the lines for `allItems` and the factory construction:
         factory = new AdventureRunSessionFactory(adventureService, adventureMapper, workflowMapper, adventureConfig,
                                                   gameContext, activeRun);
 ```
-Add imports: `java.util.Map`, `static org.mockito.Mockito.mock`, `static org.mockito.Mockito.times`, `static org.mockito.Mockito.verify`, `com.pdg.adventure.model.SystemMessageData`, `com.pdg.adventure.server.support.VariableProvider`, `com.pdg.adventure.server.tangible.Item`.
+Add imports: `java.util.ArrayList`, `java.util.Map`, `static org.mockito.Mockito.mock`, `static org.mockito.Mockito.times`, `static org.mockito.Mockito.verify`, `com.pdg.adventure.model.SystemMessageData`, `com.pdg.adventure.server.support.VariableProvider`, `com.pdg.adventure.server.tangible.Item`.
 3. Add a helper next to `adventureWithOneLocation`:
 
 ```java
@@ -1127,15 +1129,18 @@ Add imports: `java.util.Map`, `static org.mockito.Mockito.mock`, `static org.moc
     }
 
     @Test
-    void release_byTheCurrentOwner_clearsTheRegistries_andAllowsANewStart() {
+    void release_byTheCurrentOwner_clearsTheRegistriesAndTheContext_andAllowsANewStart() {
         AdventureData adventureData = startableAdventure();
         RunOwner owner = new RunOwner();
         factory.start(adventureData, owner);
         items.put("sword", mock(Item.class));
+        gameContext.setCurrentPictureId("pic-1");
 
         factory.release(owner);
 
         assertThat(items).isEmpty();
+        assertThat(gameContext.getCurrentLocation()).isNull();
+        assertThat(gameContext.getCurrentPictureId()).isNull();
         assertThat(factory.start(adventureData, new RunOwner()).isGameOver()).isFalse();
     }
 
@@ -1163,6 +1168,25 @@ Add imports: `java.util.Map`, `static org.mockito.Mockito.mock`, `static org.moc
         AdventureRunSession session = factory.start(adventureData, new RunOwner());
 
         assertThat(session.runBound(SystemMessageKey.SM9::defaultText)).isEqualTo("Carrying:");
+        assertThat(SystemMessageKey.SM9.defaultText()).isNotEqualTo("Carrying:");
+    }
+
+    @Test
+    void start_hasTheOverridesBoundWhileTheAdventureIsMapped() {
+        AdventureData adventureData = adventureWithOneLocation("adv-1", "loc-1");
+        adventureData.getSystemMessages().put("9", new SystemMessageData("9", "Carrying:"));
+        when(adventureService.findAdventureById("adv-1")).thenReturn(Optional.of(adventureData));
+        when(startLocation.getId()).thenReturn("loc-1");
+        Adventure adventure = adventureBoundTo(startLocation, "loc-1");
+        List<String> seenWhileMapping = new ArrayList<>();
+        when(adventureMapper.mapToBO(adventureData)).thenAnswer(invocation -> {
+            seenWhileMapping.add(SystemMessageKey.SM9.defaultText());
+            return adventure;
+        });
+
+        factory.start(adventureData, new RunOwner());
+
+        assertThat(seenWhileMapping).containsExactly("Carrying:");
         assertThat(SystemMessageKey.SM9.defaultText()).isNotEqualTo("Carrying:");
     }
 ```
@@ -1193,6 +1217,7 @@ import com.pdg.adventure.server.exception.ReloadAdventureException;
 import com.pdg.adventure.server.mapper.AdventureMapper;
 import com.pdg.adventure.server.mapper.WorkflowMapper;
 import com.pdg.adventure.server.parser.Parser;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
@@ -1262,21 +1287,26 @@ public class AdventureRunSessionFactory {
     }
 
     private AdventureRunSession startRun(AdventureData anAdventureData, RunOwner anOwner) {
-        loadIntoSharedEngine(anAdventureData);
+        Map<String, String> overrides = systemMessageOverrides(anAdventureData);
+        // Loading, mapping and workflow set-up run with the adventure's overrides bound, exactly as when
+        // LoadAdventureAction used to install them process-wide before mapping: anything constructed on the way
+        // that reads SystemMessageKey text keeps seeing the adventure's own wording.
+        try (SystemMessageKey.Binding ignored = SystemMessageKey.bindOverrides(overrides)) {
+            loadIntoSharedEngine(anAdventureData);
 
-        Vocabulary vocabulary = adventureConfig.allWords();
-        registerBaseVerbs(vocabulary);
+            Vocabulary vocabulary = adventureConfig.allWords();
+            registerBaseVerbs(vocabulary);
 
-        Workflow workflow = gameContext.setUpWorkflows();
-        CommandFactory commandFactory = new CommandFactory(gameContext, anAdventureData.getVocabularyData());
-        commandFactory.setUpWorkflowCommands(workflow);
-        workflowMapper.populate(gameContext.getWorkflowData(), workflow);
+            Workflow workflow = gameContext.setUpWorkflows();
+            CommandFactory commandFactory = new CommandFactory(gameContext, anAdventureData.getVocabularyData());
+            commandFactory.setUpWorkflowCommands(workflow);
+            workflowMapper.populate(gameContext.getWorkflowData(), workflow);
 
-        GameLoop gameLoop = new GameLoop(new Parser(vocabulary), gameContext);
-        AdventureRunSession session = new AdventureRunSession(gameLoop, gameContext,
-                                                              systemMessageOverrides(anAdventureData));
-        activeRun.register(session, anOwner);
-        return session;
+            GameLoop gameLoop = new GameLoop(new Parser(vocabulary), gameContext);
+            AdventureRunSession session = new AdventureRunSession(gameLoop, gameContext, overrides);
+            activeRun.register(session, anOwner);
+            return session;
+        }
     }
 
     private void clearRegistries() {
@@ -1286,6 +1316,11 @@ public class AdventureRunSessionFactory {
         adventureConfig.allMessages().clear();
         adventureConfig.allVariables().clear();
         adventureConfig.allWords().setWords(List.of());
+        // Also drop what the finished game left on the shared-per-session context, so it neither pins the old
+        // adventure nor shows the old picture at the start of the next run in this browser session.
+        gameContext.setCurrentLocation(null);
+        gameContext.setPocket(null);
+        gameContext.setCurrentPictureId(null);
     }
 
     private static Map<String, String> systemMessageOverrides(AdventureData anAdventureData) {
@@ -1376,7 +1411,7 @@ Claude-Session: https://claude.ai/code/session_01JpUTBpqGp6irWwjvUFnVgZ"
 In `AdventureRunViewTest.java`:
 
 1. (Already done in Task 5 Step 8: the `start(eq(adventureData), any(RunOwner.class))` stubs and the `RunOwner` import.)
-2. Add imports: `com.vaadin.flow.component.confirmdialog.ConfirmDialog`, `com.pdg.adventure.server.engine.RunAlreadyActiveException`, `java.util.function.Supplier`.
+2. Add imports: `com.vaadin.flow.component.confirmdialog.ConfirmDialog`, `com.pdg.adventure.server.engine.RunAlreadyActiveException`, `java.util.function.Supplier`, `org.mockito.InOrder`.
 3. In `stubOpeningRoom(String description, String pictureId)` add, after `when(session.getGameContext()).thenReturn(gameContext);`:
 
 ```java
@@ -1439,6 +1474,31 @@ In `AdventureRunViewTest.java`:
     }
 
     @Test
+    void enteringAgainOnTheSameViewInstance_releasesItsOwnRunBeforeStartingAnew() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+
+        view.beforeEnter(eventFor("author/adventures/adv-1/test"));
+
+        InOrder order = inOrder(sessionFactory);
+        order.verify(sessionFactory).start(eq(adventureData), any(RunOwner.class));
+        order.verify(sessionFactory).release(any(RunOwner.class));
+        order.verify(sessionFactory).start(eq(adventureData), any(RunOwner.class));
+    }
+
+    @Test
+    void aConflictOnAnAlreadyAttachedView_opensTheDialogImmediately() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenThrow(new RunAlreadyActiveException());
+
+        view.beforeEnter(eventFor("author/adventures/adv-1/test"));
+
+        assertThat(find(ConfirmDialog.class).exists()).isTrue();
+        assertThat(find(MessageInput.class, view).single().isEnabled()).isFalse();
+    }
+
+    @Test
     void gameOver_releasesTheRun() {
         stubOpeningRoom("A grand throne room.");
         enterViaAuthorRoute();
@@ -1470,13 +1530,24 @@ Add one field next to the other fields:
 In `beforeEnter`, replace everything from the line `try {` that calls `session = sessionFactory.start(adventureData, runOwner);` through the closing `}` of the `beforeEnter` method (that is, the whole `try/catch`, the `MovePlayerAction` rendering and `refreshPictureDisplay();`) with the following, which also adds the new methods right after `beforeEnter`:
 
 ```java
+        if (session != null) {
+            // The router reuses this view instance when the same route is entered again (e.g. with another
+            // adventure id). Its own earlier run must not count as "another game running".
+            sessionFactory.release(runOwner);
+            session = null;
+        }
         try {
             session = sessionFactory.start(adventureData, runOwner);
         } catch (RunAlreadyActiveException _) {
             // Another game of this browser session is still active - possibly in a tab that was refreshed or
-            // crashed, which Vaadin only notices after missed heartbeats. The dialog is opened from onAttach.
-            runConflict = true;
+            // crashed, which Vaadin only notices after missed heartbeats. On a first entry the view is not
+            // attached yet, so the dialog is opened from onAttach; a reused, attached instance opens it now.
             messageInput.setEnabled(false);
+            if (isAttached()) {
+                openRunConflictDialog();
+            } else {
+                runConflict = true;
+            }
             return;
         } catch (RuntimeException e) {
             FlashNotifier.flash("Could not start the adventure: " + e.getMessage());
@@ -1603,7 +1674,7 @@ Expected: `BUILD SUCCESS`, `Failures: 0, Errors: 0`. A failure containing `No Sc
 
 1. Log in as two different users in two browser profiles; start the same adventure in both; move in one and confirm the other is unaffected.
 2. In one profile open the run page in two tabs: the second tab shows "Game already running"; "Back" returns to the library, "End the other game and start here" starts it and the first tab reports "This game was ended in another tab."
-3. Press F5 on a running game: the new page shows the takeover dialog; confirming restarts the adventure.
+3. Press F5 on a running game. Either outcome is correct: if Vaadin has already closed the old UI the game simply starts again; if the old UI still looks alive the takeover dialog appears and confirming restarts the adventure. (Which one happens depends on how Vaadin 25.2 treats page unload, which the docs read while planning did not settle; do not "fix" a direct start.)
 
 - [ ] **Step 7: Commit**
 

@@ -64,7 +64,9 @@ A session-scoped bean, `ActiveRun`, holds the current `AdventureRunSession` and 
 - when the owning view detaches (Back, in-app navigation: the UI stays alive but the view goes away);
 - and the scoped bean is destroyed with the Vaadin session (expiry).
 
-Clearing the registries (locations, items, containers, messages, variables, vocabulary) stops a finished game pinning its adventure graph until the browser session expires.
+Clearing the registries (locations, items, containers, messages, variables, vocabulary) and resetting the context's current location, pocket and picture id stops a finished game pinning its adventure graph until the browser session expires, and keeps its last picture from showing at the start of the next run.
+
+**Reused view instances.** The router reuses an `AdventureRunView` instance when the same route is entered again (e.g. with another adventure id). `beforeEnter` therefore first releases the view's own earlier run, so it never counts as a conflict with itself; a conflict on an already-attached view opens the dialog immediately instead of waiting for `onAttach`.
 
 **Callers.** Only `AdventureRunView` calls `start`. Author Test and player Run share the path and get the same rule.
 
@@ -79,7 +81,7 @@ System-message overrides belong to the **adventure definition** (`AdventureData.
 - The factory passes the adventure's override map into `AdventureRunSession` at creation. `LoadAdventureAction` no longer installs overrides globally.
 - `AdventureRunSession.submit()` binds them with try-with-resources around the whole turn, including `Parser`'s `SM51` terminator check and the `SM2` output filter, which both run inside a turn.
 - **The opening room does not go through `submit()`.** `AdventureRunView` executes a `MovePlayerAction` directly. So the session also exposes `runBound(Supplier)`, which binds the same overrides, and the view renders the opening room through it.
-- Mapping/loading does not need the overrides: a search of the mappers, `CommandFactory` and `Adventure` found no override text captured at map time, so `start()` itself does not bind them.
+- `start()` also binds the overrides while it loads, maps and sets up the workflow. A search of the mappers, `CommandFactory` and `Adventure` found no override text captured at map time, but the classes the mappers construct (actions, conditions, locations, items) were not audited, and `LoadAdventureAction` used to install the overrides before mapping. Binding for the whole of `start()` restores that timing exactly, whatever those classes do.
 - Outside a run (the editor views) `defaultText()` returns the true built-in text. This also fixes the existing leak into the editors.
 - No existing test references `installOverrides`, so removing it needs no test migration.
 
@@ -97,7 +99,8 @@ System-message overrides belong to the **adventure definition** (`AdventureData.
 - Release by a stale owner after a newer run started does not clear the newer run's registries.
 - Overrides from adventure A do not appear in a turn of adventure B; a lookup outside a run sees built-in text; the opening room (`runBound`) sees the overrides.
 - A turn that throws leaves no overrides bound on the thread.
-- The view shows the takeover dialog on conflict, takes over on confirm, and releases on detach and on game over.
+- Overrides are bound while the adventure is mapped during `start()`.
+- The view shows the takeover dialog on conflict, takes over on confirm, releases on detach and on game over, and handles being entered twice on the same instance.
 - Existing tests keep passing; the plain-Spring-context tests register the fake session scope, and `AdventureRunViewTest` / `AdventureRunSessionFactoryTest` are updated for the new `start` signature.
 
 ## Out of scope: follow-up spec
