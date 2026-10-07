@@ -215,12 +215,10 @@ Pay attention to:
    `Consumer<String> outputSink` (default `java.lang.IO::println` — JDK 25's
    built-in `java.lang.IO`; there is **no** custom `IO` class), via
    `GameContext.setOutputSink(...)` — this is what lets a Vaadin view capture
-   engine output. Note that `GameContext` (and the `AdventureConfig` beans it
-   reaches) are ordinary Spring singletons in the current code: there is no
-   per-session isolation, so only one Test/Run session is meaningfully active
-   at a time server-wide. Preserve this constraint knowingly, or design it
-   away — see
-   [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps).
+   engine output. Note that `GameContext` (and the `AdventureConfig` registries it
+   reaches) are `@PerBrowserSession` scoped proxies, so each Vaadin session
+   has its own engine state — see
+   [`04-runtime-engine.md` § AdventureRunSession](04-runtime-engine.md#adventurerunsession-the-in-browser-play-surface).
 3. Implement `server/engine/AdventureRunSession.java` and
    `AdventureRunSessionFactory.java` — the turn-based (`submit(String) →
    RunResult(lines, gameOver)`) wrapper a Vaadin view needs around
@@ -363,7 +361,7 @@ table with severity and pointer:
 | **Critical** | Hardcoded remember-me key | Same — override via env / secret. |
 | **High** | `CommandMapper.mapToDO` incomplete | [`05-persistence-and-mappers.md`](05-persistence-and-mappers.md#known-gaps) — `mapToBO` is done; finish the DO direction (preconditions). |
 | **High** | `LocationMapper` destination resolution & `ItemContainerMapper` contents | Same. |
-| **Medium** | `GameContext`/`AdventureConfig` are process-wide singletons — no per-session engine isolation | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps) — at most one Test/Run session is meaningfully active server-wide at a time. |
+| **Low** | Engine state is per Vaadin session, not per tab; no session persistence | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps) |
 | **Medium** | NLP parser: no prepositions / multi-noun / articles (compound `and`/`then`/`.` and pronoun `it` are now handled) | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps). |
 | **Medium** | Spring AI / Ollama integration commented out, base URL hardcoded | Same. |
 | **Medium** | No per-game save state (variables not persisted); `AdventureRunView` sessions don't wire save/load at all | [`03-domain-model.md` § Known gaps](03-domain-model.md#known-gaps), [`02-functional-requirements.md` § Known gaps](02-functional-requirements.md#known-gaps). |
