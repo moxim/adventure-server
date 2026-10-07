@@ -1,7 +1,10 @@
 package com.pdg.adventure.view.adventure;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.messages.MessageInput;
@@ -25,6 +28,7 @@ import com.pdg.adventure.server.engine.AdventureRunSession;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
 import com.pdg.adventure.server.engine.AdventureRunSessionFactory;
 import com.pdg.adventure.server.engine.FontMarkup;
+import com.pdg.adventure.server.engine.RunAlreadyActiveException;
 import com.pdg.adventure.server.engine.RunOwner;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.support.VariableProvider;
@@ -73,6 +77,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
 
     private final RunOwner runOwner = new RunOwner();
 
+    private boolean runConflict;
     private transient AdventureRunSession session;
     private transient AdventureData adventureData;
     private String displayedPictureId;
@@ -183,18 +188,77 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         pageTitle = (origin == Origin.LIBRARY ? "Playing: " : "Test: ") + adventureData.getTitle();
         applyFont(adventureData.getFont());
 
+        if (session != null) {
+            // The router reuses this view instance when the same route is entered again (e.g. with another
+            // adventure id). Its own earlier run must not count as "another game running".
+            sessionFactory.release(runOwner);
+            session = null;
+        }
         try {
             session = sessionFactory.start(adventureData, runOwner);
+        } catch (RunAlreadyActiveException _) {
+            // Another game of this browser session is still active - possibly in a tab that was refreshed or
+            // crashed, which Vaadin only notices after missed heartbeats. On a first entry the view is not
+            // attached yet, so the dialog is opened from onAttach; a reused, attached instance opens it now.
+            messageInput.setEnabled(false);
+            if (isAttached()) {
+                openRunConflictDialog();
+            } else {
+                runConflict = true;
+            }
+            return;
         } catch (RuntimeException e) {
             FlashNotifier.flash("Could not start the adventure: " + e.getMessage());
             forwardToOrigin(event);
             return;
         }
+        renderOpeningRoom();
+    }
+
+    private void renderOpeningRoom() {
         MovePlayerAction movePlayerAction = new MovePlayerAction(session.getGameContext().getCurrentLocation(),
                                                                  session.getGameContext(), variableProvider);
-        ExecutionResult result = movePlayerAction.execute();
+        ExecutionResult result = session.runBound(movePlayerAction::execute);
         renderNarratorLines(List.of(result.getResultMessage()));
         refreshPictureDisplay();
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        if (runConflict) {
+            runConflict = false;
+            openRunConflictDialog();
+        }
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
+        runOwner.markGone();
+        sessionFactory.release(runOwner);
+    }
+
+    private void openRunConflictDialog() {
+        ConfirmDialog dialog = new ConfirmDialog();
+        dialog.setHeader("Game already running");
+        dialog.setText("You already have a game running in another tab.");
+        dialog.setConfirmButton("End the other game and start here", _ -> takeOverRun());
+        dialog.setCancelable(true);
+        dialog.setCancelButton("Back", _ -> navigateBack());
+        dialog.open();
+    }
+
+    private void takeOverRun() {
+        try {
+            session = sessionFactory.startReplacingActive(adventureData, runOwner);
+        } catch (RuntimeException e) {
+            FlashNotifier.flash("Could not start the adventure: " + e.getMessage());
+            navigateBack();
+            return;
+        }
+        messageInput.setEnabled(true);
+        renderOpeningRoom();
     }
 
     /**
@@ -234,6 +298,9 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         renderNarratorLines(result.lines());
         refreshPictureDisplay();
         messageInput.setEnabled(!result.gameOver());
+        if (result.gameOver()) {
+            sessionFactory.release(runOwner);
+        }
     }
 
     private void renderNarratorLines(List<String> lines) {

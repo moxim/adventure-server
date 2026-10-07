@@ -2,6 +2,7 @@ package com.pdg.adventure.view.adventure;
 
 import com.vaadin.browserless.BrowserlessTest;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.messages.MessageInput;
 import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
@@ -13,12 +14,14 @@ import com.vaadin.flow.router.RouteParameters;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,6 +35,7 @@ import com.pdg.adventure.server.engine.AdventureRunSession;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
 import com.pdg.adventure.server.engine.AdventureRunSessionFactory;
 import com.pdg.adventure.server.engine.GameContext;
+import com.pdg.adventure.server.engine.RunAlreadyActiveException;
 import com.pdg.adventure.server.engine.RunOwner;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
@@ -98,6 +102,7 @@ class AdventureRunViewTest extends BrowserlessTest {
         when(gameContext.runArrivalProcesses()).thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS));
         when(gameContext.getCurrentPictureId()).thenReturn(pictureId);
         when(session.getGameContext()).thenReturn(gameContext);
+        when(session.runBound(any())).thenAnswer(invocation -> ((Supplier<?>) invocation.getArgument(0)).get());
     }
 
     @AfterEach
@@ -162,6 +167,95 @@ class AdventureRunViewTest extends BrowserlessTest {
         assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
                 .containsExactly("A grand throne room.", "look",
                                   SystemMessageKey.SM9.defaultText() + "\na rusty key");
+    }
+
+    // Mirrors production order: beforeEnter runs before the view is attached, so the conflict dialog is
+    // opened from onAttach.
+    private AdventureRunView enterWhileAnotherRunIsActive() {
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenThrow(new RunAlreadyActiveException());
+        AdventureRunView conflicted = new AdventureRunView(sessionFactory, accessService, new VariableProvider());
+        conflicted.beforeEnter(eventFor("author/adventures/adv-1/test"));
+        UI.getCurrent().add(conflicted);
+        return conflicted;
+    }
+
+    @Test
+    void beforeEnter_whenAnotherRunIsActive_disablesInputAndOffersTheTakeover() {
+        AdventureRunView conflicted = enterWhileAnotherRunIsActive();
+
+        assertThat(find(MessageInput.class, conflicted).single().isEnabled()).isFalse();
+        ConfirmDialog dialog = find(ConfirmDialog.class).single();
+        assertThat(test(dialog).getText()).contains("another tab");
+    }
+
+    @Test
+    void confirmingTheTakeover_startsReplacingTheActiveRun_andRendersTheOpeningRoom() {
+        stubOpeningRoom("A grand throne room.");
+        when(sessionFactory.startReplacingActive(eq(adventureData), any(RunOwner.class))).thenReturn(session);
+        AdventureRunView conflicted = enterWhileAnotherRunIsActive();
+
+        test(find(ConfirmDialog.class).single()).confirm();
+
+        verify(sessionFactory).startReplacingActive(eq(adventureData), any(RunOwner.class));
+        MessageList messageList = find(MessageList.class, conflicted).single();
+        assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
+                .containsExactly("A grand throne room.");
+        assertThat(find(MessageInput.class, conflicted).single().isEnabled()).isTrue();
+    }
+
+    @Test
+    void theOpeningRoom_isRenderedThroughTheSessionsBoundEntryPoint() {
+        stubOpeningRoom("A grand throne room.");
+
+        enterViaAuthorRoute();
+
+        verify(session).runBound(any());
+    }
+
+    @Test
+    void detachingTheView_releasesItsRun() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+
+        UI.getCurrent().remove(view);
+
+        verify(sessionFactory).release(any(RunOwner.class));
+    }
+
+    @Test
+    void enteringAgainOnTheSameViewInstance_releasesItsOwnRunBeforeStartingAnew() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+
+        view.beforeEnter(eventFor("author/adventures/adv-1/test"));
+
+        InOrder order = inOrder(sessionFactory);
+        order.verify(sessionFactory).start(eq(adventureData), any(RunOwner.class));
+        order.verify(sessionFactory).release(any(RunOwner.class));
+        order.verify(sessionFactory).start(eq(adventureData), any(RunOwner.class));
+    }
+
+    @Test
+    void aConflictOnAnAlreadyAttachedView_opensTheDialogImmediately() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenThrow(new RunAlreadyActiveException());
+
+        view.beforeEnter(eventFor("author/adventures/adv-1/test"));
+
+        assertThat(find(ConfirmDialog.class).exists()).isTrue();
+        assertThat(find(MessageInput.class, view).single().isEnabled()).isFalse();
+    }
+
+    @Test
+    void gameOver_releasesTheRun() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(session.submit("quit")).thenReturn(new RunResult(List.of(SystemMessageKey.SM14.defaultText()), true));
+
+        test(find(MessageInput.class, view).single()).send("quit");
+
+        verify(sessionFactory).release(any(RunOwner.class));
     }
 
     @Test
