@@ -32,6 +32,7 @@ import com.pdg.adventure.server.engine.AdventureRunSession;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
 import com.pdg.adventure.server.engine.AdventureRunSessionFactory;
 import com.pdg.adventure.server.engine.GameContext;
+import com.pdg.adventure.server.engine.RunOwner;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
@@ -115,7 +116,7 @@ class AdventureRunViewTest extends BrowserlessTest {
     }
 
     private void enterViaAuthorRoute() {
-        when(sessionFactory.start(adventureData)).thenReturn(session);
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenReturn(session);
         view.beforeEnter(eventFor("author/adventures/adv-1/test"));
     }
 
@@ -178,7 +179,7 @@ class AdventureRunViewTest extends BrowserlessTest {
     @Test
     void beforeEnter_viaAuthorRoute_sessionCannotStart_forwardsToEditorWithAFlashMessage() {
         BeforeEnterEvent event = eventFor("author/adventures/adv-1/test");
-        when(sessionFactory.start(adventureData)).thenThrow(new IllegalStateException("no locations"));
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenThrow(new IllegalStateException("no locations"));
 
         view.beforeEnter(event);
 
@@ -191,7 +192,7 @@ class AdventureRunViewTest extends BrowserlessTest {
     @Test
     void beforeEnter_viaPlayerRoute_sessionCannotStart_forwardsToPlayerLibraryInstead() {
         BeforeEnterEvent event = eventFor("player/library/adv-1/run");
-        when(sessionFactory.start(adventureData)).thenThrow(new IllegalStateException("no locations"));
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenThrow(new IllegalStateException("no locations"));
 
         view.beforeEnter(event);
 
@@ -214,7 +215,7 @@ class AdventureRunViewTest extends BrowserlessTest {
     @Test
     void beforeEnter_viaPlayerRoute_rendersTheOpeningRoomDescription() {
         stubOpeningRoom("A grand throne room.");
-        when(sessionFactory.start(adventureData)).thenReturn(session);
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenReturn(session);
 
         view.beforeEnter(eventFor("player/library/adv-1/run"));
 
@@ -232,7 +233,7 @@ class AdventureRunViewTest extends BrowserlessTest {
     @Test
     void beforeEnter_viaMenuRoute_sessionCannotStart_forwardsToAdventuresMenuNotEditor() {
         BeforeEnterEvent event = eventFor(AdventureRunView.menuRunPath("adv-1"));
-        when(sessionFactory.start(adventureData)).thenThrow(new IllegalStateException("no locations"));
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenThrow(new IllegalStateException("no locations"));
 
         view.beforeEnter(event);
 
@@ -255,7 +256,7 @@ class AdventureRunViewTest extends BrowserlessTest {
     @Test
     void beforeEnter_viaMenuRoute_rendersTheOpeningRoomDescription() {
         stubOpeningRoom("A grand throne room.");
-        when(sessionFactory.start(adventureData)).thenReturn(session);
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenReturn(session);
 
         view.beforeEnter(eventFor(AdventureRunView.menuRunPath("adv-1")));
 

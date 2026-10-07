@@ -25,6 +25,7 @@ import com.pdg.adventure.server.engine.AdventureRunSession;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
 import com.pdg.adventure.server.engine.AdventureRunSessionFactory;
 import com.pdg.adventure.server.engine.FontMarkup;
+import com.pdg.adventure.server.engine.RunOwner;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.view.player.PlayerLibraryView;
@@ -69,6 +70,8 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     private final MessageInput messageInput = new MessageInput();
     private final Image pictureDisplay = new Image();
     private final Div pictureContainer = new Div(pictureDisplay);
+
+    private final RunOwner runOwner = new RunOwner();
 
     private transient AdventureRunSession session;
     private transient AdventureData adventureData;
@@ -181,7 +184,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         applyFont(adventureData.getFont());
 
         try {
-            session = sessionFactory.start(adventureData);
+            session = sessionFactory.start(adventureData, runOwner);
         } catch (RuntimeException e) {
             FlashNotifier.flash("Could not start the adventure: " + e.getMessage());
             forwardToOrigin(event);
