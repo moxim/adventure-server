@@ -11,6 +11,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.server.VaadinSession;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -245,6 +246,35 @@ class AdventureRunViewTest extends BrowserlessTest {
 
         assertThat(find(ConfirmDialog.class).exists()).isTrue();
         assertThat(find(MessageInput.class, view).single().isEnabled()).isFalse();
+    }
+
+    @Test
+    void detachingTheView_whileTheVaadinSessionIsClosing_doesNotTouchTheSessionScopedRelease() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        // Vaadin closes the session before it detaches the UIs; resolving a session-scoped bean (which
+        // sessionFactory.release does through ActiveRun) then throws "Current VaadinSession is not open".
+        VaadinSession.getCurrent().close();
+
+        assertThat(view.isAttached()).isFalse();
+        verify(sessionFactory, never()).release(any(RunOwner.class));
+    }
+
+    @Test
+    void enteringAgainAfterGameOver_reenablesTheInput_andStartsAFreshTranscript() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(session.submit("quit")).thenReturn(new RunResult(List.of("Bye."), true));
+        MessageInput messageInput = find(MessageInput.class, view).single();
+        test(messageInput).send("quit");
+        assertThat(messageInput.isEnabled()).isFalse();
+
+        view.beforeEnter(eventFor("author/adventures/adv-1/test"));
+
+        assertThat(messageInput.isEnabled()).isTrue();
+        MessageList messageList = find(MessageList.class, view).single();
+        assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
+                .containsExactly("A grand throne room.");
     }
 
     @Test

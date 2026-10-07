@@ -12,6 +12,8 @@ import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.VaadinSessionState;
 import jakarta.annotation.security.RolesAllowed;
 
 import java.time.Instant;
@@ -193,6 +195,9 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             // adventure id). Its own earlier run must not count as "another game running".
             sessionFactory.release(runOwner);
             session = null;
+            messageList.setItems(List.of());
+            displayedPictureId = null;
+            pictureContainer.setVisible(false);
         }
         try {
             session = sessionFactory.start(adventureData, runOwner);
@@ -212,6 +217,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             forwardToOrigin(event);
             return;
         }
+        messageInput.setEnabled(true);
         renderOpeningRoom();
     }
 
@@ -236,7 +242,12 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
         runOwner.markGone();
-        sessionFactory.release(runOwner);
+        // On logout or session expiry Vaadin closes the session before it detaches its UIs. The session-scoped
+        // ActiveRun cannot be resolved then, and it is destroyed with the session anyway.
+        VaadinSession vaadinSession = VaadinSession.getCurrent();
+        if (vaadinSession != null && vaadinSession.getState() == VaadinSessionState.OPEN) {
+            sessionFactory.release(runOwner);
+        }
     }
 
     private void openRunConflictDialog() {
