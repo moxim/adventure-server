@@ -103,11 +103,16 @@ class FontMarkupTest {
 
     @Test
     void malformedMarkupNeverThrowsAndNeverLeaksMarkers() {
-        for (String broken : List.of("CINZEL", "CINZELunterminated", "strayend", "")) {
+        for (String broken : List.of("CINZEL", "CINZELunterminated", "strayend")) {
             List<Segment> segments = FontMarkup.split(broken);
 
-            assertThat(segments).extracting(Segment::text).allSatisfy(text ->
+            assertThat(segments).extracting(Segment::text).isNotEmpty().allSatisfy(text ->
                     assertThat(text).doesNotContain("", "", ""));
         }
+    }
+
+    @Test
+    void markersWithoutAnyTextYieldNoSegments() {
+        assertThat(FontMarkup.split("\ue001\ue001")).isEmpty();
     }
 }
