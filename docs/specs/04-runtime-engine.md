@@ -675,7 +675,7 @@ engine, without touching `GameLoop`/`GameContext` directly:
    - `registerBaseVerbs` adds a small set of always-available words directly
      on the `Vocabulary` — `quit`/`exit`/`bye`,
      `describe`/`look`/`l`/`desc`/`examine`/`x`, `help`, `inventory`/`i`,
-     plus `and` (`CONJUNCTION`, synonym `then`) `it` (`PRONOUN`) and the slot numbers `1`–`10` as nouns (the parser drops unknown
+     plus `and` (`CONJUNCTION`, synonym `then`), `it` (`PRONOUN`) and the slot numbers `1`–`10` as nouns (the parser drops unknown
      words, and SAVE/LOAD take their slot from the typed noun) — so
      compound commands and pronoun back-references work regardless of the
      author's own vocabulary/special-word setup. A run session is scoped to
@@ -705,10 +705,14 @@ engine, without touching `GameLoop`/`GameContext` directly:
 `GameContext` and the six `AdventureConfig` registries are `@PerBrowserSession`
 scoped proxies (`vaadin-session` scope), so every browser session has its
 own engine state and several players can play at once. One game per browser
-session is enforced by the session-scoped `ActiveRun`. A refreshed or
-crashed tab can look alive for ~15 minutes (Vaadin detects dead UIs only
-through missed heartbeats), so `AdventureRunView` offers 'End the other game
-and start here'. See [Known gaps](#known-gaps).
+session is enforced by the session-scoped `ActiveRun`. A closed tab normally
+frees its run at once (Flow's unload beacon detaches the UI), but a browser
+that doesn't deliver the beacon (Safari) or a crashed tab is only noticed
+through missed heartbeats. `application.properties` sets
+`vaadin.heartbeatInterval=15`, so such a UI is closed after about 45 seconds
+(Vaadin's default of 5 minutes would take ~15), and until then
+`AdventureRunView` offers 'End the other game and start here'. See
+[Known gaps](#known-gaps).
 
 ## Exceptions used as control flow
 
@@ -757,7 +761,11 @@ conditions caught at the call site (no global `@ControllerAdvice`).
 - **Saved games** are restored in place (see [Saving and loading games](#saving-and-loading-games)):
   an item the author added after a save keeps its current position on `load`,
   `save 11` behaves like a bare `save` (the parser drops unknown words), saves
-  cannot be deleted, and the `VocabularyData.saveWord` / `loadWord` slots are still
+  cannot be deleted by the player and are not removed when their adventure or user is
+  deleted, an author vocabulary that already uses `1`–`10` as a verb or synonym keeps
+  that meaning (the slot numbers are only registered when the word is free), the
+  `savedgames` collection has no index on `(userId, adventureId)` so every save and
+  load scans it, and the `VocabularyData.saveWord` / `loadWord` slots are still
   unused by the engine. `LoadAdventureAction` remains the adventure-level reload.
 - **`AmbiguousCommandException`** is declared but not used by `CommandExecutor`,
   which emits a literal clarification string instead. Either retire the

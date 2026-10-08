@@ -164,6 +164,16 @@ adventure after a player saved, things that no longer exist are skipped and a sa
 longer be loaded. Items you added after the save stay where they are. Numbers above 10 are not words to the game, so
 `save 11` behaves like a plain `save`.
 
+Things to know:
+
+- The slot numbers `1` to `10` are added to the game's vocabulary automatically. If you have already used one of those
+  words yourself (as a verb or a synonym), your meaning wins and that slot number can't be typed.
+- Each save remembers which version of the adventure builder last saved your adventure. When a player loads a game
+  and the version has changed since, the game adds a short note saying so.
+- Players can't delete a save, only overwrite it. A save is private to the player and the adventure.
+- The wording of all these messages (*game saved*, *no free slot*, ...) can be changed in [Chapter 10:
+  Messages](10-messages.md).
+
 ## What's next
 
 Workflow commands often want to print text — [Chapter 10:
