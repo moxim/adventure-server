@@ -16,6 +16,7 @@ import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.engine.Workflow;
 import com.pdg.adventure.server.mapper.action.MessageActionMapper;
 import com.pdg.adventure.server.support.MapperSupporter;
+import com.pdg.adventure.support.FakeSessionScopeConfig;
 
 /**
  * Exercises the full, real mapper-dispatch chain that WorkflowMapperTest and LoadAdventureActionTest
@@ -38,7 +39,8 @@ class WorkflowMapperRealDispatchTest {
     @Test
     void authoredWorkflowCommand_executesThroughRealMapperRegistry_whenGameLoopPreProcessesCommands() {
         context = new AnnotationConfigApplicationContext();
-        context.register(GameContext.class, AdventureConfig.class, MapperSupporter.class,
+        context.register(FakeSessionScopeConfig.class, GameContext.class, AdventureConfig.class,
+                         MapperSupporter.class,
                          AutoMapperRegistrationProcessor.class, CommandDescriptionMapper.class,
                          CommandMapper.class, MessageActionMapper.class, WorkflowMapper.class);
         context.refresh();

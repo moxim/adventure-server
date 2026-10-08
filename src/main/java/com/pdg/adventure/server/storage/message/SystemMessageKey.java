@@ -109,6 +109,28 @@ public enum SystemMessageKey {
          "is printed when LightAction changes an item's lumen value. (The %1$s's light level is now %2$s.)"),
     SM67(67, " (lit)", "is printed when an item is lit. ( (lit))"),
 
+    // Saving and loading a game (SaveGameAction / LoadGameAction); descriptive ids, no PAW counterpart.
+    SAVE_DONE("Game saved in slot %s.", "SaveGameAction",
+              "is printed after a game was saved. (Game saved in slot %s.)"),
+    SAVE_FULL("All %s slots are taken. Use SAVE with a slot number (1-%s) to replace one.", "SaveGameAction",
+              "is printed when SAVE finds no free slot. (All %s slots are taken. Use SAVE with a slot number (1-%s) to replace one.)"),
+    SLOT_INVALID("There are only slots 1 to %s.", "SaveGameAction",
+                 "is printed when SAVE or LOAD gets something that is not a slot number. (There are only slots 1 to %s.)"),
+    SAVELOAD_UNAVAILABLE("Saving and loading are not available here.", "SaveGameAction",
+                         "is printed when SAVE or LOAD runs outside a play session. (Saving and loading are not available here.)"),
+    LOAD_LIST_HEADER("Saved games:", "LoadGameAction",
+                     "is printed above the list of saved games. (Saved games:)"),
+    LOAD_NONE("You have no saved games.", "LoadGameAction",
+              "is printed when LOAD finds no saved games. (You have no saved games.)"),
+    LOAD_DONE("Game restored from slot %s.", "LoadGameAction",
+              "is printed after a saved game was restored. (Game restored from slot %s.)"),
+    LOAD_EMPTY_SLOT("Slot %s holds no saved game.", "LoadGameAction",
+                    "is printed when LOAD names a slot without a saved game. (Slot %s holds no saved game.)"),
+    LOAD_CANNOT("That saved game can no longer be loaded.", "LoadGameAction",
+                "is printed when a saved game refers to a location that no longer exists. (That saved game can no longer be loaded.)"),
+    LOAD_VERSION_NOTE("(This game was saved with version %s; the adventure is now at version %s.)", "LoadGameAction",
+                      "is printed after a restore when the adventure changed version since the save. ((This game was saved with version %s; the adventure is now at version %s.))"),
+
     // Currently never registered for a real adventure - CommandFactory looks this id up
     // unconditionally, which NPEs outside the console demo. A live bug, outside this feature's
     // scope (that's the deferred engine-rewiring phase). Catalogued anyway so it's ready once fixed.
@@ -119,12 +141,12 @@ public enum SystemMessageKey {
               + "items, maybe wear items, enter or leave locations.\nOr quit.)");
 
     /**
-     * The currently loaded adventure's own edits (id -> text), sparse - a key with no entry here
-     * simply reads as {@link #defaultText()}. Process-wide, like the rest of the engine's
-     * "currently loaded adventure" state (see {@code GameContext}, {@code MessagesHolder}) -
-     * installed once per adventure (re)load by {@code LoadAdventureAction}, not per turn.
+     * The overrides (id -> text) of the adventure whose turn is running on this thread, sparse - a key with no
+     * entry reads as its built-in text. Overrides belong to an adventure definition (the same for every player
+     * and saved game of it), but different adventures can run at the same time, so they are bound per thread for
+     * the duration of a run's turn (see {@link #bindOverrides}) instead of process-wide.
      */
-    private static Map<String, String> overridesByKeyId = Map.of();
+    private static final ThreadLocal<Map<String, String>> BOUND_OVERRIDES = new ThreadLocal<>();
 
     private final String id;
     private final String defaultText;
@@ -152,7 +174,8 @@ public enum SystemMessageKey {
     }
 
     public String defaultText() {
-        return overridesByKeyId.getOrDefault(id, defaultText);
+        Map<String, String> bound = BOUND_OVERRIDES.get();
+        return bound == null ? defaultText : bound.getOrDefault(id, defaultText);
     }
 
     public String sourceLocation() {
@@ -167,8 +190,27 @@ public enum SystemMessageKey {
         return Arrays.stream(values()).filter(key -> key.id.equals(anId)).findFirst();
     }
 
-    /** Replaces the installed overrides wholesale - never merges with a previous install. */
-    public static void installOverrides(Map<String, String> anOverridesByKeyId) {
-        overridesByKeyId = Map.copyOf(anOverridesByKeyId);
+    /**
+     * Binds the given overrides to the current thread until the returned binding is closed. Closing restores
+     * whatever was bound before, so nested binds are safe. Always use try-with-resources: servlet threads are
+     * reused, and an unclosed binding would leak this adventure's wording into the next request on the thread.
+     */
+    public static Binding bindOverrides(Map<String, String> anOverridesByKeyId) {
+        Map<String, String> previous = BOUND_OVERRIDES.get();
+        BOUND_OVERRIDES.set(Map.copyOf(anOverridesByKeyId));
+        return () -> {
+            if (previous == null) {
+                BOUND_OVERRIDES.remove();
+            } else {
+                BOUND_OVERRIDES.set(previous);
+            }
+        };
+    }
+
+    /** Undoes a {@link #bindOverrides} call; unlike {@link AutoCloseable#close()} it throws nothing. */
+    @FunctionalInterface
+    public interface Binding extends AutoCloseable {
+        @Override
+        void close();
     }
 }

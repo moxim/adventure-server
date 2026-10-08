@@ -24,6 +24,7 @@ import com.pdg.adventure.model.action.DestroyActionData;
 import com.pdg.adventure.model.action.DropActionData;
 import com.pdg.adventure.model.action.IncrementVariableActionData;
 import com.pdg.adventure.model.action.InventoryActionData;
+import com.pdg.adventure.model.action.LoadGameActionData;
 import com.pdg.adventure.model.action.LightActionData;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
@@ -31,6 +32,7 @@ import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.model.action.PictureActionData;
 import com.pdg.adventure.model.action.QuitActionData;
+import com.pdg.adventure.model.action.SaveGameActionData;
 import com.pdg.adventure.model.action.RemoveActionData;
 import com.pdg.adventure.model.action.SetVariableActionData;
 import com.pdg.adventure.model.action.TakeActionData;
@@ -197,6 +199,12 @@ public class PreconditionActionFormatter {
         }
         if (a instanceof AutoRemoveActionData) {
             return "AutoRemove";
+        }
+        if (a instanceof SaveGameActionData) {
+            return "SAVE";
+        }
+        if (a instanceof LoadGameActionData) {
+            return "LOAD";
         }
         if (a instanceof InventoryActionData) {
             return "INVENTORY";

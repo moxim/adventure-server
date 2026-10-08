@@ -461,6 +461,8 @@ author-placeable:
 | `AutoDropAction(gameContext, allItems)` | **AutoDrop.** Resolve the item from the typed noun and drop it into the current location. |
 | `AutoWearAction(gameContext, allItems)` | **AutoWear.** Resolve the item from the typed noun and wear it (delegates to `WearAction`). |
 | `AutoRemoveAction(gameContext, allItems)` | **AutoRemove.** Resolve the item from the typed noun and take it off (delegates to `RemoveAction`). |
+| `SaveGameAction(gameContext, snapshotter, savedGameService)` | **SaveGame.** Save the running game into the typed slot or the first free one — see [§ Saving and loading games](#saving-and-loading-games). |
+| `LoadGameAction(gameContext, snapshotter, savedGameService)` | **LoadGame.** List the player's saves, or restore the typed slot in place. |
 | `LightAction(item, lumen)` | Set the item's light level absolutely; emits `SM66`. |
 | `PictureAction(pictureId, gameContext)` | Set `gameContext.currentPictureId` so the play screen shows that picture; always SUCCESS with no text (informational-only). |
 | `MoveItemAction(item, dest, msgs)` | The primitive: remove the item from its parent if any, add it to `dest` if not full. Emits `SM54` (moved) / `SM55` (full) / `SM56` (can't). |
@@ -625,8 +627,31 @@ sentinel.
 There is **no CLI runner** anymore — `MiniAdventure` and `AdventureClient`
 were deleted, and there is no custom `IO` class (`Adventure.run()` survives
 as a vestigial stub with its old `GameLoop` wiring commented out). The only
-adventure boot today is `AdventureRunSessionFactory.start(AdventureData)` —
+adventure boot today is `AdventureRunSessionFactory.start(AdventureData, RunOwner)` —
 see the next section.
+
+## Saving and loading games
+
+The author binds a Response for the verb `save` (noun `~`) to **SaveGame** and one for `load` (noun `~`)
+to **LoadGame**; the wildcard noun also matches "no noun".
+
+- `save` takes the lowest free slot of the player's 10 for this adventure (refused when all are taken),
+  `save N` overwrites slot N silently, `load` lists the saves as `N. <title> - yyyy-MM-dd HH:mm:ss`, and
+  `load N` restores slot N in place and describes the location. After `load` the player may type just the
+  number: the parser infers the verb.
+- A `GameStateSnapshotter` captures a `GameSnapshotData` (current location and picture id; every known item id;
+  the ordered contents of each registered container; worn flags; lumen; per-location visit counts; variables).
+  Placement is read from the containers, not from `getParentContainer()`, because `DestroyAction` leaves that
+  pointer stale. `restore` is best-effort: it checks the saved location first (and changes nothing if it is gone),
+  takes every known item out of its container, sets each saved container's contents in order, reapplies the item
+  state, visits and variables, and moves the player. Ids that no longer exist are skipped; what the save does
+  not mention is left alone.
+- `SavedGameData` (Mongo collection `savedgames`) has the deterministic id `<userId>:<adventureId>:<slot>`, so
+  saving into a slot is an upsert. `SavedGameService` implements the slot rules; the player comes from the
+  `GameContext.RunIdentity` the factory sets. A save records the adventure's `builderVersion`; `load` appends a
+  warning when both versions are known and differ.
+- All texts are `SystemMessageKey`s (`SAVE_DONE`, `SAVE_FULL`, `SLOT_INVALID`, `SAVELOAD_UNAVAILABLE`,
+  `LOAD_LIST_HEADER`, `LOAD_NONE`, `LOAD_DONE`, `LOAD_EMPTY_SLOT`, `LOAD_CANNOT`, `LOAD_VERSION_NOTE`).
 
 ## AdventureRunSession: the in-browser play surface
 
@@ -635,8 +660,14 @@ give `AdventureRunView` (the Vaadin play screen — see
 [`07-ui-and-navigation.md`](07-ui-and-navigation.md)) a turn-based API over the
 engine, without touching `GameLoop`/`GameContext` directly:
 
-1. `AdventureRunSessionFactory.start(AdventureData)`:
-   - Loads the adventure into the shared engine via `LoadAdventureAction`
+1. `AdventureRunSessionFactory.start(AdventureData, RunOwner)`:
+   - Refuses with `RunAlreadyActiveException`, before touching any state, when
+     this browser session already has an active run (`ActiveRun`).
+     `startReplacingActive` is the explicit takeover and `release(RunOwner)`
+     ends a run (owner-checked, and it clears the session's registries).
+   - Puts a `GameContext.RunIdentity` (player id, adventure id and title, builder
+     version) on the session's `GameContext`; `release` clears it.
+   - Loads the adventure into the session's engine via `LoadAdventureAction`
      (its inverted success signal — throwing `ReloadAdventureException` on
      success, returning normally on failure — is unwrapped into a plain
      `IllegalStateException` here so the Vaadin view doesn't have to know
@@ -644,7 +675,8 @@ engine, without touching `GameLoop`/`GameContext` directly:
    - `registerBaseVerbs` adds a small set of always-available words directly
      on the `Vocabulary` — `quit`/`exit`/`bye`,
      `describe`/`look`/`l`/`desc`/`examine`/`x`, `help`, `inventory`/`i`,
-     plus `and` (`CONJUNCTION`, synonym `then`) and `it` (`PRONOUN`) — so
+     plus `and` (`CONJUNCTION`, synonym `then`), `it` (`PRONOUN`) and the slot numbers `1`–`10` as nouns (the parser drops unknown
+     words, and SAVE/LOAD take their slot from the typed noun) — so
      compound commands and pronoun back-references work regardless of the
      author's own vocabulary/special-word setup. A run session is scoped to
      one adventure, so there is no adventure-switching / `load X` wiring.
@@ -653,11 +685,11 @@ engine, without touching `GameLoop`/`GameContext` directly:
      the author's own Processes and Responses
      (§ [Workflow](03-domain-model.md#workflow)) are layered on top of the
      built-in ones.
-   - Returns an `AdventureRunSession` wrapping a fresh `GameLoop`. The
-     caller must still submit the opening `look` to render the starting
-     room — the factory does not do this itself. `AdventureRunView` does it
-     via its own `handleInput("look")` (the same path a typed command
-     takes).
+   - Returns an `AdventureRunSession` wrapping a fresh `GameLoop` and
+     carrying the adventure's system-message overrides. The caller must
+     still render the opening room — the factory does not do this itself.
+     `AdventureRunView` executes a `MovePlayerAction` through
+     `session.runBound(...)` so the overrides apply.
 2. `AdventureRunSession.submit(String input)`:
    - Installs a capturing `Consumer<String>` via `gameContext.setOutputSink(...)`,
      runs `gameLoop.processCommand(input)` (which now fires
@@ -666,10 +698,20 @@ engine, without touching `GameLoop`/`GameContext` directly:
      non-blank/non-prompt lines, and **always** clears the sink
      (`setOutputSink(null)`) in a `finally` block before returning.
    - Returns a `RunResult(List<String> lines, boolean gameOver)`.
+   - Binds the session's system-message overrides
+     (`SystemMessageKey.bindOverrides`) for the whole turn and unbinds in a
+     `finally`.
 
-**This reuses the process-wide `GameContext`/`AdventureConfig` singleton
-beans** — there is no per-session engine isolation. It is visible now
-that multiple browser users can each trigger a session concurrently. See
+`GameContext` and the six `AdventureConfig` registries are `@PerBrowserSession`
+scoped proxies (`vaadin-session` scope), so every browser session has its
+own engine state and several players can play at once. One game per browser
+session is enforced by the session-scoped `ActiveRun`. A closed tab normally
+frees its run at once (Flow's unload beacon detaches the UI), but a browser
+that doesn't deliver the beacon (Safari) or a crashed tab is only noticed
+through missed heartbeats. `application.properties` sets
+`vaadin.heartbeatInterval=15`, so such a UI is closed after about 45 seconds
+(Vaadin's default of 5 minutes would take ~15), and until then
+`AdventureRunView` offers 'End the other game and start here'. See
 [Known gaps](#known-gaps).
 
 ## Exceptions used as control flow
@@ -678,6 +720,7 @@ that multiple browser users can each trigger a session concurrently. See
 |-----------|--------------|---------------|
 | `QuitException` | `QuitAction` | The player has quit; `GameLoop.processCommand` tells the message and returns `QUIT`. Carries an optional bye message. |
 | `ReloadAdventureException` | `LoadAdventureAction` | `LoadAdventureAction`'s inverted **success** signal. Rethrown by `GameLoop.processCommand`; caught by `AdventureRunSessionFactory.loadIntoSharedEngine`. |
+| `RunAlreadyActiveException` | `AdventureRunSessionFactory.start` | This browser session already has an active run; thrown before any state is touched. `AdventureRunView` answers with the takeover dialog. |
 | `UnresolvedReferenceException` | `Parser.populate` | The pronoun `it` was used with no antecedent noun this session. Caught by `GameLoop.processCommand`, which tells the message and continues. |
 | `AmbiguousCommandException` | (declared, used in domain helpers) | Multiple matches reduce to ambiguity; today the dispatcher emits a clarification message (SM60 / SM61) rather than throwing. |
 | `ConfigurationException` | `AbstractVariableCondition.getVariable` and other setup paths | The adventure's data is internally inconsistent (missing variable, missing reference). |
@@ -715,23 +758,20 @@ conditions caught at the call site (no global `@ControllerAdvice`).
   verb/adjective/noun slots: multi-noun objects, prepositions ("put X in Y"),
   and articles are unsupported. A pluggable interface should be defined so a
   future implementation can replace `Parser.handle` without ripple changes.
-- **Save / Load game state.** `VocabularyData.saveWord` and `loadWord` slots
-  exist; `LoadAdventureAction` covers adventure-level reloading. There is no
-  per-game *save state* (variables, container snapshot) yet, and
-  `AdventureRunView`/`AdventureRunSession` do not wire `save`/`load` at all
-  — a run session is one continuous sitting.
+- **Saved games** are restored in place (see [Saving and loading games](#saving-and-loading-games)):
+  an item the author added after a save keeps its current position on `load`,
+  `save 11` behaves like a bare `save` (the parser drops unknown words), saves
+  cannot be deleted by the player and are not removed when their adventure or user is
+  deleted, an author vocabulary that already uses `1`–`10` as a verb or synonym keeps
+  that meaning (the slot numbers are only registered when the word is free), the
+  `savedgames` collection has no index on `(userId, adventureId)` so every save and
+  load scans it, and the `VocabularyData.saveWord` / `loadWord` slots are still
+  unused by the engine. `LoadAdventureAction` remains the adventure-level reload.
 - **`AmbiguousCommandException`** is declared but not used by `CommandExecutor`,
   which emits a literal clarification string instead. Either retire the
   exception or route the message through it.
-- **`GameContext`/`AdventureConfig` are process-wide singletons — no
-  per-session engine isolation.** `AdventureRunSessionFactory`
-  (§ [AdventureRunSession](#adventurerunsession-the-in-browser-play-surface))
-  drives these shared beans, so at most one Test/Run session is meaningfully
-  active across the whole server at a time; a second concurrent session
-  (another author testing, another player's tab) mutates the same
-  `currentLocation`/`pocket`/`outputSink` state. `GameContext.setOutputSink`'s
-  own doc comment flags this explicitly. A rebuild that wants concurrent
-  play MUST scope `GameContext` (and the vocabulary/message/variable state
-  it reaches through `AdventureConfig`) per session — e.g. request- or
-  session-scoped beans, or an explicit session object threaded through the
-  engine instead of singleton injection.
+- **Engine state is per Vaadin session, not per tab.** Several concurrent
+  games in one browser session are not supported (a second start is refused
+  or must take over). Scoped beans can only be used on a thread with a bound
+  Vaadin session, and session persistence/clustering (which would require
+  the scoped beans to be serializable) is not supported.

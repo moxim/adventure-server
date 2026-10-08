@@ -139,6 +139,7 @@ Fields:
 | `notes` | `String` | Free-text outline; not used at runtime. Surfaced as a quick preview in `AdventuresMenuView`'s right-click context menu. |
 | `variables` | `List<VariableData>`, default empty | The variables the author has defined — embedded (owned 1:1 by the adventure, like `messages`), as a list rather than a map because variable names are free text and may be illegal as Mongo field names. `defineVariable(name)` adds one (trimmed, case-sensitive, idempotent); `variableNames()` lists them. Created when a Set Variable action names a variable, see [`07-ui-and-navigation.md`](07-ui-and-navigation.md). |
 | `workflowData` | `WorkflowData`, default `new WorkflowData()` | The adventure's global commands — **Processes** (`commands`), **Responses** (`interceptorCommands`) and **Arrival Processes** (`arrivalProcesses`). Plain embedded field — no `@DBRef`, no cascade annotations (unlike every other nested collection above); it round-trips as part of the `AdventureData` document itself. See [§ Workflow](#workflow) below. |
+| `builderVersion` | `String`, default `null` | The version of the adventure builder that last wrote this adventure, stamped by `AdventureService.saveAdventureData` from Spring Boot build info (the pom version). `null` means unknown. Saved games record it so `load` can warn when the adventure changed version since the save. |
 
 Constructors initialise empty maps (including `systemMessages`) and an empty
 `ItemContainerData("your pocket")`.
@@ -565,7 +566,9 @@ Cross-store
 - `src/main/java/com/pdg/adventure/model/` — `AdventureData`, `LocationData`,
   `ItemData`, `ItemContainerData`, `DirectionData`, `CommandData`,
   `CommandChainData`, `CommandProviderData`, `MessageData`,
-  `SystemMessageData`, `WorkflowData`, `VocabularyData`, `Word`, `ThingData`.
+  `SystemMessageData`, `WorkflowData`, `VocabularyData`, `Word`, `ThingData`,
+  `SavedGameData` (a saved game, collection `savedgames`) and `GameSnapshotData`
+  (its embedded runtime state).
 - `src/main/java/com/pdg/adventure/model/action/` — every `*ActionData`
   (incl. `BreakActionData`).
 - `src/main/java/com/pdg/adventure/model/condition/` — every `*ConditionData`.
@@ -584,9 +587,9 @@ Cross-store
   (`CommandDescriptionData.java:57`). The TODO in source flags this; a rebuild
   SHOULD route every word creation through `Vocabulary` so synonym and
   duplicate rules apply uniformly.
-- **`Variable` state is in-memory only.** Persistence per save game is not yet
-  designed. The intended `saveWord` / `loadWord` slots on `VocabularyData`
-  imply a save-game story that is not implemented.
+- **`Variable` state is saved with a saved game** (`GameSnapshotData.variables`); it
+  is otherwise in memory only. The `saveWord` / `loadWord` slots on `VocabularyData`
+  are not used by the engine: the author binds `save ~` / `load ~` Responses instead.
 - **`ItemContainerData.holdingDirections` flag is not consistently used.** It
   hints at a planned use (a container that holds directions) that is currently
   inactive.

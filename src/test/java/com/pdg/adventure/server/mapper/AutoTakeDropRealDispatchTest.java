@@ -25,6 +25,7 @@ import com.pdg.adventure.server.mapper.action.AutoRemoveActionMapper;
 import com.pdg.adventure.server.mapper.action.AutoTakeActionMapper;
 import com.pdg.adventure.server.mapper.action.AutoWearActionMapper;
 import com.pdg.adventure.server.support.MapperSupporter;
+import com.pdg.adventure.support.FakeSessionScopeConfig;
 
 /** Proves AutoTake/AutoDrop/AutoWear/AutoRemove survive real CommandMapper dispatch, i.e. their mappers are auto-registered. */
 class AutoTakeDropRealDispatchTest {
@@ -41,7 +42,8 @@ class AutoTakeDropRealDispatchTest {
     @Test
     void autoTakeAndAutoDropData_dispatchThroughTheRealMapperRegistry() {
         context = new AnnotationConfigApplicationContext();
-        context.register(GameContext.class, AdventureConfig.class, MapperSupporter.class,
+        context.register(FakeSessionScopeConfig.class, GameContext.class, AdventureConfig.class,
+                         MapperSupporter.class,
                          AutoMapperRegistrationProcessor.class, CommandDescriptionMapper.class,
                          CommandMapper.class, AutoTakeActionMapper.class, AutoDropActionMapper.class,
                          AutoWearActionMapper.class, AutoRemoveActionMapper.class);

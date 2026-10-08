@@ -2,6 +2,7 @@ package com.pdg.adventure.view.adventure;
 
 import com.vaadin.browserless.BrowserlessTest;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.messages.MessageInput;
 import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
@@ -10,15 +11,18 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.server.VaadinSession;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,6 +36,8 @@ import com.pdg.adventure.server.engine.AdventureRunSession;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
 import com.pdg.adventure.server.engine.AdventureRunSessionFactory;
 import com.pdg.adventure.server.engine.GameContext;
+import com.pdg.adventure.server.engine.RunAlreadyActiveException;
+import com.pdg.adventure.server.engine.RunOwner;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
@@ -97,6 +103,7 @@ class AdventureRunViewTest extends BrowserlessTest {
         when(gameContext.runArrivalProcesses()).thenReturn(new CommandExecutionResult(ExecutionResult.State.SUCCESS));
         when(gameContext.getCurrentPictureId()).thenReturn(pictureId);
         when(session.getGameContext()).thenReturn(gameContext);
+        when(session.runBound(any())).thenAnswer(invocation -> ((Supplier<?>) invocation.getArgument(0)).get());
     }
 
     @AfterEach
@@ -115,7 +122,7 @@ class AdventureRunViewTest extends BrowserlessTest {
     }
 
     private void enterViaAuthorRoute() {
-        when(sessionFactory.start(adventureData)).thenReturn(session);
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenReturn(session);
         view.beforeEnter(eventFor("author/adventures/adv-1/test"));
     }
 
@@ -163,6 +170,161 @@ class AdventureRunViewTest extends BrowserlessTest {
                                   SystemMessageKey.SM9.defaultText() + "\na rusty key");
     }
 
+    // Mirrors production order: beforeEnter runs before the view is attached, so the conflict dialog is
+    // opened from onAttach.
+    private AdventureRunView enterWhileAnotherRunIsActive() {
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenThrow(new RunAlreadyActiveException());
+        AdventureRunView conflicted = new AdventureRunView(sessionFactory, accessService, new VariableProvider());
+        conflicted.beforeEnter(eventFor("author/adventures/adv-1/test"));
+        UI.getCurrent().add(conflicted);
+        return conflicted;
+    }
+
+    @Test
+    void beforeEnter_whenAnotherRunIsActive_disablesInputAndOffersTheTakeover() {
+        AdventureRunView conflicted = enterWhileAnotherRunIsActive();
+
+        assertThat(find(MessageInput.class, conflicted).single().isEnabled()).isFalse();
+        ConfirmDialog dialog = find(ConfirmDialog.class).single();
+        assertThat(test(dialog).getText()).contains("another tab");
+    }
+
+    @Test
+    void confirmingTheTakeover_startsReplacingTheActiveRun_andRendersTheOpeningRoom() {
+        stubOpeningRoom("A grand throne room.");
+        when(sessionFactory.startReplacingActive(eq(adventureData), any(RunOwner.class))).thenReturn(session);
+        AdventureRunView conflicted = enterWhileAnotherRunIsActive();
+
+        test(find(ConfirmDialog.class).single()).confirm();
+
+        verify(sessionFactory).startReplacingActive(eq(adventureData), any(RunOwner.class));
+        MessageList messageList = find(MessageList.class, conflicted).single();
+        assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
+                .containsExactly("A grand throne room.");
+        assertThat(find(MessageInput.class, conflicted).single().isEnabled()).isTrue();
+    }
+
+    @Test
+    void theOpeningRoom_isRenderedThroughTheSessionsBoundEntryPoint() {
+        stubOpeningRoom("A grand throne room.");
+
+        enterViaAuthorRoute();
+
+        verify(session).runBound(any());
+    }
+
+    @Test
+    void detachingTheView_releasesItsRun() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+
+        UI.getCurrent().remove(view);
+
+        verify(sessionFactory).release(any(RunOwner.class));
+    }
+
+    @Test
+    void enteringAgainOnTheSameViewInstance_releasesItsOwnRunBeforeStartingAnew() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+
+        view.beforeEnter(eventFor("author/adventures/adv-1/test"));
+
+        InOrder order = inOrder(sessionFactory);
+        order.verify(sessionFactory).start(eq(adventureData), any(RunOwner.class));
+        order.verify(sessionFactory).release(any(RunOwner.class));
+        order.verify(sessionFactory).start(eq(adventureData), any(RunOwner.class));
+    }
+
+    @Test
+    void aConflictOnAnAlreadyAttachedView_opensTheDialogImmediately() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenThrow(new RunAlreadyActiveException());
+
+        view.beforeEnter(eventFor("author/adventures/adv-1/test"));
+
+        assertThat(find(ConfirmDialog.class).exists()).isTrue();
+        assertThat(find(MessageInput.class, view).single().isEnabled()).isFalse();
+    }
+
+    @Test
+    void detachingTheView_whileTheVaadinSessionIsClosing_doesNotTouchTheSessionScopedRelease() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        // Vaadin closes the session before it detaches the UIs; resolving a session-scoped bean (which
+        // sessionFactory.release does through ActiveRun) then throws "Current VaadinSession is not open".
+        VaadinSession.getCurrent().close();
+
+        assertThat(view.isAttached()).isFalse();
+        verify(sessionFactory, never()).release(any(RunOwner.class));
+    }
+
+    @Test
+    void enteringAgainAfterGameOver_reenablesTheInput_andStartsAFreshTranscript() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(session.submit("quit")).thenReturn(new RunResult(List.of("Bye."), true));
+        MessageInput messageInput = find(MessageInput.class, view).single();
+        test(messageInput).send("quit");
+        assertThat(messageInput.isEnabled()).isFalse();
+
+        view.beforeEnter(eventFor("author/adventures/adv-1/test"));
+
+        assertThat(messageInput.isEnabled()).isTrue();
+        MessageList messageList = find(MessageList.class, view).single();
+        assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
+                .containsExactly("A grand throne room.");
+    }
+
+    // focus() reaches the browser as a pending JavaScript invocation; reading them also clears the queue.
+    private static boolean aFocusCallIsPendingFor(MessageInput anInput) {
+        // A bare view call (unlike a tester interaction) does not run the deferred before-client-response tasks.
+        UI.getCurrent().getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        return UI.getCurrent().getInternals().dumpPendingJavaScriptInvocations().stream()
+                .map(pending -> pending.getInvocation())
+                .anyMatch(invocation -> invocation.getExpression().contains("focus")
+                                        && invocation.getParameters().contains(anInput.getElement()));
+    }
+
+    @Test
+    void confirmingTheTakeover_focusesTheMessageInput() {
+        stubOpeningRoom("A grand throne room.");
+        when(sessionFactory.startReplacingActive(eq(adventureData), any(RunOwner.class))).thenReturn(session);
+        AdventureRunView conflicted = enterWhileAnotherRunIsActive();
+        MessageInput conflictedInput = find(MessageInput.class, conflicted).single();
+        aFocusCallIsPendingFor(conflictedInput); // drop whatever was queued while the view was built
+
+        test(find(ConfirmDialog.class).single()).confirm();
+
+        assertThat(aFocusCallIsPendingFor(conflictedInput)).isTrue();
+    }
+
+    @Test
+    void enteringAgainAfterGameOver_focusesTheMessageInput() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(session.submit("quit")).thenReturn(new RunResult(List.of("Bye."), true));
+        MessageInput messageInput = find(MessageInput.class, view).single();
+        test(messageInput).send("quit");
+        aFocusCallIsPendingFor(messageInput);
+
+        view.beforeEnter(eventFor("author/adventures/adv-1/test"));
+
+        assertThat(aFocusCallIsPendingFor(messageInput)).isTrue();
+    }
+
+    @Test
+    void gameOver_releasesTheRun() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(session.submit("quit")).thenReturn(new RunResult(List.of(SystemMessageKey.SM14.defaultText()), true));
+
+        test(find(MessageInput.class, view).single()).send("quit");
+
+        verify(sessionFactory).release(any(RunOwner.class));
+    }
+
     @Test
     void gameOver_disablesTheMessageInput() {
         stubOpeningRoom("A grand throne room.");
@@ -178,7 +340,7 @@ class AdventureRunViewTest extends BrowserlessTest {
     @Test
     void beforeEnter_viaAuthorRoute_sessionCannotStart_forwardsToEditorWithAFlashMessage() {
         BeforeEnterEvent event = eventFor("author/adventures/adv-1/test");
-        when(sessionFactory.start(adventureData)).thenThrow(new IllegalStateException("no locations"));
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenThrow(new IllegalStateException("no locations"));
 
         view.beforeEnter(event);
 
@@ -191,7 +353,7 @@ class AdventureRunViewTest extends BrowserlessTest {
     @Test
     void beforeEnter_viaPlayerRoute_sessionCannotStart_forwardsToPlayerLibraryInstead() {
         BeforeEnterEvent event = eventFor("player/library/adv-1/run");
-        when(sessionFactory.start(adventureData)).thenThrow(new IllegalStateException("no locations"));
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenThrow(new IllegalStateException("no locations"));
 
         view.beforeEnter(event);
 
@@ -214,7 +376,7 @@ class AdventureRunViewTest extends BrowserlessTest {
     @Test
     void beforeEnter_viaPlayerRoute_rendersTheOpeningRoomDescription() {
         stubOpeningRoom("A grand throne room.");
-        when(sessionFactory.start(adventureData)).thenReturn(session);
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenReturn(session);
 
         view.beforeEnter(eventFor("player/library/adv-1/run"));
 
@@ -232,7 +394,7 @@ class AdventureRunViewTest extends BrowserlessTest {
     @Test
     void beforeEnter_viaMenuRoute_sessionCannotStart_forwardsToAdventuresMenuNotEditor() {
         BeforeEnterEvent event = eventFor(AdventureRunView.menuRunPath("adv-1"));
-        when(sessionFactory.start(adventureData)).thenThrow(new IllegalStateException("no locations"));
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenThrow(new IllegalStateException("no locations"));
 
         view.beforeEnter(event);
 
@@ -255,7 +417,7 @@ class AdventureRunViewTest extends BrowserlessTest {
     @Test
     void beforeEnter_viaMenuRoute_rendersTheOpeningRoomDescription() {
         stubOpeningRoom("A grand throne room.");
-        when(sessionFactory.start(adventureData)).thenReturn(session);
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenReturn(session);
 
         view.beforeEnter(eventFor(AdventureRunView.menuRunPath("adv-1")));
 

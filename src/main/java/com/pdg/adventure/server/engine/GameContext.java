@@ -13,6 +13,7 @@ import com.pdg.adventure.model.WorkflowData;
 import com.pdg.adventure.server.location.Location;
 
 @Component
+@PerBrowserSession
 public class GameContext {
 
     private Workflow workflow;
@@ -31,6 +32,12 @@ public class GameContext {
     private String currentAdjective = VocabularyData.EMPTY_STRING;
     private String currentPictureId;
 
+    /** Who is playing which adventure, and the builder version the adventure carried; set when a run starts. */
+    public record RunIdentity(String playerId, String adventureId, String adventureTitle, String builderVersion) {
+    }
+
+    private RunIdentity runIdentity;
+
     public void show(Describable aThing) {
         tell(aThing.getLongDescription());
     }
@@ -41,7 +48,7 @@ public class GameContext {
 
     /**
      * Redirects tell() output, e.g. so a browser Test session can capture gameplay text
-     * instead of it going to the console. GameContext is a process-wide singleton, so callers
+     * instead of it going to the console. GameContext is scoped to the browser session, so callers
      * must install the sink immediately before driving the engine and clear it (pass null)
      * right after — never leave a non-default sink installed between calls.
      */
@@ -147,6 +154,14 @@ public class GameContext {
 
     public String getCurrentPictureId() {
         return currentPictureId;
+    }
+
+    public RunIdentity getRunIdentity() {
+        return runIdentity;
+    }
+
+    public void setRunIdentity(RunIdentity aRunIdentity) {
+        runIdentity = aRunIdentity;
     }
 
     public Workflow setUpWorkflows() {

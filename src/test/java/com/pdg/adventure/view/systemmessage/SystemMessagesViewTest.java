@@ -90,11 +90,11 @@ class SystemMessagesViewTest extends BrowserlessTest {
     }
 
     @Test
-    @DisplayName("The grid still shows all 69 catalog rows even though none are persisted yet")
+    @DisplayName("The grid still shows all catalog rows even though none are persisted yet")
     void grid_showsFullCatalog_regardlessOfHowManyRowsArePersisted() {
         enterWithAdventure();
 
-        assertThat(test(find(Grid.class, view).single()).size()).isEqualTo(69);
+        assertThat(test(find(Grid.class, view).single()).size()).isEqualTo(SystemMessageKey.values().length);
     }
 
     @Test

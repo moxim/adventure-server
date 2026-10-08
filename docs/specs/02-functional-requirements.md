@@ -476,21 +476,20 @@ author origins) differ by origin.
   - On `quit`, the session ends (input disabled, a farewell line shown);
     the player then clicks **Back** to return to the library (or, for an
     author, to wherever they launched from).
-  - `save`/`load` are **not** wired in a run session — it is scoped to one
-    adventure, played in one sitting. Cross-adventure loading exists only
+  - `save`/`load` work when the author binds `save ~` / `load ~` Responses to
+    the Save Game / Load Game actions (see
+    [`04-runtime-engine.md` § Saving and loading games](04-runtime-engine.md#saving-and-loading-games)):
+    each player has 10 saved games per adventure. Cross-adventure loading exists only
     as `LoadAdventureAction` (used internally by `AdventureRunSessionFactory`
     to load the chosen adventure into the shared engine); the former
     console `load <adventureId>` command was removed with the CLI runner
     (`MiniAdventure` / `AdventureClient`).
 
-> **Constraint inherited from the engine, not new to this view:**
-> `AdventureRunSessionFactory` reuses the same process-wide
-> `GameContext`/`AdventureConfig` singleton beans (no per-session engine
-> isolation), so at most one run session is
-> meaningfully active at a time across the whole server. Concurrent
-> Test/Run sessions (two authors testing at once, or two browser tabs)
-> will interfere with each other. See
-> [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps).
+> **Isolation:** the engine state is scoped to the Vaadin session, so
+> several players can run games at once. Within one browser session only
+> one run is active; starting a second shows a dialog offering to end the
+> other game. See
+> [`04-runtime-engine.md` § AdventureRunSession](04-runtime-engine.md#adventurerunsession-the-in-browser-play-surface).
 
 ---
 
@@ -549,16 +548,13 @@ should be enforced by the implementation, not just by the UI:
 
 ## Known gaps
 
-- **Single active run session, server-wide.** `AdventureRunSessionFactory`
-  reuses the process-wide `GameContext`/`AdventureConfig` singletons, so
-  only one Test/Run session is meaningfully active at a time across the
-  whole deployment — now visible because multiple browser users can
-  trigger it concurrently. A rebuild SHOULD give each session its own
-  engine state (request- or session-scoped `GameContext`) if concurrent
-  play is a requirement.
-- **No save/load within a run session.** `save`/`load` special-word slots
-  exist on `VocabularyData` but are not wired into `AdventureRunView` —
-  a session runs start-to-finish in one sitting. There is no longer any
+- **One active run per browser session.** Engine state is per Vaadin
+  session; a second run in the same browser session must explicitly take
+  over the first.
+- **Saved games are restored in place.** An item the author added after a save keeps
+  its current position on `load`; numbers above 10 are not words, so `save 11`
+  behaves like a bare `save`; saves cannot be deleted. The `saveWord` / `loadWord`
+  special-word slots on `VocabularyData` are still unused by the engine. There is no
   player-facing cross-adventure load (the CLI's `load <id>` went away with
   `MiniAdventure`).
 - **AI-augmented descriptions.** Authors cannot yet ask the system to enrich a

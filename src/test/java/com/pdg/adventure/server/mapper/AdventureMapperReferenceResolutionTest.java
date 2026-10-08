@@ -30,6 +30,7 @@ import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.mapper.condition.CarriedConditionMapper;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.support.VariableProvider;
+import com.pdg.adventure.support.FakeSessionScopeConfig;
 
 /**
  * Integration tests for reference resolution during adventure mapping.
@@ -41,7 +42,7 @@ import com.pdg.adventure.server.support.VariableProvider;
  * registered before any command is mapped.
  */
 @ExtendWith(SpringExtension.class)
-@Import({AdventureConfig.class, MapperSupporter.class, AutoMapperRegistrationProcessor.class,
+@Import({FakeSessionScopeConfig.class, AdventureConfig.class, MapperSupporter.class, AutoMapperRegistrationProcessor.class,
          AdventureMapper.class, VocabularyMapper.class, LocationMapper.class, ItemContainerMapper.class,
          ItemMapper.class, DirectionMapper.class, CommandMapper.class, CommandDescriptionMapper.class,
          CommandChainMapper.class, CommandProviderMapper.class, DescriptionMapper.class,

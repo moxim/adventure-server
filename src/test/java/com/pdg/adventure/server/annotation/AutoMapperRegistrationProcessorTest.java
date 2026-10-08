@@ -11,6 +11,7 @@ import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.mapper.action.MessageActionMapper;
 import com.pdg.adventure.server.support.MapperSupporter;
+import com.pdg.adventure.support.FakeSessionScopeConfig;
 
 /**
  * Reproduces a real Spring context boot (no mocks) for the mapper auto-registration machinery.
@@ -37,7 +38,8 @@ class AutoMapperRegistrationProcessorTest {
     @Test
     void realSpringContext_registersAutoRegisterMapperBeans_soMapperSupporterCanFindThem() {
         context = new AnnotationConfigApplicationContext();
-        context.register(GameContext.class, AdventureConfig.class, MapperSupporter.class,
+        context.register(FakeSessionScopeConfig.class, GameContext.class, AdventureConfig.class,
+                         MapperSupporter.class,
                          AutoMapperRegistrationProcessor.class, MessageActionMapper.class);
         context.refresh();
 

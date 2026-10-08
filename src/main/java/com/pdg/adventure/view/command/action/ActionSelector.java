@@ -78,6 +78,8 @@ public class ActionSelector extends HorizontalLayout {
         new ActionTypeDescriptor("Light", "Set an item's light level (lumen)", LightActionData::new),
         new ActionTypeDescriptor("Set Variable", "Set a named variable to a specific value", () -> new SetVariableActionData(null, null)),
         new ActionTypeDescriptor("Quit", "Terminate the game", QuitActionData::new),
+        new ActionTypeDescriptor("Save Game", "Save the running game into one of the player's 10 slots", SaveGameActionData::new),
+        new ActionTypeDescriptor("Load Game", "List the player's saved games, or restore the one in the typed slot", LoadGameActionData::new),
         new ActionTypeDescriptor("Break", "Stop processing this command chain; other chains are unaffected", BreakActionData::new),
         new ActionTypeDescriptor("Picture", "Show a picture to the player", PictureActionData::new)
         ).sorted(Comparator.comparing(ActionTypeDescriptor::displayName, String.CASE_INSENSITIVE_ORDER)).toList();
