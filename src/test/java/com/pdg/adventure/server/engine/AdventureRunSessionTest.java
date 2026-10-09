@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.pdg.adventure.CommandFactory;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
@@ -13,6 +12,7 @@ import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.Parser;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
+import com.pdg.adventure.server.testhelper.StandardResponses;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 class AdventureRunSessionTest {
@@ -35,7 +35,7 @@ class AdventureRunSessionTest {
         vocabulary.createNewWord("describe", Word.Type.VERB);
 
         Workflow workflow = gameContext.setUpWorkflows();
-        new CommandFactory(gameContext, new VocabularyData()).setUpWorkflowCommands(workflow);
+        StandardResponses.register(workflow, gameContext);
 
         session = new AdventureRunSession(new GameLoop(new Parser(vocabulary), gameContext), gameContext);
     }

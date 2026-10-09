@@ -204,7 +204,7 @@ Pay attention to:
    by adjective → reduce by noun → best-ranked tier → execute; `SM8` / `SM60`
    / `SM61`), `CommandMatcher`, `GenericCommand`, `GenericCommandDescription`,
    `GenericCommandProvider`, `GenericCommandChain`,
-   `CommandExecutionResult`, `ExamineFallbackAction`.
+   `CommandExecutionResult`.
 2. Implement `server/engine/`:
    `GameContext`, `Workflow` (the `processes` and `responses` tables as
    `TreeMap<CommandDescription, Command>`, iterated in alphabetical
@@ -224,15 +224,13 @@ Pay attention to:
    RunResult(lines, gameOver)`) wrapper a Vaadin view needs around
    `GameLoop`/`GameContext`, described in
    [`04-runtime-engine.md` § AdventureRunSession](04-runtime-engine.md#adventurerunsession-the-in-browser-play-surface).
-   `AdventureRunSessionFactory.registerBaseVerbs` seeds
-   `quit`/`describe`/`help`/`inventory` (+ synonyms) **and** `and`/`then`
-   (`CONJUNCTION`) and `it` (`PRONOUN`) directly on the vocabulary.
-4. Implement `CommandFactory.java` (top-level, in
-   `com.pdg.adventure`): the take/drop/wear/look wiring, plus
-   `setUpWorkflowCommands` (built-in `help`/`inventory`/`quit`/`describe`
-   Responses + the `SM2` "What now?" Process prompt), exactly as
-   described in
-   [`04-runtime-engine.md` § CommandFactory](04-runtime-engine.md#commandfactory-wiring-conventions).
+   `AdventureRunSessionFactory.registerBaseWords` seeds only the save/load
+   slot numbers `1`–`10` (as nouns) on the vocabulary; all other words,
+   including `and`/`then` (`CONJUNCTION`) and `it` (`PRONOUN`), are the author's.
+4. Plant **no** global commands in the engine: `help`/`inventory`/`quit`/`describe`
+   are Responses the author defines, using the `Message`, `Inventory`, `Quit`,
+   `Look` and `Examine` actions (see
+   [`04-runtime-engine.md` § Workflow](04-runtime-engine.md#workflow-processes-and-responses)).
 
 ### Step 10 — AI integration (intentional placeholder)
 
@@ -286,7 +284,7 @@ and
    - System messages: `SystemMessagesView` (`…/system-messages`,
      `AdventuresMainLayout`) + `SystemMessageEntry`.
    - Vocabulary: `VocabularyMenuView`, `WordEditorDialogue` (VERB/NOUN/
-     ADJECTIVE only in the type picker), `SpecialWordsView`.
+     ADJECTIVE only in the type picker).
    - Admin: `UserManagementView`, `AdventureAssignmentView`.
    - Play surface: `AdventureRunView`, reached three ways (author **Test**
      from `AdventureEditorView`, author/admin "Run Adventure" from
@@ -440,7 +438,6 @@ This chapter draws on every other chapter; pointers per section live with
 the relevant chapter. The high-leverage sources to keep open while you
 rebuild are:
 
-- `src/main/java/com/pdg/adventure/CommandFactory.java`
 - `src/main/java/com/pdg/adventure/server/engine/{GameContext,GameLoop,Workflow,AdventureRunSessionFactory}.java`
 - `src/main/java/com/pdg/adventure/server/parser/{Parser,CommandSequence,CommandHandler,CommandExecutor}.java`
 - `src/main/java/com/pdg/adventure/server/storage/message/SystemMessageKey.java`

@@ -10,7 +10,6 @@ import com.pdg.adventure.model.*;
 public class WordUsageTracker {
 
     private static final String DIRECTION_TEXT = "Direction";
-    public static final String SPECIAL = "Special";
     private final AdventureData adventureData;
     private final VocabularyData vocabularyData;
 
@@ -25,10 +24,8 @@ public class WordUsageTracker {
             return usages;
         }
 
-        // Check if this word is the take or drop verb
+        // Check whether other words are synonyms of this one
         if (vocabularyData != null) {
-            addTakeAndDropWords(targetWord, usages);
-            addExamineWord(targetWord, usages);
             checkSynonyms(targetWord, usages);
         }
 
@@ -42,24 +39,6 @@ public class WordUsageTracker {
             if (word.getSynonym() != null && word.getSynonym().getId().equals(targetWord.getId())) {
                 usages.add(new WordUsage("Synonym", word.getText() + " (" + word.getType() + ")", "Word"));
             }
-        }
-    }
-
-    private void addExamineWord(final Word targetWord, final List<WordUsage> usages) {
-        if (vocabularyData.getExamineWord() != null &&
-            vocabularyData.getExamineWord().getId().equals(targetWord.getId())) {
-            usages.add(new WordUsage("Examine Verb", "Special verb for examining things", SPECIAL));
-        }
-    }
-
-    private void addTakeAndDropWords(final Word targetWord, final List<WordUsage> usages) {
-        if (vocabularyData.getTakeWord() != null &&
-            vocabularyData.getTakeWord().getId().equals(targetWord.getId())) {
-            usages.add(new WordUsage("Take Verb", "Special verb for picking up items", SPECIAL));
-        }
-        if (vocabularyData.getDropWord() != null &&
-            vocabularyData.getDropWord().getId().equals(targetWord.getId())) {
-            usages.add(new WordUsage("Drop Verb", "Special verb for dropping items", SPECIAL));
         }
     }
 

@@ -61,18 +61,15 @@ where it sends you.
 
 ## What you can type
 
-Regardless of what you've configured in your
-[vocabulary](07-vocabulary-and-words.md#special-words), a handful of core
-verbs always work in this screen:
+The engine adds no words of its own to the game (apart from the save/load
+slot numbers). `look`, `inventory`, `help`, `quit` and the rest are
+understood only if your [vocabulary](07-vocabulary-and-words.md) contains
+them, and what they do comes from the
+[Responses](09-workflow.md#responses) you've written for them — see
+[Looking, inventory, help and quit](07-vocabulary-and-words.md#looking-inventory-help-and-quit)
+for a basic set. A word without a Response answers *"I can't do that."*; an unknown word is simply ignored.
 
-| You type | Does |
-|----------|------|
-| `look`, `l`, `desc`, `examine`, `x` | Re-describes your current location. |
-| `inventory`, `i` | Lists what you're carrying. |
-| `help` | Prints a short reminder of what you can do. |
-| `quit`, `exit`, `bye` | Ends the session — see below. |
-
-Beyond those, everything is driven by what you've actually built: `take`,
+Everything is driven by what you've actually built: `take`,
 `drop`, `wear`, and `remove` only work on items you've marked
 containable/wearable, and any custom verbs only work where you've built
 [commands](08-commands-actions-and-conditions.md) or
@@ -90,9 +87,8 @@ take lamp and light it. go north
 Each piece runs in order. If one of them fails or isn't understood, the rest
 of the line is abandoned. A piece with no verb of its own borrows the verb
 from the piece before it (`take lamp and sword`), and **`it`** refers to the
-last thing you mentioned (`examine key. take it`). These work in every play
-session regardless of your vocabulary setup — `and`, `then` and `it` are
-always understood.
+last thing you mentioned (`examine key. take it`). These need a Conjunction word
+(`and`, `then`) and a Pronoun word (`it`) in your vocabulary.
 
 > **Note:** `save` and `load` are **not** available inside a test/run
 > session. A session here is scoped to one adventure, played start to

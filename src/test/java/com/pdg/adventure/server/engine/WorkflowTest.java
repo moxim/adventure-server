@@ -36,7 +36,7 @@ class WorkflowTest {
         assertThat(result.indexOf("Middle message.")).isLessThan(result.indexOf("Zoo message."));
     }
 
-    // CommandFactory.setUpWorkflowCommands registers a sentinel Process keyed ("~", "~", "~")
+    // a former Workflow set-up registered a sentinel Process keyed ("~", "~", "~")
     // whose action prints the turn prompt ("What now? > "; SM2) - it must keep coming after every
     // author-authored ambient message each turn, the way the old TreeMap iteration (sorted by the
     // "verb|adjective|noun" description string, where '|' and '~' both sort above lowercase

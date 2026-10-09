@@ -251,7 +251,7 @@ both DO and BO.
 | Field | Type | Notes |
 |-------|------|-------|
 | `text` | `String` | Lower-cased on construction. |
-| `type` | `Word.Type` | `VERB` / `NOUN` / `ADJECTIVE` / `CONJUNCTION` / `PRONOUN`. The last two are engine-reserved: `CONJUNCTION` (`and`, and its synonym `then`) marks a sub-command boundary in the parser; `PRONOUN` (`it`) resolves to the last-mentioned noun+adjective. Both are seeded by `AdventureRunSessionFactory` and are removed from `WordEditorDialogue`'s type picker, so authors never create them. |
+| `type` | `Word.Type` | `VERB` / `NOUN` / `ADJECTIVE` / `CONJUNCTION` / `PRONOUN`. The last two are special-purpose, author-created: `CONJUNCTION` (`and`, and its synonym `then`) marks a sub-command boundary in the parser; `PRONOUN` (`it`) resolves to the last-mentioned noun+adjective. The engine seeds neither; they come from the adventure's vocabulary. |
 | `synonym` | `@DBRef Word` | Optional reference to a canonical word. |
 
 When constructed from another word with the *synonym* constructor, the new word
@@ -268,7 +268,6 @@ DO fields:
 | Field | Type | Notes |
 |-------|------|-------|
 | `words` | `@DBRef(lazy=false) Map<String, Word>` | All words keyed by text. Cascade save & delete. |
-| `takeWord`, `dropWord`, `inventoryWord`, `lookWord`, `examineWord`, `goWord`, `helpWord`, `quitWord`, `saveWord`, `loadWord` | `@DBRef(lazy=false) Word` | Special-word slots. The engine reads these to know which player input means *take*, *drop*, etc. |
 
 The class also exposes a comprehensive list of **string constants** for UI
 labels (e.g. `BACK_TEXT`, `SAVE_TEXT`, `UNKNOWN_WORD_TEXT`). Centralising these
@@ -345,8 +344,8 @@ to one `Thing`. Three independent lists:
 - **`arrivalProcesses` — Arrival Processes.** Run automatically whenever the
   current location's description is (re)shown: after a `MovePlayerAction`
   walk-in (their output follows the destination's arrival description) and on
-  an explicit look / describe (`RunArrivalProcessesAction`, an extra action on
-  the built-in `describe` Responses). They re-fire on **every** redescribe by
+  an explicit look / describe (`LookAction`, in the author's
+  `describe` Response). They re-fire on **every** redescribe by
   design — an author who wants "only once" adds a guard condition. The list is
   adventure-wide, not per location: gate an entry with a *player is at*
   precondition. The verb is not required — verb / adjective / noun are not
@@ -357,8 +356,7 @@ At runtime, `WorkflowMapper.populate(WorkflowData, Workflow)` layers `commands`
 onto the engine `Workflow` (`server/engine/Workflow.java`) via `addProcess`,
 `interceptorCommands` via `addResponse` and `arrivalProcesses` via
 `addArrivalProcess`, after
-`GameContext.setUpWorkflows()` and on top of the built-ins planted by
-`CommandFactory.setUpWorkflowCommands` — see
+`GameContext.setUpWorkflows()`; the engine plants no built-in entries — see
 [`04-runtime-engine.md` § Workflow](04-runtime-engine.md#workflow-processes-and-responses).
 Authored via `WorkflowEditorView` (`author/adventures/:adventureId/workflow`,
 Processes) and `ResponsesEditorView`

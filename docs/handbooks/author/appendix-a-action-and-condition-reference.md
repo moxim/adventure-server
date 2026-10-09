@@ -19,13 +19,15 @@ order, when that command fires.
 | **Break** | Stops the rest of this action list — and the rest of the command chain — immediately | Nothing — pair it with a **Message** action if you want it to say something as it stops |
 | **Create Item** | Places an item into a location (bringing it into play) | The item; the destination location |
 | **Decrement Variable** | Subtracts an amount from a named variable | Variable name; amount |
-| **Describe** | Prints the description of an item or location | The target |
+| **Describe** | Prints the description of one fixed item or location | The target |
+| **Examine** | Prints the long description of the item the player named, carried or here; says "There isn't one of those here." otherwise | Nothing — use it in a Response with your look verb and the noun `~` |
 | **Destroy** | Deletes an item from the game permanently | The item |
 | **Drop** | Player drops an item at the current location | The item |
 | **Increment Variable** | Adds an amount to a named variable | Variable name; amount |
 | **Inventory** | Lists everything the player carries | Nothing — fully automatic |
 | **Light** | Sets an item's light level (lumen), e.g. turning a lamp on or off | The item; a lumen value from 0 (dark) to 100 (full brightness) |
 | **Load Game** | Without a slot number lists the player's saved games; with one (`load 3`) restores that game and describes the place again | Nothing — use it in a Response with the verb `load` and the noun `~` |
+| **Look** | Describes the location the player is in, in full, shows its picture and fires your Arrival Processes | Nothing — use it in a Response with your look verb |
 | **Message** | Prints a message from your [message catalog](10-messages.md) | The message (picked by its summary) |
 | **Move Item** | Moves an item into a different container | The item; the destination (a location or the player's pocket) |
 | **Move Player** | Moves the player to a location and shows its description | Destination location |

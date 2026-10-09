@@ -165,7 +165,7 @@ public class GameContext {
     }
 
     public Workflow setUpWorkflows() {
-        workflow = new Workflow(this);
+        workflow = new Workflow();
         return workflow;
     }
 

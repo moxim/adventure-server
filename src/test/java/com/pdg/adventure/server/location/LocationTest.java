@@ -107,7 +107,6 @@ class LocationTest {
     void describeItemAtLocation_returnsOnlyTheItemChain_notTheLocationFallback() {
         // given: the location has an examine fallback (verb "describe") and holds an item
         // with its own real "describe basket" command.
-        sut.setExamineFallback("describe", sut::getLongDescription);
         Item basket = new Item(new DescriptionProvider("basket"), true);
         basket.addCommand(new GenericCommand(new GenericCommandDescription("describe", basket),
                                              new MessageAction("A wicker basket.")));
@@ -126,7 +125,6 @@ class LocationTest {
     void describeItemWithAdjective_resolvesToMatchingItem() {
         // given: the location has an examine fallback and holds a "short sword"
         // (adjective=short, noun=sword) with a real describe command.
-        sut.setExamineFallback("describe", sut::getLongDescription);
         Item shortSword = new Item(new DescriptionProvider("short", "sword"), true);
         shortSword.addCommand(new GenericCommand(new GenericCommandDescription("describe", shortSword),
                                                  new MessageAction("A short sword.")));

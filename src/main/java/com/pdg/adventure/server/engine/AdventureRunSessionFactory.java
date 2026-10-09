@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.pdg.adventure.CommandFactory;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.SavedGameData;
 import com.pdg.adventure.model.SystemMessageData;
@@ -98,11 +97,9 @@ public class AdventureRunSessionFactory {
                                                                    anAdventureData.getBuilderVersion()));
 
             Vocabulary vocabulary = adventureConfig.allWords();
-            registerBaseVerbs(vocabulary);
+            registerBaseWords(vocabulary);
 
             Workflow workflow = gameContext.setUpWorkflows();
-            CommandFactory commandFactory = new CommandFactory(gameContext, anAdventureData.getVocabularyData());
-            commandFactory.setUpWorkflowCommands(workflow);
             workflowMapper.populate(gameContext.getWorkflowData(), workflow);
 
             GameLoop gameLoop = new GameLoop(new Parser(vocabulary), gameContext);
@@ -152,22 +149,7 @@ public class AdventureRunSessionFactory {
     }
 
     // A run session is scoped to one adventure.
-    private void registerBaseVerbs(Vocabulary aVocabulary) {
-        aVocabulary.createNewWord("quit", Word.Type.VERB);
-        aVocabulary.createSynonym("exit", "quit");
-        aVocabulary.createSynonym("bye", "quit");
-        aVocabulary.createNewWord("describe", Word.Type.VERB);
-        aVocabulary.createSynonym("look", "describe");
-        aVocabulary.createSynonym("l", "describe");
-        aVocabulary.createSynonym("desc", "describe");
-        aVocabulary.createSynonym("examine", "describe");
-        aVocabulary.createSynonym("x", "describe");
-        aVocabulary.createNewWord("help", Word.Type.VERB);
-        aVocabulary.createNewWord("inventory", Word.Type.VERB);
-        aVocabulary.createSynonym("i", "inventory");
-        aVocabulary.createNewWord("and", Word.Type.CONJUNCTION);
-        aVocabulary.createSynonym("then", "and");
-        aVocabulary.createNewWord("it", Word.Type.PRONOUN);
+    private void registerBaseWords(Vocabulary aVocabulary) {
         // The parser drops unknown words, so the slot numbers of SAVE/LOAD must be words.
         for (int slot = 1; slot <= SavedGameData.SAVED_GAME_SLOTS; slot++) {
             String digit = Integer.toString(slot);

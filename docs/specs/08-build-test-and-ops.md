@@ -226,12 +226,12 @@ The view subtree (`src/test/java/.../view/`) uses `browserless-test-junit6`
 to construct routed views without a browser or full Spring context.
 
 ```java
-class SpecialWordsViewTest extends BrowserlessTest {
+class ExampleViewTest extends BrowserlessTest {
 
     @BeforeEach
     void setUp() {
         adventureService = mock(AdventureService.class);    // plain Mockito
-        view = new SpecialWordsView(adventureService);
+        view = new ExampleView(adventureService);
         UI.getCurrent().add(view);                          // attach to mock UI
     }
 }
@@ -277,14 +277,14 @@ test(comboBox).selectItem("examine");   // see limitations below
 | `$(ComboBox.class, view).all()` | ✅ | Component discovery works. |
 
 **Workaround — preselection.** Assert against the model object
-(`vocabularyData.getExamineWord()`) rather than the picker.
+(e.g. `vocabularyData.getWords()`) rather than the picker.
 
 **Workaround — interaction.** When you must fire a value-change listener:
 
 1. Grab the **real component** via reflection (the `$(...)` wrapper does
    not own the listeners):
    ```java
-   Field f = SpecialWordsView.class.getDeclaredField("examineSelector");
+   Field f = ExampleView.class.getDeclaredField("examineSelector");
    f.setAccessible(true);
    VocabularyPickerField picker = (VocabularyPickerField) f.get(view);
    ```
@@ -321,7 +321,7 @@ mvn clean package -Pproduction
 mvn test
 
 # Single test class
-mvn test -Dtest=SpecialWordsViewTest
+mvn test -Dtest=GameLoopTest
 
 # Single test method
 mvn test -Dtest=LocationServiceTest#shouldReturnEmptyWhenNotFound

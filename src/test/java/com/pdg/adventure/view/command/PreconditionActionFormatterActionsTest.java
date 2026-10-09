@@ -151,6 +151,16 @@ class PreconditionActionFormatterActionsTest {
     }
 
     @Test
+    void look() {
+        assertThat(formatter.formatAction(new LookActionData())).isEqualTo("LOOK");
+    }
+
+    @Test
+    void examine() {
+        assertThat(formatter.formatAction(new ExamineActionData())).isEqualTo("EXAMINE");
+    }
+
+    @Test
     void quit() {
         assertThat(formatter.formatAction(new QuitActionData())).isEqualTo("QUIT");
     }

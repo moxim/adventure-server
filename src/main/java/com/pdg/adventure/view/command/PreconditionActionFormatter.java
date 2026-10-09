@@ -15,6 +15,8 @@ import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.action.AutoDropActionData;
 import com.pdg.adventure.model.action.AutoRemoveActionData;
 import com.pdg.adventure.model.action.AutoTakeActionData;
+import com.pdg.adventure.model.action.ExamineActionData;
+import com.pdg.adventure.model.action.LookActionData;
 import com.pdg.adventure.model.action.AutoWearActionData;
 import com.pdg.adventure.model.action.BreakActionData;
 import com.pdg.adventure.model.action.CreateActionData;
@@ -187,6 +189,12 @@ public class PreconditionActionFormatter {
         }
         if (a instanceof PictureActionData p) {
             return "PICTURE " + resolvePictureName(p.getPictureId());
+        }
+        if (a instanceof LookActionData) {
+            return "LOOK";
+        }
+        if (a instanceof ExamineActionData) {
+            return "EXAMINE";
         }
         if (a instanceof AutoTakeActionData) {
             return "AutoTake";

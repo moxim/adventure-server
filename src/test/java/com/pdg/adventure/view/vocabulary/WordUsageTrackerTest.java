@@ -77,47 +77,7 @@ class WordUsageTrackerTest {
         assertThat(usages).extracting(u -> u.usageType).contains("Adjective", "Noun");
     }
 
-    // --- special-word usages (take/drop/examine/synonym) ---
-
-    @Test
-    void getAllWordUsages_whenWordIsTakeVerb_reportsTakeVerbUsage() {
-        vocabularyData.setTakeWord(targetWord);
-
-        List<WordUsage> usages = tracker().getAllWordUsages(targetWord);
-
-        assertThat(usages).hasSize(1);
-        assertThat(usages.get(0).usageType).isEqualTo("Take Verb");
-        assertThat(usages.get(0).itemType).isEqualTo(WordUsageTracker.SPECIAL);
-    }
-
-    @Test
-    void getAllWordUsages_whenWordIsDropVerb_reportsDropVerbUsage() {
-        vocabularyData.setDropWord(targetWord);
-
-        List<WordUsage> usages = tracker().getAllWordUsages(targetWord);
-
-        assertThat(usages).hasSize(1);
-        assertThat(usages.get(0).usageType).isEqualTo("Drop Verb");
-    }
-
-    @Test
-    void getAllWordUsages_whenWordIsExamineVerb_reportsExamineVerbUsage() {
-        vocabularyData.setExamineWord(targetWord);
-
-        List<WordUsage> usages = tracker().getAllWordUsages(targetWord);
-
-        assertThat(usages).hasSize(1);
-        assertThat(usages.get(0).usageType).isEqualTo("Examine Verb");
-    }
-
-    @Test
-    void getAllWordUsages_whenWordIsNeitherTakeNorDropNorExamine_reportsNoSpecialUsage() {
-        vocabularyData.setTakeWord(new Word("get", Word.Type.VERB));
-
-        List<WordUsage> usages = tracker().getAllWordUsages(targetWord);
-
-        assertThat(usages).isEmpty();
-    }
+    // --- synonym usages ---
 
     @Test
     void getAllWordUsages_whenAnotherWordIsSynonymOfTarget_reportsSynonymUsage() {
@@ -437,8 +397,8 @@ class WordUsageTrackerTest {
     }
 
     @Test
-    void getAllWordUsages_aggregatesSpecialWordAndLocationUsagesTogether() {
-        vocabularyData.setTakeWord(targetWord);
+    void getAllWordUsages_aggregatesSynonymAndLocationUsagesTogether() {
+        vocabularyData.createSynonym("grab", targetWord);
 
         LocationData location = locationWithDescriptionUsing(targetWord);
         adventureData.setLocationData(mapOf(location));
@@ -446,7 +406,7 @@ class WordUsageTrackerTest {
         List<WordUsage> usages = tracker().getAllWordUsages(targetWord);
 
         assertThat(usages).extracting(u -> u.usageType)
-                .contains("Take Verb", "Adjective", "Noun");
+                .contains("Synonym", "Adjective", "Noun");
     }
 
     // --- createUsagesText / createGroupedUsages ---

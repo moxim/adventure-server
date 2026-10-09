@@ -71,7 +71,6 @@ class AdventureDuplicatorTest {
 
         takeWord = original.getVocabularyData().createWord("take", Word.Type.VERB);
         grabWord = original.getVocabularyData().createSynonym("grab", takeWord);
-        original.getVocabularyData().setTakeWord(takeWord);
 
         cellar = new LocationData();
         attic = new LocationData();
@@ -199,8 +198,6 @@ class AdventureDuplicatorTest {
                   .containsExactlyInAnyOrder("take", "grab");
             softly.assertThat(vocabulary.getWords()).extracting(Word::getId)
                   .doesNotContain(takeWord.getId(), grabWord.getId());
-            softly.assertThat(vocabulary.getTakeWord()).as("special take word")
-                  .isEqualTo(vocabulary.findWord("take").orElseThrow());
             softly.assertThat(vocabulary.findWord("grab").orElseThrow().getSynonym())
                   .as("synonym").isEqualTo(vocabulary.findWord("take").orElseThrow());
         });

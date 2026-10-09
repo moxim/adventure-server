@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 import com.pdg.adventure.api.*;
 import com.pdg.adventure.server.parser.CommandHandler;
@@ -37,10 +36,6 @@ public class Thing implements Actionable, HasLight {
     @Override
     public int getLight() {
         return lumen;
-    }
-
-    public void setExamineFallback(String aVerb, Supplier<String> aDescription) {
-        commandHandler.setExamineFallback(aVerb, aDescription, this::getNoun, this::getAdjective);
     }
 
     @Override
