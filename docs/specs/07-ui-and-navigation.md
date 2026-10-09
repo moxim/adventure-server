@@ -79,7 +79,7 @@ primary route.
 | ↳ alias `author/adventures/locations` | `LocationsMenuView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/locations/:locationId/edit` | `LocationEditorView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
 | ↳ alias `author/adventures/:adventureId/locations/new` | `LocationEditorView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
-| `author/map` | `LocationMapView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
+| `author/adventures/:adventureId/map` | `LocationMapView` | `LocationsMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/items` | `AllItemsMenuView` | `ItemsMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/locations/:locationId/items` | `ItemsMenuView` | `ItemsMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/locations/:locationId/items/:itemId/edit` | `ItemEditorView` | `ItemsMainLayout` | `ROLE_AUTHOR` |
@@ -558,11 +558,14 @@ swapping the brand image per layout and using `LumoUtility` classes.
 - **`VocabularyMenuView` has a commented-out `@RouteAlias`**
   (`adventures/vocabulary`). Decide whether to keep the alias for
   bookmark-friendly URLs and re-enable it, or remove the dead annotation.
-- **`LocationMapView` is a non-functional placeholder.** It renders a
-  static `islandMap.jpg` via `ImageMap` with a hardcoded 100×100px click
-  grid (`for (x = 0; x < 2451; x += 100) for (y = 0; y < 2628; y += 100) …`)
-  that just pops a `"Location X : Y"` notification on click — it is not
-  bound to `LocationData` at all. A rebuild should either wire a real
+- **`LocationMapView` shows a picture, not the real locations.** It renders the
+  adventure's `worldMapPictureId` picture (chosen in `AdventureEditorView`) stretched
+  into a 16:9 frame of at most 1280×720px, under a fixed 10×10 grid of cells
+  that just pop a `"Location X : Y"` notification on click — the grid is not
+  bound to `LocationData` at all. Without a chosen picture it shows a hint and a
+  button to the adventure editor. The "The World" drawer entry linking to it is
+  built into `AdventureAppLayout` (a `BeforeEnterObserver`), so every editor layout shows it as soon as
+  the route names an adventure. A rebuild should either wire a real
   node-graph view of the adventure's actual locations/exits, or drop the
   drawer link until it is.
 - **Deleting an exit skips confirmation.** Deleting an exit

@@ -47,6 +47,18 @@ class PictureUsageTrackerTest {
     }
 
     @Test
+    void findPictureUsages_findsTheWorldMap() {
+        adventureData.setWorldMapPictureId("pic-1");
+
+        List<PictureUsageTracker.PictureUsage> usages =
+                PictureUsageTracker.findPictureUsages(adventureData, "pic-1");
+
+        assertThat(usages).hasSize(1);
+        assertThat(usages.getFirst().getDisplayText()).isEqualTo("World Map: is the world map of this adventure");
+        assertThat(PictureUsageTracker.isPictureUsed(adventureData, "pic-2")).isFalse();
+    }
+
+    @Test
     void findPictureUsages_findsPictureActionInALocationCommand() {
         LocationData location = new LocationData();
         location.setId("loc-1");

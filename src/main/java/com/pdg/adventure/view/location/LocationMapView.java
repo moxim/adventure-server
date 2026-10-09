@@ -1,111 +1,102 @@
 package com.pdg.adventure.view.location;
 
-import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.*;
 import jakarta.annotation.security.RolesAllowed;
-import org.github.legioth.imagemap.ImageMap;
 
+import java.util.Optional;
+
+import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.PictureData;
+import com.pdg.adventure.server.security.service.AdventureAccessService;
+import com.pdg.adventure.view.adventure.AdventureEditorView;
+import com.pdg.adventure.view.support.AdventureRouteResolver;
+import com.pdg.adventure.view.support.RouteIds;
+
+/**
+ * Shows the picture the author chose as the adventure's world map (set in the {@link AdventureEditorView}),
+ * stretched into a 16:9 frame of at most 1280 x 720 pixels with a clickable 10 x 10 grid on top.
+ * Without a chosen picture it hints at where to choose one.
+ */
 @PageTitle("Your World")
-@Route(value = "author/map", layout = LocationsMainLayout.class)
+@Route(value = "author/adventures/:adventureId/map", layout = LocationsMainLayout.class)
 @RolesAllowed("ROLE_AUTHOR")
-public class LocationMapView extends FormLayout {
+@StyleSheet("styles/world-map.css")
+public class LocationMapView extends VerticalLayout implements BeforeEnterObserver {
 
-    public LocationMapView() {
+    private static final int GRID_SIZE = 10;
+    private static final String MAX_WIDTH = "1280px";
 
+    private final transient AdventureAccessService accessService;
+
+    public LocationMapView(AdventureAccessService anAccessService) {
+        accessService = anAccessService;
         setSizeFull();
+    }
 
-        Div div = new Div();
-        ImageMap imageMap =
-//                new ImageMap("https://thelordsofmidnight.com/blog/wp-content/uploads/2012/12/overview_map"
-//                                                 + ".png", "World map");
-                new ImageMap(new StreamResource("islandMap.jpg",
-                                                () -> getClass().getResourceAsStream(
-                                                        "/META-INF/resources/images/islandMap"
-                                                        + ".jpg")), "islandMap");
-        for (int x = 0; x < 2451; x += 100) {
-            for (int y = 0; y < 2628; y += 100) {
-                int finalX = x;
-                int finalY = y;
-                imageMap.addArea(x, y, 100, 100).addClickListener(_ ->
-                                                                          Notification.show(
-                                                                                  "Location " + (finalX / 100) + " : " +
-                                                                                  (finalY / 100)));
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        Optional<AdventureData> adventure = AdventureRouteResolver.resolveAdventureOrForward(event, accessService);
+        if (adventure.isEmpty()) {
+            return;
+        }
+        removeAll();
+        AdventureData adventureData = adventure.get();
+        PictureData worldMap = adventureData.getWorldMapPictureId() == null
+                               ? null
+                               : adventureData.getPictureData().get(adventureData.getWorldMapPictureId());
+        add(worldMap == null ? createHint(adventureData) : createMap(worldMap));
+    }
+
+    private Div createMap(PictureData aWorldMap) {
+        Image image = new Image();
+        image.setSrc(event -> {
+            event.inline();
+            event.setContentType(aWorldMap.getContentType());
+            event.getOutputStream().write(aWorldMap.getContent());
+        });
+        image.setAlt(aWorldMap.getName());
+        image.setSizeFull();
+        // Out of flow like the grid, so only the frame's aspect-ratio sets its height, never the image's own size.
+        image.getStyle().set("object-fit", "fill").set("position", "absolute").set("inset", "0");
+
+        Div grid = new Div();
+        grid.getStyle().set("position", "absolute").set("inset", "0").set("display", "grid")
+            .set("grid-template-columns", "repeat(" + GRID_SIZE + ", 1fr)")
+            .set("grid-template-rows", "repeat(" + GRID_SIZE + ", 1fr)");
+        for (int y = 0; y < GRID_SIZE; y++) {
+            for (int x = 0; x < GRID_SIZE; x++) {
+                grid.add(createCell(x, y));
             }
         }
-        div.add(imageMap);
-        div.setWidth("1000px");
-        div.setHeight("1000px");
-        setMaxWidth("1200px");
-        add(div);
+
+        Div frame = new Div(image, grid);
+        frame.addClassName("world-map");
+        frame.getStyle().set("position", "relative").set("width", "100%").set("max-width", MAX_WIDTH)
+             .set("aspect-ratio", "16 / 9");
+        return frame;
     }
 
-    /*
-    private static final int CANVAS_WIDTH = 800;
-    private static final int CANVAS_HEIGHT = 500;
-
-    private CanvasRenderingContext2D ctx;
-
-    public LocationMapView() {
-        Canvas canvas = new Canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
-        canvas.getStyle().set("border", "1px solid");
-
-        ctx = canvas.getContext();
-
-        Div buttons = new Div();
-        buttons.add(new NativeButton("Draw random circle",
-                e -> drawRandomCircle()));
-        buttons.add(new NativeButton("Draw house", e -> drawHouse()));
-        buttons.add(new NativeButton("Clear canvas",
-                e -> ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)));
-
-        add(canvas, buttons);
-
-        Input input = new Input();
-        input.setValue("resources/vaadin-logo.svg");
-        NativeButton drawImageButton = new NativeButton("Draw image",
-                e -> ctx.drawImage(input.getValue(), 0, 0));
-        add(new Label("Image src: "), input, drawImageButton);
+    private static Div createCell(int aColumn, int aRow) {
+        Div cell = new Div();
+        cell.addClassName("world-map-cell");
+        cell.addClickListener(_ -> Notification.show("Location " + aColumn + " : " + aRow));
+        return cell;
     }
 
-    private void drawHouse() {
-        ctx.save();
-
-        ctx.setFillStyle("yellow");
-        ctx.strokeRect(200, 200, 100, 100);
-        ctx.fillRect(200, 200, 100, 100);
-
-        ctx.beginPath();
-        ctx.moveTo(180, 200);
-        ctx.lineTo(250, 150);
-        ctx.lineTo(320, 200);
-        ctx.closePath();
-        ctx.stroke();
-        ctx.setFillStyle("orange");
-        ctx.fill();
-
-        ctx.restore();
+    private Div createHint(AdventureData anAdventureData) {
+        Button openEditor = new Button("Open the Adventure Editor", _ -> UI.getCurrent().navigate(
+                AdventureEditorView.class,
+                new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), anAdventureData.getId()))));
+        return new Div(new Paragraph("No world map has been chosen for this adventure yet. Upload a picture under "
+                                     + "\"Pictures\", then select it as the World Map in the Adventure Editor."),
+                       openEditor);
     }
-
-    private void drawRandomCircle() {
-        ctx.save();
-        ctx.setLineWidth(2);
-        ctx.setFillStyle(getRandomColor());
-        ctx.beginPath();
-        ctx.arc(Math.random() * CANVAS_WIDTH, Math.random() * CANVAS_HEIGHT,
-                10 + Math.random() * 90, 0, 2 * Math.PI, false);
-        ctx.closePath();
-        ctx.stroke();
-        ctx.fill();
-        ctx.restore();
-    }
-
-    private String getRandomColor() {
-        return String.format("rgb(%s, %s, %s)", (int) (Math.random() * 256),
-                (int) (Math.random() * 256), (int) (Math.random() * 256));
-    }
-*/
 }

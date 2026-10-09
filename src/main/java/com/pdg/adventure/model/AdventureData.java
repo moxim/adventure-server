@@ -32,6 +32,9 @@ public class AdventureData extends DatedData {
     @DBRef(lazy = false)
     @CascadeDelete
     private Map<String, PictureData> pictureData;
+    // The id of the picture (a key of pictureData) the author shows as this adventure's world map; null while
+    // none is chosen. A plain id like LocationData.pictureId, so deleting the picture cannot leave a broken reference.
+    private String worldMapPictureId;
     private String currentLocationId;
 
     @DBRef(lazy = false)

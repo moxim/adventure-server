@@ -196,7 +196,9 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     long description, lumen (light level, integer), an optional **Default
     Picture** (one of the adventure's pictures, see B13), commands, directions,
     items.
-  - The map view at `/author/map` visualises the adventure's locations.
+  - The map view at `/author/adventures/:adventureId/map` shows the picture the author chose as the adventure's
+    world map (the "World Map" field of the adventure editor) with a clickable 10×10 grid; without a chosen
+    picture it hints at the adventure editor.
   - A location MUST be referenced by the adventure's starting-location id or by
     at least one direction; orphan locations may exist during editing but are
     flagged.

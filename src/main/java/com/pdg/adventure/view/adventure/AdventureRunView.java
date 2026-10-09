@@ -117,8 +117,8 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         pictureContainer.setWidthFull();
         pictureContainer.getStyle().set("flex", "0 0 auto");
         pictureContainer.setVisible(false);
-        pictureDisplay.getStyle().set("max-width", "640px");
-        pictureDisplay.getStyle().set("max-height", "480px");
+        pictureDisplay.getStyle().set("max-width", "1280px");
+        pictureDisplay.getStyle().set("max-height", "720px");
         pictureDisplay.getStyle().set("width", "100%");
         pictureDisplay.getStyle().set("height", "auto");
         pictureDisplay.getStyle().set("object-fit", "contain");
@@ -126,7 +126,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         pictureDisplay.getStyle().set("margin", "0 auto");
 
         // The combined picture+description section: the picture (when shown) takes only the
-        // natural space it needs (capped at 640x480 above), and the description always fills
+        // natural space it needs (capped at 1280x720 above), and the description always fills
         // whatever is left - the full section when there's no picture, a shrunk remainder when
         // there is.
         VerticalLayout playSection = new VerticalLayout(pictureContainer, messageListContainer);

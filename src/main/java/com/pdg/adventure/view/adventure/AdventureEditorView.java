@@ -4,6 +4,7 @@ import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
@@ -17,11 +18,13 @@ import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Comparator;
 import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.AdventureFont;
 import com.pdg.adventure.model.ItemContainerData;
+import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.view.component.AdventureFontSelect;
 import com.pdg.adventure.view.item.AllItemsMenuView;
@@ -44,12 +47,16 @@ public class AdventureEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
 
     private static final Logger LOG = LoggerFactory.getLogger(AdventureEditorView.class);
+    private static final String WORLD_MAP_HELPER = "The picture shown as the map of your world. Upload pictures first.";
+    private static final String WORLD_MAP_HELPER_NEW =
+            "Save the adventure and upload pictures first, then choose the world map here.";
 
     private final Button saveButton = new Button("Save");
     private final Button testButton = new Button("Test");
     private final TextField startLocation;
     private final TextField numberOfLocations;
     private final TextField numberOfItems;
+    private final ComboBox<PictureData> worldMapSelect;
     private final Binder<AdventureData> binder;
     private final transient AdventureAccessService accessService;
     AdventureData adventureData;
@@ -163,6 +170,7 @@ public class AdventureEditorView extends VerticalLayout
         numberOfItems.setHelperText("The number of items in this adventure.");
 
         Select<AdventureFont> fontSelect = getFontSelect();
+        worldMapSelect = getWorldMapSelect();
 
         HorizontalLayout titleStartRow = new HorizontalLayout(adventureIdTF, title,
                                                               fontSelect,
@@ -183,7 +191,7 @@ public class AdventureEditorView extends VerticalLayout
                                                           arrivalButton, workflowButton, responsesButton,
                                                           testSaveRow);
 
-        VerticalLayout details = new VerticalLayout(titleStartRow, longDescription);
+        VerticalLayout details = new VerticalLayout(titleStartRow, worldMapSelect, longDescription);
 
         HorizontalLayout hl = new HorizontalLayout(menuRow, details);
 
@@ -246,6 +254,23 @@ public class AdventureEditorView extends VerticalLayout
         field.setHelperText("The font of the game text when this adventure is run.");
         field.setTooltipText("Players see the game text in this font. The editors keep the standard font.");
         binder.bind(field, AdventureData::getFont, AdventureData::setFont);
+        field.addValueChangeListener(this::onFieldValueChanged);
+        return field;
+    }
+
+    private ComboBox<PictureData> getWorldMapSelect() {
+        ComboBox<PictureData> field = new ComboBox<>("World Map");
+        field.setItemLabelGenerator(PictureData::getName);
+        field.setClearButtonVisible(true);
+        field.setWidth("330px");
+        field.setHelperText(WORLD_MAP_HELPER);
+        field.setTooltipText("Choose one of your pictures as the map of this adventure's world. "
+                             + "It is shown on the World page of the locations menu.");
+        // The adventure stores only the picture's id; a missing picture (deleted since) shows as no choice.
+        binder.bind(field,
+                    adventure -> adventure.getWorldMapPictureId() == null
+                                 ? null : adventure.getPictureData().get(adventure.getWorldMapPictureId()),
+                    (adventure, picture) -> adventure.setWorldMapPictureId(picture == null ? null : picture.getId()));
         field.addValueChangeListener(this::onFieldValueChanged);
         return field;
     }
@@ -314,6 +339,12 @@ public class AdventureEditorView extends VerticalLayout
                 adventureData.getLocationData().get(adventureData.getCurrentLocationId())));
         numberOfLocations.setValue(adventureData.getLocationData().size() + "");
         numberOfItems.setValue(ViewSupporter.getItemLocationPairs(adventureData.getLocationData().values()).size() + "");
+        worldMapSelect.setItems(adventureData.getPictureData().values().stream()
+                                             .sorted(Comparator.comparing(PictureData::getName,
+                                                                          String.CASE_INSENSITIVE_ORDER))
+                                             .toList());
+        worldMapSelect.setEnabled(true);
+        worldMapSelect.setHelperText(WORLD_MAP_HELPER);
         binder.setBean(adventureData);
         isNewAdventure = false;
         pageTitle = "Edit Adventure: " + adventureData.getTitle();
@@ -324,6 +355,10 @@ public class AdventureEditorView extends VerticalLayout
         ItemContainerData playerPocket = adventureData.getPlayerPocket();
         playerPocket.getDescriptionData().setShortDescription("your pocket");
         playerPocket.setMaxSize(666);
+        // Pictures belong to a saved adventure, so there is nothing to choose from yet.
+        worldMapSelect.setItems();
+        worldMapSelect.setEnabled(false);
+        worldMapSelect.setHelperText(WORLD_MAP_HELPER_NEW);
         binder.setBean(adventureData);
         isNewAdventure = true;
         pageTitle = "A new adventure awaits!";
