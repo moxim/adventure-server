@@ -15,7 +15,6 @@ import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.*;
 import jakarta.annotation.security.RolesAllowed;
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,6 +69,8 @@ public class AdventureEditorView extends VerticalLayout
     // by the time a listener observes it. Track "edited since last load/save" ourselves instead.
     private boolean unsavedChanges;
 
+    private static final String NUMBER_TEXT_WIDTH = "120px";
+
     public AdventureEditorView(AdventureAccessService anAccessService) {
 
         accessService = anAccessService;
@@ -89,28 +90,22 @@ public class AdventureEditorView extends VerticalLayout
         startLocation.setMaxWidth("150px");
 
         numberOfLocations = getReadOnlyTextField("Total Locations");
-        numberOfLocations.setMaxWidth("120px");
+        numberOfLocations.setMaxWidth(NUMBER_TEXT_WIDTH);
         numberOfLocations.setHelperText("The number of locations in this adventure.");
 
         numberOfItems = getReadOnlyTextField("Total Items");
-        numberOfItems.setMaxWidth("100px");
+        numberOfItems.setMaxWidth(NUMBER_TEXT_WIDTH);
         numberOfItems.setHelperText("The number of items in this adventure.");
 
         numberOfMessages = getReadOnlyTextField("Total Messages");
-        numberOfMessages.setMaxWidth("120px");
+        numberOfMessages.setMaxWidth(NUMBER_TEXT_WIDTH);
         numberOfMessages.setHelperText("The number of messages in this adventure.");
 
         numberOfPictures = getReadOnlyTextField("Total Pictures");
-        numberOfPictures.setMaxWidth("120px");
+        numberOfPictures.setMaxWidth(NUMBER_TEXT_WIDTH);
         numberOfPictures.setHelperText("The number of pictures in this adventure.");
 
-        HorizontalLayout statsRow = new HorizontalLayout(startLocation,
-                                                         numberOfLocations,
-                                                         numberOfItems,
-                                                         numberOfPictures,
-                                                         numberOfMessages);
-        TextArea longDescription = getNotesArea();
-        VerticalLayout details = new VerticalLayout(titleStartRow, longDescription, statsRow);
+        VerticalLayout details = createDetails(titleStartRow);
 
         setMargin(true);
         setPadding(true);
@@ -130,10 +125,20 @@ public class AdventureEditorView extends VerticalLayout
         HorizontalLayout hl = new HorizontalLayout(naviButtons, details);
 
         add(hl);
-//        setHorizontalComponentAlignment(Alignment.CENTER, testButton, saveButton);
     }
 
-    private @NonNull VerticalLayout getNaviButtons(final Button backButton, final SubMenuButtons result) {
+    private VerticalLayout createDetails(final HorizontalLayout titleStartRow) {
+        HorizontalLayout statsRow = new HorizontalLayout(startLocation,
+                                                         numberOfLocations,
+                                                         numberOfItems,
+                                                         numberOfPictures,
+                                                         numberOfMessages);
+        TextArea longDescription = getNotesArea();
+        VerticalLayout details = new VerticalLayout(titleStartRow, longDescription, statsRow);
+        return details;
+    }
+
+    private VerticalLayout getNaviButtons(final Button backButton, final SubMenuButtons result) {
         final HorizontalLayout testSaveRow = new HorizontalLayout(backButton, testButton, saveButton);
         final VerticalLayout menuRow = new VerticalLayout(result.editVocabularyButton(),
                                                           result.editMessagesButton(),
@@ -147,7 +152,7 @@ public class AdventureEditorView extends VerticalLayout
         return menuRow;
     }
 
-    private @NonNull SubMenuButtons createSubmenuButtons() {
+    private SubMenuButtons createSubmenuButtons() {
         Button editLocationsButton = new Button("Locations");
         editLocationsButton.addClickListener(_ -> {
             if (binder.writeBeanIfValid(adventureData)) {
@@ -160,14 +165,6 @@ public class AdventureEditorView extends VerticalLayout
         Button editVocabularyButton = new Button("Vocabulary", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(VocabularyMenuView.class,
-                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                            adventureData.getId())));
-            }
-        });
-
-        Button editMessagesButton = new Button("Messages", _ -> {
-            if (binder.writeBeanIfValid(adventureData)) {
-                UI.getCurrent().navigate(MessagesMenuView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                                             adventureData.getId())));
             }
@@ -189,9 +186,45 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
+        MessageButtons messageButtons = createMessageButtons();
+        WorkflowButtons workFlowButtons = createWorkFlowButtons();
+
+        SubMenuButtons result = new SubMenuButtons(editLocationsButton, editVocabularyButton,
+                                                   messageButtons.editMessagesButton(), editItemsButton,
+                                                   editPicturesButton, messageButtons.editSystemMessagesButton(),
+                                                   workFlowButtons.workflowButton(), workFlowButtons.responsesButton(),
+                                                   workFlowButtons.arrivalButton());
+        return result;
+    }
+
+    private MessageButtons createMessageButtons() {
+        Button editMessagesButton = new Button("Messages", _ -> {
+            if (binder.writeBeanIfValid(adventureData)) {
+                UI.getCurrent().navigate(MessagesMenuView.class,
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                            adventureData.getId())));
+            }
+        });
+
         Button editSystemMessagesButton = new Button("System Messages", _ -> {
             if (binder.writeBeanIfValid(adventureData)) {
                 UI.getCurrent().navigate(SystemMessagesView.class,
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                            adventureData.getId())));
+            }
+        });
+
+        MessageButtons messageButtons = new MessageButtons(editMessagesButton, editSystemMessagesButton);
+        return messageButtons;
+    }
+
+    private record MessageButtons(Button editMessagesButton, Button editSystemMessagesButton) {
+    }
+
+    private WorkflowButtons createWorkFlowButtons() {
+        Button arrivalButton = new Button("Workflow I", _ -> {
+            if (binder.writeBeanIfValid(adventureData)) {
+                UI.getCurrent().navigate(ArrivalProcessesEditorView.class,
                                          new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                                             adventureData.getId())));
             }
@@ -213,17 +246,11 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
-        Button arrivalButton = new Button("Workflow I", _ -> {
-            if (binder.writeBeanIfValid(adventureData)) {
-                UI.getCurrent().navigate(ArrivalProcessesEditorView.class,
-                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                            adventureData.getId())));
-            }
-        });
-        SubMenuButtons result = new SubMenuButtons(editLocationsButton, editVocabularyButton, editMessagesButton, editItemsButton,
-                                   editPicturesButton, editSystemMessagesButton, workflowButton, responsesButton,
-                                   arrivalButton);
-        return result;
+        WorkflowButtons createWorkFlowButtons = new WorkflowButtons(arrivalButton, workflowButton, responsesButton);
+        return createWorkFlowButtons;
+    }
+
+    private record WorkflowButtons(Button arrivalButton, Button workflowButton, Button responsesButton) {
     }
 
     private record SubMenuButtons(Button editLocationsButton, Button editVocabularyButton, Button editMessagesButton, Button editItemsButton, Button editPicturesButton, Button editSystemMessagesButton, Button workflowButton, Button responsesButton, Button arrivalButton) {
@@ -233,14 +260,6 @@ public class AdventureEditorView extends VerticalLayout
         try {
             binder.writeBean(adventureData);
             BinderValidationStatus<AdventureData> status = binder.validate();
-
-            if (status.hasErrors()) {
-                throw new RuntimeException("Status Error: " + status.getValidationErrors());
-            }
-
-            if (adventureData.getTitle().isEmpty()) {
-                throw new RuntimeException("Alles Mist");
-            }
 
             if (isNewAdventure) {
                 accessService.createAdventure(adventureData, ViewSupporter.getCurrentUser());

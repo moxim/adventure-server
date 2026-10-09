@@ -74,14 +74,28 @@ public class GameStateSnapshotter {
         Map<String, Item> items = adventureConfig.allItems();
         Map<String, Container> containers = adventureConfig.allContainers();
 
-        // 1. every item the save knew leaves the container it is in (a destroyed item's stale parent is harmless)
+        considerMovedItems(aSnapshot, items);
+
+        considerContainerContents(aSnapshot, containers, items);
+
+        considerItemStatesVisitsAndVariables(aSnapshot, items, locations);
+
+        gameContext.setCurrentLocation(savedLocation);
+        gameContext.setCurrentPictureId(aSnapshot.getCurrentPictureId());
+        return true;
+    }
+
+    private static void considerMovedItems(final GameSnapshotData aSnapshot, final Map<String, Item> items) {
         for (String itemId : aSnapshot.getKnownItemIds()) {
             Item item = items.get(itemId);
             if (item != null && item.getParentContainer() != null) {
                 item.getParentContainer().remove(item);
             }
         }
-        // 2. saved containers get their saved contents back, in order; what is left in them now was never in the save
+    }
+
+    private static void considerContainerContents(final GameSnapshotData aSnapshot, final Map<String, Container> containers,
+                                  final Map<String, Item> items) {
         aSnapshot.getContainers().forEach((containerId, itemIds) -> {
             Container container = containers.get(containerId);
             if (container == null) {
@@ -98,7 +112,10 @@ public class GameStateSnapshotter {
             container.setContents(contents);
             contents.forEach(containable -> containable.setParentContainer(container));
         });
-        // 3. item state, visit counts, variables
+    }
+
+    private void considerItemStatesVisitsAndVariables(final GameSnapshotData aSnapshot, final Map<String, Item> items,
+                                                      final Map<String, Location> locations) {
         for (String itemId : aSnapshot.getKnownItemIds()) {
             Item item = items.get(itemId);
             if (item != null) {
@@ -114,9 +131,5 @@ public class GameStateSnapshotter {
         });
         VariableProvider variableProvider = adventureConfig.allVariables();
         aSnapshot.getVariables().forEach(variableProvider::set);
-        // 4. where the player is
-        gameContext.setCurrentLocation(savedLocation);
-        gameContext.setCurrentPictureId(aSnapshot.getCurrentPictureId());
-        return true;
     }
 }

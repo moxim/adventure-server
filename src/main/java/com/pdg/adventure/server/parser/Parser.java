@@ -1,6 +1,7 @@
 package com.pdg.adventure.server.parser;
 
 import lombok.Data;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +42,7 @@ public class Parser {
                         continue; // don't know this word
                     }
                     Word word = optionalWord.get();
-                    resolved = word.getSynonym() == null ? word : word.getSynonym();
+                    resolved = checkIfSynonymHasBeenResolved(word);
                     isSeparator = resolved.getType() == Word.Type.CONJUNCTION;
                 }
 
@@ -65,10 +66,19 @@ public class Parser {
         // segment; but a turn with no separator at all - or with nothing recognisable in it -
         // must still yield exactly one (possibly empty) command, matching the pre-existing
         // single-command contract GameLoop's bare-verb check relies on.
+        addFinalSegmentToCommands(currentHasContent, commands, currentSentence);
+        return new CommandSequence(commands);
+    }
+
+    private void addFinalSegmentToCommands(final boolean currentHasContent, final List<GenericCommandDescription> commands,
+                           final SimpleSentence currentSentence) {
         if (currentHasContent || commands.isEmpty()) {
             commands.add(closeSentence(currentSentence));
         }
-        return new CommandSequence(commands);
+    }
+
+    private static @NonNull Word checkIfSynonymHasBeenResolved(final Word word) {
+        return word.getSynonym() == null ? word : word.getSynonym();
     }
 
     // "." is not itself a vocabulary word (it can't be looked up by findWord), so it is split
