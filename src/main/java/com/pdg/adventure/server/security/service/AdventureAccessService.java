@@ -16,6 +16,8 @@ import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.repository.AdventureAuthorRepository;
 import com.pdg.adventure.server.security.repository.AdventurePlayerRepository;
 import com.pdg.adventure.server.storage.service.AdventureDuplicator;
+import com.pdg.adventure.server.storage.service.AdventureExporter;
+import com.pdg.adventure.server.storage.service.AdventureImporter;
 import com.pdg.adventure.server.storage.service.AdventureService;
 
 /**
@@ -34,15 +36,21 @@ public class AdventureAccessService {
 
     private final AdventureService adventureService;
     private final AdventureDuplicator adventureDuplicator;
+    private final AdventureExporter adventureExporter;
+    private final AdventureImporter adventureImporter;
     private final AdventureAuthorRepository authorRepository;
     private final AdventurePlayerRepository playerRepository;
 
     public AdventureAccessService(AdventureService adventureService,
                                   AdventureDuplicator adventureDuplicator,
+                                  AdventureExporter adventureExporter,
+                                  AdventureImporter adventureImporter,
                                   AdventureAuthorRepository authorRepository,
                                   AdventurePlayerRepository playerRepository) {
         this.adventureService = adventureService;
         this.adventureDuplicator = adventureDuplicator;
+        this.adventureExporter = adventureExporter;
+        this.adventureImporter = adventureImporter;
         this.authorRepository = authorRepository;
         this.playerRepository = playerRepository;
     }
@@ -133,6 +141,56 @@ public class AdventureAccessService {
         }
         return adventureService.findAdventureById(copyId).orElseThrow(
                 () -> new IllegalStateException("Duplicated adventure vanished: " + copyId));
+    }
+
+    /** An adventure read from a file, and whether the file came from another version of the builder. */
+    public record ImportedAdventure(AdventureData adventure, boolean builderVersionDiffers) {
+    }
+
+    /**
+     * The adventure as a JSON file (see {@link AdventureExporter}). Requires write access: ADMIN or AUTHOR ownership.
+     * <p>
+     * TODO: Review needed — requires write access (not just read), so an assigned PLAYER cannot export an
+     * adventure's content; alternative: allow anyone who can read it.
+     */
+    public byte[] exportAdventure(String adventureId, UserData user) {
+        if (!canWrite(adventureId, user)) {
+            throw new AccessDeniedException("No write access to adventure: " + adventureId);
+        }
+        return adventureExporter.export(adventureId);
+    }
+
+    /**
+     * Reads an adventure file into this database as a new adventure (see {@link AdventureImporter}) and makes the
+     * given user its AUTHOR. Requires the AUTHOR or ADMIN role.
+     * <p>
+     * TODO: Review needed — the title is kept as is; alternative: add a suffix when the user already has an
+     * adventure with that title.
+     *
+     * @throws com.pdg.adventure.server.exception.AdventureImportException if the file cannot be imported
+     */
+    @Transactional
+    public ImportedAdventure importAdventure(byte[] json, UserData user) {
+        if (!user.getRoles().contains(Role.AUTHOR) && !user.getRoles().contains(Role.ADMIN)) {
+            throw new AccessDeniedException("Only authors can import adventures");
+        }
+        AdventureImporter.ImportResult result = adventureImporter.importAdventure(json);
+        try {
+            // flush so a failing INSERT surfaces here, not at commit time after this catch
+            authorRepository.saveAndFlush(new AdventureAuthor(result.adventureId(), user));
+        } catch (RuntimeException e) {
+            // MongoDB and MySQL cannot share a transaction: don't leave an author-less adventure behind
+            adventureService.deleteAdventure(result.adventureId());
+            throw e;
+        }
+        AdventureData adventure = adventureService.findAdventureById(result.adventureId()).orElseThrow(
+                () -> new IllegalStateException("Imported adventure vanished: " + result.adventureId()));
+        return new ImportedAdventure(adventure, result.builderVersionDiffers());
+    }
+
+    /** The largest adventure file {@link #importAdventure} accepts, in bytes. */
+    public long getMaxImportBytes() {
+        return adventureImporter.getMaxBytes();
     }
 
     /**
