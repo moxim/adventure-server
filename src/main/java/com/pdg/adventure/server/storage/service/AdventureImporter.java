@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.server.exception.AdventureImportException;
 
 /**
@@ -43,12 +44,14 @@ public class AdventureImporter {
     public record ImportResult(String adventureId, boolean builderVersionDiffers) {
     }
 
+    private final MongoTemplate mongoTemplate;
     private final AdventureDocumentGraph graph;
     private final BuilderVersion builderVersion;
     private final long maxBytes;
 
     public AdventureImporter(MongoTemplate aMongoTemplate, BuilderVersion aBuilderVersion,
                              @Value("${adventure.import.max-bytes:" + DEFAULT_MAX_BYTES + "}") long aMaxBytes) {
+        mongoTemplate = aMongoTemplate;
         graph = new AdventureDocumentGraph(aMongoTemplate);
         builderVersion = aBuilderVersion;
         maxBytes = aMaxBytes;
@@ -73,6 +76,7 @@ public class AdventureImporter {
         Document envelope = parse(aJson);
         checkHeader(envelope);
         Map<String, List<Document>> documents = readDocuments(envelope);
+        documents.values().forEach(docs -> docs.forEach(AdventureImporter::checkShape));
 
         List<String> dangling = AdventureDocumentGraph.findDanglingReferences(documents);
         if (!dangling.isEmpty()) {
@@ -92,9 +96,57 @@ public class AdventureImporter {
 
         graph.insertAll(copies);
         String adventureId = adventure.get(AdventureDocumentGraph.ID).toString();
+        verifyReadable(adventureId, copies);
         LOG.info("Imported adventure '{}' as {} ({} documents)", adventure.get("title"), adventureId,
                  copies.values().stream().mapToInt(List::size).sum());
         return new ImportResult(adventureId, differs);
+    }
+
+    /**
+     * A file can be well-formed and still hold content this builder cannot map (e.g. an unknown font). Read the
+     * adventure back the way the application will, and take the copy out again by raw ids if that fails - an
+     * adventure nobody can open must not stay behind, and cascade-deleting it would need the same mapping.
+     */
+    private void verifyReadable(String anAdventureId, Map<String, List<Document>> aCopies) {
+        try {
+            AdventureData adventure = mongoTemplate.findById(anAdventureId, AdventureData.class);
+            if (adventure == null) {
+                throw new IllegalStateException("Imported adventure vanished: " + anAdventureId);
+            }
+            if (adventure.getPlayerPocket() != null) {
+                adventure.getPlayerPocket().getItems().size(); // the pocket is a lazy reference: resolve it
+            }
+        } catch (RuntimeException e) {
+            graph.deleteAll(aCopies);
+            LOG.warn("Rejected an adventure file whose content cannot be read", e);
+            throw new AdventureImportException("The file contains data this builder cannot read.", e);
+        }
+    }
+
+    /**
+     * Every sub-document with a reference key must be exactly {@code {$ref: <allowed collection>, $id: <string>}}:
+     * MongoDB resolves other id types and a {@code $db} by itself, and so could reach documents the file does not
+     * contain. Any other field name starting with {@code $} is not something an adventure has either.
+     */
+    private static void checkShape(Object aNode) {
+        switch (aNode) {
+            case Document document when document.containsKey("$ref") || document.containsKey("$id")
+                                        || document.containsKey("$db") -> {
+                if (document.size() != 2 || !(document.get("$ref") instanceof String collection)
+                    || !ALLOWED_COLLECTIONS.contains(collection) || !(document.get("$id") instanceof String)) {
+                    throw new AdventureImportException("The file contains a reference that is not valid.");
+                }
+            }
+            case Document document -> document.forEach((name, value) -> {
+                if (name.startsWith("$")) {
+                    throw new AdventureImportException("The file contains a field name '" + name
+                                                       + "', which adventures do not use.");
+                }
+                checkShape(value);
+            });
+            case Iterable<?> iterable -> iterable.forEach(AdventureImporter::checkShape);
+            case null, default -> { /* a leaf value */ }
+        }
     }
 
     private static Document parse(byte[] aJson) {

@@ -22,6 +22,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
+import com.vaadin.flow.server.streams.InMemoryUploadHandler;
 import com.vaadin.flow.server.streams.UploadHandler;
 import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
@@ -215,10 +216,10 @@ public class AdventuresMenuView extends VerticalLayout {
         dialog.setHeaderTitle("Import Adventure");
 
         AtomicReference<byte[]> uploaded = new AtomicReference<>();
-        Upload upload = new Upload(UploadHandler.inMemory((_, data) -> uploaded.set(data)));
+        long maxBytes = accessService.getMaxImportBytes();
+        Upload upload = new Upload(importUploadHandler(uploaded, maxBytes));
         upload.setMaxFiles(1);
         upload.setAcceptedFileExtensions(".json");
-        long maxBytes = accessService.getMaxImportBytes();
         if (maxBytes > 0) {
             upload.setMaxFileSize((int) Math.min(Integer.MAX_VALUE, maxBytes));
         }
@@ -240,6 +241,30 @@ public class AdventuresMenuView extends VerticalLayout {
         dialog.add(upload);
         dialog.getFooter().add(new Button("Cancel", _ -> dialog.close()), importButton);
         return dialog;
+    }
+
+    /**
+     * Package-private for testing. {@link Upload#setMaxFileSize} is only checked by the browser, so the handler
+     * itself refuses a body larger than the import limit: otherwise any author could make the server buffer an
+     * arbitrarily large request in memory.
+     */
+    static UploadHandler importUploadHandler(AtomicReference<byte[]> aTarget, long aMaxBytes) {
+        return new InMemoryUploadHandler((_, data) -> aTarget.set(data)) {
+            @Override
+            public long getFileSizeMax() {
+                return aMaxBytes;
+            }
+
+            @Override
+            public long getRequestSizeMax() {
+                return aMaxBytes;
+            }
+
+            @Override
+            public long getFileCountMax() {
+                return 1;
+            }
+        };
     }
 
     /**

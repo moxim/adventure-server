@@ -8,6 +8,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.server.streams.UploadHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -176,6 +178,16 @@ class AdventuresMenuViewTest extends BrowserlessTest {
         view.duplicateAdventure(adventure, grid);
 
         assertThat(grid.getListDataView().getItems()).extracting(AdventureData::getId).containsExactly("adv-1");
+    }
+
+    // The Upload component's own maximum is only checked by the browser; the server must refuse a larger body itself.
+    @Test
+    void importUploadHandler_refusesOnTheServerWhatIsLargerThanTheImportLimit() {
+        UploadHandler handler = AdventuresMenuView.importUploadHandler(new AtomicReference<>(), 1234L);
+
+        assertThat(handler.getFileSizeMax()).isEqualTo(1234L);
+        assertThat(handler.getRequestSizeMax()).isEqualTo(1234L);
+        assertThat(handler.getFileCountMax()).isEqualTo(1L);
     }
 
     @Test

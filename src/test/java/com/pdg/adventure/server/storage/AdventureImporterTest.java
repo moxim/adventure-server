@@ -3,6 +3,7 @@ package com.pdg.adventure.server.storage;
 import org.bson.Document;
 import org.bson.json.JsonMode;
 import org.bson.json.JsonWriterSettings;
+import org.bson.types.Symbol;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -275,6 +276,59 @@ class AdventureImporterTest {
 
         assertThatThrownBy(() -> importer.importAdventure(file))
                 .isInstanceOf(AdventureImportException.class).hasMessageContaining("damaged");
+    }
+
+    private static Document firstLocationReference(Document anEnvelope) {
+        Document adventure = anEnvelope.get("documents", Document.class)
+                                       .getList("adventures", Document.class).getFirst();
+        return adventure.get("locationData", Document.class).values().stream()
+                        .map(Document.class::cast).findFirst().orElseThrow();
+    }
+
+    // A reference whose id is not a string can pass a toString() comparison and still be resolved by MongoDB
+    // against documents the file does not contain - e.g. another author's.
+    @Test
+    void aReferenceWhoseIdIsNotAStringIsRejected() {
+        byte[] file = editedExport(envelope -> {
+            Document reference = firstLocationReference(envelope);
+            reference.put("$id", new Symbol(reference.getString("$id")));
+        });
+        Map<String, Long> countsBefore = counts();
+
+        assertThatThrownBy(() -> importer.importAdventure(file))
+                .isInstanceOf(AdventureImportException.class).hasMessageContaining("reference");
+        assertThat(counts()).isEqualTo(countsBefore);
+    }
+
+    @Test
+    void aReferenceThatNamesAnotherDatabaseIsRejected() {
+        byte[] file = editedExport(envelope -> firstLocationReference(envelope).put("$db", "someone-elses"));
+
+        assertThatThrownBy(() -> importer.importAdventure(file))
+                .isInstanceOf(AdventureImportException.class).hasMessageContaining("reference");
+    }
+
+    @Test
+    void aFieldNameStartingWithADollarIsRejected() {
+        byte[] file = editedExport(envelope -> envelope.get("documents", Document.class)
+                                                       .getList("adventures", Document.class).getFirst()
+                                                       .put("$where", "1"));
+
+        assertThatThrownBy(() -> importer.importAdventure(file))
+                .isInstanceOf(AdventureImportException.class).hasMessageContaining("$where");
+    }
+
+    // The file is well-formed but the builder cannot map it (an unknown font): nothing may stay behind.
+    @Test
+    void aFileTheBuilderCannotReadIsRejectedAndNothingIsLeftBehind() {
+        byte[] file = editedExport(envelope -> envelope.get("documents", Document.class)
+                                                       .getList("adventures", Document.class).getFirst()
+                                                       .put("font", "NO_SUCH_FONT"));
+        Map<String, Long> countsBefore = counts();
+
+        assertThatThrownBy(() -> importer.importAdventure(file))
+                .isInstanceOf(AdventureImportException.class).hasMessageContaining("cannot read");
+        assertThat(counts()).isEqualTo(countsBefore);
     }
 
     // A new @Document collection must be a deliberate decision: importable (add it to the allowlist) or excluded here.

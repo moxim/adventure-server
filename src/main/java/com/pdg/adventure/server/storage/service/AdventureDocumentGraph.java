@@ -105,11 +105,18 @@ final class AdventureDocumentGraph {
         try {
             aCopies.forEach((collection, docs) -> mongoTemplate.getCollection(collection).insertMany(docs));
         } catch (RuntimeException e) {
-            // the new ids exist nowhere else, so removing by id cannot touch anything but the partial copy
-            aCopies.forEach((collection, docs) -> mongoTemplate.getCollection(collection).deleteMany(
-                    new Document(ID, new Document("$in", docs.stream().map(d -> d.get(ID)).toList()))));
+            deleteAll(aCopies);
             throw e;
         }
+    }
+
+    /**
+     * Removes exactly these documents by their raw ids - no mapping, so it works even for content the builder cannot
+     * read. The ids are new ones that exist nowhere else, so nothing but the copy itself can be touched.
+     */
+    void deleteAll(Map<String, List<Document>> aCopies) {
+        aCopies.forEach((collection, docs) -> mongoTemplate.getCollection(collection).deleteMany(
+                new Document(ID, new Document("$in", docs.stream().map(d -> d.get(ID)).toList()))));
     }
 
     static String newId() {
