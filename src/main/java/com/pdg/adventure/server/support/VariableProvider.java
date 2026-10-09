@@ -1,5 +1,7 @@
 package com.pdg.adventure.server.support;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -13,7 +15,10 @@ import java.util.*;
  * {@code VariableMapper} when an adventure is mapped, via {@link #define}) as well as any the engine
  * creates on the fly (e.g. {@code VISITED}). Reading an unknown name still yields 0.
  */
-public class VariableProvider {
+public class VariableProvider implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 20261008130300L;
+
     public static final String VISITED_VARIABLE_NAME = "VISITED";
 
     private final Map<String, Integer> variables;
