@@ -1,5 +1,7 @@
 package com.pdg.adventure.server.engine;
 
+import org.jspecify.annotations.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,8 +18,6 @@ import com.pdg.adventure.model.AdventureFont;
  * The markers are Unicode private-use characters on purpose: {@code Workflow} calls {@code String.trim()} on
  * joined result text, which would silently remove control characters (everything &lt;= U+0020) at the edges.
  * <p>
- * TODO: Review needed — in-band markers keep the engine's String-based result pipeline unchanged; the
- * alternative is a structured result (font + text segments) through the parser, GameLoop and RunResult.
  */
 public final class FontMarkup {
     private static final char START = '';
@@ -71,20 +71,32 @@ public final class FontMarkup {
                     break;
                 }
                 int end = aText.indexOf(END, sep + 1);
-                String body = end < 0 ? aText.substring(sep + 1) : aText.substring(sep + 1, end);
+                String body = findNextBodyOfText(aText, end, sep);
                 addSegment(segments, plain.toString(), AdventureFont.DEFAULT);
                 plain.setLength(0);
                 addSegment(segments, body, fontNamed(aText.substring(i + 1, sep)));
-                i = end < 0 ? aText.length() : end + 1;
+                i = getNextValueForI(aText, end);
             } else {
-                if (c != SEP && c != END) {
-                    plain.append(c);
-                }
+                appendCifNotSEPorEND(c, plain);
                 i++;
             }
         }
         addSegment(segments, plain.toString(), AdventureFont.DEFAULT);
         return segments;
+    }
+
+    private static @NonNull String findNextBodyOfText(final String aText, final int end, final int sep) {
+        return end < 0 ? aText.substring(sep + 1) : aText.substring(sep + 1, end);
+    }
+
+    private static int getNextValueForI(final String aText, final int end) {
+        return end < 0 ? aText.length() : end + 1;
+    }
+
+    private static void appendCifNotSEPorEND(final char c, final StringBuilder plain) {
+        if (c != SEP && c != END) {
+            plain.append(c);
+        }
     }
 
     /** The text without any markup, for output that has no fonts (the console). */
@@ -121,7 +133,7 @@ public final class FontMarkup {
     private static AdventureFont fontNamed(String aName) {
         try {
             return AdventureFont.valueOf(aName);
-        } catch (IllegalArgumentException unknown) {
+        } catch (IllegalArgumentException _) {
             return AdventureFont.DEFAULT;   // e.g. a font retired after the message was written
         }
     }
