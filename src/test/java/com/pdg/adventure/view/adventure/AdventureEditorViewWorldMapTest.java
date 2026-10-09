@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.Word;
 import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
@@ -57,7 +58,10 @@ class AdventureEditorViewWorldMapTest extends BrowserlessTest {
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
         adventure.setTitle("The Demo");
-        adventure.getLocationData().put("loc-1", new LocationData());
+        LocationData startLocation = new LocationData();
+        startLocation.getDescriptionData().setNoun(new Word("hall", Word.Type.NOUN));
+        adventure.getLocationData().put("loc-1", startLocation);
+        adventure.setCurrentLocationId("loc-1");
         worldPicture = picture("the map of the world");
         cavePicture = picture("a dark cave");
         adventure.getPictureData().put(worldPicture.getId(), worldPicture);

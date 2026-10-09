@@ -100,7 +100,6 @@ primary route.
 | `author/adventures/:adventureId/pictures/:pictureId/edit` | `PictureEditorView` | `PicturesMainLayout` | `ROLE_AUTHOR` |
 | ↳ alias `author/adventures/:adventureId/pictures/new` | `PictureEditorView` | `PicturesMainLayout` | `ROLE_AUTHOR` |
 | `author/adventures/:adventureId/vocabulary` | `VocabularyMenuView` | `VocabularyMainLayout` | `ROLE_AUTHOR` |
-| `author/adventures/:adventureId/vocabulary/special` | `SpecialWordsView` | `VocabularyMainLayout` | `ROLE_AUTHOR` |
 | `player/library` | `PlayerLibraryView` | `AdventuresMainLayout` | `ROLE_PLAYER` |
 
 The role hierarchy (`ROLE_ADMIN > ROLE_AUTHOR > ROLE_PLAYER`) means an admin
@@ -298,24 +297,6 @@ The contract from [`02-functional-requirements.md` § Validation feedback](02-fu
 | In-use deletion refused | `Dialog` listing usages | `*UsageTracker.show(...)` |
 
 ## Special components
-
-### `VocabularyPickerField` and the special-words editor
-
-`SpecialWordsView` (`view/vocabulary/`) edits the special-word slots on
-`VocabularyData` (take, drop, examine, look, inventory, go, help, quit,
-save, load). Each slot is a `VocabularyPickerField`; when the user picks a
-word, the listener:
-
-1. Returns early if `event.isFromClient() == false` — programmatic
-   `setValue` MUST NOT trigger the model update path (prevents recursion
-   when the form is repopulated after save).
-2. Calls `checkIfValueAlreadyExists(oldValue, newValue, type, selector)` —
-   refuses a pick that duplicates an existing assignment.
-3. Calls the typed setter (`vocabularyData.setExamineWord(word)` etc.).
-
-This pattern is documented because it appears in test code and tripped up
-the browserless-test setup; see
-[`08-build-test-and-ops.md`](08-build-test-and-ops.md#known-limitations-combobox-in-browserless).
 
 ### `WordEditorDialogue` synonym cascade
 
@@ -575,7 +556,7 @@ swapping the brand image per layout and using `LumoUtility` classes.
   items, words, messages, workflow commands all confirm
   first). Confirm this is intentional or bring it in line with
   [§ Validation feedback](#validation-feedback) below.
-- **`SpecialWordsView` browserless test workarounds.** Two ComboBox quirks
+- **ComboBox browserless test workarounds.** Two ComboBox quirks
   (silent `setValue`, wrong scope on `$()` queries) are documented in the
   testing strategy; until the upstream fix lands, browserless tests for
   combo-driven views need the reflection-based event-bus shim

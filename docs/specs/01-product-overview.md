@@ -97,8 +97,8 @@ and into UI structure in [`07-ui-and-navigation.md`](07-ui-and-navigation.md).
     - **Responses** (`ResponsesEditorView`, button "Responses") are a
       *fallback*: one fires only when the player's verb (and adjective/noun,
       if set) matches exactly **and** no location or pocket command handled
-      that verb. A Response matching a built-in verb (help, inventory, quit,
-      look/describe) still overrides that built-in for the adventure;
+      that verb. The help / inventory / quit / look/describe
+      verbs are ordinary Responses (the Look, Examine, Inventory and Quit actions);
       a Response sharing a verb with an authored location/item command now
       loses to it.
 - Visualise the adventure as a location map (`LocationMapView` — currently a
@@ -179,15 +179,14 @@ This is the canonical list. Other chapters reference it.
 | **Container** | A `Thing` that owns a list of `Containable`s with a capacity. The player's *pocket* is a container; locations have a container; items can be containers. |
 | **Thing** | Base abstract for every described object: holds a description provider and a map of commands. Both `Location` and `Item` extend it. |
 | **Vocabulary** | The dictionary an adventure understands. A `Vocabulary` wraps a `VocabularyData` and exposes lookup, synonym creation, and the special-word slots. |
-| **Word** | A string + a `Word.Type` + an optional synonym pointing at the canonical word. Five types: `NOUN`, `ADJECTIVE`, `VERB` (author-creatable), plus `CONJUNCTION` (`and` / `then`) and `PRONOUN` (`it`) — the last two are engine-reserved, seeded by `AdventureRunSessionFactory`, and excluded from the author's type picker (`WordEditorDialogue`). |
-| **Special words** | The vocabulary entries used by the engine for built-in mechanics: `take`, `drop`, `inventory`, `look`, `examine`, `go`, `help`, `quit`, `save`, `load`. |
+| **Word** | A string + a `Word.Type` + an optional synonym pointing at the canonical word. Five types: `NOUN`, `ADJECTIVE`, `VERB` (author-creatable), plus `CONJUNCTION` (`and` / `then`) and `PRONOUN` (`it`) — the last two are ordinary vocabulary entries the author creates in the type picker (`WordEditorDialogue`); the engine seeds only the save/load slot numbers. |
 | **Command** | A unit composed of a `CommandDescription` (verb/adjective/noun), a list of `PreCondition`s, and an ordered list of `Action`s (all run in sequence when the command fires). |
 | **Command Chain** | Multiple `Command`s that share one `CommandDescription`; the engine tries them in order and runs the first whose `PreCondition`s all pass. This is how one verb/noun pair can behave differently depending on game state. |
 | **CommandDescription** | A 3-slot tuple `(verb, adjective?, noun?)` produced by the parser and used by the matcher to find a `Command`. |
 | **Action** | A side-effect executed when a Command's PreConditions all pass. Returns an `ExecutionResult`. 23 concrete kinds, 22 of them directly authorable — `LoadAdventureAction` is engine-managed (see [`04-runtime-engine.md`](04-runtime-engine.md#action-catalog)). |
 | **PreCondition** | A boolean predicate evaluated in the current `GameContext`; gates an Action. 11 concrete kinds, 10 of them directly selectable — `NotCondition` is applied via a per-row Negate toggle instead (see [`04-runtime-engine.md`](04-runtime-engine.md#precondition-catalog)). |
 | **GameContext** | The runtime carrier: current location, player pocket, message holder, workflow, variable provider, and an injectable output sink (default `java.lang.IO::println`). |
-| **Workflow** | The engine's holder of an adventure's *global* commands: **Processes** (the `processes` table, run before every parsed sub-command) and **Responses** (the `responses` table, tried as a *fallback* only when no location/pocket command matched the typed verb). The built-in help / inventory / quit / look Responses and the "What now?" (SM2) prompt Process are planted by `CommandFactory.setUpWorkflowCommands`; the author's own are layered on by `WorkflowMapper.populate`. |
+| **Workflow** | The engine's holder of an adventure's *global* commands: **Processes** (the `processes` table, run before every parsed sub-command) and **Responses** (the `responses` table, tried as a *fallback* only when no location/pocket command matched the typed verb). The engine plants none of them: help / inventory / quit / look and every other Response, Process and Arrival Process is the author's, layered on by `WorkflowMapper.populate`. |
 | **Variable** | A named integer/value tracked in the `VariableProvider`; readable/writable by Actions and PreConditions. |
 | **Message** | A reusable text snippet with a generated id and a free-text summary; referenced by id from `MessageAction`. |
 | **Picture** | An uploaded image (`PictureData`) owned by one adventure. A location may name one as its default picture; a `PictureAction` shows one on demand. |

@@ -60,28 +60,6 @@ public class VocabularyData extends DatedData {
     @CascadeDelete
     private Map<String, Word> words;
 
-    @DBRef(lazy = false)
-    private Word takeWord;
-    @DBRef(lazy = false)
-    private Word dropWord;
-
-    @DBRef(lazy = false)
-    private Word inventoryWord;
-    @DBRef(lazy = false)
-    private Word lookWord;
-    @DBRef(lazy = false)
-    private Word examineWord;
-    @DBRef(lazy = false)
-    private Word goWord;
-    @DBRef(lazy = false)
-    private Word helpWord;
-    @DBRef(lazy = false)
-    private Word quitWord;
-    @DBRef(lazy = false)
-    private Word saveWord;
-    @DBRef(lazy = false)
-    private Word loadWord;
-
     public VocabularyData() {
         this(new HashMap<>());
     }

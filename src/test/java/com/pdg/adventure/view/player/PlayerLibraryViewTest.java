@@ -19,6 +19,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.view.support.ViewSupporter;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 
@@ -35,6 +37,8 @@ class PlayerLibraryViewTest extends BrowserlessTest {
         adventure1 = new AdventureData();
         adventure1.setId("adv-1");
         adventure1.setTitle("The Demo");
+        adventure1.getLocationData().put("loc-1", new LocationData());
+        adventure1.setCurrentLocationId("loc-1");
 
         adventure2 = new AdventureData();
         adventure2.setId("adv-2");
@@ -81,5 +85,16 @@ class PlayerLibraryViewTest extends BrowserlessTest {
         test(theGrid(view)).select(0);
 
         assertThat(runButton.isEnabled()).isTrue();
+    }
+
+    @Test
+    void runAdventureButton_staysDisabledWithATooltip_whenTheAdventureHasNoStartLocation() {
+        PlayerLibraryView view = createView();
+        Button runButton = find(Button.class, view).withText("Run Adventure").single();
+
+        test(theGrid(view)).select(1);
+
+        assertThat(runButton.isEnabled()).isFalse();
+        assertThat(runButton.getTooltip().getText()).isEqualTo(ViewSupporter.NO_START_LOCATION_TEXT);
     }
 }

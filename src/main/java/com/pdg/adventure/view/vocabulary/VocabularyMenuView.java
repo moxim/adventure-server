@@ -50,7 +50,6 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
     private VocabularyData vocabularyData;
 
     private Button edit;
-    private Button editSpecialWords;
     private Button create;
     private Button back;
     private Button save;
@@ -104,11 +103,6 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
             createWordInfoDialog(WordEditorDialogue.EditType.EDIT, currentWordAdapter);
         });
         edit.setEnabled(false);
-        editSpecialWords = new Button("Edit Special Words", _ -> {
-            UI.getCurrent().navigate(SpecialWordsView.class,
-                                     new RouteParameters(
-                                             new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
-        });
         create = new Button("Create Word", _ -> {
             createWordInfoDialog(WordEditorDialogue.EditType.NEW, null);
         });
@@ -125,7 +119,7 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
             notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         });
 
-        VerticalLayout vl = new VerticalLayout(create, edit, editSpecialWords, back, save);
+        VerticalLayout vl = new VerticalLayout(create, edit, back, save);
         vl.setMaxWidth("200px");
         return vl;
     }

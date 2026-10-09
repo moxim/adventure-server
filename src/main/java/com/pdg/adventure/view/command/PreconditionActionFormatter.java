@@ -15,6 +15,8 @@ import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.action.AutoDropActionData;
 import com.pdg.adventure.model.action.AutoRemoveActionData;
 import com.pdg.adventure.model.action.AutoTakeActionData;
+import com.pdg.adventure.model.action.ExamineActionData;
+import com.pdg.adventure.model.action.LookActionData;
 import com.pdg.adventure.model.action.AutoWearActionData;
 import com.pdg.adventure.model.action.BreakActionData;
 import com.pdg.adventure.model.action.CreateActionData;
@@ -156,7 +158,7 @@ public class PreconditionActionFormatter {
             return "MESSAGE " + resolveMessage(m.getMessageId());
         }
         if (a instanceof CreateActionData cr) {
-            return "CREATE_ITEM " + resolveName(cr.getThingId());
+            return "CREATE " + resolveName(cr.getThingId());
         }
         if (a instanceof DestroyActionData d) {
             return "DESTROY " + resolveName(d.getThingId());
@@ -188,17 +190,23 @@ public class PreconditionActionFormatter {
         if (a instanceof PictureActionData p) {
             return "PICTURE " + resolvePictureName(p.getPictureId());
         }
+        if (a instanceof LookActionData) {
+            return "LOOK";
+        }
+        if (a instanceof ExamineActionData) {
+            return "EXAMINE";
+        }
         if (a instanceof AutoTakeActionData) {
-            return "AutoTake";
+            return "AUTOTAKE";
         }
         if (a instanceof AutoDropActionData) {
-            return "AutoDrop";
+            return "AUTODROP";
         }
         if (a instanceof AutoWearActionData) {
-            return "AutoWear";
+            return "AUTOWEAR";
         }
         if (a instanceof AutoRemoveActionData) {
-            return "AutoRemove";
+            return "AUTOREMOVE";
         }
         if (a instanceof SaveGameActionData) {
             return "SAVE";

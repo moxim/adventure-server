@@ -14,6 +14,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -35,6 +36,7 @@ import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.support.VariableProvider;
+import com.pdg.adventure.server.testhelper.StandardResponses;
 import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
@@ -72,6 +74,12 @@ class AdventureRunSessionFactoryTest {
         lenient().when(adventureConfig.allContainers()).thenReturn(new HashMap<>());
         vocabulary = new Vocabulary();
         lenient().when(adventureConfig.allWords()).thenReturn(vocabulary);
+        lenient().doAnswer(invocation -> {
+            // Stands in for the adventure's own vocabulary and response table, which the mocked mappers don't load.
+            StandardResponses.registerWords(vocabulary);
+            StandardResponses.register(invocation.getArgument(1), gameContext);
+            return null;
+        }).when(workflowMapper).populate(any(), any());
         activeRun = new ActiveRun();
         factory = new AdventureRunSessionFactory(adventureService, adventureMapper, workflowMapper, adventureConfig,
                                                   gameContext, activeRun);
@@ -83,7 +91,7 @@ class AdventureRunSessionFactoryTest {
 
         when(adventureService.findAdventureById("adv-1")).thenReturn(Optional.of(adventureData));
         when(startLocation.getId()).thenReturn("loc-1");
-        // "look" resolves through getLookDescription() (see CommandFactory), not
+        // "look" resolves through getLookDescription() (see LookAction), not
         // getLongDescription() - stub it so the mocked Location doesn't return null.
         when(startLocation.getLookDescription())
                 .thenReturn(new Location.LocationDescription("A grand throne room.", null));
@@ -137,13 +145,13 @@ class AdventureRunSessionFactoryTest {
     }
 
     @Test
-    void start_compoundCommand_runsBothSubCommandsThroughTheRealSeededVocabulary() {
-        // "and" must be seeded by the real registerBaseVerbs() production path, not just by a
-        // hand-built test Vocabulary - this is the browser/"Run Adventure" entry point.
+    void start_compoundCommand_runsBothSubCommandsThroughTheAdventuresVocabulary() {
+        // This is the browser/"Run Adventure" entry point: a conjunction from the adventure's vocabulary
+        // must split the line.
         AdventureData adventureData = adventureWithOneLocation("adv-1", "loc-1");
         when(adventureService.findAdventureById("adv-1")).thenReturn(Optional.of(adventureData));
         when(startLocation.getId()).thenReturn("loc-1");
-        // "describe" resolves through getLookDescription() (see CommandFactory), not
+        // "describe" resolves through getLookDescription() (see LookAction), not
         // getLongDescription() - stub it so the mocked Location doesn't return null.
         when(startLocation.getLookDescription())
                 .thenReturn(new Location.LocationDescription("A grand throne room.", null));
@@ -158,16 +166,20 @@ class AdventureRunSessionFactoryTest {
     }
 
     @Test
-    void start_seedsPronounIt_throughTheRealRegisterBaseVerbsPath() {
+    void start_seedsTheSaveAndLoadSlotNumbersAsNouns_andNothingElse() {
         AdventureData adventureData = adventureWithOneLocation("adv-1", "loc-1");
         when(adventureService.findAdventureById("adv-1")).thenReturn(Optional.of(adventureData));
         when(startLocation.getId()).thenReturn("loc-1");
         Adventure adventure = adventureBoundTo(startLocation, "loc-1");
         when(adventureMapper.mapToBO(adventureData)).thenReturn(adventure);
+        // The populate stub stands in for the author's vocabulary; take it out to see only what the engine seeds.
+        lenient().doNothing().when(workflowMapper).populate(any(), any());
 
         factory.start(adventureData, new RunOwner("player-1"));
 
-        assertThat(vocabulary.getType("it")).isEqualTo(Word.Type.PRONOUN);
+        assertThat(vocabulary.getWords()).extracting(Word::getText)
+                .containsExactlyInAnyOrder("1", "2", "3", "4", "5", "6", "7", "8", "9", "10");
+        assertThat(vocabulary.getType("3")).isEqualTo(Word.Type.NOUN);
     }
 
     @Test

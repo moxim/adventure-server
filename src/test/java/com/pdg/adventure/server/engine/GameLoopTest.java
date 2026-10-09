@@ -7,9 +7,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.pdg.adventure.CommandFactory;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.action.LookAction;
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.condition.Adjective2Condition;
@@ -24,13 +24,15 @@ import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.VariableProvider;
+import com.pdg.adventure.server.testhelper.StandardResponses;
 import com.pdg.adventure.server.tangible.GenericContainer;
+import com.pdg.adventure.server.tangible.Item;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 /**
  * Exercises processCommand(String) directly, i.e. the browser Test session's entry point into
  * the engine (no BufferedReader involved). Wires the same interceptor commands
- * AdventureRunSessionFactory registers in production, via the real CommandFactory.
+ * an author puts in the response table (see StandardResponses).
  */
 class GameLoopTest {
 
@@ -64,7 +66,7 @@ class GameLoopTest {
         vocabulary.createNewWord("it", Word.Type.PRONOUN);
 
         workflow = gameContext.setUpWorkflows();
-        new CommandFactory(gameContext, new VocabularyData()).setUpWorkflowCommands(workflow);
+        StandardResponses.register(workflow, gameContext);
 
         gameLoop = new GameLoop(new Parser(vocabulary), gameContext);
     }
@@ -109,7 +111,7 @@ class GameLoopTest {
         // fallback matched a bare "describe"/"look" locally in CommandExecutor - since an empty
         // command noun trivially satisfies CommandHandler.ownerNounMatches() - winning over the
         // built-in workflow Response before it's ever consulted. The fallback only ever returns
-        // text, so the picture-setting lambda in CommandFactory.setUpWorkflowCommands never ran,
+        // text, so the picture-setting in LookAction never ran,
         // even though the text looked identical (both ultimately call getLongDescription()).
         // Fixed by no longer registering locations for the examine fallback (LoadAdventureAction);
         // this test pins that down by NOT registering one here either, matching current
@@ -125,6 +127,46 @@ class GameLoopTest {
         gameLoop.processCommand("describe");
 
         assertThat(gameContext.getCurrentPictureId()).isEqualTo("pic-1");
+    }
+
+    @Test
+    void describe_withTheNounOfAnItemHere_tellsTheItemsLongDescription_viaAnySynonym() {
+        vocabulary.createSynonym("examine", "describe");
+        vocabulary.createSynonym("look", "describe");
+        vocabulary.createNewWord("sword", Word.Type.NOUN);
+        DescriptionProvider swordDescription = new DescriptionProvider("sword");
+        swordDescription.setLongDescription("A sharp sword.");
+        Item sword = new Item(swordDescription, true);
+        gameContext.getCurrentLocation().getItemContainer().add(sword);
+
+        gameLoop.processCommand("examine sword");
+        gameLoop.processCommand("look sword");
+
+        assertThat(told.toString()).contains("A sharp sword.");
+        assertThat(told.toString().split("A sharp sword\\.", -1)).hasSize(3);
+    }
+
+    @Test
+    void describe_withTheNounOfACarriedItem_tellsTheItemsLongDescription() {
+        vocabulary.createNewWord("lamp", Word.Type.NOUN);
+        DescriptionProvider lampDescription = new DescriptionProvider("lamp");
+        lampDescription.setLongDescription("A brass lamp.");
+        gameContext.getPocket().add(new Item(lampDescription, true));
+
+        gameLoop.processCommand("describe lamp");
+
+        assertThat(told.toString()).contains("A brass lamp.");
+    }
+
+    @Test
+    void describe_withANounNothingHereAnswersTo_tellsItIsNotHere() {
+        vocabulary.createNewWord("moon", Word.Type.NOUN);
+
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("describe moon");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString()).contains(SystemMessageKey.SM26.defaultText())
+                                   .doesNotContain("A grand throne room.");
     }
 
     @Test
@@ -501,6 +543,19 @@ class GameLoopTest {
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
         assertThat(told.toString()).contains("The room is silent.");
+    }
+
+    @Test
+    void anArrivalProcessThatItselfLooks_doesNotLoopForever() {
+        // An author who puts a Look action into an Arrival Process: Look fires the Arrival Processes, which
+        // contain Look, which fires them... This used to end in a StackOverflowError.
+        GenericCommandDescription lookDescription = new GenericCommandDescription("hush");
+        workflow.addArrivalProcess(lookDescription, new GenericCommand(lookDescription, new LookAction(gameContext)));
+
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("describe");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString()).contains("A grand throne room.");
     }
 
     @Test

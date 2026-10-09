@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SystemMessageKeyTest {
 
     @Test
-    void catalogHasSixtyEightEntries() {
+    void catalogHasSeventyNineEntries() {
         assertThat(SystemMessageKey.values()).hasSize(79);
     }
 

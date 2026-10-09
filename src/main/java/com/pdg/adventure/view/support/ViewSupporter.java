@@ -1,5 +1,6 @@
 package com.pdg.adventure.view.support;
 
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -120,6 +121,19 @@ public class ViewSupporter {
      * A small, muted hint telling authors that grid rows are opened for editing by double-clicking.
      * Placed near each menu grid so the (otherwise hidden) double-click gesture is discoverable.
      */
+    public static final String NO_START_LOCATION_TEXT =
+            "This adventure has no location to start in. Choose one in the locations menu.";
+
+    /**
+     * Enables a button that starts a run only when the adventure has a start location; otherwise disables it and
+     * explains why in its tooltip.
+     */
+    public static void enableIfStartable(Button aButton, AdventureData anAdventure, String anEnabledTooltip) {
+        boolean startable = anAdventure != null && anAdventure.hasStartLocation();
+        aButton.setEnabled(startable);
+        aButton.setTooltipText(startable ? anEnabledTooltip : NO_START_LOCATION_TEXT);
+    }
+
     public static Span doubleClickEditHint() {
         Span hint = new Span("Double-click a row to edit");
         hint.addClassNames(LumoUtility.TextColor.SECONDARY, LumoUtility.FontSize.SMALL);

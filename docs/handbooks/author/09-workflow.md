@@ -98,8 +98,7 @@ with its own reminder:
 > *"A response is a fallback: it fires only when the player's verb (and
 > adjective/noun, if set) matches exactly and nothing in the current
 > location or the player's pocket already handles that verb. The verb is
-> required. Matching a built-in verb (help, inventory, quit, look/describe)
-> still overrides that built-in for this adventure."*
+> required."*
 
 Use Responses for adventure-wide commands that nothing else defines: a
 custom `help` text, a `pray` verb that works anywhere, a `score` command —
@@ -117,12 +116,12 @@ Response's verb (and adjective/noun, if you set them):
   carries).
 
 So a Response only "wins" a verb that no location or item command claims.
-Built-in **help** / **inventory** / **quit** / **look**/**describe** have no
-location or item commands behind them, so a Response with one of those verbs
-still **replaces** the built-in for your adventure. But if *you* give a
-location or an item a command with the same verb/adjective/noun as one of
-your Responses, that local command now wins and the Response won't fire
-there.
+**help** / **inventory** / **quit** / **look**/**describe** are ordinary
+Responses too (see
+[Looking, inventory, help and quit](07-vocabulary-and-words.md#looking-inventory-help-and-quit)).
+If *you* give a location or an item a command with the same
+verb/adjective/noun as one of your Responses, that local command wins and
+the Response won't fire there.
 
 ## One Response for every item: the wildcard noun
 
@@ -166,7 +165,7 @@ longer be loaded. Items you added after the save stay where they are. Numbers ab
 
 Things to know:
 
-- The slot numbers `1` to `10` are added to the game's vocabulary automatically. If you have already used one of those
+- The slot numbers `1` to `10` are the only words the engine adds to the game's vocabulary itself. If you have already used one of those
   words yourself (as a verb or a synonym), your meaning wins and that slot number can't be typed.
 - Each save remembers which version of the adventure builder last saved your adventure. When a player loads a game
   and the version has changed since, the game adds a short note saying so.

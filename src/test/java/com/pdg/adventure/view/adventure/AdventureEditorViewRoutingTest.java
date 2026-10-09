@@ -27,6 +27,8 @@ import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.Word;
+import com.pdg.adventure.view.support.ViewSupporter;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.view.support.FlashNotifier;
@@ -134,6 +136,19 @@ class AdventureEditorViewRoutingTest extends BrowserlessTest {
     }
 
     @Test
+    void beforeEnter_adventureWithLocationsButNoStartLocation_disablesTestButtonAndSaysWhy() {
+        AdventureData adventure = adventureWithOneLocation("adv-1", "The Demo");
+        adventure.setCurrentLocationId("");
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class))).thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithAdventureId("adv-1"));
+
+        Button testButton = find(Button.class, view).withText("Test").single();
+        assertThat(testButton.isEnabled()).isFalse();
+        assertThat(testButton.getTooltip().getText()).isEqualTo(ViewSupporter.NO_START_LOCATION_TEXT);
+    }
+
+    @Test
     void editingTheTitle_disablesTestButton_untilSaved() {
         AdventureData adventure = adventureWithOneLocation("adv-1", "The Demo");
         when(accessService.findAdventureById(eq("adv-1"), any(UserData.class))).thenReturn(Optional.of(adventure));
@@ -163,8 +178,10 @@ class AdventureEditorViewRoutingTest extends BrowserlessTest {
         HashMap<String, LocationData> locations = new HashMap<>();
         LocationData location = new LocationData();
         location.setId("loc-1");
+        location.getDescriptionData().setNoun(new Word("hall", Word.Type.NOUN));
         locations.put("loc-1", location);
         adventure.setLocationData(locations);
+        adventure.setCurrentLocationId("loc-1");
         return adventure;
     }
 }

@@ -7,11 +7,10 @@ dictionary.
 ## The vocabulary list
 
 A grid of every word in your adventure, showing the word text, its
-**Type**, and its **Synonym** (if any). Three buttons:
+**Type**, and its **Synonym** (if any). Two buttons:
 
 - **Create Word**
 - **Edit Word**
-- **Edit Special Words** — see [below](#special-words).
 
 ## Adding or editing a word
 
@@ -20,7 +19,7 @@ Both **Create Word** and **Edit Word** open the same dialog:
 | Field | Notes |
 |-------|-------|
 | **Word** | The text itself. |
-| **Type** | A radio choice between all seven word types: **Verb**, **Noun**, **Adjective**, **Adverb**, **Preposition**, **Conjunction**, and **Pronoun**. In practice you'll only ever create Verbs, Nouns, Adjectives, Adverbs, and Prepositions — *Conjunction* (`and`/`then`) and *Pronoun* (`it`) are seeded by the engine itself and already exist in every adventure, so there's rarely a reason to add another one, though the picker doesn't stop you from editing or adding to them. |
+| **Type** | A radio choice between all seven word types: **Verb**, **Noun**, **Adjective**, **Adverb**, **Preposition**, **Conjunction**, and **Pronoun**. *Conjunction* and *Pronoun* are the two special ones: a Conjunction (`and`, `then`) lets the player chain commands in one line, and a Pronoun (`it`) stands for the last thing they mentioned. The engine adds no words of its own, so your vocabulary needs at least one of each if you want chaining and `it` to work. |
 | **Synonyms** | Optionally point this word at another as its canonical form. The dialog's own hint: *"A synonym has precedence over a type."* — pick a synonym and the word inherits that word's type. |
 
 ### Adverbs and Prepositions
@@ -65,32 +64,31 @@ break commands elsewhere that expected a specific type.
 Refused if any command, item, location, or exit still references it — you'll
 see the list of what's using it so you know what to fix first.
 
-## Special words
+## Looking, inventory, help and quit
 
-**Edit Special Words** is a separate screen — *"Configure special words
-that are used throughout the adventure for common actions"* — for the
-handful of vocabulary slots the engine treats specially. Today it exposes
-four of them:
+There is no screen for "special" words: taking, dropping and the other
+verbs are ordinary Responses you write yourself. The engine adds no words
+of its own: your vocabulary has to contain `describe` (with synonyms such as
+`look`, `l`, `examine`, `x`), `inventory`, `help` and `quit` before the
+parser can recognise them, and what they *do* is up to your
+[Responses](09-workflow.md#responses) — the engine has no built-in
+behaviour behind any of them. A basic set is:
 
-| Field on screen | Wires up |
-|-----------------|-----------|
-| **Taker** | The word players use to pick things up (`take`, `get`, whatever you choose). |
-| **Dropper** | The word for putting something down. |
-| **Loader** | The word for loading a saved game. |
-| **Examiner** | The word used for examining things in detail. |
+| Verb | Noun | Actions |
+|------|------|---------|
+| `describe` | *(none)* | **Look** |
+| `describe` | `here` | **Look** |
+| `describe` | `~` | **Examine** |
+| `inventory` | *(none)* | **Inventory** |
+| `help` | *(none)* | **Message** with your help text |
+| `quit` | *(none)* | **Message** with a farewell, then **Quit** |
 
-Each one can be changed freely — *unless* it's currently the verb on a
-command belonging to one of your items. Try to change or clear a
-special word that's in use, and Adventure Builder blocks it and shows you
-exactly which items are relying on it, so you can update them first.
-
-> **Note:** Adventure Builder's underlying data model has more special-word
-> slots than this screen exposes — inventory, look, go, help, quit, and save
-> words also exist internally, but there's currently no screen to set them.
-> In practice this rarely blocks you: when you **Test** or **Run** an
-> adventure, `look`, `inventory`, `help`, and `quit` (plus a few synonyms
-> like `l`, `x`, `i`, `exit`, `bye`) always work automatically, independent
-> of vocabulary setup — see [Chapter 12](12-testing-and-running.md).
+**Look** describes the player's location in full (with its picture) and
+fires your Arrival Processes. **Examine** shows the long description of the
+item the player named, whether carried or in the room; with a noun that
+names nothing here it says "There isn't one of those here." (message 26 on
+the *System Messages* screen, which you can reword). Because Responses are
+only a fallback, an item or location command for the same verb still wins.
 
 ## The wildcard noun `~`
 

@@ -30,11 +30,6 @@ worth planning around.
   [Chapter 5](05-locations-and-exits.md#the-world-map).
 - **Taking and carrying have no weight limit.** The AutoTake action only checks
   how many things the player carries, not how heavy they are.
-- **Special Words only exposes 4 of the model's 10 slots** (Taker, Dropper,
-  Loader, Examiner). The others exist but have no editor screen today — in
-  practice this rarely matters because the play screen's core verbs
-  (`look`, `inventory`, `help`, `quit`) work automatically regardless. See
-  [Chapter 7](07-vocabulary-and-words.md#special-words).
 - **Workflow *Processes* print their failure message every turn, not once
   — and run once per command, not once per line.** If a Process's
   precondition is unmet, and that precondition (or the command) is set up to

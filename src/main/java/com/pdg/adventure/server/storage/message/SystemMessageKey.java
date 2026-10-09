@@ -57,7 +57,7 @@ public enum SystemMessageKey {
     SM23(23, "I am not wearing any of those.", "is printed when the player tries to remove an item that is not worn. (I am not wearing any of those.)"),
     SM24(24, "I can't. I am wearing the %s.", "is printed when the player tries to drop an item that is worn. (I can't. I am wearing the %s.)"),
     SM25(25, "I already have the %s.", "is printed when the player tries to take an item that they already have. (I already have the %s.)"),
-    SM26(26, "There isn't one of those here.", "is printed when the player tries to take an item that isn't present. (There isn't one of those here.)"),
+    SM26(26, "There isn't one of those here.", "is printed when the player tries to interact with an item that isn't present. (There isn't one of those here.)"),
     SM27(27, "I can't carry any more things.",
          "is printed when the player tries to take an item but their inventory is full. (I can't carry any more things.)"),
     SM28(28, "I don't have one of those.", "is printed when the player tries to drop an item that they don't have. (I don't have one of those.)"),
@@ -131,12 +131,11 @@ public enum SystemMessageKey {
     LOAD_VERSION_NOTE("(This game was saved with version %s; the adventure is now at version %s.)", "LoadGameAction",
                       "is printed after a restore when the adventure changed version since the save. ((This game was saved with version %s; the adventure is now at version %s.))"),
 
-    // Currently never registered for a real adventure - CommandFactory looks this id up
-    // unconditionally, which NPEs outside the console demo. A live bug, outside this feature's
-    // scope (that's the deferred engine-rewiring phase). Catalogued anyway so it's ready once fixed.
+    // Currently never registered for a real adventure: no engine code looks this id up. Catalogued anyway so it is
+    // ready for an author-facing help action.
 
     HELP_TEXT("Look around, examine items, take or drop items, maybe wear items, enter or leave locations.\nOr quit.",
-              "CommandFactory",
+              "MessageAction",
               "The full text shown for the built-in 'help' command. (Look around, examine items, take or drop "
               + "items, maybe wear items, enter or leave locations.\nOr quit.)");
 

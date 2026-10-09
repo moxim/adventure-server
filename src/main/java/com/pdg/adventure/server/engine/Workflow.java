@@ -43,10 +43,6 @@ import com.pdg.adventure.server.parser.GenericCommandDescription;
  */
 public class Workflow {
 
-    // Iteration order for processes before each sub-command: alphabetical by verb, then adjective,
-    // then noun - independent of the TreeMap's own key ordering (which sorts by the
-    // "verb|adjective|noun" description string and, because '|' sorts after letters, would rank
-    // e.g. "go" after "goto").
     private static final Comparator<CommandDescription> ALPHABETICAL = Comparator
             .comparing(CommandDescription::getVerb, String.CASE_INSENSITIVE_ORDER)
             .thenComparing(CommandDescription::getAdjective, String.CASE_INSENSITIVE_ORDER)
@@ -55,13 +51,12 @@ public class Workflow {
     private final Map<CommandDescription, CommandChain> processes;
     private final Map<CommandDescription, CommandChain> responses;
     private final Map<CommandDescription, CommandChain> arrivalProcesses;
-    private final GameContext gameContext;
+    private boolean runningArrivalProcesses;
 
-    public Workflow(GameContext aGameContext) {
+    public Workflow() {
         processes = new TreeMap<>();
         responses = new TreeMap<>();
         arrivalProcesses = new TreeMap<>();
-        gameContext = aGameContext;
     }
 
     public void addProcess(GenericCommandDescription aCommandDescription, Command aCommand) {
@@ -105,8 +100,20 @@ public class Workflow {
         return getExecutionResult(processes);
     }
 
+    /**
+     * Not re-entrant: an Arrival Process that itself describes the location (a Look action) would otherwise fire
+     * the Arrival Processes again, without end. A nested call returns an empty result instead.
+     */
     public ExecutionResult runArrivalProcesses() {
-        return getExecutionResult(arrivalProcesses);
+        if (runningArrivalProcesses) {
+            return new CommandExecutionResult(ExecutionResult.State.SUCCESS);
+        }
+        runningArrivalProcesses = true;
+        try {
+            return getExecutionResult(arrivalProcesses);
+        } finally {
+            runningArrivalProcesses = false;
+        }
     }
 
     @NonNull

@@ -292,17 +292,13 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
   - `/author/adventures/:adventureId/vocabulary` shows the word list with
     filtering (`WordFilter`).
   - "Create Word" opens `WordEditorDialogue` with text and `Word.Type` (NOUN /
-    ADJECTIVE / VERB only — `CONJUNCTION` and `PRONOUN` are engine-reserved,
-    seeded automatically, and removed from the picker).
+    ADJECTIVE / VERB, plus `CONJUNCTION` and `PRONOUN`; the engine seeds none of them).
   - A word can be made a synonym of another word; synonyms resolve to the
     canonical form during parsing.
   - When a word is saved with a new synonym, `WordEditorDialogue` detects
     any other words that still point to the old synonym and offers a
     confirmation dialog ("Update All" / "Skip"). The dialog warns when
     synonym adoption would mutate `Word.Type` for the affected words.
-  - `/author/adventures/:adventureId/vocabulary/special` is the dedicated editor
-    for special-word slots (take, drop, look, examine, inventory, go, help,
-    quit, save, load).
   - Deleting a word is refused if any command, item, location, or direction
     references it; the dialog enumerates usages.
 
@@ -340,9 +336,9 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     adjective/noun, if set) matches it exactly **and** nothing in the
     current location or the player's pocket handled that verb. A location or
     item command sharing the same verb/adjective/noun therefore **wins over**
-    the Response. The verb **is** required. A Response whose verb matches a
-    built-in (help, inventory, quit, look/describe) still overrides that
-    built-in, since no location or item defines those verbs.
+    the Response. The verb **is** required. The help, inventory, quit and
+    look/describe verbs are ordinary Responses (Message, Inventory, Quit, Look and Examine
+    actions) that the author defines.
   - **Arrival Processes** — `/author/adventures/:adventureId/arrival`
     (`ArrivalProcessesEditorView`), reached via **Workflow I** on
     `AdventureEditorView`, edits `WorkflowData.arrivalProcesses`. These run
@@ -511,18 +507,19 @@ should be enforced by the implementation, not just by the UI:
    they author it. Players never write. Check in
    `AdventureAccessService.canWrite`.
 4. **Vocabulary uniqueness.** Within an adventure, two words MUST NOT have the
-   same `(text, type)` pair. The `WordEditorDialogue` and
-   `SpecialWordsView.checkIfValueAlreadyExists` enforce this.
+   same `(text, type)` pair. The `WordEditorDialogue` enforces this.
 5. **Synonym chains terminate.** A word's synonym chain MUST resolve to a
    non-synonym; cycles are rejected at save time.
 6. **Container capacity.** Adding to a container at capacity raises
    `ContainerFullException`. Items that are not `Containable` raise
    `NotContainableException`.
 7. **Worn items are carried.** Dropping a worn item triggers a follow-up
-   `RemoveAction` (built by `CommandFactory.setUpDropCommand`); the noun-driven
+   `RemoveAction` (the former drop wiring); the noun-driven
    `AutoDropAction` (AutoDrop) instead *refuses* to drop a worn item (`SM24`).
-8. **Special words exist.** Each adventure's `VocabularyData` MUST have a
-   non-null reference for every special-word slot before play begins.
+8. **Built-in verbs.** The run vocabulary always seeds `describe` (synonyms look, l, desc,
+   examine, x), `inventory`, `help` and `quit`; `VocabularyData` has no special-word slots.
+   `describe` without a noun shows the location, with the noun of an item here that item's
+   long description, and with any other noun `SM26`.
 
 ## Source pointers
 
@@ -555,8 +552,7 @@ should be enforced by the implementation, not just by the UI:
   over the first.
 - **Saved games are restored in place.** An item the author added after a save keeps
   its current position on `load`; numbers above 10 are not words, so `save 11`
-  behaves like a bare `save`; saves cannot be deleted. The `saveWord` / `loadWord`
-  special-word slots on `VocabularyData` are still unused by the engine. There is no
+  behaves like a bare `save`; saves cannot be deleted. There is no
   player-facing cross-adventure load (the CLI's `load <id>` went away with
   `MiniAdventure`).
 - **AI-augmented descriptions.** Authors cannot yet ask the system to enrich a
