@@ -4,7 +4,11 @@ import com.vaadin.browserless.BrowserlessTest;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.server.streams.UploadHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,6 +32,7 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.view.support.ViewSupporter;
 import com.pdg.adventure.security.model.UserData;
+import com.pdg.adventure.server.exception.AdventureImportException;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 
 class AdventuresMenuViewTest extends BrowserlessTest {
@@ -172,5 +178,116 @@ class AdventuresMenuViewTest extends BrowserlessTest {
         view.duplicateAdventure(adventure, grid);
 
         assertThat(grid.getListDataView().getItems()).extracting(AdventureData::getId).containsExactly("adv-1");
+    }
+
+    // The Upload component's own maximum is only checked by the browser; the server must refuse a larger body itself.
+    @Test
+    void importUploadHandler_refusesOnTheServerWhatIsLargerThanTheImportLimit() {
+        UploadHandler handler = AdventuresMenuView.importUploadHandler(new AtomicReference<>(), 1234L);
+
+        assertThat(handler.getFileSizeMax()).isEqualTo(1234L);
+        assertThat(handler.getRequestSizeMax()).isEqualTo(1234L);
+        assertThat(handler.getFileCountMax()).isEqualTo(1L);
+    }
+
+    @Test
+    void importAdventureButton_isOnTheView() {
+        AdventuresMenuView view = new AdventuresMenuView(accessService);
+        UI.getCurrent().add(view);
+
+        assertThat(find(Button.class, view).withText("Import Adventure").single().isEnabled()).isTrue();
+    }
+
+    @Test
+    void importDialog_offersASingleJsonFileUploadAndStartsWithImportDisabled() {
+        AdventuresMenuView view = new AdventuresMenuView(accessService);
+        UI.getCurrent().add(view);
+
+        Dialog dialog = view.buildImportDialog();
+        UI.getCurrent().add(dialog);
+        dialog.open();
+
+        Upload upload = find(Upload.class, dialog).single();
+        assertThat(upload.getMaxFiles()).isEqualTo(1);
+        assertThat(upload.getAcceptedFileExtensions()).containsExactly(".json");
+        assertThat(find(Button.class, dialog).withText("Import").single().isEnabled()).isFalse();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void importAdventure_addsTheImportedAdventureToTheGridAndPassesTheFileOn() {
+        AdventureData imported = new AdventureData();
+        imported.setId("adv-9");
+        imported.setTitle("From Elsewhere");
+        byte[] file = {1, 2, 3};
+        when(accessService.importAdventure(eq(file), any(UserData.class)))
+                .thenReturn(new AdventureAccessService.ImportedAdventure(imported, false));
+        AdventuresMenuView view = new AdventuresMenuView(accessService);
+        UI.getCurrent().add(view);
+        Grid<AdventureData> grid = (Grid<AdventureData>) find(Grid.class, view).single();
+
+        boolean imports = view.importAdventure(file);
+
+        assertThat(imports).isTrue();
+        assertThat(grid.getListDataView().getItems()).extracting(AdventureData::getId)
+                                                      .containsExactly("adv-1", "adv-9");
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void importAdventure_whenTheFileIsRejected_leavesTheGridAsItWasAndDoesNotThrow() {
+        when(accessService.importAdventure(any(), any(UserData.class)))
+                .thenThrow(new AdventureImportException("This is not an adventure file."));
+        AdventuresMenuView view = new AdventuresMenuView(accessService);
+        UI.getCurrent().add(view);
+        Grid<AdventureData> grid = (Grid<AdventureData>) find(Grid.class, view).single();
+
+        boolean imports = view.importAdventure(new byte[] {1});
+
+        assertThat(imports).isFalse();
+        assertThat(grid.getListDataView().getItems()).extracting(AdventureData::getId).containsExactly("adv-1");
+    }
+
+    @Test
+    void importAdventure_whenSomethingUnexpectedFails_returnsFalseInsteadOfThrowing() {
+        when(accessService.importAdventure(any(), any(UserData.class))).thenThrow(new IllegalStateException("boom"));
+        AdventuresMenuView view = new AdventuresMenuView(accessService);
+        UI.getCurrent().add(view);
+
+        assertThat(view.importAdventure(new byte[] {1})).isFalse();
+    }
+
+    @Test
+    void export_asksTheAccessServiceForTheFileAndPointsTheDownloadLinkAtIt() {
+        when(accessService.exportAdventure(eq("adv-1"), any(UserData.class))).thenReturn(new byte[] {1, 2, 3});
+        AdventuresMenuView view = new AdventuresMenuView(accessService);
+        UI.getCurrent().add(view);
+
+        view.exportAdventure(adventure);
+
+        verify(accessService).exportAdventure(eq("adv-1"), any(UserData.class));
+        assertThat(find(Anchor.class, view).single().getHref()).isNotBlank();
+    }
+
+    @Test
+    void export_whenItIsRefused_offersNoDownloadAndDoesNotThrow() {
+        when(accessService.exportAdventure(any(), any(UserData.class)))
+                .thenThrow(new org.springframework.security.access.AccessDeniedException("no"));
+        AdventuresMenuView view = new AdventuresMenuView(accessService);
+        UI.getCurrent().add(view);
+
+        view.exportAdventure(adventure);
+
+        assertThat(find(Anchor.class, view).single().getHref()).isNullOrEmpty();
+    }
+
+    @Test
+    void exportFileName_turnsATitleIntoASafeFileName() {
+        assertThat(AdventuresMenuView.exportFileName("The Demo")).isEqualTo("The-Demo.adventure.json");
+        assertThat(AdventuresMenuView.exportFileName("  ../etc/passwd  ")).isEqualTo("etc-passwd.adventure.json");
+        assertThat(AdventuresMenuView.exportFileName("Über \"Größe\": 1/2")).isEqualTo("Über-Größe-1-2.adventure.json");
+        assertThat(AdventuresMenuView.exportFileName("")).isEqualTo("adventure.adventure.json");
+        assertThat(AdventuresMenuView.exportFileName(null)).isEqualTo("adventure.adventure.json");
+        assertThat(AdventuresMenuView.exportFileName("///")).isEqualTo("adventure.adventure.json");
     }
 }

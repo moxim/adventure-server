@@ -25,6 +25,8 @@ import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.repository.AdventureAuthorRepository;
 import com.pdg.adventure.server.security.repository.AdventurePlayerRepository;
 import com.pdg.adventure.server.storage.service.AdventureDuplicator;
+import com.pdg.adventure.server.storage.service.AdventureExporter;
+import com.pdg.adventure.server.storage.service.AdventureImporter;
 import com.pdg.adventure.server.storage.service.AdventureService;
 
 class AdventureAccessServiceDuplicateTest {
@@ -43,8 +45,9 @@ class AdventureAccessServiceDuplicateTest {
         adventureService = mock(AdventureService.class);
         adventureDuplicator = mock(AdventureDuplicator.class);
         authorRepository = mock(AdventureAuthorRepository.class);
-        accessService = new AdventureAccessService(adventureService, adventureDuplicator, authorRepository,
-                                                   mock(AdventurePlayerRepository.class));
+        accessService = new AdventureAccessService(adventureService, adventureDuplicator,
+                                                   mock(AdventureExporter.class), mock(AdventureImporter.class),
+                                                   authorRepository, mock(AdventurePlayerRepository.class));
 
         author = user("anna-id", Role.AUTHOR);
 
