@@ -72,8 +72,10 @@ public class AdventuresMenuView extends VerticalLayout {
             Optional<AdventureData> optionalAdventure = selection.getFirstSelectedItem();
             if (optionalAdventure.isPresent()) {
                 targetAdventureId = optionalAdventure.get().getId();
+                ViewSupporter.enableIfStartable(runAdventure, optionalAdventure.get(), null);
+            } else {
+                runAdventure.setEnabled(false);
             }
-            runAdventure.setEnabled(optionalAdventure.isPresent());
         });
         grid.addItemDoubleClickListener(e -> {
             targetAdventureId = e.getItem().getId();

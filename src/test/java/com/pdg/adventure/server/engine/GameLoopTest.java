@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.server.action.LookAction;
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.condition.Adjective2Condition;
@@ -542,6 +543,19 @@ class GameLoopTest {
 
         assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
         assertThat(told.toString()).contains("The room is silent.");
+    }
+
+    @Test
+    void anArrivalProcessThatItselfLooks_doesNotLoopForever() {
+        // An author who puts a Look action into an Arrival Process: Look fires the Arrival Processes, which
+        // contain Look, which fires them... This used to end in a StackOverflowError.
+        GenericCommandDescription lookDescription = new GenericCommandDescription("hush");
+        workflow.addArrivalProcess(lookDescription, new GenericCommand(lookDescription, new LookAction(gameContext)));
+
+        GameLoop.CommandOutcome outcome = gameLoop.processCommand("describe");
+
+        assertThat(outcome).isEqualTo(GameLoop.CommandOutcome.CONTINUE);
+        assertThat(told.toString()).contains("A grand throne room.");
     }
 
     @Test

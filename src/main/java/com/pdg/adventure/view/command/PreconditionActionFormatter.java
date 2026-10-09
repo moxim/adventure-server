@@ -158,7 +158,7 @@ public class PreconditionActionFormatter {
             return "MESSAGE " + resolveMessage(m.getMessageId());
         }
         if (a instanceof CreateActionData cr) {
-            return "CREATE_ITEM " + resolveName(cr.getThingId());
+            return "CREATE " + resolveName(cr.getThingId());
         }
         if (a instanceof DestroyActionData d) {
             return "DESTROY " + resolveName(d.getThingId());
@@ -197,16 +197,16 @@ public class PreconditionActionFormatter {
             return "EXAMINE";
         }
         if (a instanceof AutoTakeActionData) {
-            return "AutoTake";
+            return "AUTOTAKE";
         }
         if (a instanceof AutoDropActionData) {
-            return "AutoDrop";
+            return "AUTODROP";
         }
         if (a instanceof AutoWearActionData) {
-            return "AutoWear";
+            return "AUTOWEAR";
         }
         if (a instanceof AutoRemoveActionData) {
-            return "AutoRemove";
+            return "AUTOREMOVE";
         }
         if (a instanceof SaveGameActionData) {
             return "SAVE";

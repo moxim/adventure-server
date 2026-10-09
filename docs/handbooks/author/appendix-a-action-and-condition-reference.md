@@ -27,7 +27,7 @@ order, when that command fires.
 | **Inventory** | Lists everything the player carries | Nothing — fully automatic |
 | **Light** | Sets an item's light level (lumen), e.g. turning a lamp on or off | The item; a lumen value from 0 (dark) to 100 (full brightness) |
 | **Load Game** | Without a slot number lists the player's saved games; with one (`load 3`) restores that game and describes the place again | Nothing — use it in a Response with the verb `load` and the noun `~` |
-| **Look** | Describes the location the player is in, in full, shows its picture and fires your Arrival Processes | Nothing — use it in a Response with your look verb |
+| **Look** | Describes the location the player is in, in full, shows its picture and fires your Arrival Processes | Nothing — use it in a Response with your look verb, not in an Arrival Process (Look already fires those) |
 | **Message** | Prints a message from your [message catalog](10-messages.md) | The message (picked by its summary) |
 | **Move Item** | Moves an item into a different container | The item; the destination (a location or the player's pocket) |
 | **Move Player** | Moves the player to a location and shows its description | Destination location |

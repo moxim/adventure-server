@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.AdventureFont;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.Word;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.view.support.RouteIds;
@@ -56,7 +57,10 @@ class AdventureEditorViewFontTest extends BrowserlessTest {
         adventure.setId("adv-1");
         adventure.setTitle("The Demo");
         adventure.setFont(font);
-        adventure.getLocationData().put("loc-1", new LocationData());
+        LocationData startLocation = new LocationData();
+        startLocation.getDescriptionData().setNoun(new Word("hall", Word.Type.NOUN));
+        adventure.getLocationData().put("loc-1", startLocation);
+        adventure.setCurrentLocationId("loc-1");
         when(accessService.findAdventureById(eq("adv-1"), any(UserData.class))).thenReturn(Optional.of(adventure));
         BeforeEnterEvent event = mock(BeforeEnterEvent.class);
         when(event.getRouteParameters()).thenReturn(

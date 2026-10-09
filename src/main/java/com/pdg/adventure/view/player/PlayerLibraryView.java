@@ -54,10 +54,18 @@ public class PlayerLibraryView extends VerticalLayout {
         grid.addColumn(AdventureData::getTitle).setHeader("Title").setSortable(true).setAutoWidth(true);
         grid.addSelectionListener(selection -> {
             Optional<AdventureData> optionalAdventure = selection.getFirstSelectedItem();
-            optionalAdventure.ifPresent(adventure -> selectedAdventureId = adventure.getId());
-            runAdventureButton.setEnabled(optionalAdventure.isPresent());
+            if (optionalAdventure.isPresent()) {
+                selectedAdventureId = optionalAdventure.get().getId();
+                ViewSupporter.enableIfStartable(runAdventureButton, optionalAdventure.get(), null);
+            } else {
+                runAdventureButton.setEnabled(false);
+            }
         });
-        grid.addItemDoubleClickListener(e -> navigateToRun(e.getItem().getId()));
+        grid.addItemDoubleClickListener(e -> {
+            if (e.getItem().hasStartLocation()) {
+                navigateToRun(e.getItem().getId());
+            }
+        });
 
         grid.setItems(adventures);
         ViewSupporter.setSize(grid);

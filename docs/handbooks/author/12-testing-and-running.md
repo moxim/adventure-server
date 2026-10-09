@@ -26,10 +26,11 @@ your adventure list, or how a Player experiences your finished work.
 
 Recapping from [Chapter 4](04-the-adventure-editor.md): **Test** stays
 disabled until your adventure is saved, has no pending unsaved edits, and
-has at least one location. If it's greyed out, its tooltip tells you why.
+has a start location. If it's greyed out, its tooltip tells you why.
 
-**Run Adventure** on Your Adventures / a Player's library has a simpler
-gate: just select a row first.
+**Run Adventure** on Your Adventures / a Player's library also needs
+a selected row, and the selected adventure must have a start location (the
+tooltip says so when it doesn't).
 
 ## The play screen
 

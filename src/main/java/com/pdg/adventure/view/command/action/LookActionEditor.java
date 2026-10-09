@@ -23,7 +23,7 @@ public class LookActionEditor extends ActionEditorComponent<LookActionData> {
         Span description = new Span("Describe the location the player is in, with its picture, then fire the Arrival Processes.");
         description.getStyle().set("color", "var(--lumo-secondary-text-color)");
 
-        Span info = new Span("ℹ This action takes no parameters. Use it in a response for your look verb, e.g. describe (and describe here).");
+        Span info = new Span("ℹ This action takes no parameters. Use it in a response for your look verb, e.g. describe (and describe here). Not in an Arrival Process: Look already fires those.");
 
         add(title, description, info);
     }

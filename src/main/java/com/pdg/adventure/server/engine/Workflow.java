@@ -51,6 +51,7 @@ public class Workflow {
     private final Map<CommandDescription, CommandChain> processes;
     private final Map<CommandDescription, CommandChain> responses;
     private final Map<CommandDescription, CommandChain> arrivalProcesses;
+    private boolean runningArrivalProcesses;
 
     public Workflow() {
         processes = new TreeMap<>();
@@ -99,8 +100,20 @@ public class Workflow {
         return getExecutionResult(processes);
     }
 
+    /**
+     * Not re-entrant: an Arrival Process that itself describes the location (a Look action) would otherwise fire
+     * the Arrival Processes again, without end. A nested call returns an empty result instead.
+     */
     public ExecutionResult runArrivalProcesses() {
-        return getExecutionResult(arrivalProcesses);
+        if (runningArrivalProcesses) {
+            return new CommandExecutionResult(ExecutionResult.State.SUCCESS);
+        }
+        runningArrivalProcesses = true;
+        try {
+            return getExecutionResult(arrivalProcesses);
+        } finally {
+            runningArrivalProcesses = false;
+        }
     }
 
     @NonNull

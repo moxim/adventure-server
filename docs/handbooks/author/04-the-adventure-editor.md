@@ -62,7 +62,8 @@ Cancel/Reset/Back/Save bar described in later chapters.
   1. This is not a brand-new, never-saved adventure,
   2. you have no unsaved changes (its tooltip says *"Save your changes
      before testing."* until then), and
-  3. you've created at least one location.
+  3. you've created a location and chosen it as the start location (its
+     tooltip says *"This adventure has no location to start in."* until then).
 
   Once all three hold, the tooltip changes to *"Play through this
   adventure."* and the button lights up.
@@ -70,4 +71,4 @@ Cancel/Reset/Back/Save bar described in later chapters.
 ## What's next
 
 Start with [Chapter 5: Locations & Exits](05-locations-and-exits.md) —
-you'll need at least one location before **Test** will even unlock.
+you'll need a start location before **Test** will even unlock.

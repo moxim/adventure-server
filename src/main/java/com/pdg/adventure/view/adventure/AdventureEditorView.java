@@ -15,6 +15,7 @@ import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.*;
 import jakarta.annotation.security.RolesAllowed;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +57,8 @@ public class AdventureEditorView extends VerticalLayout
     private final TextField startLocation;
     private final TextField numberOfLocations;
     private final TextField numberOfItems;
+    private final TextField numberOfMessages;
+    private final TextField numberOfPictures;
     private final ComboBox<PictureData> worldMapSelect;
     private final Binder<AdventureData> binder;
     private final transient AdventureAccessService accessService;
@@ -72,6 +75,79 @@ public class AdventureEditorView extends VerticalLayout
         accessService = anAccessService;
         binder = new Binder<>(AdventureData.class);
 
+        SubMenuButtons result = createSubmenuButtons();
+
+        TextField title = getTitleField();
+        Select<AdventureFont> fontSelect = getFontSelect();
+        worldMapSelect = getWorldMapSelect();
+        HorizontalLayout titleStartRow = new HorizontalLayout(title,
+                                                              fontSelect,
+                                                              worldMapSelect);
+
+        startLocation = getReadOnlyTextField("Start Location");
+        startLocation.setHelperText("The location where a player starts in this adventure. Set it in the locations menu.");
+        startLocation.setMaxWidth("150px");
+
+        numberOfLocations = getReadOnlyTextField("Total Locations");
+        numberOfLocations.setMaxWidth("120px");
+        numberOfLocations.setHelperText("The number of locations in this adventure.");
+
+        numberOfItems = getReadOnlyTextField("Total Items");
+        numberOfItems.setMaxWidth("100px");
+        numberOfItems.setHelperText("The number of items in this adventure.");
+
+        numberOfMessages = getReadOnlyTextField("Total Messages");
+        numberOfMessages.setMaxWidth("120px");
+        numberOfMessages.setHelperText("The number of messages in this adventure.");
+
+        numberOfPictures = getReadOnlyTextField("Total Pictures");
+        numberOfPictures.setMaxWidth("120px");
+        numberOfPictures.setHelperText("The number of pictures in this adventure.");
+
+        HorizontalLayout statsRow = new HorizontalLayout(startLocation,
+                                                         numberOfLocations,
+                                                         numberOfItems,
+                                                         numberOfPictures,
+                                                         numberOfMessages);
+        TextArea longDescription = getNotesArea();
+        VerticalLayout details = new VerticalLayout(titleStartRow, longDescription, statsRow);
+
+        setMargin(true);
+        setPadding(true);
+
+        Button backButton = new Button("Back", _ -> UI.getCurrent().navigate(AdventuresMenuView.class));
+        backButton.addClickShortcut(Key.ESCAPE);
+
+        saveButton.setEnabled(false);
+        saveButton.addClickListener(_ -> validateSave(adventureData));
+
+        testButton.setEnabled(false);
+        testButton.addClickListener(_ -> UI.getCurrent().navigate(AdventureRunView.editorTestPath(
+                adventureData.getId())));
+
+        final VerticalLayout naviButtons = getNaviButtons(backButton, result);
+
+        HorizontalLayout hl = new HorizontalLayout(naviButtons, details);
+
+        add(hl);
+//        setHorizontalComponentAlignment(Alignment.CENTER, testButton, saveButton);
+    }
+
+    private @NonNull VerticalLayout getNaviButtons(final Button backButton, final SubMenuButtons result) {
+        final HorizontalLayout testSaveRow = new HorizontalLayout(backButton, testButton, saveButton);
+        final VerticalLayout menuRow = new VerticalLayout(result.editVocabularyButton(),
+                                                          result.editMessagesButton(),
+                                                          result.editSystemMessagesButton(),
+                                                          result.editLocationsButton(),
+                                                          result.editItemsButton(),
+                                                          result.editPicturesButton(),
+                                                          result.arrivalButton(), result.workflowButton(),
+                                                          result.responsesButton(),
+                                                          testSaveRow);
+        return menuRow;
+    }
+
+    private @NonNull SubMenuButtons createSubmenuButtons() {
         Button editLocationsButton = new Button("Locations");
         editLocationsButton.addClickListener(_ -> {
             if (binder.writeBeanIfValid(adventureData)) {
@@ -144,59 +220,13 @@ public class AdventureEditorView extends VerticalLayout
                                                                             adventureData.getId())));
             }
         });
+        SubMenuButtons result = new SubMenuButtons(editLocationsButton, editVocabularyButton, editMessagesButton, editItemsButton,
+                                   editPicturesButton, editSystemMessagesButton, workflowButton, responsesButton,
+                                   arrivalButton);
+        return result;
+    }
 
-        Button backButton = new Button("Back", _ -> UI.getCurrent().navigate(AdventuresMenuView.class));
-        backButton.addClickShortcut(Key.ESCAPE);
-
-        saveButton.setEnabled(false);
-        saveButton.addClickListener(_ -> validateSave(adventureData));
-
-        testButton.setEnabled(false);
-        testButton.addClickListener(_ -> UI.getCurrent().navigate(AdventureRunView.editorTestPath(
-                adventureData.getId())));
-
-        TextField adventureIdTF = getAdventureIdTF();
-        TextField title = getTitleField();
-        startLocation = getReadOnlyTextField("Start Location");
-        startLocation.setHelperText("The location where a player starts in this adventure. Set it in the locations menu.");
-        startLocation.setMaxWidth("150px");
-
-        numberOfLocations = getReadOnlyTextField("Total Locations");
-        numberOfLocations.setMaxWidth("120px");
-        numberOfLocations.setHelperText("The number of locations in this adventure.");
-
-        numberOfItems = getReadOnlyTextField("Total Items");
-        numberOfItems.setMaxWidth("100px");
-        numberOfItems.setHelperText("The number of items in this adventure.");
-
-        Select<AdventureFont> fontSelect = getFontSelect();
-        worldMapSelect = getWorldMapSelect();
-
-        HorizontalLayout titleStartRow = new HorizontalLayout(adventureIdTF, title,
-                                                              fontSelect,
-                                                              startLocation,
-                                                              numberOfLocations,
-                                                              numberOfItems);
-        TextArea longDescription = getNotesArea();
-
-        setMargin(true);
-        setPadding(true);
-
-        final HorizontalLayout testSaveRow = new HorizontalLayout(backButton, testButton, saveButton);
-        final VerticalLayout menuRow = new VerticalLayout(editVocabularyButton,
-                                                          editMessagesButton, editSystemMessagesButton,
-                                                          editLocationsButton,
-                                                          editItemsButton,
-                                                          editPicturesButton,
-                                                          arrivalButton, workflowButton, responsesButton,
-                                                          testSaveRow);
-
-        VerticalLayout details = new VerticalLayout(titleStartRow, worldMapSelect, longDescription);
-
-        HorizontalLayout hl = new HorizontalLayout(menuRow, details);
-
-        add(hl);
-//        setHorizontalComponentAlignment(Alignment.CENTER, testButton, saveButton);
+    private record SubMenuButtons(Button editLocationsButton, Button editVocabularyButton, Button editMessagesButton, Button editItemsButton, Button editPicturesButton, Button editSystemMessagesButton, Button workflowButton, Button responsesButton, Button arrivalButton) {
     }
 
     private void validateSave(AdventureData adventureData) {
@@ -230,13 +260,6 @@ public class AdventureEditorView extends VerticalLayout
         }
     }
 
-    private TextField getAdventureIdTF() {
-        TextField field = new TextField("Adventure ID");
-        field.setReadOnly(true);
-        field.addValueChangeListener(_ -> checkIfSaveAvailable());
-        binder.bind(field, AdventureData::getId, AdventureData::setId);
-        return field;
-    }
 
     private TextField getTitleField() {
         TextField field = new TextField("Title");
@@ -308,13 +331,17 @@ public class AdventureEditorView extends VerticalLayout
         checkIfTestAvailable();
     }
 
-    // A locations check matters here because LoadAdventureAction silently fails to load an
-    // adventure with no locations (returns normally instead of throwing) - without it, Test
-    // would be enabled for an adventure that's guaranteed to fail to start.
+    // The start-location check matters because LoadAdventureAction silently fails to load an adventure with no
+    // locations (returns normally instead of throwing), and the player would have nowhere to begin without one.
     private void checkIfTestAvailable() {
-        boolean canTest = !isNewAdventure && !unsavedChanges && !adventureData.getLocationData().isEmpty();
+        boolean saved = !isNewAdventure && !unsavedChanges;
+        boolean canTest = saved && adventureData.hasStartLocation();
         testButton.setEnabled(canTest);
-        testButton.setTooltipText(canTest ? "Play through this adventure." : "Save your changes before testing.");
+        if (!saved) {
+            testButton.setTooltipText("Save your changes before testing.");
+        } else {
+            testButton.setTooltipText(canTest ? "Play through this adventure." : ViewSupporter.NO_START_LOCATION_TEXT);
+        }
     }
 
     @Override
@@ -339,6 +366,8 @@ public class AdventureEditorView extends VerticalLayout
                 adventureData.getLocationData().get(adventureData.getCurrentLocationId())));
         numberOfLocations.setValue(adventureData.getLocationData().size() + "");
         numberOfItems.setValue(ViewSupporter.getItemLocationPairs(adventureData.getLocationData().values()).size() + "");
+        numberOfMessages.setValue(adventureData.getMessages().size() + "");
+        numberOfPictures.setValue(adventureData.getPictureData().size() + "");
         worldMapSelect.setItems(adventureData.getPictureData().values().stream()
                                              .sorted(Comparator.comparing(PictureData::getName,
                                                                           String.CASE_INSENSITIVE_ORDER))

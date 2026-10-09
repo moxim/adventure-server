@@ -24,6 +24,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.view.support.ViewSupporter;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 
@@ -39,6 +41,8 @@ class AdventuresMenuViewTest extends BrowserlessTest {
         adventure = new AdventureData();
         adventure.setId("adv-1");
         adventure.setTitle("The Demo");
+        adventure.getLocationData().put("loc-1", new LocationData());
+        adventure.setCurrentLocationId("loc-1");
 
         UserData testUser = new UserData();
         testUser.setUsername("test-author");
@@ -68,6 +72,20 @@ class AdventuresMenuViewTest extends BrowserlessTest {
         test(grid).select(0);
 
         assertThat(runButton.isEnabled()).isTrue();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void runAdventureButton_staysDisabledWithATooltip_whenTheAdventureHasNoStartLocation() {
+        adventure.setCurrentLocationId("");
+        AdventuresMenuView view = new AdventuresMenuView(accessService);
+        UI.getCurrent().add(view);
+
+        test((Grid<AdventureData>) find(Grid.class, view).single()).select(0);
+
+        Button runButton = find(Button.class, view).withText("Run Adventure").single();
+        assertThat(runButton.isEnabled()).isFalse();
+        assertThat(runButton.getTooltip().getText()).isEqualTo(ViewSupporter.NO_START_LOCATION_TEXT);
     }
 
     // Delete goes through a GridContextMenu item click, which has no reliable way to be driven

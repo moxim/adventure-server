@@ -83,6 +83,12 @@ public class AdventureData extends DatedData {
         font = AdventureFont.DEFAULT;
     }
 
+    /** True if the start location is set and still one of this adventure's locations, i.e. a run can begin. */
+    public boolean hasStartLocation() {
+        return currentLocationId != null && !currentLocationId.isBlank()
+               && locationData != null && locationData.containsKey(currentLocationId);
+    }
+
     /** Never null: an absent or null stored value means {@link AdventureFont#DEFAULT}. */
     public AdventureFont getFont() {
         return font == null ? AdventureFont.DEFAULT : font;
