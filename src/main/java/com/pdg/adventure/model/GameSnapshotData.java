@@ -19,20 +19,26 @@ import java.util.Set;
 public class GameSnapshotData {
 
     private String currentLocationId;
-    private String currentPictureId;
-    /** Every item id registered when the game was saved; an item in none of {@link #containers} was "nowhere". */
-    private Set<String> knownItemIds = new HashSet<>();
-    /** Container id -> the ids of its contents, in order. */
-    private Map<String, List<String>> containers = new HashMap<>();
-    private Set<String> wornItemIds = new HashSet<>();
-    /** Item id -> lumen, for items whose lumen is not 0. */
-    private Map<String, Integer> lumen = new HashMap<>();
-    /** Location id -> times visited. */
-    private Map<String, Integer> visits = new HashMap<>();
-    private Map<String, Integer> variables = new HashMap<>();
+        private String currentPictureId;
+        /** Every item id registered when the game was saved; an item in none of {@link #containers} was "nowhere". */
+        private Set<String> knownItemIds;
+        /** Container id -> the ids of its contents, in order. */
+        private Map<String, List<String>> containers;
+        private Set<String> wornItemIds;
+        /** Item id -> lumen, for items whose lumen is not 0. */
+        private Map<String, Integer> lumen;
+        /** Location id -> times visited. */
+        private Map<String, Integer> visits;
+        private Map<String, Integer> variables;
 
-    public GameSnapshotData() {
-    }
+        public GameSnapshotData() {
+            knownItemIds = new HashSet<>();
+            containers = new HashMap<>();
+            wornItemIds = new HashSet<>();
+            lumen = new HashMap<>();
+            visits = new HashMap<>();
+            variables = new HashMap<>();
+        }
 
     public List<String> containerContents(String aContainerId) {
         return containers.computeIfAbsent(aContainerId, _ -> new ArrayList<>());

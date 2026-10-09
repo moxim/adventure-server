@@ -12,11 +12,13 @@ import com.pdg.adventure.view.support.TrackedUsage;
 
 /**
  * Utility class for tracking picture usage throughout an adventure. Scans every location's default
- * picture, and every PICTURE action wherever a command can hold actions (see {@link ActionScanner}):
- * location commands, exits, items (in locations or the player's pocket) and the workflow lists.
+ * picture, the adventure's world map, and every PICTURE action wherever a command can hold actions
+ * (see {@link ActionScanner}): location commands, exits, items (in locations or the player's pocket)
+ * and the workflow lists.
  */
 public class PictureUsageTracker {
     private static final String DEFAULT_PICTURE_TEXT = "Location Default Picture";
+    private static final String WORLD_MAP_TEXT = "World Map";
 
     public static class PictureUsage implements TrackedUsage {
         private final String usageType;
@@ -54,6 +56,9 @@ public class PictureUsageTracker {
             if (DEFAULT_PICTURE_TEXT.equals(usageType)) {
                 return usageType + ": is the default picture for '" + locationName + "'";
             }
+            if (WORLD_MAP_TEXT.equals(usageType)) {
+                return usageType + ": is the world map of this adventure";
+            }
             if (source == null) {
                 return usageType + ": from '" + locationName + "' | " + context;
             }
@@ -67,6 +72,10 @@ public class PictureUsageTracker {
 
         if (adventureData == null || pictureId == null || pictureId.isEmpty()) {
             return usages;
+        }
+
+        if (pictureId.equals(adventureData.getWorldMapPictureId())) {
+            usages.add(new PictureUsage(WORLD_MAP_TEXT, null, null, null));
         }
 
         Map<String, LocationData> locations = adventureData.getLocationData();

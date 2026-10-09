@@ -45,8 +45,7 @@ break Spring AI integration.
 3. `pdg-public` — `https://nexus.pdg-software.com/repository/pdg-public-group/`
    (releases only).
 4. **Vaadin Directory** — `https://maven.vaadin.com/vaadin-addons` for
-   add-ons such as `org.github.legioth:imagemap` and
-   `org.parttio:canvas-java`.
+   add-ons such as `org.parttio:canvas-java`.
 5. **Spring Milestones** — `https://repo.spring.io/milestone` for
    Spring Boot 4.1.0-M4 and Spring AI 2.0.0-M1.
 
@@ -380,7 +379,7 @@ poll interval is `3000ms` and quiet period `1000ms`
 
 Bundled under `src/main/resources/META-INF/resources/`:
 
-- `images/` — `adventure.png` (logo), `main.jpg`, `islandMap.jpg`,
+- `images/` — `adventure.png` (logo), `main.jpg`,
   `icons8-location.gif`.
 - `icons/` — area-themed gifs / pngs for layout drawers.
 - `offline.html` — PWA offline fallback referenced by `@PWA(offlinePath)`.

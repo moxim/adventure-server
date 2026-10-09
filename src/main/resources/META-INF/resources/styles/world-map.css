@@ -1,0 +1,9 @@
+/* The clickable 10 x 10 grid laid over an adventure's world map (see LocationMapView). */
+.world-map-cell {
+  cursor: pointer;
+}
+
+.world-map-cell:hover {
+  background: rgba(0, 0, 0, 0.12);
+  outline: 1px solid rgba(255, 255, 255, 0.6);
+}
