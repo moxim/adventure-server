@@ -1,14 +1,19 @@
 package com.pdg.adventure.view.component;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -43,9 +48,12 @@ import com.pdg.adventure.view.support.ViewSupporter;
 public class AdventureAppLayout extends AppLayout implements AfterNavigationObserver, BeforeEnterObserver {
 
     static final String APP_NAME = "Adventure Builder";
+    private static final String COLOR_SCHEME_KEY = "adventure-color-scheme";
 
     private H2 viewTitle;
     private VerticalLayout drawer;
+    private final Button colorSchemeToggle = new Button();
+    private boolean dark;
     // The adventure's world map; links to the adventure named by the current route, hidden when there is none.
     private final SideNavItem worldItem = new SideNavItem("The World", "", VaadinIcon.GLOBE.create());
 
@@ -69,7 +77,8 @@ public class AdventureAppLayout extends AppLayout implements AfterNavigationObse
         Image img = new Image("images/adventure.png", aTitle);
         img.setWidth("30px");
 
-        HorizontalLayout header = new HorizontalLayout(toggle, img, viewTitle);
+        viewTitle.getStyle().set("flex-grow", "1");
+        HorizontalLayout header = new HorizontalLayout(toggle, img, viewTitle, createColorSchemeToggle());
 
         header.setId("header");
         header.getThemeList().set("dark", true);
@@ -78,6 +87,43 @@ public class AdventureAppLayout extends AppLayout implements AfterNavigationObse
         header.setAlignItems(FlexComponent.Alignment.CENTER);
 
         return header;
+    }
+
+    private Button createColorSchemeToggle() {
+        colorSchemeToggle.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_ICON);
+        colorSchemeToggle.setId("color-scheme-toggle");
+        colorSchemeToggle.addClickListener(e -> applyColorScheme(!dark, true));
+        updateColorSchemeToggle();
+        return colorSchemeToggle;
+    }
+
+    /**
+     * Restores the author's saved choice; without one, the app keeps following the OS preference and the toggle
+     * only reflects it.
+     */
+    @Override
+    protected void onAttach(AttachEvent anAttachEvent) {
+        super.onAttach(anAttachEvent);
+        anAttachEvent.getUI().getPage().executeJs(
+            "return localStorage.getItem($0) || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');",
+            COLOR_SCHEME_KEY).then(String.class, saved -> applyColorScheme("dark".equals(saved), false));
+    }
+
+    private void applyColorScheme(boolean aDark, boolean aPersist) {
+        dark = aDark;
+        UI.getCurrent().getPage().setColorScheme(dark ? ColorScheme.Value.DARK : ColorScheme.Value.LIGHT);
+        if (aPersist) {
+            UI.getCurrent().getPage().executeJs("localStorage.setItem($0, $1)", COLOR_SCHEME_KEY,
+                                                dark ? "dark" : "light");
+        }
+        updateColorSchemeToggle();
+    }
+
+    private void updateColorSchemeToggle() {
+        colorSchemeToggle.setIcon((dark ? VaadinIcon.SUN_O : VaadinIcon.MOON_O).create());
+        String label = dark ? "Switch to light mode" : "Switch to dark mode";
+        colorSchemeToggle.setTooltipText(label);
+        colorSchemeToggle.setAriaLabel(label);
     }
 
     public void createDrawer(String anAppName) {
