@@ -89,7 +89,7 @@ Nothing is inserted unless the whole file passes. Failures raise a dedicated
 ## Testing
 
 - Service round trip on embedded Mongo: export → delete original → import; compare the graph, including a
-  picture's bytes and a variable name containing `.`.
+  picture's bytes and a variable's value (variable names cannot contain `.`, see `VariableData`).
 - Importing into the same DB while the original exists produces an independent copy (no shared ids).
 - Rejection cases: bad format, newer version, unknown collection, dangling DBRef, two adventures, not JSON.
 - Failed insert leaves no partial documents.
