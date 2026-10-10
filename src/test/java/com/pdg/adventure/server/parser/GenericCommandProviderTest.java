@@ -72,7 +72,7 @@ class GenericCommandProviderTest {
 
             @Override
             public void setId(final String anId) {
-
+                // not needed for this test
             }
 
             @Override
@@ -107,7 +107,7 @@ class GenericCommandProviderTest {
 
             @Override
             public void setId(final String anId) {
-
+                // not needed for this test
             }
 
             @Override
