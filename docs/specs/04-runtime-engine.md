@@ -508,8 +508,16 @@ All four extend the package-private `AbstractNounItemAction`, which reads
 order, the **pocket**, then the **current location's item container**, then
 (for "does this noun name an object at all?") the adventure-wide `allItems`
 registry. A matching adjective narrows the match; otherwise the noun alone
-decides (the same leniency as `ItemIdentifier`). Failures return `FAILURE`, so
-a `GenericCommand` stops its chain, and `GameLoop` prints the message.
+decides (the same leniency as `ItemIdentifier`) — with one exception: the
+**pocket lookup is strict** (`AbstractNounItemAction.findExactlyIn`). When the
+player typed an adjective, only a carried item with exactly that adjective
+counts as carried/worn. Without this, two items sharing a noun (the demo's
+"blue swim suit" and "neoprene suit") shadow each other: with the blue suit in
+the pocket, `take neoprene suit` found it by noun alone and answered `SM25`
+("I already have the blue suit") instead of looking in the room. The room and
+`allItems` lookups stay lenient (`findIn`); they only choose which message to
+print. Failures return `FAILURE`, so a `GenericCommand` stops its chain, and
+`GameLoop` prints the message.
 
 | Situation | AutoTake | AutoDrop | AutoWear | AutoRemove |
 |-----------|-------|-------|-------|-------|
@@ -631,8 +639,11 @@ to **LoadGame**; the wildcard noun also matches "no noun".
   saving into a slot is an upsert. `SavedGameService` implements the slot rules; the player comes from the
   `GameContext.RunIdentity` the factory sets. A save records the adventure's `builderVersion`; `load` appends a
   warning when both versions are known and differ.
-- All texts are `SystemMessageKey`s (`SAVE_DONE`, `SAVE_FULL`, `SM70`, `SM71`,
-  `LOAD_LIST_HEADER`, `LOAD_NONE`, `LOAD_DONE`, `SM75`, `SM76`, `SM77`).
+- All texts are `SystemMessageKey`s, `SM68`–`SM77` (saved, no free slot, invalid slot,
+  unavailable outside a play session, list header, no saved games, restored, empty slot,
+  cannot load, version note). They were descriptive ids (`SAVE_DONE`, `LOAD_LIST_HEADER`, ...)
+  before the Sonar clean-up renumbered them into the `SMnn` scheme; stored per-adventure
+  overrides are keyed by `SystemMessageKey.id()`.
 
 ## AdventureRunSession: the in-browser play surface
 

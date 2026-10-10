@@ -27,26 +27,26 @@ final class ConditionEditorRegistry {
     private static final Logger logger = LoggerFactory.getLogger(ConditionEditorRegistry.class);
     private static final String BASE_PACKAGE = ConditionEditorRegistry.class.getPackageName();
 
-    private static final Map<Class<? extends PreConditionData>, Class<? extends ConditionEditorComponent<?>>> EDITORS_BY_DATA_TYPE =
+    private static final Map<Class<? extends PreConditionData>, Class<? extends ConditionEditorComponent<PreConditionData>>> EDITORS_BY_DATA_TYPE =
             scan();
 
     private ConditionEditorRegistry() {
     }
 
-    static Class<? extends ConditionEditorComponent<?>> editorClassFor(Class<? extends PreConditionData> dataClass) {
+    static Class<? extends ConditionEditorComponent<PreConditionData>> editorClassFor(Class<? extends PreConditionData> dataClass) {
         return EDITORS_BY_DATA_TYPE.get(dataClass);
     }
 
-    static ConditionEditorComponent<?> instantiate(Class<? extends ConditionEditorComponent<?>> editorClass,
+    static ConditionEditorComponent<PreConditionData> instantiate(Class<? extends ConditionEditorComponent<PreConditionData>> editorClass,
                                                     PreConditionData conditionData, AdventureData adventureData) {
         try {
             Constructor<?> twoArg = findConstructor(editorClass, conditionData.getClass(), AdventureData.class);
             if (twoArg != null) {
-                return (ConditionEditorComponent<?>) twoArg.newInstance(conditionData, adventureData);
+                return (ConditionEditorComponent<PreConditionData>) twoArg.newInstance(conditionData, adventureData);
             }
             Constructor<?> oneArg = findConstructor(editorClass, conditionData.getClass());
             if (oneArg != null) {
-                return (ConditionEditorComponent<?>) oneArg.newInstance(conditionData);
+                return (ConditionEditorComponent<PreConditionData>) oneArg.newInstance(conditionData);
             }
             throw new IllegalStateException(
                     "No (" + conditionData.getClass().getSimpleName() + ") or (" + conditionData.getClass().getSimpleName()
@@ -65,11 +65,11 @@ final class ConditionEditorRegistry {
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<Class<? extends PreConditionData>, Class<? extends ConditionEditorComponent<?>>> scan() {
+    private static Map<Class<? extends PreConditionData>, Class<? extends ConditionEditorComponent<PreConditionData>>> scan() {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(AutoRegisterConditionEditor.class));
 
-        Map<Class<? extends PreConditionData>, Class<? extends ConditionEditorComponent<?>>> result = new HashMap<>();
+        Map<Class<? extends PreConditionData>, Class<? extends ConditionEditorComponent<PreConditionData>>> result = new HashMap<>();
         for (BeanDefinition candidate : scanner.findCandidateComponents(BASE_PACKAGE)) {
             Class<?> editorClass = resolveClass(candidate.getBeanClassName());
             if (!ConditionEditorComponent.class.isAssignableFrom(editorClass)) {
@@ -84,7 +84,7 @@ final class ConditionEditorRegistry {
                             editorClass.getName());
                 continue;
             }
-            result.put((Class<? extends PreConditionData>) dataClass, (Class<? extends ConditionEditorComponent<?>>) editorClass);
+            result.put((Class<? extends PreConditionData>) dataClass, (Class<? extends ConditionEditorComponent<PreConditionData>>) editorClass);
         }
         logger.debug("Auto-registered {} condition editors", result.size());
         return Collections.unmodifiableMap(result);

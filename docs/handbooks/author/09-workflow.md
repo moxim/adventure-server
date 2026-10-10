@@ -141,6 +141,14 @@ by themselves (carried items first, then the ones in the room):
 | `wear` + `~` | **AutoWear** | *"I am now wearing the …"*; *"I'm already wearing the …"*; *"I can't wear the …"*; *"I don't have the …"*; *"I don't have one of those."* |
 | `remove` + `~` | **AutoRemove** | *"I've removed the …"*; *"I'm not wearing the …"*; *"I am not wearing any of those."* |
 
+If the player types an adjective, the automatic actions take it seriously when
+asking *"is it carried or worn?"*: with a blue swim suit in the pocket,
+`take neoprene suit` picks up the neoprene suit from the room, and `drop neoprene
+suit` or `wear neoprene suit` say *"I don't have the neoprene suit."* instead of
+quietly using the blue one. Without an adjective, any item with that noun will do
+(`drop suit` drops the one you carry). When nothing in the pocket fits, the room is
+searched by noun alone, so an adjective that matches nothing there is ignored.
+
 Add each as its own Response (Verb, Noun `~`, and a single AUTO action — they
 take no settings). The first time you open a Response for editing, the `~` noun
 is added to your vocabulary for you. One caveat: because items' own commands
