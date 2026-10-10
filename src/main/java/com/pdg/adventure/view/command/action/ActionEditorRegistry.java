@@ -26,26 +26,26 @@ final class ActionEditorRegistry {
     private static final Logger logger = LoggerFactory.getLogger(ActionEditorRegistry.class);
     private static final String BASE_PACKAGE = ActionEditorRegistry.class.getPackageName();
 
-    private static final Map<Class<? extends ActionData>, Class<? extends ActionEditorComponent<?>>> EDITORS_BY_DATA_TYPE =
+    private static final Map<Class<? extends ActionData>, Class<? extends ActionEditorComponent<ActionData>>> EDITORS_BY_DATA_TYPE =
             scan();
 
     private ActionEditorRegistry() {
     }
 
-    static Class<? extends ActionEditorComponent<?>> editorClassFor(Class<? extends ActionData> dataClass) {
+    static Class<? extends ActionEditorComponent<ActionData>> editorClassFor(Class<? extends ActionData> dataClass) {
         return EDITORS_BY_DATA_TYPE.get(dataClass);
     }
 
-    static ActionEditorComponent<?> instantiate(Class<? extends ActionEditorComponent<?>> editorClass,
+    static ActionEditorComponent<ActionData> instantiate(Class<? extends ActionEditorComponent<ActionData>> editorClass,
                                                 ActionData actionData, AdventureData adventureData) {
         try {
             Constructor<?> twoArg = findConstructor(editorClass, actionData.getClass(), AdventureData.class);
             if (twoArg != null) {
-                return (ActionEditorComponent<?>) twoArg.newInstance(actionData, adventureData);
+                return (ActionEditorComponent<ActionData>) twoArg.newInstance(actionData, adventureData);
             }
             Constructor<?> oneArg = findConstructor(editorClass, actionData.getClass());
             if (oneArg != null) {
-                return (ActionEditorComponent<?>) oneArg.newInstance(actionData);
+                return (ActionEditorComponent<ActionData>) oneArg.newInstance(actionData);
             }
             throw new IllegalStateException(
                     "No (" + actionData.getClass().getSimpleName() + ") or (" + actionData.getClass().getSimpleName()
@@ -64,11 +64,11 @@ final class ActionEditorRegistry {
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<Class<? extends ActionData>, Class<? extends ActionEditorComponent<?>>> scan() {
+    private static Map<Class<? extends ActionData>, Class<? extends ActionEditorComponent<ActionData>>> scan() {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(AutoRegisterActionEditor.class));
 
-        Map<Class<? extends ActionData>, Class<? extends ActionEditorComponent<?>>> result = new HashMap<>();
+        Map<Class<? extends ActionData>, Class<? extends ActionEditorComponent<ActionData>>> result = new HashMap<>();
         for (BeanDefinition candidate : scanner.findCandidateComponents(BASE_PACKAGE)) {
             Class<?> editorClass = resolveClass(candidate.getBeanClassName());
             if (!ActionEditorComponent.class.isAssignableFrom(editorClass)) {
@@ -83,7 +83,7 @@ final class ActionEditorRegistry {
                             editorClass.getName());
                 continue;
             }
-            result.put((Class<? extends ActionData>) dataClass, (Class<? extends ActionEditorComponent<?>>) editorClass);
+            result.put((Class<? extends ActionData>) dataClass, (Class<? extends ActionEditorComponent<ActionData>>) editorClass);
         }
         logger.debug("Auto-registered {} action editors", result.size());
         return Collections.unmodifiableMap(result);

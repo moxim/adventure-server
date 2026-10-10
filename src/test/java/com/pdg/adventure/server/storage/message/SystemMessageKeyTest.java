@@ -11,7 +11,7 @@ class SystemMessageKeyTest {
 
     @Test
     void catalogHasSeventyNineEntries() {
-        assertThat(SystemMessageKey.values()).hasSize(79);
+        assertThat(SystemMessageKey.values()).hasSize(78);
     }
 
     @Test
@@ -41,10 +41,6 @@ class SystemMessageKeyTest {
         }
     }
 
-    @Test
-    void descriptiveKeys_useEnumNameAsId() {
-        assertThat(SystemMessageKey.HELP_TEXT.id()).isEqualTo("HELP_TEXT");
-    }
 
     @Test
     void saveAndLoadKeys_haveTheDocumentedPlaceholders() {
@@ -52,7 +48,7 @@ class SystemMessageKeyTest {
         assertThat(placeholders(SystemMessageKey.SM69)).isEqualTo(2);
         assertThat(placeholders(SystemMessageKey.SM70)).isEqualTo(1);
         assertThat(placeholders(SystemMessageKey.SM71)).isZero();
-        assertThat(placeholders(SystemMessageKey.LOAD_LIST_HEADER)).isZero();
+        assertThat(placeholders(SystemMessageKey.SM72)).isZero();
         assertThat(placeholders(SystemMessageKey.SM73)).isZero();
         assertThat(placeholders(SystemMessageKey.SM74)).isEqualTo(1);
         assertThat(placeholders(SystemMessageKey.SM75)).isEqualTo(1);

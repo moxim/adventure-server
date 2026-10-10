@@ -183,7 +183,7 @@ class SaveLoadGameLoopTest {
 
         gameLoop.processCommand("load");
 
-        assertThat(told.toString()).contains(SystemMessageKey.LOAD_LIST_HEADER.defaultText())
+        assertThat(told.toString()).contains(SystemMessageKey.SM72.defaultText())
                                    .contains("1. The Demo - ")
                                    .contains("2. The Demo - ");
     }

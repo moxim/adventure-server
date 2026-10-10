@@ -1,5 +1,6 @@
 package com.pdg.adventure.server.storage.service;
 
+import lombok.Getter;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,7 @@ public class AdventureImporter {
     private final MongoTemplate mongoTemplate;
     private final AdventureDocumentGraph graph;
     private final BuilderVersion builderVersion;
+    @Getter
     private final long maxBytes;
 
     public AdventureImporter(MongoTemplate aMongoTemplate, BuilderVersion aBuilderVersion,
@@ -56,10 +58,6 @@ public class AdventureImporter {
         graph = new AdventureDocumentGraph(aMongoTemplate);
         builderVersion = aBuilderVersion;
         maxBytes = aMaxBytes;
-    }
-
-    public long getMaxBytes() {
-        return maxBytes;
     }
 
     /**
@@ -158,7 +156,7 @@ public class AdventureImporter {
 
     private static Document parse(byte[] aJson) {
         String text = new String(aJson, StandardCharsets.UTF_8);
-        if (text.startsWith("﻿")) {
+        if (text.startsWith("\uFEFF")) {
             text = text.substring(1); // a byte order mark, as some editors write it
         }
         try {
