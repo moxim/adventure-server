@@ -12,14 +12,14 @@ import com.pdg.adventure.model.condition.PreConditionData;
  */
 public class ConditionEditorFactory {
 
-    public static ConditionEditorComponent createEditor(PreConditionData data, AdventureData adventureData) {
-        Class<? extends ConditionEditorComponent<?>> editorClass = ConditionEditorRegistry.editorClassFor(data.getClass());
+    public static ConditionEditorComponent<PreConditionData> createEditor(PreConditionData data, AdventureData adventureData) {
+        Class<? extends ConditionEditorComponent<PreConditionData>> editorClass = ConditionEditorRegistry.editorClassFor(data.getClass());
         if (editorClass == null) {
             throw new UnsupportedOperationException(
                     "No editor available for condition type: " + data.getClass().getSimpleName());
         }
 
-        ConditionEditorComponent<?> editor = ConditionEditorRegistry.instantiate(editorClass, data, adventureData);
+        ConditionEditorComponent<PreConditionData> editor = ConditionEditorRegistry.instantiate(editorClass, data, adventureData);
         editor.initialize();
         return editor;
     }

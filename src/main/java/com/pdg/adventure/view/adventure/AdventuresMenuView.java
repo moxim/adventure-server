@@ -46,6 +46,8 @@ public class AdventuresMenuView extends VerticalLayout {
 
     private static final Logger LOG = LoggerFactory.getLogger(AdventuresMenuView.class);
 
+    private static final String TEXT_ADVENTURE = "Adventure '";
+
     private static final String EXPORT_FILE_SUFFIX = ".adventure.json";
 
     private final transient AdventureAccessService accessService;
@@ -172,7 +174,7 @@ public class AdventuresMenuView extends VerticalLayout {
             dataProvider.getItems().add(copy);
             dataProvider.refreshAll();
 
-            Notification notification = Notification.show("Adventure '" + adventure.getTitle()
+            Notification notification = Notification.show(TEXT_ADVENTURE + adventure.getTitle()
                     + "' duplicated as '" + copy.getTitle() + "'.", 2000, Notification.Position.BOTTOM_START);
             notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         } catch (RuntimeException e) {
@@ -203,7 +205,7 @@ public class AdventuresMenuView extends VerticalLayout {
 
     /** A title made safe as a file name: letters and digits kept, every other run of characters becomes one dash. */
     static String exportFileName(String aTitle) {
-        String name = aTitle == null ? "" : aTitle.trim().replaceAll("[^\\p{L}\\p{N}]+", "-").replaceAll("^-|-$", "");
+        String name = aTitle == null ? "" : aTitle.trim().replaceAll("[^\\p{L}\\p{N}]+", "-").replaceAll("(^-)|(-$)", "");
         return (name.isEmpty() ? "adventure" : name) + EXPORT_FILE_SUFFIX;
     }
 
@@ -282,7 +284,7 @@ public class AdventuresMenuView extends VerticalLayout {
             dataProvider.getItems().add(imported.adventure());
             dataProvider.refreshAll();
 
-            String text = "Adventure '" + imported.adventure().getTitle() + "' imported.";
+            String text = TEXT_ADVENTURE + imported.adventure().getTitle() + "' imported.";
             if (imported.builderVersionDiffers()) {
                 text += " The file was written by another version of the builder - please check the adventure.";
             }
@@ -327,7 +329,7 @@ public class AdventuresMenuView extends VerticalLayout {
             dataProvider.refreshAll();
             accessService.deleteAdventure(adventure.getId(), ViewSupporter.getCurrentUser());
 
-            Notification notification = Notification.show("Adventure '" + adventure.getTitle()
+            Notification notification = Notification.show(TEXT_ADVENTURE + adventure.getTitle()
                     + "' deleted successfully.", 2000, Notification.Position.BOTTOM_START);
             notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         });

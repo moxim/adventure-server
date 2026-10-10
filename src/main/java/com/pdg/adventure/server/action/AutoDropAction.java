@@ -30,7 +30,8 @@ public class AutoDropAction extends AbstractNounItemAction {
         if (!hasNoun()) {
             return failure(SystemMessageKey.SM28.defaultText());
         }
-        Optional<Item> carried = findIn(pocket());
+        // strict: a carried "blue suit" is not the "neoprene suit" the player typed
+        Optional<Item> carried = findExactlyIn(pocket());
         if (carried.isEmpty()) {
             Optional<Item> here = findIn(here());
             if (here.isPresent()) {

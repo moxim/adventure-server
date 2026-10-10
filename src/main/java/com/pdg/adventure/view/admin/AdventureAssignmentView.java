@@ -33,6 +33,7 @@ import com.pdg.adventure.view.support.ViewSupporter;
 @RolesAllowed("ROLE_ADMIN")
 public class AdventureAssignmentView extends VerticalLayout {
 
+    private static final String TEXT_REMOVE = "Remove";
     private final transient AdventureAccessService accessService;
     private final transient UserService userService;
 
@@ -131,7 +132,7 @@ public class AdventureAssignmentView extends VerticalLayout {
 
         // Current author row with Remove button (only when an author is assigned)
         currentAuthorOpt.ifPresent(author -> {
-            Button removeBtn = new Button("Remove");
+            Button removeBtn = new Button(TEXT_REMOVE);
             removeBtn.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
             removeBtn.addClickListener(_ -> confirmRemoveAuthor(author));
             section.add(new HorizontalLayout(new Span("Assigned: " + author.getUsername()), removeBtn));
@@ -185,7 +186,7 @@ public class AdventureAssignmentView extends VerticalLayout {
         ConfirmDialog dialog = new ConfirmDialog();
         dialog.setHeader(aHeader);
         dialog.setText(aText);
-        dialog.setConfirmText("Remove");
+        dialog.setConfirmText(TEXT_REMOVE);
         dialog.setConfirmButtonTheme("error primary");
         dialog.setCancelable(true);
         dialog.setCancelText("Cancel");
@@ -249,7 +250,7 @@ public class AdventureAssignmentView extends VerticalLayout {
         Grid<UserData> playersGrid = new Grid<>(UserData.class, false);
         playersGrid.addColumn(UserData::getUsername).setHeader("Username").setAutoWidth(true);
         playersGrid.addComponentColumn(player -> {
-            Button remove = new Button("Remove");
+            Button remove = new Button(TEXT_REMOVE);
             remove.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
             remove.addClickListener(_ -> confirmRemovePlayer(player));
             return remove;

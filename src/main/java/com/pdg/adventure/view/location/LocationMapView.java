@@ -33,6 +33,7 @@ public class LocationMapView extends VerticalLayout implements BeforeEnterObserv
 
     private static final int GRID_SIZE = 10;
     private static final String MAX_WIDTH = "1280px";
+    private static final String TEXT_POSITION = "position";
 
     private final transient AdventureAccessService accessService;
 
@@ -65,10 +66,10 @@ public class LocationMapView extends VerticalLayout implements BeforeEnterObserv
         image.setAlt(aWorldMap.getName());
         image.setSizeFull();
         // Out of flow like the grid, so only the frame's aspect-ratio sets its height, never the image's own size.
-        image.getStyle().set("object-fit", "fill").set("position", "absolute").set("inset", "0");
+        image.getStyle().set("object-fit", "fill").set(TEXT_POSITION, "absolute").set("inset", "0");
 
         Div grid = new Div();
-        grid.getStyle().set("position", "absolute").set("inset", "0").set("display", "grid")
+        grid.getStyle().set(TEXT_POSITION, "absolute").set("inset", "0").set("display", "grid")
             .set("grid-template-columns", "repeat(" + GRID_SIZE + ", 1fr)")
             .set("grid-template-rows", "repeat(" + GRID_SIZE + ", 1fr)");
         for (int y = 0; y < GRID_SIZE; y++) {
@@ -79,7 +80,7 @@ public class LocationMapView extends VerticalLayout implements BeforeEnterObserv
 
         Div frame = new Div(image, grid);
         frame.addClassName("world-map");
-        frame.getStyle().set("position", "relative").set("width", "100%").set("max-width", MAX_WIDTH)
+        frame.getStyle().set(TEXT_POSITION, "relative").set("width", "100%").set("max-width", MAX_WIDTH)
              .set("aspect-ratio", "16 / 9");
         return frame;
     }

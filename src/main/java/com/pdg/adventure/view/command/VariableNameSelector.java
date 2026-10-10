@@ -19,7 +19,7 @@ import java.util.function.Supplier;
  */
 public class VariableNameSelector extends ComboBox<String> {
 
-    private final Supplier<? extends Collection<String>> definedNames;
+    private final transient Supplier<? extends Collection<String>> definedNames;
     private final boolean allowNew;
 
     public VariableNameSelector(String aLabel, Supplier<? extends Collection<String>> someDefinedNames,

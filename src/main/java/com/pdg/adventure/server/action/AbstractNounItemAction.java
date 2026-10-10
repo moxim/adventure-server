@@ -51,25 +51,37 @@ abstract class AbstractNounItemAction extends AbstractAction {
     }
 
     Optional<Item> findIn(Container aContainer) {
-        return findMatching(aContainer.getContents());
+        return findMatching(aContainer.getContents(), false);
+    }
+
+    /**
+     * Like {@link #findIn}, but a typed adjective is binding: with "neoprene suit" a carried
+     * "blue suit" is not a match. Without a typed adjective it behaves exactly like findIn.
+     * For callers asking "do I already have <i>that</i> one?", where falling back to any item
+     * sharing the noun would wrongly answer yes.
+     */
+    Optional<Item> findExactlyIn(Container aContainer) {
+        return findMatching(aContainer.getContents(), true);
     }
 
     /** True if the typed noun names an item anywhere in the adventure (i.e. it is an "object"). */
     boolean isKnownObject() {
-        return findMatching(allItems.values()).isPresent();
+        return findMatching(allItems.values(), false).isPresent();
     }
 
     // The adjective narrows the match when it finds something, but is otherwise ignored - the
-    // same leniency ItemIdentifier applies to ordinary item commands.
-    private Optional<Item> findMatching(Collection<? extends Containable> aCandidates) {
+    // same leniency ItemIdentifier applies to ordinary item commands. When aStrictAdjective is
+    // set, a typed adjective that matches nothing yields no match instead of the noun-only fallback.
+    private Optional<Item> findMatching(Collection<? extends Containable> aCandidates, boolean aStrictAdjective) {
         String adjective = gameContext.getCurrentAdjective();
+        boolean nounOnlyFallbackAllowed = !aStrictAdjective || VocabularyData.EMPTY_STRING.equals(adjective);
         Optional<Item> byNoun = Optional.empty();
         for (Containable candidate : aCandidates) {
             if (candidate instanceof Item item && item.getNoun().equals(noun())) {
                 if (!VocabularyData.EMPTY_STRING.equals(adjective) && item.getAdjective().equals(adjective)) {
                     return Optional.of(item);
                 }
-                if (byNoun.isEmpty()) {
+                if (byNoun.isEmpty() && nounOnlyFallbackAllowed) {
                     byNoun = Optional.of(item);
                 }
             }

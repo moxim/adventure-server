@@ -21,14 +21,14 @@ public class ActionEditorFactory {
      * @return the appropriate editor component, fully initialized
      * @throws UnsupportedOperationException if no editor is available for the action type
      */
-    public static ActionEditorComponent createEditor(ActionData actionData, AdventureData adventureData) {
-        Class<? extends ActionEditorComponent<?>> editorClass = ActionEditorRegistry.editorClassFor(actionData.getClass());
+    public static ActionEditorComponent<ActionData> createEditor(ActionData actionData, AdventureData adventureData) {
+        Class<? extends ActionEditorComponent<ActionData>> editorClass = ActionEditorRegistry.editorClassFor(actionData.getClass());
         if (editorClass == null) {
             throw new UnsupportedOperationException(
                     "No editor available for action type: " + actionData.getClass().getSimpleName());
         }
 
-        ActionEditorComponent<?> editor = ActionEditorRegistry.instantiate(editorClass, actionData, adventureData);
+        ActionEditorComponent<ActionData> editor = ActionEditorRegistry.instantiate(editorClass, actionData, adventureData);
 
         // Initialize the UI after construction (all fields are now set)
         editor.initialize();

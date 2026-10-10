@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
@@ -79,151 +78,69 @@ public class PreconditionActionFormatter {
         if (conditions == null) {
             return List.of();
         }
-        return conditions.stream().map(this::formatCondition).collect(Collectors.toList());
+        return conditions.stream().map(this::formatCondition).toList();
     }
 
     public String formatCondition(PreConditionData c) {
-        if (c == null) {
-            return "?";
-        }
-        if (c instanceof NotConditionData not) {
-            return "NOT_" + formatCondition(not.getPreCondition());
-        }
-        if (c instanceof HereConditionData here) {
-            return "HERE " + resolveName(here.getThingId());
-        }
-        if (c instanceof CarriedConditionData carried) {
-            return "CARRIED " + resolveName(carried.getItemId());
-        }
-        if (c instanceof WornConditionData worn) {
-            return "WORN " + resolveName(worn.getThingId());
-        }
-        if (c instanceof PlayerAtConditionData playerAt) {
-            return "PLAYER_AT " + resolveName(playerAt.getLocationId());
-        }
-        if (c instanceof ItemAtConditionData itemAt) {
-            return "ITEM_AT " + resolveName(itemAt.getThingId()) + " " + resolveName(itemAt.getLocationId());
-        }
-        if (c instanceof EqualsConditionData eq) {
-            return "EQ " + txt(eq.getVariableName()) + " " + num(eq.getValue());
-        }
-        if (c instanceof GreaterThanConditionData gt) {
-            return "GT " + txt(gt.getVariableName()) + " " + num(gt.getValue());
-        }
-        if (c instanceof LessThanConditionData lt) {
-            return "LT " + txt(lt.getVariableName()) + " " + num(lt.getValue());
-        }
-        if (c instanceof SameConditionData same) {
-            return "SAME " + txt(same.getVariableNameOne()) + " " + txt(same.getVariableNameTwo());
-        }
-        if (c instanceof ChanceConditionData chance) {
-            return "CHANCE " + num(chance.getValue());
-        }
-        if (c instanceof PrepositionConditionData preposition) {
-            return "PREPOSITION " + txt(preposition.getPrepositionText());
-        }
-        if (c instanceof AdverbConditionData adverb) {
-            return "ADVERB " + txt(adverb.getAdverbText());
-        }
-        if (c instanceof Noun2ConditionData noun2) {
-            return "NOUN2 " + txt(noun2.getNoun2Text());
-        }
-        if (c instanceof Adjective2ConditionData adjective2) {
-            return "ADJECTIVE2 " + txt(adjective2.getAdjective2Text());
-        }
-        return c.getPreconditionName().replace("ConditionData", "").toUpperCase(Locale.ROOT);
+        return switch (c) {
+            case null -> "?";
+            case NotConditionData not -> "NOT_" + formatCondition(not.getPreCondition());
+            case HereConditionData here -> "HERE " + resolveName(here.getThingId());
+            case CarriedConditionData carried -> "CARRIED " + resolveName(carried.getItemId());
+            case WornConditionData worn -> "WORN " + resolveName(worn.getThingId());
+            case PlayerAtConditionData playerAt -> "PLAYER_AT " + resolveName(playerAt.getLocationId());
+            case ItemAtConditionData itemAt -> "ITEM_AT " + resolveName(itemAt.getThingId()) + " " + resolveName(itemAt.getLocationId());
+            case EqualsConditionData eq -> "EQ " + txt(eq.getVariableName()) + " " + num(eq.getValue());
+            case GreaterThanConditionData gt -> "GT " + txt(gt.getVariableName()) + " " + num(gt.getValue());
+            case LessThanConditionData lt -> "LT " + txt(lt.getVariableName()) + " " + num(lt.getValue());
+            case SameConditionData same -> "SAME " + txt(same.getVariableNameOne()) + " " + txt(same.getVariableNameTwo());
+            case ChanceConditionData chance -> "CHANCE " + num(chance.getValue());
+            case PrepositionConditionData preposition -> "PREPOSITION " + txt(preposition.getPrepositionText());
+            case AdverbConditionData adverb -> "ADVERB " + txt(adverb.getAdverbText());
+            case Noun2ConditionData noun2 -> "NOUN2 " + txt(noun2.getNoun2Text());
+            case Adjective2ConditionData adjective2 -> "ADJECTIVE2 " + txt(adjective2.getAdjective2Text());
+            default -> c.getPreconditionName().replace("ConditionData", "").toUpperCase(Locale.ROOT);
+        };
     }
 
     public List<String> formatActions(List<ActionData> actions) {
         if (actions == null) {
             return List.of();
         }
-        return actions.stream().map(this::formatAction).collect(Collectors.toList());
+        return actions.stream().map(this::formatAction).toList();
     }
 
     public String formatAction(ActionData a) {
-        if (a == null) {
-            return "?";
-        }
-        if (a instanceof SetVariableActionData sv) {
-            return "SETVAR " + txt(sv.getVariableName()) + " " + num(sv.getVariableValue());
-        }
-        if (a instanceof IncrementVariableActionData iv) {
-            return "INCVAR " + txt(iv.getName()) + " " + num(iv.getValue());
-        }
-        if (a instanceof DecrementVariableActionData dv) {
-            return "DECVAR " + txt(dv.getName()) + " " + num(dv.getValue());
-        }
-        if (a instanceof MessageActionData m) {
-            return "MESSAGE " + resolveMessage(m.getMessageId());
-        }
-        if (a instanceof CreateActionData cr) {
-            return "CREATE " + resolveName(cr.getThingId());
-        }
-        if (a instanceof DestroyActionData d) {
-            return "DESTROY " + resolveName(d.getThingId());
-        }
-        if (a instanceof DropActionData d) {
-            return "DROP " + resolveName(d.getThingId());
-        }
-        if (a instanceof TakeActionData t) {
-            return "TAKE " + resolveName(t.getThingId());
-        }
-        if (a instanceof WearActionData w) {
-            return "WEAR " + resolveName(w.getThingId());
-        }
-        if (a instanceof RemoveActionData r) {
-            return "REMOVE " + resolveName(r.getThingId());
-        }
-        if (a instanceof LightActionData l) {
-            return "LIGHT " + resolveName(l.getThingId()) + " " + num(l.getLumen());
-        }
-        if (a instanceof MoveItemActionData mi) {
-            return "MOVE_ITEM " + resolveName(mi.getThingId()) + " " + resolveName(mi.getDestinationId());
-        }
-        if (a instanceof MovePlayerActionData mp) {
-            return "MOVE_PLAYER " + resolveName(mp.getLocationId());
-        }
-        if (a instanceof DescribeActionData de) {
-            return "DESCRIBE " + resolveName(de.getTargetId());
-        }
-        if (a instanceof PictureActionData p) {
-            return "PICTURE " + resolvePictureName(p.getPictureId());
-        }
-        if (a instanceof LookActionData) {
-            return "LOOK";
-        }
-        if (a instanceof ExamineActionData) {
-            return "EXAMINE";
-        }
-        if (a instanceof AutoTakeActionData) {
-            return "AUTOTAKE";
-        }
-        if (a instanceof AutoDropActionData) {
-            return "AUTODROP";
-        }
-        if (a instanceof AutoWearActionData) {
-            return "AUTOWEAR";
-        }
-        if (a instanceof AutoRemoveActionData) {
-            return "AUTOREMOVE";
-        }
-        if (a instanceof SaveGameActionData) {
-            return "SAVE";
-        }
-        if (a instanceof LoadGameActionData) {
-            return "LOAD";
-        }
-        if (a instanceof InventoryActionData) {
-            return "INVENTORY";
-        }
-        if (a instanceof QuitActionData) {
-            return "QUIT";
-        }
-        if (a instanceof BreakActionData) {
-            return "BREAK";
-        }
-        return a.getActionName().replace("ActionData", "").toUpperCase(Locale.ROOT);
+        return switch (a) {
+            case null -> "?";
+            case SetVariableActionData sv -> "SETVAR " + txt(sv.getVariableName()) + " " + num(sv.getVariableValue());
+            case IncrementVariableActionData iv -> "INCVAR " + txt(iv.getName()) + " " + num(iv.getValue());
+            case DecrementVariableActionData dv -> "DECVAR " + txt(dv.getName()) + " " + num(dv.getValue());
+            case MessageActionData m -> "MESSAGE " + resolveMessage(m.getMessageId());
+            case CreateActionData cr -> "CREATE " + resolveName(cr.getThingId());
+            case DestroyActionData d -> "DESTROY " + resolveName(d.getThingId());
+            case DropActionData d -> "DROP " + resolveName(d.getThingId());
+            case TakeActionData t -> "TAKE " + resolveName(t.getThingId());
+            case WearActionData w -> "WEAR " + resolveName(w.getThingId());
+            case RemoveActionData r -> "REMOVE " + resolveName(r.getThingId());
+            case LightActionData l -> "LIGHT " + resolveName(l.getThingId()) + " " + num(l.getLumen());
+            case MoveItemActionData mi -> "MOVE_ITEM " + resolveName(mi.getThingId()) + " " + resolveName(mi.getDestinationId());
+            case MovePlayerActionData mp -> "MOVE_PLAYER " + resolveName(mp.getLocationId());
+            case DescribeActionData de -> "DESCRIBE " + resolveName(de.getTargetId());
+            case PictureActionData p -> "PICTURE " + resolvePictureName(p.getPictureId());
+            case LookActionData _ -> "LOOK";
+            case ExamineActionData _ -> "EXAMINE";
+            case AutoTakeActionData _ -> "AUTOTAKE";
+            case AutoDropActionData _ -> "AUTODROP";
+            case AutoWearActionData _ -> "AUTOWEAR";
+            case AutoRemoveActionData _ -> "AUTOREMOVE";
+            case SaveGameActionData _ -> "SAVE";
+            case LoadGameActionData _ -> "LOAD";
+            case InventoryActionData _ -> "INVENTORY";
+            case QuitActionData _ -> "QUIT";
+            case BreakActionData _ -> "BREAK";
+            default -> a.getActionName().replace("ActionData", "").toUpperCase(Locale.ROOT);
+        };
     }
 
     private String resolvePictureName(String pictureId) {

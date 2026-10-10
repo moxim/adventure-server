@@ -78,6 +78,25 @@ public class PictureUsageTracker {
             usages.add(new PictureUsage(WORLD_MAP_TEXT, null, null, null));
         }
 
+        addAnyPicturesUsedInLocations(adventureData, pictureId, usages);
+        addAnyPicturesUsedInCommands(adventureData, pictureId, usages);
+        return usages;
+    }
+
+    private static void addAnyPicturesUsedInCommands(final AdventureData adventureData, final String pictureId,
+                                  final List<PictureUsage> usages) {
+        for (ActionScanner.ScannedAction scanned : ActionScanner.scan(adventureData, PictureActionData.class)) {
+            if (pictureId.equals(((PictureActionData) scanned.action()).getPictureId())) {
+                ActionScanner.Origin origin = scanned.origin();
+                usages.add(new PictureUsage("Picture Action", origin.locationId(), origin.locationDescription(),
+                                            "Command '" + scanned.commandSpecification() + "', Action #"
+                                            + scanned.actionNumber(), origin.source()));
+            }
+        }
+    }
+
+    private static void addAnyPicturesUsedInLocations(final AdventureData adventureData, final String pictureId,
+                                                      final List<PictureUsage> usages) {
         Map<String, LocationData> locations = adventureData.getLocationData();
         if (locations != null) {
             for (Map.Entry<String, LocationData> entry : locations.entrySet()) {
@@ -89,16 +108,6 @@ public class PictureUsageTracker {
                 }
             }
         }
-
-        for (ActionScanner.ScannedAction scanned : ActionScanner.scan(adventureData, PictureActionData.class)) {
-            if (pictureId.equals(((PictureActionData) scanned.action()).getPictureId())) {
-                ActionScanner.Origin origin = scanned.origin();
-                usages.add(new PictureUsage("Picture Action", origin.locationId(), origin.locationDescription(),
-                                            "Command '" + scanned.commandSpecification() + "', Action #"
-                                            + scanned.actionNumber(), origin.source()));
-            }
-        }
-        return usages;
     }
 
     public static int countPictureUsages(AdventureData adventureData, String pictureId) {

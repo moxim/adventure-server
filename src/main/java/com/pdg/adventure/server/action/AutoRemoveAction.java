@@ -29,7 +29,8 @@ public class AutoRemoveAction extends AbstractNounItemAction {
         if (!hasNoun()) {
             return failure(SystemMessageKey.SM23.defaultText());
         }
-        Optional<Item> candidate = findIn(pocket()).or(() -> findIn(here()));
+        // strict for the pocket: a worn "blue suit" is not the "neoprene suit" the player typed
+        Optional<Item> candidate = findExactlyIn(pocket()).or(() -> findIn(here()));
         if (candidate.isEmpty()) {
             return failure(isKnownObject() ? SystemMessageKey.SM23.defaultText() : SystemMessageKey.SM8.defaultText());
         }

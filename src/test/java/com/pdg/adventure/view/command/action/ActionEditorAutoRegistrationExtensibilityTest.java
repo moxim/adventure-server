@@ -37,6 +37,7 @@ class ActionEditorAutoRegistrationExtensibilityTest {
 
         @Override
         protected void buildUI() {
+            // not needed for this test
         }
 
         @Override

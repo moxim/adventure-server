@@ -63,7 +63,7 @@ The parser silently drops unknown words, so `save 3` would be a bare `save`. `re
 
 ### 6. Messages
 
-Ten new descriptive keys in `SystemMessageKey` (`SAVE_DONE`, `SAVE_FULL`, `SLOT_INVALID`, `SAVELOAD_UNAVAILABLE`, `LOAD_LIST_HEADER`, `LOAD_NONE`, `LOAD_DONE`, `LOAD_EMPTY_SLOT`, `LOAD_CANNOT`, `LOAD_VERSION_NOTE`). Only `%s` placeholders are used (`PlaceholderSpec` supports `%s` / `%n$s` only).
+Ten new descriptive keys in `SystemMessageKey` (`SAVE_DONE`, `SAVE_FULL`, `SM70`, `SM71`, `LOAD_LIST_HEADER`, `LOAD_NONE`, `LOAD_DONE`, `SM75`, `SM76`, `SM77`). Only `%s` placeholders are used (`PlaceholderSpec` supports `%s` / `%n$s` only).
 
 ### 7. Version stamp
 
@@ -71,8 +71,8 @@ Ten new descriptive keys in `SystemMessageKey` (`SAVE_DONE`, `SAVE_FULL`, `SLOT_
 
 ### 8. Error handling
 
-- No run identity (an action used outside a run session): `SAVELOAD_UNAVAILABLE`, `FAILURE`.
-- Saved location gone: `LOAD_CANNOT`, nothing changed.
+- No run identity (an action used outside a run session): `SM71`, `FAILURE`.
+- Saved location gone: `SM76`, nothing changed.
 - Unknown item/container/location ids in a save are skipped.
 - Version mismatch: a warning line only.
 

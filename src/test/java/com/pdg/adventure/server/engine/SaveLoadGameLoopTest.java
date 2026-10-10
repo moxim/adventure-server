@@ -130,8 +130,8 @@ class SaveLoadGameLoopTest {
         gameLoop.processCommand("save");
         gameLoop.processCommand("save");
 
-        assertThat(told.toString()).contains(SystemMessageKey.SAVE_DONE.defaultText().formatted(1))
-                                   .contains(SystemMessageKey.SAVE_DONE.defaultText().formatted(2));
+        assertThat(told.toString()).contains(SystemMessageKey.SM68.defaultText().formatted(1))
+                                   .contains(SystemMessageKey.SM68.defaultText().formatted(2));
         assertThat(store).containsOnlyKeys(id(1), id(2));
     }
 
@@ -156,7 +156,7 @@ class SaveLoadGameLoopTest {
 
         gameLoop.processCommand("save");
 
-        assertThat(told.toString()).contains(SystemMessageKey.SAVE_FULL.defaultText().formatted(10, 10));
+        assertThat(told.toString()).contains(SystemMessageKey.SM69.defaultText().formatted(10, 10));
         assertThat(store).hasSize(10);
     }
 
@@ -164,7 +164,7 @@ class SaveLoadGameLoopTest {
     void save_withANounThatIsNoSlotNumber_isRefused() {
         gameLoop.processCommand("save lamp");
 
-        assertThat(told.toString()).contains(SystemMessageKey.SLOT_INVALID.defaultText().formatted(10));
+        assertThat(told.toString()).contains(SystemMessageKey.SM70.defaultText().formatted(10));
         assertThat(store).isEmpty();
     }
 
@@ -183,7 +183,7 @@ class SaveLoadGameLoopTest {
 
         gameLoop.processCommand("load");
 
-        assertThat(told.toString()).contains(SystemMessageKey.LOAD_LIST_HEADER.defaultText())
+        assertThat(told.toString()).contains(SystemMessageKey.SM72.defaultText())
                                    .contains("1. The Demo - ")
                                    .contains("2. The Demo - ");
     }
@@ -192,7 +192,7 @@ class SaveLoadGameLoopTest {
     void load_withoutAnySaves_saysSo() {
         gameLoop.processCommand("load");
 
-        assertThat(told.toString()).contains(SystemMessageKey.LOAD_NONE.defaultText());
+        assertThat(told.toString()).contains(SystemMessageKey.SM73.defaultText());
     }
 
     @Test
@@ -208,7 +208,7 @@ class SaveLoadGameLoopTest {
         assertThat(hallItems.getContents()).containsExactly(lamp);
         assertThat(pocket.getContents()).isEmpty();
         assertThat(gameContext.getCurrentLocation()).isSameAs(hall);
-        assertThat(told.toString()).contains(SystemMessageKey.LOAD_DONE.defaultText().formatted(1))
+        assertThat(told.toString()).contains(SystemMessageKey.SM74.defaultText().formatted(1))
                                    .contains("You are in the great hall.");
     }
 
@@ -228,7 +228,7 @@ class SaveLoadGameLoopTest {
     void load_anEmptySlot_isReported() {
         gameLoop.processCommand("load 5");
 
-        assertThat(told.toString()).contains(SystemMessageKey.LOAD_EMPTY_SLOT.defaultText().formatted(5));
+        assertThat(told.toString()).contains(SystemMessageKey.SM75.defaultText().formatted(5));
     }
 
     @Test
@@ -245,7 +245,7 @@ class SaveLoadGameLoopTest {
 
         gameLoop.processCommand("load 2");
 
-        assertThat(told.toString()).contains(SystemMessageKey.LOAD_CANNOT.defaultText());
+        assertThat(told.toString()).contains(SystemMessageKey.SM76.defaultText());
         assertThat(gameContext.getCurrentLocation()).isSameAs(hall);
         assertThat(hallItems.getContents()).containsExactly(lamp);
     }
@@ -258,7 +258,7 @@ class SaveLoadGameLoopTest {
 
         gameLoop.processCommand("load 1");
 
-        assertThat(told.toString()).contains(SystemMessageKey.LOAD_VERSION_NOTE.defaultText().formatted("1.0.0", "2.0.0"));
+        assertThat(told.toString()).contains(SystemMessageKey.SM77.defaultText().formatted("1.0.0", "2.0.0"));
     }
 
     @Test
@@ -285,8 +285,8 @@ class SaveLoadGameLoopTest {
         gameLoop.processCommand("load");
         gameLoop.processCommand("load 1");
 
-        assertThat(told.toString()).contains(SystemMessageKey.LOAD_NONE.defaultText())
-                                   .contains(SystemMessageKey.LOAD_EMPTY_SLOT.defaultText().formatted(1));
+        assertThat(told.toString()).contains(SystemMessageKey.SM73.defaultText())
+                                   .contains(SystemMessageKey.SM75.defaultText().formatted(1));
     }
 
     @Test
@@ -296,7 +296,7 @@ class SaveLoadGameLoopTest {
         gameLoop.processCommand("save");
         gameLoop.processCommand("load");
 
-        assertThat(told.toString()).contains(SystemMessageKey.SAVELOAD_UNAVAILABLE.defaultText());
+        assertThat(told.toString()).contains(SystemMessageKey.SM71.defaultText());
         assertThat(store).isEmpty();
     }
 }
