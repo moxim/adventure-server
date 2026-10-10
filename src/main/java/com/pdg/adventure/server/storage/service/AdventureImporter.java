@@ -9,14 +9,8 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.time.Instant;
+import java.util.*;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.server.exception.AdventureImportException;
@@ -90,7 +84,7 @@ public class AdventureImporter {
 
         Map<String, List<Document>> copies = AdventureDocumentGraph.copyWithNewIds(documents);
         Document adventure = copies.get(AdventureDocumentGraph.ADVENTURES).getFirst();
-        Date now = new Date();
+        Instant now = Instant.now();
         adventure.put("createdAt", now);
         adventure.put("updatedAt", now);
 
