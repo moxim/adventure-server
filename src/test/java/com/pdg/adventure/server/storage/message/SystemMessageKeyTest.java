@@ -48,16 +48,16 @@ class SystemMessageKeyTest {
 
     @Test
     void saveAndLoadKeys_haveTheDocumentedPlaceholders() {
-        assertThat(placeholders(SystemMessageKey.SAVE_DONE)).isEqualTo(1);
-        assertThat(placeholders(SystemMessageKey.SAVE_FULL)).isEqualTo(2);
-        assertThat(placeholders(SystemMessageKey.SLOT_INVALID)).isEqualTo(1);
-        assertThat(placeholders(SystemMessageKey.SAVELOAD_UNAVAILABLE)).isZero();
+        assertThat(placeholders(SystemMessageKey.SM68)).isEqualTo(1);
+        assertThat(placeholders(SystemMessageKey.SM69)).isEqualTo(2);
+        assertThat(placeholders(SystemMessageKey.SM70)).isEqualTo(1);
+        assertThat(placeholders(SystemMessageKey.SM71)).isZero();
         assertThat(placeholders(SystemMessageKey.LOAD_LIST_HEADER)).isZero();
-        assertThat(placeholders(SystemMessageKey.LOAD_NONE)).isZero();
-        assertThat(placeholders(SystemMessageKey.LOAD_DONE)).isEqualTo(1);
-        assertThat(placeholders(SystemMessageKey.LOAD_EMPTY_SLOT)).isEqualTo(1);
-        assertThat(placeholders(SystemMessageKey.LOAD_CANNOT)).isZero();
-        assertThat(placeholders(SystemMessageKey.LOAD_VERSION_NOTE)).isEqualTo(2);
+        assertThat(placeholders(SystemMessageKey.SM73)).isZero();
+        assertThat(placeholders(SystemMessageKey.SM74)).isEqualTo(1);
+        assertThat(placeholders(SystemMessageKey.SM75)).isEqualTo(1);
+        assertThat(placeholders(SystemMessageKey.SM76)).isZero();
+        assertThat(placeholders(SystemMessageKey.SM77)).isEqualTo(2);
     }
 
     private static int placeholders(SystemMessageKey aKey) {

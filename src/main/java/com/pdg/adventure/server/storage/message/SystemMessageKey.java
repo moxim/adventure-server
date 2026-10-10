@@ -110,34 +110,27 @@ public enum SystemMessageKey {
     SM67(67, " (lit)", "is printed when an item is lit. ( (lit))"),
 
     // Saving and loading a game (SaveGameAction / LoadGameAction); descriptive ids, no PAW counterpart.
-    SAVE_DONE("Game saved in slot %s.", "SaveGameAction",
-              "is printed after a game was saved. (Game saved in slot %s.)"),
-    SAVE_FULL("All %s slots are taken. Use SAVE with a slot number (1-%s) to replace one.", "SaveGameAction",
-              "is printed when SAVE finds no free slot. (All %s slots are taken. Use SAVE with a slot number (1-%s) to replace one.)"),
-    SLOT_INVALID("There are only slots 1 to %s.", "SaveGameAction",
-                 "is printed when SAVE or LOAD gets something that is not a slot number. (There are only slots 1 to %s.)"),
-    SAVELOAD_UNAVAILABLE("Saving and loading are not available here.", "SaveGameAction",
-                         "is printed when SAVE or LOAD runs outside a play session. (Saving and loading are not available here.)"),
-    LOAD_LIST_HEADER("Saved games:", "LoadGameAction",
+    SM68(68, "Game saved in slot %s.",
+         "is printed after a game was saved. (Game saved in slot %s.)"),
+    SM69(69, "All %s slots are taken. Use SAVE with a slot number (1-%s) to replace one.",
+         "is printed when SAVE finds no free slot. (All %s slots are taken. Use SAVE with a slot number (1-%s) to replace one.)"),
+    SM70(70, "There are only slots 1 to %s.",
+         "is printed when SAVE or LOAD gets something that is not a slot number. (There are only slots 1 to %s.)"),
+    SM71(71, "Saving and loading are not available here.",
+         "is printed when SAVE or LOAD runs outside a play session. (Saving and loading are not available here.)"),
+    SM72(72, "Saved games:",
                      "is printed above the list of saved games. (Saved games:)"),
-    LOAD_NONE("You have no saved games.", "LoadGameAction",
-              "is printed when LOAD finds no saved games. (You have no saved games.)"),
-    LOAD_DONE("Game restored from slot %s.", "LoadGameAction",
-              "is printed after a saved game was restored. (Game restored from slot %s.)"),
-    LOAD_EMPTY_SLOT("Slot %s holds no saved game.", "LoadGameAction",
-                    "is printed when LOAD names a slot without a saved game. (Slot %s holds no saved game.)"),
-    LOAD_CANNOT("That saved game can no longer be loaded.", "LoadGameAction",
-                "is printed when a saved game refers to a location that no longer exists. (That saved game can no longer be loaded.)"),
-    LOAD_VERSION_NOTE("(This game was saved with version %s; the adventure is now at version %s.)", "LoadGameAction",
-                      "is printed after a restore when the adventure changed version since the save. ((This game was saved with version %s; the adventure is now at version %s.))"),
-
-    // Currently never registered for a real adventure: no engine code looks this id up. Catalogued anyway so it is
-    // ready for an author-facing help action.
-
-    HELP_TEXT("Look around, examine items, take or drop items, maybe wear items, enter or leave locations.\nOr quit.",
-              "MessageAction",
-              "The full text shown for the built-in 'help' command. (Look around, examine items, take or drop "
-              + "items, maybe wear items, enter or leave locations.\nOr quit.)");
+    SM73(73, "You have no saved games.",
+         "is printed when LOAD finds no saved games. (You have no saved games.)"),
+    SM74(74, "Game restored from slot %s.",
+         "is printed after a saved game was restored. (Game restored from slot %s.)"),
+    SM75(75, "Slot %s holds no saved game.",
+         "is printed when LOAD names a slot without a saved game. (Slot %s holds no saved game.)"),
+    SM76(76, "That saved game can no longer be loaded.",
+         "is printed when a saved game refers to a location that no longer exists. (That saved game can no longer be loaded.)"),
+    SM77(77, "(This game was saved with version %s; the adventure is now at version %s.)",
+         "is printed after a restore when the adventure changed version since the save. ((This game was saved with version %s; the adventure is now at version %s.))")
+    ;
 
     /**
      * The overrides (id -> text) of the adventure whose turn is running on this thread, sparse - a key with no

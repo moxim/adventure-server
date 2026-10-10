@@ -631,8 +631,8 @@ to **LoadGame**; the wildcard noun also matches "no noun".
   saving into a slot is an upsert. `SavedGameService` implements the slot rules; the player comes from the
   `GameContext.RunIdentity` the factory sets. A save records the adventure's `builderVersion`; `load` appends a
   warning when both versions are known and differ.
-- All texts are `SystemMessageKey`s (`SAVE_DONE`, `SAVE_FULL`, `SLOT_INVALID`, `SAVELOAD_UNAVAILABLE`,
-  `LOAD_LIST_HEADER`, `LOAD_NONE`, `LOAD_DONE`, `LOAD_EMPTY_SLOT`, `LOAD_CANNOT`, `LOAD_VERSION_NOTE`).
+- All texts are `SystemMessageKey`s (`SAVE_DONE`, `SAVE_FULL`, `SM70`, `SM71`,
+  `LOAD_LIST_HEADER`, `LOAD_NONE`, `LOAD_DONE`, `SM75`, `SM76`, `SM77`).
 
 ## AdventureRunSession: the in-browser play surface
 

@@ -35,29 +35,29 @@ public class SaveGameAction extends AbstractAction {
     public ExecutionResult execute() {
         GameContext.RunIdentity who = gameContext.getRunIdentity();
         if (who == null) {
-            return failure(SystemMessageKey.SAVELOAD_UNAVAILABLE.defaultText());
+            return failure(SystemMessageKey.SM71.defaultText());
         }
         String noun = gameContext.getCurrentNoun();
         int slot;
         if (noun.isEmpty()) {
             OptionalInt free = savedGameService.freeSlot(who.playerId(), who.adventureId());
             if (free.isEmpty()) {
-                return failure(SystemMessageKey.SAVE_FULL.defaultText()
-                                                         .formatted(SavedGameData.SAVED_GAME_SLOTS,
+                return failure(SystemMessageKey.SM69.defaultText()
+                                                    .formatted(SavedGameData.SAVED_GAME_SLOTS,
                                                                     SavedGameData.SAVED_GAME_SLOTS));
             }
             slot = free.getAsInt();
         } else {
             OptionalInt requested = SavedGameService.parseSlot(noun);
             if (requested.isEmpty()) {
-                return failure(SystemMessageKey.SLOT_INVALID.defaultText().formatted(SavedGameData.SAVED_GAME_SLOTS));
+                return failure(SystemMessageKey.SM70.defaultText().formatted(SavedGameData.SAVED_GAME_SLOTS));
             }
             slot = requested.getAsInt();
         }
         savedGameService.save(who.playerId(), who.adventureId(), slot, who.builderVersion(), snapshotter.capture(),
                               Instant.now());
         return new CommandExecutionResult(ExecutionResult.State.SUCCESS,
-                                          SystemMessageKey.SAVE_DONE.defaultText().formatted(slot));
+                                          SystemMessageKey.SM68.defaultText().formatted(slot));
     }
 
     private static ExecutionResult failure(String aMessage) {

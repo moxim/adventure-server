@@ -203,7 +203,7 @@ public class AdventuresMenuView extends VerticalLayout {
 
     /** A title made safe as a file name: letters and digits kept, every other run of characters becomes one dash. */
     static String exportFileName(String aTitle) {
-        String name = aTitle == null ? "" : aTitle.trim().replaceAll("[^\\p{L}\\p{N}]+", "-").replaceAll("^-|-$", "");
+        String name = aTitle == null ? "" : aTitle.trim().replaceAll("[^\\p{L}\\p{N}]+", "-").replaceAll("(^-)|(-$)", "");
         return (name.isEmpty() ? "adventure" : name) + EXPORT_FILE_SUFFIX;
     }
 

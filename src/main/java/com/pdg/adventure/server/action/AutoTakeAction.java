@@ -31,7 +31,8 @@ public class AutoTakeAction extends AbstractNounItemAction {
         if (!hasNoun()) {
             return failure(SystemMessageKey.SM26.defaultText());
         }
-        Optional<Item> carried = findIn(pocket());
+        // strict: carrying a "blue suit" must not stop the player from taking the "neoprene suit"
+        Optional<Item> carried = findExactlyIn(pocket());
         if (carried.isPresent()) {
             return failure(SystemMessageKey.SM25.defaultText().formatted(carried.get().getStrippedBasicDescription()));
         }

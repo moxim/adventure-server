@@ -8,14 +8,14 @@ import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.testhelper.TestSupporter;
 
 class LessThanConditionTest {
-    private static final String varName = "t";
+    private static final String VAR_NAME = "t";
     private final VariableProvider variableProvider = new VariableProvider();
-    private final LessThanCondition sut = new LessThanCondition(varName, 2, variableProvider);
+    private final LessThanCondition sut = new LessThanCondition(VAR_NAME, 2, variableProvider);
 
     @Test
     void testVariableMeetsCondition() {
         // given
-        variableProvider.set(varName, 1);
+        variableProvider.set(VAR_NAME, 1);
 
         // when
 
@@ -26,7 +26,7 @@ class LessThanConditionTest {
     @Test
     void testVariableFailsCondition() {
         // given
-        variableProvider.set(varName, 3);
+        variableProvider.set(VAR_NAME, 3);
 
         // when
 

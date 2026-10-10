@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import com.pdg.adventure.model.AdventureData;
@@ -85,8 +86,9 @@ public class AdventureImporter {
         }
 
         String fileVersion = envelope.getString("builderVersion");
-        boolean differs = fileVersion != null && builderVersion.current().isPresent()
-                          && !fileVersion.equals(builderVersion.current().get());
+        Optional<String> currentVersion = builderVersion.current();
+        boolean differs = fileVersion != null && currentVersion.isPresent()
+                          && !fileVersion.equals(currentVersion.get());
 
         Map<String, List<Document>> copies = AdventureDocumentGraph.copyWithNewIds(documents);
         Document adventure = copies.get(AdventureDocumentGraph.ADVENTURES).getFirst();
@@ -130,13 +132,9 @@ public class AdventureImporter {
      */
     private static void checkShape(Object aNode) {
         switch (aNode) {
-            case Document document when document.containsKey("$ref") || document.containsKey("$id")
-                                        || document.containsKey("$db") -> {
-                if (document.size() != 2 || !(document.get("$ref") instanceof String collection)
-                    || !ALLOWED_COLLECTIONS.contains(collection) || !(document.get("$id") instanceof String)) {
+            case Document document when hasReferenceKey(document) && !isValidReference(document) ->
                     throw new AdventureImportException("The file contains a reference that is not valid.");
-                }
-            }
+            case Document document when hasReferenceKey(document) -> { /* a valid reference: a leaf, nothing below it */ }
             case Document document -> document.forEach((name, value) -> {
                 if (name.startsWith("$")) {
                     throw new AdventureImportException("The file contains a field name '" + name
@@ -147,6 +145,15 @@ public class AdventureImporter {
             case Iterable<?> iterable -> iterable.forEach(AdventureImporter::checkShape);
             case null, default -> { /* a leaf value */ }
         }
+    }
+
+    private static boolean hasReferenceKey(Document aDocument) {
+        return aDocument.containsKey("$ref") || aDocument.containsKey("$id") || aDocument.containsKey("$db");
+    }
+
+    private static boolean isValidReference(Document aDocument) {
+        return aDocument.size() == 2 && aDocument.get("$ref") instanceof String collection
+               && ALLOWED_COLLECTIONS.contains(collection) && aDocument.get("$id") instanceof String;
     }
 
     private static Document parse(byte[] aJson) {

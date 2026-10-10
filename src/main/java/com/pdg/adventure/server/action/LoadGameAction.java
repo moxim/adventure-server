@@ -38,7 +38,7 @@ public class LoadGameAction extends AbstractAction {
     public ExecutionResult execute() {
         GameContext.RunIdentity who = gameContext.getRunIdentity();
         if (who == null) {
-            return failure(SystemMessageKey.SAVELOAD_UNAVAILABLE.defaultText());
+            return failure(SystemMessageKey.SM71.defaultText());
         }
         String noun = gameContext.getCurrentNoun();
         if (noun.isEmpty()) {
@@ -46,7 +46,7 @@ public class LoadGameAction extends AbstractAction {
         }
         OptionalInt requested = SavedGameService.parseSlot(noun);
         if (requested.isEmpty()) {
-            return failure(SystemMessageKey.SLOT_INVALID.defaultText().formatted(SavedGameData.SAVED_GAME_SLOTS));
+            return failure(SystemMessageKey.SM70.defaultText().formatted(SavedGameData.SAVED_GAME_SLOTS));
         }
         return restore(who, requested.getAsInt());
     }
@@ -55,10 +55,10 @@ public class LoadGameAction extends AbstractAction {
         List<SavedGameData> saved = savedGameService.list(aWho.playerId(), aWho.adventureId());
         if (saved.isEmpty()) {
             return new CommandExecutionResult(ExecutionResult.State.SUCCESS,
-                                              SystemMessageKey.LOAD_NONE.defaultText());
+                                              SystemMessageKey.SM73.defaultText());
         }
         List<String> lines = new ArrayList<>();
-        lines.add(SystemMessageKey.LOAD_LIST_HEADER.defaultText());
+        lines.add(SystemMessageKey.SM72.defaultText());
         for (SavedGameData game : saved) {
             lines.add("%s. %s".formatted(game.getSlot(),
                                          SavedGameService.label(aWho.adventureTitle(), game.getSavedAt())));
@@ -69,18 +69,18 @@ public class LoadGameAction extends AbstractAction {
     private ExecutionResult restore(GameContext.RunIdentity aWho, int aSlot) {
         Optional<SavedGameData> found = savedGameService.find(aWho.playerId(), aWho.adventureId(), aSlot);
         if (found.isEmpty()) {
-            return failure(SystemMessageKey.LOAD_EMPTY_SLOT.defaultText().formatted(aSlot));
+            return failure(SystemMessageKey.SM75.defaultText().formatted(aSlot));
         }
         SavedGameData saved = found.get();
         if (!snapshotter.restore(saved.getSnapshot())) {
-            return failure(SystemMessageKey.LOAD_CANNOT.defaultText());
+            return failure(SystemMessageKey.SM76.defaultText());
         }
         List<String> lines = new ArrayList<>();
-        lines.add(SystemMessageKey.LOAD_DONE.defaultText().formatted(aSlot));
+        lines.add(SystemMessageKey.SM74.defaultText().formatted(aSlot));
         if (saved.getBuilderVersion() != null && aWho.builderVersion() != null
             && !Objects.equals(saved.getBuilderVersion(), aWho.builderVersion())) {
-            lines.add(SystemMessageKey.LOAD_VERSION_NOTE.defaultText()
-                                                        .formatted(saved.getBuilderVersion(), aWho.builderVersion()));
+            lines.add(SystemMessageKey.SM77.defaultText()
+                                           .formatted(saved.getBuilderVersion(), aWho.builderVersion()));
         }
         lines.add(gameContext.getCurrentLocation().getLookDescription().text());
         return new CommandExecutionResult(ExecutionResult.State.SUCCESS, String.join("\n", lines));
