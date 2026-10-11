@@ -2,13 +2,15 @@ package com.pdg.adventure.security.model;
 
 import com.github.f4b6a3.ulid.UlidCreator;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -16,6 +18,7 @@ public class UserData implements UserDetails {
 
     @Id
     @Column(name = "id", length = 26, nullable = false, updatable = false)
+    @Getter
     private String id;
 
     @PrePersist
@@ -26,15 +29,23 @@ public class UserData implements UserDetails {
     }
 
     @Column(unique = true, nullable = false)
+    @Getter
+    @Setter
     private String username;
 
     @Column(nullable = false)
+    @Getter
+    @Setter
     private String password;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
+    @Getter
+    @Setter
     private Set<Role> roles;
 
+    @Getter
+    @Setter
     private boolean isEnabled;
 
     // Role-hierarchy-expanded authorities for the current session, populated by
@@ -49,12 +60,10 @@ public class UserData implements UserDetails {
     // UserDetails implementation methods
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (effectiveAuthorities != null) {
-            return effectiveAuthorities;
-        }
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
-                .collect(Collectors.toList());
+        return Objects.requireNonNullElseGet(effectiveAuthorities, () -> roles.stream()
+                                                                              .map(role -> new SimpleGrantedAuthority(
+                                                                                      "ROLE_" + role.name()))
+                                                                              .toList());
     }
 
     public void setAuthorities(Collection<? extends GrantedAuthority> authorities) {
@@ -74,41 +83,9 @@ public class UserData implements UserDetails {
     }
 
     @Override
-    public String getPassword() {
-        return password;
-    }
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public Set<Role> getRoles() {
-        return roles;
-    }
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    @Override
     public boolean isAccountNonExpired() { return true; }
     @Override
     public boolean isAccountNonLocked() { return true; }
     @Override
     public boolean isCredentialsNonExpired() { return true; }
-    @Override
-    public boolean isEnabled() { return isEnabled; }
-    public void setEnabled(boolean enabled) {
-        isEnabled = enabled;
-    }
 }
