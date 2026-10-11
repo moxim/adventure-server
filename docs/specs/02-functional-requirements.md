@@ -181,9 +181,9 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     `/author/adventures`) removes the `AdventureData` and all owned
     documents (locations, items, vocabulary) via the
     cascade-delete machinery, then removes the `AdventureAuthor` row and
-    any `AdventurePlayer` rows. **This happens immediately with no
-    confirmation dialog** — unlike location/item/word/message deletion
-    elsewhere in the app, which all confirm first.
+    any `AdventurePlayer` rows. A **Delete Adventure** `ConfirmDialog`
+    (`AdventuresMenuView.buildDeleteConfirmDialog`) asks first, like every
+    other delete path in the app (exits included: `DirectionsMenuView.buildDeleteConfirmDialog`).
   - Authors MUST NOT see or edit adventures they do not own
     (`AdventureAccessService.canRead/canWrite`).
 

@@ -3,6 +3,7 @@ package com.pdg.adventure.view.direction;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
@@ -172,11 +173,22 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
 
             addComponent(new Hr());
 
-            addItem("Delete", e -> e.getItem().ifPresent(adapter -> {
-                locationData.getDirectionsData().remove(adapter.getDirectionData());
-                adventureService.saveLocationData(locationData);
-                directionsDataView.removeItem(adapter);
-            }));
+            addItem("Delete", e -> e.getItem().ifPresent(adapter -> buildDeleteConfirmDialog(adapter).open()));
         }
+    }
+
+    /**
+     * Package-private for testing: GridContextMenu item clicks have no reliable way to be
+     * driven from a browserless test, so this builds the dialog (and wires its confirm
+     * listener) in isolation from the context-menu click that triggers it.
+     */
+    ConfirmDialog buildDeleteConfirmDialog(DirectionDescriptionAdapter anAdapter) {
+        ConfirmDialog dialog = ViewSupporter.getConfirmDialog("Delete Exit", "exit", anAdapter.getShortDescription());
+        dialog.addConfirmListener(_ -> {
+            locationData.getDirectionsData().remove(anAdapter.getDirectionData());
+            adventureService.saveLocationData(locationData);
+            directionsDataView.removeItem(anAdapter);
+        });
+        return dialog;
     }
 }

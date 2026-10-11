@@ -14,14 +14,15 @@ differently:
 All three are reached from the [Adventure Editor](04-the-adventure-editor.md):
 **Workflow I** (Arrival Processes), **Workflow II** (Processes) and
 **Responses**. All three screens look and work
-the same way — a grid of commands on top, a single-command editor below,
-with **Back**, **New**, **Delete** (asks for confirmation), and **Save**
-buttons. Selecting a grid row loads it into the editor; the editor itself is
-the exact same **Verb / Adjective / Noun** pickers and **Preconditions &
-Actions** editor from [Chapter 8](08-commands-actions-and-conditions.md) —
-same Add/Up/Down/Remove controls, same **Negate** checkbox, same rules.
-**Save** commits the loaded command and resets the editor to a blank new
-one.
+the same way. The list page shows a grid of commands with **Create** and
+**Back** buttons; double-click a row, or right-click it for **Edit**, to open
+that command on its own page, and right-click → **Delete** to remove it (a
+dialog asks for confirmation first). The command's page is the exact same
+**Verb / Adjective / Noun** pickers and **Preconditions & Actions** editor from
+[Chapter 8](08-commands-actions-and-conditions.md) — same Add/Up/Down/Remove
+controls, same **Negate** checkbox, same rules — with **Reset**, **Back** and
+a **Save** button named after the kind of command (for example **Save Response
+Process**). Saving takes you back to the list.
 
 There's no Command Chain concept in any of these screens — a Workflow command
 doesn't share a verb/adjective/noun with variants the way a location command

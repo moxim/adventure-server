@@ -2,6 +2,7 @@ package com.pdg.adventure.view.direction;
 
 import com.vaadin.browserless.BrowserlessTest;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -20,6 +22,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,6 +30,7 @@ import static org.mockito.Mockito.when;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.DirectionData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
@@ -122,5 +126,78 @@ class DirectionsMenuViewTest extends BrowserlessTest {
         FlashNotifier.showPending();
         Notification notification = find(Notification.class).single();
         assertThat(test(notification).getText()).isEqualTo("Location not found or access denied: missing");
+    }
+
+    // Delete goes through a GridContextMenu item click, which a browserless test can't drive
+    // reliably, so these build the confirmation dialog directly (package-private for this) and
+    // drive it as a user would: open, then confirm or cancel.
+    private LocationData enterLocationWithOneExit(DirectionData aDirection) {
+        aDirection.setId("dir-1");
+        aDirection.getCommandData().setCommandDescription(new CommandDescriptionData("go|north|"));
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        location.getDescriptionData().setShortDescription("the old jetty");
+        // Mutable: deleting removes from the set.
+        location.setDirectionsData(new HashSet<>(Set.of(aDirection)));
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of("loc-1", location));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1")));
+        return location;
+    }
+
+    @SuppressWarnings("unchecked")
+    private DirectionDescriptionAdapter onlyAdapterInGrid() {
+        Grid<DirectionDescriptionAdapter> grid = (Grid<DirectionDescriptionAdapter>) find(Grid.class, view).single();
+        return test(grid).getRow(0);
+    }
+
+    @Test
+    void deleteConfirmDialog_asksFirst_andDeletesNothingUntilConfirmed() {
+        DirectionData direction = new DirectionData();
+        LocationData location = enterLocationWithOneExit(direction);
+
+        ConfirmDialog dialog = view.buildDeleteConfirmDialog(onlyAdapterInGrid());
+        UI.getCurrent().add(dialog);
+        dialog.open();
+
+        assertThat(test(dialog).getHeader()).isEqualTo("Delete Exit");
+        assertThat(test(dialog).getText()).contains("go north");
+        verify(adventureService, never()).saveLocationData(any());
+        assertThat(location.getDirectionsData()).containsExactly(direction);
+    }
+
+    @Test
+    void confirmingDeleteDialog_removesTheExitAndPersistsTheLocation() {
+        DirectionData direction = new DirectionData();
+        LocationData location = enterLocationWithOneExit(direction);
+
+        ConfirmDialog dialog = view.buildDeleteConfirmDialog(onlyAdapterInGrid());
+        UI.getCurrent().add(dialog);
+        dialog.open();
+        test(dialog).confirm();
+
+        assertThat(location.getDirectionsData()).isEmpty();
+        verify(adventureService).saveLocationData(location);
+        Grid<?> grid = find(Grid.class, view).single();
+        assertThat(test(grid).size()).isZero();
+    }
+
+    @Test
+    void cancelingDeleteDialog_deletesNothing() {
+        DirectionData direction = new DirectionData();
+        LocationData location = enterLocationWithOneExit(direction);
+
+        ConfirmDialog dialog = view.buildDeleteConfirmDialog(onlyAdapterInGrid());
+        UI.getCurrent().add(dialog);
+        dialog.open();
+        test(dialog).cancel();
+
+        assertThat(location.getDirectionsData()).containsExactly(direction);
+        verify(adventureService, never()).saveLocationData(any());
     }
 }

@@ -19,12 +19,11 @@ worth planning around.
 
 ## Things to plan around
 
-- **Deleting an exit skips confirmation entirely:** right-click →
-  **Delete** in a location's Exits list removes the exit immediately, with
-  no dialog and no undo. See
-  [Chapter 5](05-locations-and-exits.md#exits). Everything else described
-  in this handbook (adventures, locations, items, words, messages,
-  pictures, workflow commands) confirms before deleting.
+- **Deleting an exit doesn't check for references:** right-click →
+  **Delete** in a location's Exits list asks for confirmation, but unlike
+  locations, items, words, messages and pictures it doesn't tell you what
+  else still points at the exit, and there is no undo. See
+  [Chapter 5](05-locations-and-exits.md#exits).
 - **The World map isn't wired to your actual locations yet.** It's a
   placeholder illustration, not a live diagram of your world — see
   [Chapter 5](05-locations-and-exits.md#the-world-map).

@@ -1,10 +1,13 @@
 # 1. Welcome & the big picture
 
-Adventure Builder is a web app for writing and playing text adventures —
-the kind of game where you type `take key` or `go north` and read what
-happens next. As an **Author**, you design the game: you build the rooms,
-place the objects, teach the game the words it should understand, and wire
-up what happens when a player tries something.
+Adventure Builder is a web app for writing and playing text adventures — the kind of game where you type `take key` or
+`go north` and read what happens next.
+It is very much inspired by the 1986 program "The Professional Adventure Writing System" by Gilsoft International Ltd.
+
+As an **Author**, you design the game: you build the rooms, place the objects, teach the game the words it should
+understand, and wire up what happens when a player tries something.
+
+As a **Player** you explore the world an author has built, and see if you can solve the puzzles and reach the end.
 
 ## The three roles
 
@@ -17,8 +20,8 @@ Admin  ⊃  Author  ⊃  Player
 
 | Role | What they do |
 |------|---------------|
-| **Admin** | Manages user accounts and decides which Author owns which adventure, and which Players may play it. Can do everything an Author or Player can. |
-| **Author** | Designs adventures: locations, items, vocabulary, commands, messages, pictures, and the workflow that ties it together. Can also play — their own and anyone else's they're assigned to. |
+| **Admin** | Manages user accounts and decides which Author owns which adventure, and which Players may play it. <br/>Can do everything an Author or Player can. |
+| **Author** | Designs adventures: locations, items, vocabulary, commands, messages, pictures, and the workflow that ties it together. <br/>Can also play — their own and anyone else's they're assigned to. |
 | **Player** | Plays the adventures they've been assigned to, from a personal library. |
 
 You don't assign yourself an adventure to author — an **Admin** does that.
