@@ -10,14 +10,15 @@ conditions hold, do these things.* Everything from "take the key" to
 Commands are scoped to wherever you opened **Manage Commands** from — a
 location, or an item. This screen shows a read-only grid: **Verb**,
 **Adjective**, **Noun**, **Preconditions**, and **Actions**, summarizing
-every command in that scope, alongside **Create**, **Back**, **Reset**, and
-**Save** buttons.
+every command in that scope, alongside **Create** and **Back** buttons. There
+is nothing to save on this screen: each command is edited, and saved, on its own
+page.
 
 - **Create** opens a blank command editor.
 - **Double-click a row**, or right-click it for **Edit**, to open the full
   editor for that command.
-- Right-click a row for **Delete** to remove just that one variant (with no
-  separate confirmation step — see the note on deleting below).
+- Right-click a row for **Delete** to remove just that one variant. A
+  **Delete Command** dialog asks you to confirm first.
 
 ## The command editor
 
@@ -100,8 +101,8 @@ variant fired, don't fall through to anything else."
 Covered in the earlier chapters — Adventure Builder refuses to delete a
 location, item, or vocabulary word that a command still references, listing
 what's using it. Deleting the *command itself* (via the commands list's
-right-click **Delete**), by contrast, happens immediately with no
-confirmation — be sure before you use it.
+right-click **Delete**) asks for confirmation in a **Delete Command** dialog
+before it removes that one variant.
 
 ## What's next
 

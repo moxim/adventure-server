@@ -1,13 +1,13 @@
 # 1. Welcome & the big picture
 
 Adventure Builder is a web app for writing and playing text adventures — the kind of game where you type `take key` or
-`go north` and read what happens next. 
+`go north` and read what happens next.
 It is very much inspired by the 1986 program "The Professional Adventure Writing System" by Gilsoft International Ltd.
 
-As an **Author**, you design the game: you build the rooms, place the objects, teach the game the words it should 
+As an **Author**, you design the game: you build the rooms, place the objects, teach the game the words it should
 understand, and wire up what happens when a player tries something.
 
-As a **Player** you explore the world an author had built, and see if you can solve the puzzles and reach the end.
+As a **Player** you explore the world an author has built, and see if you can solve the puzzles and reach the end.
 
 ## The three roles
 

@@ -553,13 +553,6 @@ swapping the brand image per layout and using `LumoUtility` classes.
   the route names an adventure. A rebuild should either wire a real
   node-graph view of the adventure's actual locations/exits, or drop the
   drawer link until it is.
-- **Deleting an exit skips confirmation.** Deleting an exit
-  (`DirectionsMenuView`'s context menu) removes the row immediately
-  with no `ConfirmDialog`, unlike every other delete path in the app
-  (adventures — `AdventuresMenuView.buildDeleteConfirmDialog` — locations,
-  items, words, messages, workflow commands all confirm
-  first). Confirm this is intentional or bring it in line with
-  [§ Validation feedback](#validation-feedback) below.
 - **ComboBox browserless test workarounds.** Two ComboBox quirks
   (silent `setValue`, wrong scope on `$()` queries) are documented in the
   testing strategy; until the upstream fix lands, browserless tests for

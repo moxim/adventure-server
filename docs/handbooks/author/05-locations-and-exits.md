@@ -71,10 +71,11 @@ its **Command** (the verb/adjective/noun that triggers it) and its
 **Destination**, alongside a **Create Exit** button and a **Find exit**
 search field (filters by id, noun, or short description). Double-click a
 row, or right-click it for **Edit**, to open the exit editor; right-click
-→ **Delete** removes it immediately, with no confirmation and no check for
-what else might reference it — unlike nearly every other delete in the
-app (including [deleting an adventure](03-your-adventures.md#deleting-an-adventure),
-which asks first), there's no safety net here.
+→ **Delete** asks you to confirm in a **Delete Exit** dialog before removing
+it, like every other delete in the app (see
+[deleting an adventure](03-your-adventures.md#deleting-an-adventure)). Unlike
+locations, items and words, it does not check what else might reference the
+exit.
 
 The exit editor:
 
