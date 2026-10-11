@@ -99,12 +99,19 @@ public class CommandListEditorView extends VerticalLayout
                 new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))));
         backButton.addClickShortcut(Key.ESCAPE);
 
-        newCommandButton = new Button("Create " + itemLabel, _ -> navigateToEditor(null));
+        newCommandButton = new Button("Create", _ -> navigateToEditor(null));
 
         VerticalLayout gridButtons = new VerticalLayout(newCommandButton, backButton);
+        gridButtons.setSpacing(true);
+        gridButtons.setMaxWidth("10%");
+        gridButtons.setMinWidth("10%");
+        gridButtons.setWidth("10%");
+
         VerticalLayout gridSection = new VerticalLayout(ViewSupporter.doubleClickEditHint(), grid);
-        gridSection.setSizeFull();
+
         HorizontalLayout hl = new HorizontalLayout(gridButtons, gridSection);
+        hl.setSizeFull();
+        hl.setFlexGrow(3, gridSection);
 
         setSizeFull();
         setMargin(true);

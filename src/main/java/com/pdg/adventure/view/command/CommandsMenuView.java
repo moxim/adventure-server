@@ -139,6 +139,7 @@ public class CommandsMenuView extends VerticalLayout
 
         HorizontalLayout hl = new HorizontalLayout(vll, vlr);
         hl.setSizeFull();
+        hl.setFlexGrow(3, vlr);
         add(hl);
     }
 
