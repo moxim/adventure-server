@@ -335,7 +335,11 @@ Both columns are wrapped in one `HorizontalLayout` (`hl1`).
 `CommandsMenuView` shows a **read-only** summary grid of the scope's commands
 (verb / adjective / noun / first precondition / first action). Editing is via
 double-click or a right-click **Edit** into `CommandEditorView`; right-click
-**Delete** removes one chain variant. (The former in-place
+**Delete** removes one chain variant after a `ConfirmDialog` (header
+"Delete Command"; the view has no Save/Reset buttons — a delete persists
+immediately). The grid itself (columns, alphabetical row order, double-click
+and Edit/Delete context-menu wiring) is the shared `view/command/CommandGrid`,
+which `CommandListEditorView` uses too. (The former in-place
 `GridUnbufferedInlineEditor` / `SimpleCommandDescription` spec-string editors
 were deleted — commands are now identified by a stable chain id, not a
 derived spec string.)

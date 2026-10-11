@@ -141,19 +141,32 @@ by themselves (carried items first, then the ones in the room):
 | `wear` + `~` | **AutoWear** | *"I am now wearing the …"*; *"I'm already wearing the …"*; *"I can't wear the …"*; *"I don't have the …"*; *"I don't have one of those."* |
 | `remove` + `~` | **AutoRemove** | *"I've removed the …"*; *"I'm not wearing the …"*; *"I am not wearing any of those."* |
 
-If the player types an adjective, the automatic actions take it seriously when
-asking *"is it carried or worn?"*: with a blue swim suit in the pocket,
-`take neoprene suit` picks up the neoprene suit from the room, and `drop neoprene
-suit` or `wear neoprene suit` say *"I don't have the neoprene suit."* instead of
-quietly using the blue one. Without an adjective, any item with that noun will do
-(`drop suit` drops the one you carry). When nothing in the pocket fits, the room is
-searched by noun alone, so an adjective that matches nothing there is ignored.
+**When two items share a noun** (a *blue suit* and a *neoprene suit*), the actions
+look where the command makes sense first: **AutoTake** looks at what is *in the room*,
+**AutoDrop**, **AutoWear** and **AutoRemove** at what the player *carries*. If that place
+holds only one such item, that is the one. If it holds several and the player gave no
+adjective, the game asks — *"Which suit should I take?"* — and the player answers by typing
+the adjective (`take neoprene suit`). A few details:
+
+- A typed adjective always wins: `take neoprene suit` takes the neoprene suit from the room
+  even while a blue one is in the pocket, and says *"I already have the neoprene suit."* if it
+  is the one carried.
+- Only items that can take part count. `remove suit` considers just what is worn, `wear suit`
+  just what is wearable and not yet worn, `drop suit` skips what is worn, and `take suit` skips
+  items that cannot be picked up.
+- Items that look the same (same adjective and noun) are not a question; the game picks one.
+- If the match is only in the *other* place, the game says so instead of guessing: `drop suit`
+  with the suit lying in the room answers *"I don't have the suit."*
 
 Add each as its own Response (Verb, Noun `~`, and a single AUTO action — they
 take no settings). The first time you open a Response for editing, the `~` noun
 is added to your vocabulary for you. One caveat: because items' own commands
 are tried first, an item that still has its own `take` or `drop` command
-answers itself and the wildcard Response never sees it.
+answers itself and the wildcard Response never sees it. Such hand-built item commands pick
+between same-noun items by the same rules as the automatic actions (take prefers what is in the
+room, drop/wear/remove what is carried, a typed adjective wins, and wear/remove only consider
+items that can be put on or are worn), as long as they use the **Take**, **Drop**, **Wear** and
+**Remove** actions.
 
 ### Saving and loading
 

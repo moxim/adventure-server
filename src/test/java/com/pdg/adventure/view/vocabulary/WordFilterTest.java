@@ -4,6 +4,8 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.function.SerializablePredicate;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,37 +15,11 @@ class WordFilterTest {
 
     // --- filterByTypeTextOrSynonym(TextField) ---
 
-    @Test
-    void filterByTypeTextOrSynonym_withEmptySearchTerm_matchesEverything() {
+    @ParameterizedTest(name = "filterByTypeTextOrSynonym with search term \"{0}\" matches everything")
+    @ValueSource(strings = {"", "   ", "SWO", "  swo  ", "no", "noun"})
+    void filterByTypeTextOrSynonym_withEmptySearchTerm_matchesEverything(String searchTerm) {
         TextField searchField = new TextField();
-        searchField.setValue("");
-        SerializablePredicate<DescribableWordAdapter> filter = WordFilter.filterByTypeTextOrSynonym(searchField);
-
-        assertThat(filter.test(adapter("sword", Word.Type.NOUN))).isTrue();
-    }
-
-    @Test
-    void filterByTypeTextOrSynonym_withBlankSearchTerm_matchesEverything() {
-        TextField searchField = new TextField();
-        searchField.setValue("   ");
-        SerializablePredicate<DescribableWordAdapter> filter = WordFilter.filterByTypeTextOrSynonym(searchField);
-
-        assertThat(filter.test(adapter("sword", Word.Type.NOUN))).isTrue();
-    }
-
-    @Test
-    void filterByTypeTextOrSynonym_matchesWordTextCaseInsensitively() {
-        TextField searchField = new TextField();
-        searchField.setValue("SWO");
-        SerializablePredicate<DescribableWordAdapter> filter = WordFilter.filterByTypeTextOrSynonym(searchField);
-
-        assertThat(filter.test(adapter("sword", Word.Type.NOUN))).isTrue();
-    }
-
-    @Test
-    void filterByTypeTextOrSynonym_matchesWordTypeCaseInsensitively() {
-        TextField searchField = new TextField();
-        searchField.setValue("no");
+        searchField.setValue(searchTerm);
         SerializablePredicate<DescribableWordAdapter> filter = WordFilter.filterByTypeTextOrSynonym(searchField);
 
         assertThat(filter.test(adapter("sword", Word.Type.NOUN))).isTrue();
@@ -78,50 +54,22 @@ class WordFilterTest {
         assertThat(filter.test(adapter("sword", Word.Type.NOUN))).isFalse();
     }
 
-    @Test
-    void filterByTypeTextOrSynonym_trimsSurroundingWhitespaceFromSearchTerm() {
-        TextField searchField = new TextField();
-        searchField.setValue("  swo  ");
-        SerializablePredicate<DescribableWordAdapter> filter = WordFilter.filterByTypeTextOrSynonym(searchField);
-
-        assertThat(filter.test(adapter("sword", Word.Type.NOUN))).isTrue();
-    }
-
     // --- filterByTypeOrText() ---
 
-    @Test
-    void filterByTypeOrText_withEmptyFilterString_matchesEverything() {
+    @ParameterizedTest(name = "filterByTypeOrText with filter string \"{0}\" matches everything")
+    @ValueSource(strings = {"", "   ", "SWO", "  swo  ", "no", "noun"})
+    void filterByTypeOrText_withEmptyFilterString_matchesEverything(String filterString) {
         ComboBox.ItemFilter<Word> filter = WordFilter.filterByTypeOrText();
 
-        assertThat(filter.test(new Word("sword", Word.Type.NOUN), "")).isTrue();
+        assertThat(filter.test(new Word("sword", Word.Type.NOUN), filterString)).isTrue();
     }
 
-    @Test
-    void filterByTypeOrText_matchesTypeNamePrefixCaseInsensitively() {
-        ComboBox.ItemFilter<Word> filter = WordFilter.filterByTypeOrText();
-
-        assertThat(filter.test(new Word("sword", Word.Type.NOUN), "no")).isTrue();
-    }
-
-    @Test
-    void filterByTypeOrText_matchesWordTextPrefixCaseInsensitively() {
-        ComboBox.ItemFilter<Word> filter = WordFilter.filterByTypeOrText();
-
-        assertThat(filter.test(new Word("sword", Word.Type.NOUN), "SWO")).isTrue();
-    }
 
     @Test
     void filterByTypeOrText_withNoMatch_returnsFalse() {
         ComboBox.ItemFilter<Word> filter = WordFilter.filterByTypeOrText();
 
         assertThat(filter.test(new Word("sword", Word.Type.NOUN), "xyz")).isFalse();
-    }
-
-    @Test
-    void filterByTypeOrText_trimsSurroundingWhitespaceFromFilterString() {
-        ComboBox.ItemFilter<Word> filter = WordFilter.filterByTypeOrText();
-
-        assertThat(filter.test(new Word("sword", Word.Type.NOUN), "  swo  ")).isTrue();
     }
 
     private static DescribableWordAdapter adapter(String text, Word.Type type) {
