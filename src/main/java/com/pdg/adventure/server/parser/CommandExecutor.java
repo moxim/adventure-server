@@ -1,8 +1,10 @@
 package com.pdg.adventure.server.parser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.pdg.adventure.api.*;
 import com.pdg.adventure.model.VocabularyData;
@@ -32,10 +34,18 @@ public class CommandExecutor {
 
     public ExecutionResult execute(CommandDescription aCommand) {
         // first look for commands in the pocket
-        List<CommandChain> availableCommandChains = pocket.getMatchingCommandChain(aCommand);
+        List<CommandChain> pocketChains = pocket.getMatchingCommandChain(aCommand);
         // then add commands in the location itself, the directions and the items in the location
-        availableCommandChains.addAll(location.getMatchingCommandChain(aCommand));
+        List<CommandChain> locationChains = location.getMatchingCommandChain(aCommand);
+        List<CommandChain> availableCommandChains = new ArrayList<>(pocketChains);
+        availableCommandChains.addAll(locationChains);
 
+        // item-level take/drop commands resolve their item like AutoTake/AutoDrop do
+        Optional<ExecutionResult> refusal =
+                ItemChainResolver.narrow(pocketChains, locationChains, availableCommandChains, aCommand);
+        if (refusal.isPresent()) {
+            return refusal.get();
+        }
         reduceCommandChains(availableCommandChains, aCommand);
 
         ExecutionResult result = new CommandExecutionResult();

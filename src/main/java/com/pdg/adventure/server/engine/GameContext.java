@@ -28,6 +28,7 @@ public class GameContext {
     private String currentAdverb = VocabularyData.EMPTY_STRING;
     private String currentNoun2 = VocabularyData.EMPTY_STRING;
     private String currentAdjective2 = VocabularyData.EMPTY_STRING;
+    private String currentVerb = VocabularyData.EMPTY_STRING;
     private String currentNoun = VocabularyData.EMPTY_STRING;
     private String currentAdjective = VocabularyData.EMPTY_STRING;
     private String currentPictureId;
@@ -124,6 +125,19 @@ public class GameContext {
 
     public String getCurrentAdjective2() {
         return currentAdjective2;
+    }
+
+    /**
+     * The verb of the sub-command currently being dispatched (the word the vocabulary resolves the typed one to) - set
+     * fresh by GameLoop before each sub-command so an action can name it in a message ("Which suit should I take?").
+     * Never null; VocabularyData.EMPTY_STRING when there is none.
+     */
+    public void setCurrentVerb(String aVerb) {
+        currentVerb = aVerb == null ? VocabularyData.EMPTY_STRING : aVerb;
+    }
+
+    public String getCurrentVerb() {
+        return currentVerb;
     }
 
     /**

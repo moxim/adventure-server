@@ -50,6 +50,7 @@ public class GameLoop {
                 // leak into a PrepositionCondition/AdverbCondition check for this one.
                 gameContext.setCurrentPreposition(command.getPreposition());
                 gameContext.setCurrentAdverb(command.getAdverb());
+                gameContext.setCurrentVerb(command.getVerb());
                 gameContext.setCurrentNoun(command.getNoun());
                 gameContext.setCurrentAdjective(command.getAdjective());
                 gameContext.setCurrentNoun2(command.getNoun2());

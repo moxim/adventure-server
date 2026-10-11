@@ -44,6 +44,7 @@ List<GenericCommandDescription>       ← one per conjunction/period-separated s
    ├─ empty-verb check → SM6 ("I was not able to understand any of that…"); stop the sequence
    ├─ CommandExecutor(pocket, location).execute(cmd)      ← LOCAL dispatch, tried first
    │      ├─ pocket.getMatchingCommandChain(cmd)  +  location.getMatchingCommandChain(cmd)
+   │      ├─ ItemChainResolver: item-level take/drop chains pick their item like AutoTake/AutoDrop
    │      ├─ reduceCommandChains: drop empty → reduce by adjective → reduce by noun
    │      │                       → keep only the best-ranked tier
    │      ├─ 0 chains  → FAILURE, message = SM8 ("I can't do that.")
@@ -175,7 +176,27 @@ Every `Thing` and `GenericDirection` composes a `CommandHandler`
 1. Collect chains matching it from the **player's pocket**.
 2. Append chains from the **current location** (which descends into directions
    and items).
-3. `reduceCommandChains` narrows the candidates in four passes:
+3. `ItemChainResolver.narrow` (a no-op unless the candidates include take/drop/wear/remove
+   chains and a noun was typed) makes the commands **authored on items** pick the same item
+   the [Auto item actions](#auto-item-actions-autotake-autodrop-autowear-autoremove) would. A
+   chain counts as a take, drop, wear or remove chain if it contains a `TakeAction`,
+   `DropAction`, `WearAction` or `RemoveAction` (a chain built from other actions is left to
+   the ranking below); the item comes from the action. The origin of each chain (pocket or
+   location) is known from which of the two lookups returned it. Then: a typed adjective keeps
+   only the items with exactly that adjective when any exists in either container (otherwise it
+   is ignored); take **honours the location**, the others **the pocket** — the candidates from
+   the other container are dropped when the honoured one has any; items with the same
+   adjective and noun collapse to one chain. For wear and remove only *fitting* items count
+   (wear: wearable and not worn; remove: worn), so wearing one suit and carrying another
+   removes the worn one. When the honoured container has no candidate the executor answers
+   itself, from the typed noun (or the item's description when it is a single item): for take
+   and drop only if the other container holds several distinct items — `SM25` ("I already have
+   the suit.") / `SM49` ("I don't have the suit."); for wear and remove always, since an item
+   that is not carried can be neither worn nor taken off — `SM49` / `SM50`. Carried suits none
+   of which fit also get a noun answer (`SM50` for remove, `SM29`/`SM40` for wear). A clash
+   among fitting items in the honoured container is left to the passes below, which end in
+   `SM61`. A bare verb with no noun is not touched.
+4. `reduceCommandChains` narrows the remaining candidates in four passes:
    - **drop empty chains** (no commands);
    - **`reduceByAdjective`** — `GenericCommandProvider` treats an empty
      stored adjective as a wildcard. Drop chains with a non-empty,
@@ -194,15 +215,15 @@ Every `Thing` and `GenericDirection` composes a `CommandHandler`
      wrong). Uses `PreCondition.isDeterministic()` (a `ChanceCondition` is
      skipped, never pre-rolled) and `Action.isInformationalOnly()`. A tie
      across all candidates is left as genuine ambiguity.
-4. 0 chains → failure, `SystemMessageKey.SM8` (*"I can't do that."*).
-5. >1 chains → failure; `SM60` (*"What should I &lt;verb&gt;?"*, no input
+5. 0 chains → failure, `SystemMessageKey.SM8` (*"I can't do that."*).
+6. >1 chains → failure; `SM60` (*"What should I &lt;verb&gt;?"*, no input
    noun) or `SM61` (input noun given), each `String.format`-filled.
-6. exactly 1 → `chain.execute()`, returned as-is (no `clarifyExecutionOutcome`
+7. exactly 1 → `chain.execute()`, returned as-is (no `clarifyExecutionOutcome`
    on this path). `GenericCommandChain.execute` returns `SUCCESS` if **any**
    command in the chain applied — joining only the non-blank result messages
    of the commands that succeeded — otherwise `FAILURE` carrying the last
    command's failure message.
-7. On the 0/>1 paths only, `clarifyExecutionOutcome` fills an empty
+8. On the 0/>1 paths only, `clarifyExecutionOutcome` fills an empty
    `resultMessage` (FAILURE → SM8; its `SUCCESS → SM15 "OK."` branch is
    unreachable, since those paths always carry `FAILURE`). The single-match
    path is no longer normalised: `GameLoop.runOneCommandSucceeded` returns
@@ -504,30 +525,52 @@ every item in the adventure. They carry no parameters (`AutoTakeActionData`
 etc. are empty).
 
 All four extend the package-private `AbstractNounItemAction`, which reads
-`GameContext.getCurrentNoun()` / `getCurrentAdjective()` and searches, in this
-order, the **pocket**, then the **current location's item container**, then
-(for "does this noun name an object at all?") the adventure-wide `allItems`
-registry. A matching adjective narrows the match; otherwise the noun alone
-decides (the same leniency as `ItemIdentifier`) — with one exception: the
-**pocket lookup is strict** (`AbstractNounItemAction.findExactlyIn`). When the
-player typed an adjective, only a carried item with exactly that adjective
-counts as carried/worn. Without this, two items sharing a noun (the demo's
-"blue swim suit" and "neoprene suit") shadow each other: with the blue suit in
-the pocket, `take neoprene suit` found it by noun alone and answered `SM25`
-("I already have the blue suit") instead of looking in the room. The room and
-`allItems` lookups stay lenient (`findIn`); they only choose which message to
-print. Failures return `FAILURE`, so a `GenericCommand` stops its chain, and
-`GameLoop` prints the message.
+`GameContext.getCurrentVerb()` / `getCurrentNoun()` / `getCurrentAdjective()` (set per
+sub-command by `GameLoop`) and resolves the item with `resolve(honoured, other, suitable)`.
+Each action **honours one container first**: AutoTake the **location**, AutoDrop, AutoWear
+and AutoRemove the **pocket**. Only a clash *inside* the honoured container is ambiguous;
+the other container is consulted solely to explain why nothing happened. The steps:
+
+1. *Candidates* are the items of both containers named by the typed noun. A typed adjective
+   narrows them to the exact-adjective ones whenever any exists in either container,
+   otherwise it is ignored (the same leniency as `ItemIdentifier`).
+2. If the honoured container holds candidates, the **suitable** ones decide — containable
+   (AutoTake), unworn (AutoDrop), wearable and unworn (AutoWear), worn (AutoRemove). Items
+   with the same adjective count as one (two identical coins are not a question). One distinct
+   item → `FOUND`; several → `AMBIGUOUS` (`SM61`, "Which suit should I take?", built from the
+   typed noun and the current verb); none suitable → `UNSUITABLE` (the refusal below).
+3. Otherwise candidates in the other container → `ELSEWHERE`; none at all → `NONE`
+   (`isKnownObject()` then asks the adventure-wide `allItems` registry whether the noun names an
+   object at all).
+
+Messages name the item by its description when one distinct item is meant, and by the typed
+noun when several were possible. Ambiguity is reported *before* "pocket full" (`SM27`).
+Example, the demo's "blue swim suit" and "neoprene suit":
+
+| Command | Blue suit | Neoprene suit | Result |
+|---------|-----------|---------------|--------|
+| `take suit` | here | carried | takes the blue suit (`SM36`) |
+| `take suit` | here | here | `SM61` — the player must type an adjective |
+| `take suit` | carried | carried | `SM25` ("I already have the suit.") |
+| `drop suit` | carried | here | drops the blue suit (`SM39`) |
+| `drop suit` | carried | carried | `SM61`; with one of them worn, the unworn one is dropped |
+| `remove suit` | worn | carried | removes the blue suit — only worn items count |
+| `take neoprene suit` | carried | here | takes the neoprene suit — the adjective beats the container |
+
+Failures return `FAILURE`, so a `GenericCommand` stops its chain, and `GameLoop` prints the
+message. `ExamineAction` shares the base class but still uses the simple `findIn`
+(pocket, then location, first match wins); it does not ask which.
 
 | Situation | AutoTake | AutoDrop | AutoWear | AutoRemove |
 |-----------|-------|-------|-------|-------|
 | success | `SM36` (moved to pocket via `MoveItemAction`) | `SM39` (moved to location) | `SM37` | `SM38` (stays in pocket) |
-| already in the target state | carried/worn → `SM25` | — | worn → `SM29` | carried/here but not worn → `SM50` |
-| item is here, not carried | (the normal case) | `SM49` | `SM49` | `SM50` |
+| several distinct, suitable items in the honoured container | `SM61` | `SM61` | `SM61` | `SM61` |
+| already in the target state | only carried → `SM25` | — | worn → `SM29` | carried/here but not worn → `SM50` |
+| item is in the other container only | (carried: `SM25`) | here → `SM49` | here → `SM49` | here → `SM50` |
 | item exists in the game, but elsewhere | `SM26` | `SM28` | `SM28` | `SM23` |
 | no noun (incl. an unknown word) | `SM26` | `SM28` | `SM28` | `SM23` |
 | noun names no item (a plain vocabulary word) | `SM8` | `SM8` | `SM8` | `SM8` |
-| other refusals | non-containable → `SM8`; pocket full → `SM27` | worn → `SM24` (**refuses**; `DropAction` silently un-wears) | carried but not wearable → `SM40` | — |
+| other refusals | only non-containable items match → `SM8`; pocket full → `SM27` | only worn items carried → `SM24` (**refuses**; `DropAction` silently un-wears) | carried but not wearable → `SM40` | — |
 
 Deliberate gaps and choices relative to PAW:
 

@@ -98,7 +98,7 @@ public enum SystemMessageKey {
     SM58(58, "A %1$s appears in the %2$s.", "is printed when an item appears in a container. (A %1$s appears in the %2$s.)"),
     SM59(59, "Exits are:", "is printed after a location description. (Exits are:)"),
     SM60(60, "What should I %s?", "is printed when a verb matches multiple commands and no noun was given. (What should I %s?)"),
-    SM61(61, "Which %1$s should I %2$s?", "is printed when a verb+noun still matches multiple commands. (Which %1$s should I %2$s?)"),
+    SM61(61, "Which %1$s should I %2$s?", "is printed when a verb+noun still matches multiple commands, or when take, drop, wear or remove finds several items that fit the noun. (Which %1$s should I %2$s?)"),
     SM62(62, "There are no obvious exits.", "is printed when a location has no exits to list. (There are no obvious exits.)"),
     SM63(63, "I don't know what 'it' refers to.", "is printed when a pronoun (it, them, ...) has no prior noun to refer to. (I don't know what 'it' refers to.)"),
     SM64(64, "The %1$s is already in the %2$s.",
