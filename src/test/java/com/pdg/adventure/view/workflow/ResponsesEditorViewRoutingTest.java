@@ -114,7 +114,7 @@ class ResponsesEditorViewRoutingTest extends BrowserlessTest {
                 .thenReturn(Optional.of(adventure));
         view.beforeEnter(eventWithAdventureId("adv-1"));
 
-        assertThat(find(Button.class, view).withText("Create Response Process").single()).isNotNull();
+        assertThat(find(Button.class, view).withText("Create").single()).isNotNull();
         assertThat(find(Button.class, view).withText("Back").single()).isNotNull();
     }
 

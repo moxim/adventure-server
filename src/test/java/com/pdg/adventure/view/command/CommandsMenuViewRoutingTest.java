@@ -2,6 +2,7 @@ package com.pdg.adventure.view.command;
 
 import com.vaadin.browserless.BrowserlessTest;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -13,6 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +24,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -223,5 +227,79 @@ class CommandsMenuViewRoutingTest extends BrowserlessTest {
         FlashNotifier.showPending();
         Notification notification = find(Notification.class).single();
         assertThat(test(notification).getText()).isEqualTo("Item not found or access denied: missing");
+    }
+
+    // Delete goes through a GridContextMenu item click, which a browserless test can't drive
+    // reliably, so these build the confirmation dialog directly (package-private for this) and
+    // drive it as a user would: open, then confirm or cancel.
+    private LocationData enterLocationWithOneCommand() {
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        location.getDescriptionData().setShortDescription("the dunes");
+        // Mutable collections (unlike providerWithOneCommand): deleting removes from them.
+        CommandData command = new CommandData();
+        command.setCommandDescription(new CommandDescriptionData("go|north|"));
+        CommandChainData chain = new CommandChainData();
+        chain.setCommands(new ArrayList<>(List.of(command)));
+        CommandProviderData provider = new CommandProviderData();
+        provider.setAvailableCommands(new HashMap<>(Map.of("go|north|", chain)));
+        location.setCommandProviderData(provider);
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of("loc-1", location));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+        view.beforeEnter(eventWithParams(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1"),
+                new RouteParam(RouteIds.LOCATION_ID.getValue(), "loc-1")));
+        return location;
+    }
+
+    private static CommandData onlyCommandOf(LocationData aLocation) {
+        return aLocation.getCommandProviderData().getAvailableCommands().values().iterator().next()
+                        .getCommands().getFirst();
+    }
+
+    @Test
+    void deleteConfirmDialog_asksFirst_andDeletesNothingUntilConfirmed() {
+        LocationData location = enterLocationWithOneCommand();
+        CommandData command = onlyCommandOf(location);
+
+        ConfirmDialog dialog = view.buildDeleteConfirmDialog(command);
+        UI.getCurrent().add(dialog);
+        dialog.open();
+
+        assertThat(test(dialog).getHeader()).isEqualTo("Delete Command");
+        assertThat(test(dialog).getText()).contains("go north");
+        verify(adventureService, never()).saveLocationData(any());
+        assertThat(location.getCommandProviderData().findChainIdContaining(command)).isPresent();
+    }
+
+    @Test
+    void confirmingDeleteDialog_removesTheCommandAndPersistsTheLocation() {
+        LocationData location = enterLocationWithOneCommand();
+        CommandData command = onlyCommandOf(location);
+
+        ConfirmDialog dialog = view.buildDeleteConfirmDialog(command);
+        UI.getCurrent().add(dialog);
+        dialog.open();
+        test(dialog).confirm();
+
+        assertThat(location.getCommandProviderData().getAvailableCommands()).isEmpty();
+        verify(adventureService).saveLocationData(location);
+    }
+
+    @Test
+    void cancelingDeleteDialog_deletesNothing() {
+        LocationData location = enterLocationWithOneCommand();
+        CommandData command = onlyCommandOf(location);
+
+        ConfirmDialog dialog = view.buildDeleteConfirmDialog(command);
+        UI.getCurrent().add(dialog);
+        dialog.open();
+        test(dialog).cancel();
+
+        assertThat(location.getCommandProviderData().findChainIdContaining(command)).isPresent();
+        verify(adventureService, never()).saveLocationData(any());
     }
 }
