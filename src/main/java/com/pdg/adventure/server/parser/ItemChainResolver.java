@@ -102,9 +102,13 @@ final class ItemChainResolver {
                 candidates = fitting;
             } else if (distinctItems(someHonoured) > 1) {
                 // several carried suits, none of which the command can act on: say so for all of them
-                SystemMessageKey key = aKind == Kind.REMOVE ? SystemMessageKey.SM50
-                                                            : someHonoured.getFirst().item().isWorn()
-                                                              ? SystemMessageKey.SM29 : SystemMessageKey.SM40;
+                SystemMessageKey key;
+                if (aKind == Kind.REMOVE) {
+                    key = SystemMessageKey.SM50;
+                } else {
+                    key = someHonoured.getFirst().item().isWorn()
+                           ? SystemMessageKey.SM29 : SystemMessageKey.SM40;
+                }
                 return Optional.of(refusal(key, aCommand.getNoun()));
             }
         }
@@ -118,13 +122,23 @@ final class ItemChainResolver {
                                                          CommandDescription aCommand) {
         if (aKind == Kind.WEAR || aKind == Kind.REMOVE) {
             // an item that is not carried can be neither worn nor taken off, whatever the item's own command says
-            SystemMessageKey key = aKind == Kind.WEAR ? SystemMessageKey.SM49 : SystemMessageKey.SM50;
+            SystemMessageKey key;
+            if (aKind == Kind.WEAR) {
+                key = SystemMessageKey.SM49;
+            } else {
+                key = SystemMessageKey.SM50;
+            }
             String name = distinctItems(someItemChains) == 1
                           ? someItemChains.getFirst().item().getStrippedBasicDescription() : aCommand.getNoun();
             return Optional.of(refusal(key, name));
         }
         if (distinctItems(someItemChains) > 1) {
-            SystemMessageKey key = aKind == Kind.TAKE ? SystemMessageKey.SM25 : SystemMessageKey.SM49;
+            SystemMessageKey key;
+            if (aKind == Kind.TAKE) {
+                key = SystemMessageKey.SM25;
+            } else {
+                key = SystemMessageKey.SM49;
+            }
             return Optional.of(refusal(key, aCommand.getNoun()));
         }
         keepOnePerIdenticalItem(someItemChains, someAvailableChains);
@@ -163,17 +177,22 @@ final class ItemChainResolver {
     private static Optional<ItemChain> describe(CommandChain aChain) {
         for (Command command : aChain.getCommands()) {
             for (Action action : command.getActions()) {
-                if (action instanceof TakeAction take) {
-                    return Optional.of(new ItemChain(aChain, take.getItem(), Kind.TAKE));
-                }
-                if (action instanceof DropAction drop) {
-                    return Optional.of(new ItemChain(aChain, drop.getItem(), Kind.DROP));
-                }
-                if (action instanceof WearAction wear && wear.getThing() instanceof Item item) {
-                    return Optional.of(new ItemChain(aChain, item, Kind.WEAR));
-                }
-                if (action instanceof RemoveAction remove && remove.getThing() instanceof Item item) {
-                    return Optional.of(new ItemChain(aChain, item, Kind.REMOVE));
+                switch (action) {
+                    case TakeAction take -> {
+                        return Optional.of(new ItemChain(aChain, take.getItem(), Kind.TAKE));
+                    }
+                    case DropAction drop -> {
+                        return Optional.of(new ItemChain(aChain, drop.getItem(), Kind.DROP));
+                    }
+                    case WearAction wear when wear.getThing() instanceof Item item -> {
+                        return Optional.of(new ItemChain(aChain, item, Kind.WEAR));
+                    }
+                    case RemoveAction remove when remove.getThing() instanceof Item item -> {
+                        return Optional.of(new ItemChain(aChain, item, Kind.REMOVE));
+                    }
+                    case null, default -> {
+                        // there is no take/drop/wear/remove action in the chain so nothing is returned for it
+                    }
                 }
             }
         }

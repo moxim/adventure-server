@@ -10,14 +10,15 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
-import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.*;
+import com.vaadin.flow.server.streams.UploadEvent;
 import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 
 import com.pdg.adventure.model.AdventureData;
@@ -43,7 +44,6 @@ public class PictureEditorView extends VerticalLayout
     private final Binder<PictureViewModel> binder;
     private final Image preview = new Image();
     private final Upload upload;
-    private final MemoryBuffer uploadBuffer = new MemoryBuffer();
 
     private Button saveButton;
     private Button resetButton;
@@ -70,40 +70,13 @@ public class PictureEditorView extends VerticalLayout
         TextField nameField = new TextField("Name");
         nameField.setWidthFull();
 
-        upload = new Upload(uploadBuffer);
-        upload.setAcceptedFileTypes("image/png", "image/webp", "image/jpeg");
+        upload = new Upload(this::handleUpload);
+        upload.setAcceptedMimeTypes("image/png", "image/webp", "image/jpeg");
         upload.setMaxFileSize(MAX_FILE_SIZE_BYTES);
         upload.setMaxFiles(1);
 
         preview.setMaxWidth("300px");
         preview.setVisible(false);
-
-        upload.addSucceededListener(event -> {
-            try {
-                byte[] bytes = uploadBuffer.getInputStream().readAllBytes();
-                if (bytes.length > MAX_FILE_SIZE_BYTES) {
-                    Notification notification = Notification.show("Pictures must be less than 2MB in size", 5000,
-                                                                   Notification.Position.MIDDLE);
-                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                    return;
-                }
-                String sniffedContentType = sniffContentType(bytes);
-                if (sniffedContentType == null) {
-                    Notification notification = Notification.show(
-                            "The uploaded file is not a recognized PNG, JPEG, or WebP image.", 5000,
-                            Notification.Position.MIDDLE);
-                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                    return;
-                }
-                stagePendingUpload(bytes, sniffedContentType);
-                saveButton.setEnabled(binder.isValid());
-            } catch (IOException e) {
-                LOG.error("Failed to read uploaded picture", e);
-                Notification notification = Notification.show("Could not read the uploaded file.", 5000,
-                                                               Notification.Position.MIDDLE);
-                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-            }
-        });
 
         upload.addFileRejectedListener(event -> {
             Notification notification = Notification.show(event.getErrorMessage(), 5000,
@@ -129,6 +102,45 @@ public class PictureEditorView extends VerticalLayout
 
         HorizontalLayout uploadRow = new HorizontalLayout(upload, preview);
         add(nameField, uploadRow, resetBackSaveView);
+    }
+
+    /**
+     * Receives one uploaded file. Runs on the request thread without the UI lock, so the checks only
+     * look at the bytes and the UI is touched solely through {@code access}. The failure messages are
+     * shown as notifications rather than via {@link UploadEvent#reject(String)}: the upload component
+     * only turns browser-side rejections into its file-rejected event.
+     * Package-private so a browserless test can drive it with a mocked {@link UploadEvent}.
+     */
+    void handleUpload(UploadEvent event) {
+        byte[] bytes;
+        try (InputStream in = event.getInputStream()) {
+            // One byte more than allowed, so an oversized file is noticed without buffering all of it.
+            bytes = in.readNBytes(MAX_FILE_SIZE_BYTES + 1);
+        } catch (IOException e) {
+            LOG.error("Failed to read uploaded picture", e);
+            showUploadError(event.getUI(), "Could not read the uploaded file.");
+            return;
+        }
+        if (bytes.length > MAX_FILE_SIZE_BYTES) {
+            showUploadError(event.getUI(), "Pictures must be less than 2MB in size");
+            return;
+        }
+        String sniffedContentType = sniffContentType(bytes);
+        if (sniffedContentType == null) {
+            showUploadError(event.getUI(), "The uploaded file is not a recognized PNG, JPEG, or WebP image.");
+            return;
+        }
+        event.getUI().access(() -> {
+            stagePendingUpload(bytes, sniffedContentType);
+            saveButton.setEnabled(binder.isValid());
+        });
+    }
+
+    private static void showUploadError(UI aUi, String aMessage) {
+        aUi.access(() -> {
+            Notification notification = Notification.show(aMessage, 5000, Notification.Position.MIDDLE);
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        });
     }
 
     private static String sniffContentType(byte[] bytes) {

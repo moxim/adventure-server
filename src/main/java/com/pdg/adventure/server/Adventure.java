@@ -10,7 +10,6 @@ import java.util.*;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.Ided;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
@@ -38,7 +37,7 @@ public class Adventure implements Ided {
 
     private final Map<String, Location> locationMap;
     private final Vocabulary allWords;
-    private final transient MessagesHolder allMessages;
+//    private final transient MessagesHolder allMessages;
     private final Map<String, Item> allItems;
     private final Map<String, Container> allContainers;
 
@@ -48,7 +47,8 @@ public class Adventure implements Ided {
 
     // Todo: must I autowire? where?
     @Autowired
-    public Adventure(Vocabulary aBagOfAllWords, Map<String, Container> aContainerBag, MessagesHolder aBagOfAllMessages,
+    public Adventure(Vocabulary aBagOfAllWords, Map<String, Container> aContainerBag,
+//                     MessagesHolder aBagOfAllMessages,
                      Map<String, Item> aContainerForAllItems) {
         id = UUID.randomUUID().toString();
         locationMap = new HashMap<>();
@@ -56,7 +56,7 @@ public class Adventure implements Ided {
 
         allWords = aBagOfAllWords;
         allContainers = aContainerBag;
-        allMessages = aBagOfAllMessages;
+//        allMessages = aBagOfAllMessages;
         allItems = aContainerForAllItems;
         variableProvider = new VariableProvider();
     }

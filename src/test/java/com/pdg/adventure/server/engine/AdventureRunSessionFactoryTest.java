@@ -353,7 +353,7 @@ class AdventureRunSessionFactoryTest {
     }
 
     private static Adventure adventureBoundTo(Location aStartLocation, String aStartLocationId) {
-        Adventure adventure = new Adventure(null, null, null, null);
+        Adventure adventure = new Adventure(null, null, null);
         adventure.setCurrentLocationId(aStartLocationId);
         adventure.setLocations(List.of(aStartLocation));
         return adventure;

@@ -13,7 +13,6 @@ import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.Adventure;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.location.Location;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.tangible.GenericContainer;
@@ -44,7 +43,7 @@ public class AdventureMapper implements Mapper<AdventureData, Adventure> {
 
     public Adventure mapToBO(AdventureData anAdventureData) {
         final Vocabulary vocabulary = vocabularyMapper.mapToBO(anAdventureData.getVocabularyData());
-        Adventure adventure = new Adventure(vocabulary, new HashMap<>(4), new MessagesHolder(), new HashMap<>());
+        Adventure adventure = new Adventure(vocabulary, HashMap.newHashMap(4), new HashMap<>());
         adventure.setVariableProvider(variableMapper.mapToBO(anAdventureData.getVariableData()));
         variableMapper.mapToBO(anAdventureData.getVariableData());
         adventure.setId((anAdventureData.getId()));

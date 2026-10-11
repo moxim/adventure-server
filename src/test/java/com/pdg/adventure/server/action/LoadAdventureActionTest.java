@@ -122,8 +122,8 @@ class LoadAdventureActionTest {
     private void stubSuccessfulLoad(AdventureData anAdventureData) {
         when(adventureService.findAdventureById(anAdventureData.getId())).thenReturn(Optional.of(anAdventureData));
 
-        Adventure adventure = new Adventure(null, null, null, null);
-        adventure.setCurrentLocationId("loc-1");
+        Adventure adventure = new Adventure(null, null, null);
+       adventure.setCurrentLocationId("loc-1");
         when(startLocation.getId()).thenReturn("loc-1");
         adventure.setLocations(List.of(startLocation));
 
