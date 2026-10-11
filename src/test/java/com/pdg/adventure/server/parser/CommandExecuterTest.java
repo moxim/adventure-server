@@ -47,6 +47,7 @@ class CommandExecutorTest {
 
         @Override
         public void setExecutionState(ExecutionResult.State anExecutionState) {
+            // not needed for this test
         }
 
         @Override
@@ -56,6 +57,7 @@ class CommandExecutorTest {
 
         @Override
         public void setResultMessage(String aResultMessage) {
+            // not needed for this test
         }
 
         @Override
@@ -65,6 +67,7 @@ class CommandExecutorTest {
 
         @Override
         public void setCommandHasMatched() {
+            // not needed for this test
         }
     };
     Action successAction = new Action() {
