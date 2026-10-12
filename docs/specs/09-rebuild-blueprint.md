@@ -420,6 +420,11 @@ Before declaring the rebuild done, walk this list:
       location, a vocabulary word, an item, a direction, and a command,
       then editing each one again, all work without errors and respect
       the BACK / SAVE / RESET / CANCEL contract.
+- [ ] Right-click an adventure → **Export** downloads a file named after
+      its title plus `.adventure.json`; **Import Adventure** with that file adds a
+      second, independent adventure owned by the importing user (same
+      title, new ids; the original is untouched). A text file renamed to
+      `.json` is refused with an error and adds nothing.
 - [ ] Clicking **Test** on that adventure (once saved and non-empty) opens
       `AdventureRunView` (title `"Test: …"`) and plays through in the browser;
       **Run Adventure** from the adventures list and from a player's library

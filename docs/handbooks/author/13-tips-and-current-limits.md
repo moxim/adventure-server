@@ -24,6 +24,12 @@ worth planning around.
   locations, items, words, messages and pictures it doesn't tell you what
   else still points at the exit, and there is no undo. See
   [Chapter 5](05-locations-and-exits.md#exits).
+- **Export and import move the adventure, not its people.** An exported file
+  carries all the content, but not who is assigned to the adventure or any
+  games players saved, and an import always makes a *new* adventure owned by
+  whoever imports it. Importing never overwrites, so it can't be used to
+  restore a backup *over* an adventure — import it, then delete or rename the
+  old one. See [Chapter 3](03-your-adventures.md#exporting-an-adventure).
 - **The World map isn't wired to your actual locations yet.** It's a
   placeholder illustration, not a live diagram of your world — see
   [Chapter 5](05-locations-and-exits.md#the-world-map).
