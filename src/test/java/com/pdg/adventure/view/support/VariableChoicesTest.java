@@ -10,16 +10,16 @@ import com.pdg.adventure.model.VariableData;
 class VariableChoicesTest {
 
     @Test
-    void of_listsTheAdventuresVariablesPlusVisited_sortedAndLive() {
+    void of_listsTheAdventuresVariablesPlusTheEnginesOwn_sortedAndLive() {
         AdventureData adventure = new AdventureData();
         final VariableData variableData = adventure.getVariableData();
         variableData.addVariable("zeta", 22);
         variableData.addVariable("Alpha", 1);
 
-        assertThat(VariableChoices.of(adventure)).containsExactly("Alpha", "VISITED", "zeta");
+        assertThat(VariableChoices.of(adventure)).containsExactly("Alpha", "TURNS", "VISITED", "zeta");
 
         variableData.addVariable("beta", 2);
-        assertThat(VariableChoices.of(adventure)).containsExactly("Alpha", "beta", "VISITED", "zeta");
-        assertThat(VariableChoices.of(null)).containsExactly("VISITED");
+        assertThat(VariableChoices.of(adventure)).containsExactly("Alpha", "beta", "TURNS", "VISITED", "zeta");
+        assertThat(VariableChoices.of(null)).containsExactly("TURNS", "VISITED");
     }
 }

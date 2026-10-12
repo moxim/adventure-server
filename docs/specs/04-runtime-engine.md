@@ -42,6 +42,7 @@ List<GenericCommandDescription>       ← one per conjunction/period-separated s
    │                                        run once BEFORE each sub-command,
    │                                        not once per typed line
    ├─ empty-verb check → SM6 ("I was not able to understand any of that…"); stop the sequence
+   ├─ TURNS + 1                           ← one turn per valid sub-command, counted before dispatch (see TURNS below)
    ├─ CommandExecutor(pocket, location).execute(cmd)      ← LOCAL dispatch, tried first
    │      ├─ pocket.getMatchingCommandChain(cmd)  +  location.getMatchingCommandChain(cmd)
    │      ├─ ItemChainResolver: item-level take/drop chains pick their item like AutoTake/AutoDrop
@@ -476,6 +477,9 @@ author-placeable:
 | `RemoveAction(wearable, msgs)` | Inverse of `WearAction`; clears `isWorn`; `SUCCESS` + `SM38` / `FAILURE` + `SM41`. Also interpolates the *stripped* (article-less) description. |
 | `MovePlayerAction(destination, gameContext, variableProvider)` | Set `gameContext.currentLocation = destination`, run `DescribeAction` over `destination.getArrivalDescription()` (visit-aware: long on first visit, short thereafter), set `gameContext.currentPictureId` from that description, record the `VISITED` variable, increment `timesVisited`, then append the Arrival Processes' output. |
 | `InventoryAction(consumer, pocketSupplier, msgs)` | Print the carried-items header (`SM9`) followed by `pocket.listContents()`. |
+| `PrintVariableAction(name, consumer, vars)` | **PRINT_VAR.** Tell `name : value`, e.g. `VISITED : 14`, with the variable's current value. A variable that does not exist prints a hyphen (`ghost : -`) and is not created. Always `SUCCESS`. |
+| `PrintVariablesAction(consumer, vars)` | **PRINT_VARS.** Tell every variable currently in the shared provider as `name : value`, one per line in a single message, sorted by name ignoring case; a single hyphen if there are none. Always `SUCCESS`. |
+| `TurnsAction(consumer, vars)` | **TURNS.** Tell "You have taken x turn(s)." where x is the `TURNS` variable (0 if it does not exist): `SM17`, the number, `SM18`, `SM19` unless x is exactly 1, `SM20` — see [§ The TURNS variable](#the-turns-variable). |
 | `QuitAction(msgs)` | Throw `QuitException` carrying the supplied bye message. |
 | `LoadAdventureAction(service, mapper, config, gameContext)` | Resolve an `adventureId`, load and map the `AdventureData`, throw `ReloadAdventureException` on success (returns normally on failure). Engine-managed — no DO, no editor. |
 | `SetVariableAction(name, value, vars, msgs)` | Write `Variable(name, value)` into the `VariableProvider`. 
@@ -487,6 +491,26 @@ clears the shared `VariableProvider` and defines each authored `VariableData` at
 | `CreateAction(thing, containerSupplier, msgs)` | Add `thing` to the supplied container; emits `SM58`. Authorable via the "Create Item" action editor. |
 | `DestroyAction(thing, msgs)` | Remove `thing` from its current parent container; emits `SM57`. Authorable via the "Destroy" action editor. |
 | `BreakAction(msgs)` | Stop execution of the current command chain immediately and return the supplied message as SUCCESS. Used to short-circuit multi-action chains when a condition is met. Authorable via the "Break" action editor. |
+
+### The TURNS variable
+
+PAW counts every valid phrase the parser extracts in flags 31 and 32; here that count is one ordinary variable,
+`VariableProvider.TURNS_VARIABLE_NAME` (`TURNS`), which authors can read in the variable conditions and write with
+Set / Increment / Decrement Variable like any other (`VariableChoices` lists it next to `VISITED`).
+
+- **Start.** `AdventureRunSessionFactory.startRun` sets `TURNS` to 0 after the adventure is loaded, for every
+  run, including one that takes over from another run in the same browser session.
+- **Counting.** `GameLoop.runOneCommandSucceeded` calls `VariableProvider.increment` once per sub-command, right
+  after the empty-verb check and before dispatch, as PAW does before it scans the response table. So input that was
+  not understood (SM6) is not a turn; each phrase of a conjunction-joined line is one; a phrase that then fails is
+  still one, and the phrases after the failing one are never attempted and so not counted. The command being run
+  already counts, so `TURNS` is 1 while the first command executes.
+- **Loops without a provider.** The two-argument `GameLoop` constructor counts into a provider of its own that nobody
+  reads; the factory passes the shared `AdventureConfig.allVariables()`.
+- **Saved games.** The snapshot stores every variable, so a loaded game continues from the saved count.
+- **Printing.** `TurnsAction` joins `SM17`, the number, `SM18`, `SM19` (omitted for exactly 1) and `SM20` with no
+  separator of its own: the spaces are part of the texts (`SM17` ends in one, `SM18` starts with one), so an adventure
+  that rewords them must keep them. All four are read through `defaultText()`, so the adventure's overrides apply.
 
 ### Action behavioural detail
 

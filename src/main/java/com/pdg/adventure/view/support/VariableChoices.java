@@ -21,6 +21,7 @@ public final class VariableChoices {
     public static Collection<String> of(AdventureData anAdventure) {
         SortedSet<String> names = new TreeSet<>(ORDER);
         names.add(VariableProvider.VISITED_VARIABLE_NAME);
+        names.add(VariableProvider.TURNS_VARIABLE_NAME);
         if (anAdventure != null) {
             names.addAll(anAdventure.variableNames());
         }

@@ -35,6 +35,8 @@ import com.pdg.adventure.model.action.PictureActionData;
 import com.pdg.adventure.model.action.QuitActionData;
 import com.pdg.adventure.model.action.SaveGameActionData;
 import com.pdg.adventure.model.action.RemoveActionData;
+import com.pdg.adventure.model.action.PrintVariableActionData;
+import com.pdg.adventure.model.action.PrintVariablesActionData;
 import com.pdg.adventure.model.action.SetVariableActionData;
 import com.pdg.adventure.model.action.TakeActionData;
 import com.pdg.adventure.model.action.WearActionData;
@@ -116,6 +118,8 @@ public class PreconditionActionFormatter {
             case SetVariableActionData sv -> "SETVAR " + txt(sv.getVariableName()) + " " + num(sv.getVariableValue());
             case IncrementVariableActionData iv -> "INCVAR " + txt(iv.getName()) + " " + num(iv.getValue());
             case DecrementVariableActionData dv -> "DECVAR " + txt(dv.getName()) + " " + num(dv.getValue());
+            case PrintVariablesActionData _ -> "PRINT_VARS";
+            case PrintVariableActionData pv -> "PRINT_VAR " + txt(pv.getName());
             case MessageActionData m -> "MESSAGE " + resolveMessage(m.getMessageId());
             case CreateActionData cr -> "CREATE " + resolveName(cr.getThingId());
             case DestroyActionData d -> "DESTROY " + resolveName(d.getThingId());

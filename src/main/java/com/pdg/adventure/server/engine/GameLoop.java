@@ -13,6 +13,7 @@ import com.pdg.adventure.server.parser.CommandSequence;
 import com.pdg.adventure.server.parser.GenericCommandDescription;
 import com.pdg.adventure.server.parser.Parser;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
+import com.pdg.adventure.server.support.VariableProvider;
 
 public class GameLoop {
     private static final Logger LOG = LoggerFactory.getLogger(GameLoop.class);
@@ -21,10 +22,18 @@ public class GameLoop {
 
     private final Parser parser;
     private final GameContext gameContext;
+    private final VariableProvider variableProvider;
 
+    /** For a loop whose turn count nobody reads: it counts into a provider of its own. */
     public GameLoop(Parser aParser, GameContext aGameContext) {
+        this(aParser, aGameContext, new VariableProvider());
+    }
+
+    /** @param aVariableProvider the one the game's actions and conditions read; the loop counts TURNS in it */
+    public GameLoop(Parser aParser, GameContext aGameContext, VariableProvider aVariableProvider) {
         parser = aParser;
         gameContext = aGameContext;
+        variableProvider = aVariableProvider;
     }
 
     /**
@@ -98,6 +107,11 @@ public class GameLoop {
             gameContext.tell(SystemMessageKey.SM6.defaultText());
             return false;
         }
+
+        // A turn is a valid phrase, as in PAW (its flags 31/32 count the phrases the parser extracted): counted
+        // before dispatch so the TURNS action and the Processes see this phrase too, and not for input that was
+        // not understood (the SM6 case above).
+        variableProvider.increment(VariableProvider.TURNS_VARIABLE_NAME);
 
         // Check commands that are possible because of the players inventory or the current location.
         CommandExecutor commandExecuter = new CommandExecutor(gameContext.getPocket(), gameContext.getCurrentLocation());

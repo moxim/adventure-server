@@ -83,7 +83,10 @@ public class ActionSelector extends HorizontalLayout {
         new ActionTypeDescriptor("Save Game", "Save the running game into one of the player's 10 slots", SaveGameActionData::new),
         new ActionTypeDescriptor("Load Game", "List the player's saved games, or restore the one in the typed slot", LoadGameActionData::new),
         new ActionTypeDescriptor("Break", "Stop processing this command chain; other chains are unaffected", BreakActionData::new),
-        new ActionTypeDescriptor("Picture", "Show a picture to the player", PictureActionData::new)
+        new ActionTypeDescriptor("Picture", "Show a picture to the player", PictureActionData::new),
+        new ActionTypeDescriptor("Turns", "Tell the player how many turns they have taken (the TURNS variable)", TurnsActionData::new),
+        new ActionTypeDescriptor("Print Variable", "Print a variable's name and value, e.g. VISITED : 14", PrintVariableActionData::new),
+        new ActionTypeDescriptor("Print Variables", "Print all variables and their values, one per line", PrintVariablesActionData::new)
         ).sorted(Comparator.comparing(ActionTypeDescriptor::displayName, String.CASE_INSENSITIVE_ORDER)).toList();
     }
 

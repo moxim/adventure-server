@@ -151,6 +151,23 @@ class PreconditionActionFormatterActionsTest {
     }
 
     @Test
+    void printVariable() {
+        PrintVariableActionData pv = new PrintVariableActionData();
+        pv.setName("VISITED");
+        assertThat(formatter.formatAction(pv)).isEqualTo("PRINT_VAR VISITED");
+    }
+
+    @Test
+    void printVariables() {
+        assertThat(formatter.formatAction(new PrintVariablesActionData())).isEqualTo("PRINT_VARS");
+    }
+
+    @Test
+    void turns() {
+        assertThat(formatter.formatAction(new TurnsActionData())).isEqualTo("TURNS");
+    }
+
+    @Test
     void look() {
         assertThat(formatter.formatAction(new LookActionData())).isEqualTo("LOOK");
     }

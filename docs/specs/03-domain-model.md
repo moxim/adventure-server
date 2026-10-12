@@ -479,6 +479,9 @@ this chapter only documents the storage shape.
 | `MovePlayerActionData`, `MoveItemActionData` | spatial actions |
 | `MessageActionData` | text emission |
 | `InventoryActionData` | print pocket |
+| `PrintVariableActionData` | print a variable's name and value (`PrintVariableAction`); one field, `name` |
+| `PrintVariablesActionData` | print every variable and its value, one per line (`PrintVariablesAction`); parameterless |
+| `TurnsActionData` | print the number of turns taken (`TurnsAction`); parameterless, it reads the standard `TURNS` variable |
 | `QuitActionData` | end the session (`QuitAction`) |
 | `BreakActionData` | stop the rest of the current command chain / action list (`BreakAction`) |
 | `SetVariableActionData`, `IncrementVariableActionData`, `DecrementVariableActionData` | variable mutations |

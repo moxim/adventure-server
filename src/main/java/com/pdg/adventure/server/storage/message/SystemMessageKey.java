@@ -49,7 +49,7 @@ public enum SystemMessageKey {
     SM15(15, "OK.", "is printed by the OK action. (OK.)"),
     SM16(16, "Press any key to continue.", "is printed by the ANYKEY action. (Press any key to continue.)"),
     SM17(17, "You have taken ", "is printed by the TURNS action. (You have taken )"),
-    SM18(18, "turn", "is printed by the TURNS action. (turn)"),
+    SM18(18, " turn", "is printed by the TURNS action, after the number of turns. ( turn)"),
     SM19(19, "s", "is printed by the TURNS action. (s)"),
     SM20(20, ".", "is printed by the TURNS action. (.)"),
     SM21(21, "You have scored ", "is the SCORE action messages. (You have scored )"),
