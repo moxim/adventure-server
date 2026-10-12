@@ -107,6 +107,12 @@ This is not bound to a Maven phase; CI runs it explicitly when needed.
 3. **`spring-boot-starter-properties-migrator`** is on the runtime classpath
    to surface deprecated property warnings during the Spring Boot 4 upgrade.
 
+## Application settings
+
+| Property | Default | Effect |
+|----------|---------|--------|
+| `adventure.import.max-bytes` | `52428800` (50 MB) | Largest adventure file an author can import. Applies to the check in `AdventureImporter` and to the import dialog's upload handler, which refuses a larger request on the server. Pictures are stored base64-encoded inside the file, so adventures with many pictures need the room. Raise it if a legitimate export is refused as too large. See [05](05-persistence-and-mappers.md#adventure-files-export-and-import). |
+
 ## Local development databases
 
 `server/adventureDb/` holds Docker Compose definitions for the two

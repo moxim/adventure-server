@@ -362,6 +362,41 @@ text, `CommandListType`, and which `WorkflowData` list they read/write):
 Both reuse `PreconditionActionEditor` / `PreconditionActionFormatter` from
 `view/command/`.
 
+### Adventures list: `AdventuresMenuView`
+
+The grid has one sortable **Title** column; the left column holds **Create
+Adventure**, **Import Adventure** and **Run Adventure**. The right-click menu
+offers **Edit**, **Duplicate**, **Export**, an informational line with the
+adventure's notes, and **Delete** (behind a confirm dialog). Duplicate, export
+and import are the package-private seams `duplicateAdventure`,
+`exportAdventure`, `buildImportDialog` and `importAdventure`, so browserless
+tests can drive them without a context-menu click.
+
+- **Export** calls `AdventureAccessService.exportAdventure` *on the UI thread*,
+  so a refusal becomes an error notification, not a broken download. It then
+  points one hidden `Anchor` (`routerIgnore`, so Vaadin does not treat the
+  click as navigation) at a `DownloadHandler.fromInputStream` response
+  (`application/json`, the file name `exportFileName(title)`, the known length)
+  and clicks it with `executeJs("this.click()")`. The same anchor serves every
+  export; the handler closes over the bytes already fetched.
+- **Import** opens a `Dialog` with a single-file `Upload` (`.json`) and
+  **Cancel** / **Import** buttons. The upload handler is an
+  `InMemoryUploadHandler` that only stores the bytes in an `AtomicReference`:
+  its callback runs without the UI lock, so it must not touch components. The
+  **Import** button (disabled until all uploads have finished, and again after
+  the file is removed) reads that reference on the UI thread and calls
+  `AdventureAccessService.importAdventure`. `Upload.setMaxFileSize` is checked
+  only by the browser, so the handler overrides `getFileSizeMax`,
+  `getRequestSizeMax` (both the import limit) and `getFileCountMax` (1);
+  without that, any author could make the server buffer an arbitrarily large
+  request in memory.
+- The dialog closes only when the import succeeded. A success adds the new
+  adventure to the grid's `ListDataProvider` and shows a success notification
+  (longer, with a "please check the adventure" hint, when the builder version
+  differs); an `AdventureImportException` is shown with its own message, any
+  other `RuntimeException` as a generic "Could not import the adventure." and
+  is logged.
+
 ### Pictures: `PictureMenuView` and `PictureEditorView`
 
 `view/picture/`, layout `PicturesMainLayout`.
@@ -378,11 +413,17 @@ Both reuse `PreconditionActionEditor` / `PreconditionActionFormatter` from
   `PictureData` document (`AdventureService.deletePicture`).
 - **`PictureEditorView`** (`…/pictures/:pictureId/edit`, alias
   `…/pictures/new`) — a required **Name** `TextField` and a single-file
-  `Upload` (accepts `image/png`, `image/jpeg`, `image/webp`; at most 2 MB; held
-  in a `MemoryBuffer`) with a 300 px preview. A succeeded upload is **staged**
-  (`stagePendingUpload`), not written: the size is checked again and the
-  content type is **sniffed from the bytes' magic numbers** (PNG, JPEG, WebP), so
-  a mislabelled file is rejected with an error notification. **Save** is enabled
+  `Upload` (accepts `image/png`, `image/jpeg`, `image/webp`; at most 2 MB) with a
+  300 px preview. The upload is handled by an `UploadHandler` (`handleUpload`),
+  which runs without the UI lock and so reaches the UI only through
+  `ui.access(...)`. It reads at most 2 MB + 1 byte, so an oversized body is
+  refused without being buffered whole, and the content type is **sniffed from
+  the bytes' magic numbers** (PNG, JPEG, WebP), so a mislabelled file is
+  rejected too. Each refusal (too large, unrecognised, unreadable) is an error
+  notification: a server-side `UploadEvent.reject` would not reach the
+  `Upload`'s file-rejected listener, which the web component fires only for
+  its own browser-side checks. A valid upload is **staged**
+  (`stagePendingUpload`), not written. **Save** is enabled
   only when the name is valid, an image exists (stored or staged) and something
   changed; saving applies the staged bytes, puts the `PictureData` into
   `AdventureData.pictureData`, then calls `AdventureService.savePictureData`

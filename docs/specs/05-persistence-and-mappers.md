@@ -255,8 +255,66 @@ class; new code should call the typed services above.
 |---------|---------------|
 | `CustomUserDetailsService` | Implements `UserDetailsService.loadUserByUsername`; throws `UsernameNotFoundException` on miss. |
 | `UserService` | User CRUD + role assignment; enforces username uniqueness; encodes passwords via `PasswordEncoder`. |
-| `AdventureDuplicator` | Copies an adventure at raw-document level: follows every `@DBRef` from the `adventures` document, gives each reached document a new ULID, and rewrites every string value and map key that equals an old id through one old→new map (so `destinationId`, `currentLocationId`, `adventureId`, the `locationData` keys and the DBRef `$id`s all point at the copy). Embedded documents keep their ids. Working on raw documents is deliberate: ids are fixed at construction and `save` upserts by id, so a copy that kept an id would overwrite the original. Inserts the copy collection by collection and removes the partial copy if an insert fails. |
+| `AdventureDuplicator` | Copies an adventure at raw-document level: follows every `@DBRef` from the `adventures` document, gives each reached document a new ULID, and rewrites every string value and map key that equals an old id through one old→new map (so `destinationId`, `currentLocationId`, `adventureId`, the `locationData` keys and the DBRef `$id`s all point at the copy). Embedded documents keep their ids. Working on raw documents is deliberate: ids are fixed at construction and `save` upserts by id, so a copy that kept an id would overwrite the original. Inserts the copy collection by collection and removes the partial copy if an insert fails. The graph walking, id rewriting and rollback live in `AdventureDocumentGraph`, shared with export and import. |
+| `AdventureDocumentGraph` | Not a bean; each of the three services below creates one around its `MongoTemplate`. The raw-document operations duplicate, export and import share: find the adventure document, collect every document reachable through a `$ref`/`$id` DBRef (transitively, adventure first), copy them under new ULIDs with the one old→new id map, list DBRefs that point at a document not in the set (`findDanglingReferences`), insert collection by collection with manual rollback, and delete a set of documents by their raw ids (no mapping, so it also works for content the builder cannot read). |
+| `AdventureExporter` | `export(adventureId)` returns the UTF-8 bytes of an adventure file (format below): the adventure plus everything it reaches, written as canonical Extended JSON through the database's own codec registry (the default `Document` codec cannot write a DBRef). Throws `IllegalArgumentException` for an unknown adventure and `IllegalStateException` if the adventure already refers to a document that no longer exists, rather than write a file that could not be imported again. |
+| `AdventureImporter` | `importAdventure(bytes)` turns an adventure file into a new, independent adventure and returns its id plus whether the file's `builderVersion` differs from this build. The file is untrusted: everything is validated before the first insert (below), every document then receives a new id like in a duplicate, `createdAt`/`updatedAt` are stamped with the import time, and the title is kept. After inserting it reads the adventure back through the mapping layer; if that fails (valid JSON the model cannot map, e.g. an unknown font) the new documents are deleted again by id. Failures raise `AdventureImportException`, whose message is written for the author. The size limit is `adventure.import.max-bytes` (default 50 MB). |
+| `BuilderVersion` | The pom version from Spring Boot's `BuildProperties`; empty when the app runs without generated build info. Written into exports and compared on import. |
 | `AdventureAccessService` | The cross-store coordinator. Read/write checks (`canRead`, `canWrite`); creates an adventure in MongoDB **then** writes the `AdventureAuthor` row in MySQL, all inside `@Transactional`. Lists adventures visible to a given user (ADMIN sees all; AUTHOR sees authored; PLAYER sees assigned). |
+
+### Adventure files: export and import
+
+An exported adventure is one UTF-8 JSON document: an envelope around the raw
+MongoDB documents. It is deliberately **not** a serialisation of the `*Data`
+classes, so it follows the model without per-type code.
+
+```json
+{
+  "format": "adventurebuilder-adventure",
+  "formatVersion": 1,
+  "builderVersion": "1.2.3",
+  "exportedAt": "2026-10-09T12:00:00Z",
+  "documents": {
+    "adventures": [ { "...": "exactly one" } ],
+    "locations":  [ ],
+    "items":      [ ]
+  }
+}
+```
+
+- Each document is canonical Extended JSON (`$date`, `$binary`,
+  `{"$ref": …, "$id": …}`), so dates, picture `byte[]` content (base64) and
+  DBRefs keep their types.
+- `documents` is keyed by collection name and holds only collections from the
+  allowlist `AdventureImporter.ALLOWED_COLLECTIONS`: `adventures`, `locations`,
+  `containers`, `items`, `pictures`, `vocabularies`, `words`. `savedgames` is
+  deliberately absent, and nothing from MySQL (users, author/player
+  assignments) is exported. A test fails when a new `@Document` collection
+  appears without a decision on it.
+- `formatVersion` is bumped only when the envelope changes incompatibly.
+
+**Import validation.** Nothing is inserted unless the whole file passes; each
+failure is an `AdventureImportException` with a message fit to show:
+
+| Check | Rejects |
+|-------|---------|
+| Size | an empty file, or one over `adventure.import.max-bytes` (50 MB default; a `long`, in bytes) |
+| Syntax | text that does not parse as JSON (a leading byte-order mark is tolerated) |
+| Envelope | `format` other than `adventurebuilder-adventure`, a missing or non-numeric `formatVersion` or one below 1, no `documents` object |
+| Version | a `formatVersion` newer than `AdventureExporter.FORMAT_VERSION` |
+| Collections | any collection name outside the allowlist, so a crafted file cannot write elsewhere; a value that is not a list |
+| Documents | an element that is not a document, or lacks a string `_id`, or repeats an `_id` within its collection |
+| Adventures | anything but exactly one document in `adventures` |
+| Shape | a sub-document with a reference key (`$ref`, `$id`, `$db`) that does not have exactly two keys, a `$ref` naming an allowed collection and a string `$id` (MongoDB resolves other id types and a `$db` itself, which could reach documents the file does not contain), and any other field name starting with `$` |
+| References | a DBRef that points at a document missing from the file |
+| Readability | (after inserting) content the mapping layer cannot read; the new documents are removed again |
+
+A `builderVersion` that differs from the running build is **not** an error:
+the caller gets `builderVersionDiffers` and warns the author.
+
+`AdventureAccessService` adds the access rules and the MySQL half (see
+[06](06-security-and-access-control.md)). The importing user becomes the
+adventure's AUTHOR; assigned players, users and saved games are out of scope.
 
 ### Cross-store consistency
 

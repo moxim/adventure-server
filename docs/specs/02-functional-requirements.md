@@ -149,8 +149,9 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     everything; AUTHORs see what they own; PLAYERs see what they have been
     assigned to.
   - Double-clicking a row navigates to the `AdventureEditorView`; a
-    right-click context menu offers **Edit** (same target) and **Delete**
-    (see B3).
+    right-click context menu offers **Edit** (same target), **Duplicate**,
+    **Export** and **Delete** (see B3). An **Import Adventure** button next to
+    **Create Adventure** opens the import dialog (see B3).
   - A "Run Adventure" button is enabled only when a row is selected; it
     launches `AdventureRunView` (see [C2](#c2-play-an-adventure)) with this
     adventure loaded.
@@ -163,10 +164,36 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     current user at the new adventure id (handled by
     `AdventureAccessService.createAdventure`, `@Transactional` over the JPA write).
   - The grid's right-click menu offers **Duplicate**: it creates a complete,
-    independent copy titled `"<title> (copy)"` (all locations, items, pictures,
+    independent copy titled like the original with `(copy)` appended (all locations, items, pictures,
     vocabulary, messages under new ids), owned by the current user, and adds it
     to the grid (`AdventureAccessService.duplicateAdventure`). Requires write
     access to the source; deleting either adventure never affects the other.
+  - The grid's right-click menu also offers **Export**: it downloads the
+    adventure as one JSON file named after its title plus the suffix
+    `.adventure.json` (every character that is not a letter or digit becomes
+    a dash; an empty title falls back to `adventure`). The file holds the adventure and every document it
+    reaches through a `@DBRef` (locations, containers, items, pictures,
+    vocabularies, words), see the file format in
+    [05](05-persistence-and-mappers.md#adventure-files-export-and-import). It holds
+    no MySQL data (authors, players) and no saved games. Requires write
+    access (`AdventureAccessService.exportAdventure`); a refusal or failure is
+    shown as an error notification and nothing is downloaded.
+  - The **Import Adventure** button opens a dialog with a single-file
+    `Upload` (accepts `.json`; the size limit is the configured
+    `adventure.import.max-bytes`, default 50 MB, which the upload handler also
+    enforces on the server) plus **Cancel** and **Import**; **Import** is
+    enabled once a file has been uploaded and again disabled when it is
+    removed. **Import** calls `AdventureAccessService.importAdventure`, which
+    always creates a **new** adventure under new ids (importing never
+    overwrites, and importing a file twice gives two adventures), keeps the
+    title as it is, and makes the importing user its AUTHOR. On success the
+    dialog closes, the adventure is added to the grid and a success
+    notification names it; if the file's `builderVersion` differs from the
+    running build the notification adds a "please check the adventure"
+    warning but the import still happens. On failure the dialog stays open,
+    the grid is unchanged and an error notification shows the
+    `AdventureImportException` message (or a generic text for any other
+    failure). Requires the AUTHOR or ADMIN role.
   - Editing navigates to `/author/adventures/:adventureId/edit`. Title, notes,
     starting-location reference, and other top-level metadata can be modified.
     This editor's button bar is Back/Test/Save (not the four-button
@@ -480,7 +507,7 @@ author origins) differ by origin.
     each player has 10 saved games per adventure. Cross-adventure loading exists only
     as `LoadAdventureAction` (used internally by `AdventureRunSessionFactory`
     to load the chosen adventure into the shared engine); the former
-    console `load <adventureId>` command was removed with the CLI runner
+    console `load` command (which took an adventure id) was removed with the CLI runner
     (`MiniAdventure` / `AdventureClient`).
 
 > **Isolation:** the engine state is scoped to the Vaadin session, so
@@ -553,7 +580,7 @@ should be enforced by the implementation, not just by the UI:
 - **Saved games are restored in place.** An item the author added after a save keeps
   its current position on `load`; numbers above 10 are not words, so `save 11`
   behaves like a bare `save`; saves cannot be deleted. There is no
-  player-facing cross-adventure load (the CLI's `load <id>` went away with
+  player-facing cross-adventure load (the CLI's `load` command went away with
   `MiniAdventure`).
 - **AI-augmented descriptions.** Authors cannot yet ask the system to enrich a
   description; `DescribeAction` has the integration code commented out.
