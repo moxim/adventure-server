@@ -150,7 +150,7 @@ Its rules are normative.
 | `findAdventureById(id, user)` | Returns `Optional.empty()` if `canRead` is false; otherwise delegates to `AdventureService.findAdventureById`. |
 | `saveAdventureData(data, user)` | Throws `AccessDeniedException` if `canWrite` is false; otherwise delegates. |
 | `createAdventure(data, author)` | `@Transactional`. Saves the `AdventureData` first (so the ULID id is fixed), then inserts an `AdventureAuthor(adventureId, author)` row. The MongoDB write is *outside* the JPA transaction; on JPA rollback, the document is orphaned. |
-| `duplicateAdventure(id, user)` | `@Transactional`. Verifies write access (a PLAYER cannot copy). Loads the source for its title, has `AdventureDuplicator` copy it as `"<title> (copy)"`, inserts an `AdventureAuthor(copyId, user)` row (the *calling* user owns the copy, also for an ADMIN; assigned players are not copied), and returns the reloaded copy. If the author row cannot be written the MongoDB copy is deleted again. |
+| `duplicateAdventure(id, user)` | `@Transactional`. Verifies write access (a PLAYER cannot copy). Loads the source for its title, has `AdventureDuplicator` copy it with `(copy)` appended to the title, inserts an `AdventureAuthor(copyId, user)` row (the *calling* user owns the copy, also for an ADMIN; assigned players are not copied), and returns the reloaded copy. If the author row cannot be written the MongoDB copy is deleted again. |
 | `exportAdventure(id, user)` | Verifies write access (ADMIN or the owning AUTHOR; a PLAYER cannot export), then returns `AdventureExporter.export(id)`: the adventure as a JSON file. Read-only on both stores. |
 | `importAdventure(bytes, user)` | `@Transactional`. Requires the AUTHOR or ADMIN role (`AccessDeniedException` otherwise). Has `AdventureImporter` validate and insert the file as a new adventure, then inserts an `AdventureAuthor(newId, user)` row, so the *importing* user owns it; no players are assigned. If the author row cannot be written, the MongoDB documents are deleted again. Returns the reloaded adventure plus `builderVersionDiffers`. The file is untrusted input: see the validation table in [05](05-persistence-and-mappers.md#adventure-files-export-and-import). |
 | `getMaxImportBytes()` | The largest file `importAdventure` accepts (`adventure.import.max-bytes`); the import dialog uses it for the upload limit. |
@@ -170,7 +170,7 @@ Its rules are normative.
 
 - `findAuthorForAdventure(id) → Optional<UserData>`.
 - `findPlayersForAdventure(id) → List<UserData>`.
-- `getAuthorNamesByAdventureId() → Map<adventureId, username>` — handy for the
+- `getAuthorNamesByAdventureId()` → a map from adventure id to username — handy for the
   admin assignment view.
 - `getAdventuresForUser(user)` — filtered list:
   - ADMIN: all adventures from `AdventureService.getAdventures()`.

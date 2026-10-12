@@ -164,7 +164,7 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     current user at the new adventure id (handled by
     `AdventureAccessService.createAdventure`, `@Transactional` over the JPA write).
   - The grid's right-click menu offers **Duplicate**: it creates a complete,
-    independent copy titled `"<title> (copy)"` (all locations, items, pictures,
+    independent copy titled like the original with `(copy)` appended (all locations, items, pictures,
     vocabulary, messages under new ids), owned by the current user, and adds it
     to the grid (`AdventureAccessService.duplicateAdventure`). Requires write
     access to the source; deleting either adventure never affects the other.
@@ -507,7 +507,7 @@ author origins) differ by origin.
     each player has 10 saved games per adventure. Cross-adventure loading exists only
     as `LoadAdventureAction` (used internally by `AdventureRunSessionFactory`
     to load the chosen adventure into the shared engine); the former
-    console `load <adventureId>` command was removed with the CLI runner
+    console `load` command (which took an adventure id) was removed with the CLI runner
     (`MiniAdventure` / `AdventureClient`).
 
 > **Isolation:** the engine state is scoped to the Vaadin session, so
@@ -580,7 +580,7 @@ should be enforced by the implementation, not just by the UI:
 - **Saved games are restored in place.** An item the author added after a save keeps
   its current position on `load`; numbers above 10 are not words, so `save 11`
   behaves like a bare `save`; saves cannot be deleted. There is no
-  player-facing cross-adventure load (the CLI's `load <id>` went away with
+  player-facing cross-adventure load (the CLI's `load` command went away with
   `MiniAdventure`).
 - **AI-augmented descriptions.** Authors cannot yet ask the system to enrich a
   description; `DescribeAction` has the integration code commented out.
