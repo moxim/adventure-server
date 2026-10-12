@@ -20,6 +20,9 @@ import com.pdg.adventure.model.action.DescribeActionData;
 import com.pdg.adventure.model.action.DestroyActionData;
 import com.pdg.adventure.model.action.IncrementVariableActionData;
 import com.pdg.adventure.model.action.InventoryActionData;
+import com.pdg.adventure.model.action.PrintVariableActionData;
+import com.pdg.adventure.model.action.PrintVariablesActionData;
+import com.pdg.adventure.model.action.TurnsActionData;
 import com.pdg.adventure.model.action.LightActionData;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
@@ -142,6 +145,24 @@ class ActionEditorFactoryTest {
     void createEditor_withInventoryActionData_shouldReturnInventoryActionEditor() {
         ActionEditorComponent editor = ActionEditorFactory.createEditor(new InventoryActionData(), adventureData);
         assertThat(editor).isNotNull().isInstanceOf(InventoryActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withTurnsActionData_shouldReturnTurnsActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new TurnsActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(TurnsActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withPrintVariableActionData_shouldReturnPrintVariableActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new PrintVariableActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(PrintVariableActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withPrintVariablesActionData_shouldReturnPrintVariablesActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new PrintVariablesActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(PrintVariablesActionEditor.class);
     }
 
     @Test

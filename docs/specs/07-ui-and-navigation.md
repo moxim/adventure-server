@@ -474,6 +474,9 @@ grid/dialog read-model record.
 | `CreateActionEditor` | Container selector (via `AbstractSingleItemActionEditor`, uses `collectAllContainers`). |
 | `DescribeActionEditor` | No extra input (describe current location). |
 | `InventoryActionEditor` | No extra input (list pocket). |
+| `PrintVariableActionEditor` | Variable name dropdown (defined variables only, `VISITED` and `TURNS` included). Shown in the selector as "Print Variable". |
+| `PrintVariablesActionEditor` | No extra input - informational panel only. Shown in the selector as "Print Variables". |
+| `TurnsActionEditor` | No extra input — informational panel only (prints the standard `TURNS` variable using SM17 to SM20). Shown in the selector as "Turns". |
 | `QuitActionEditor` | No extra input. |
 | `IncrementVariableActionEditor` | Variable name text field. |
 | `DecrementVariableActionEditor` | Variable name text field. |
@@ -487,7 +490,7 @@ runtime; see [`04-runtime-engine.md` § Auto item actions](04-runtime-engine.md#
 | `SetVariableActionEditor` / `IncrementVariableActionEditor` / `DecrementVariableActionEditor`, and the 
 `Equals`/`GreaterThan`/`LessThan`/`Same` condition editors | Variable names come from `VariableNameSelector` 
 (`view/command/`), a `ComboBox<String>` fed live (re-read on focus) by `VariableChoices.of(adventureData)` 
-(`view/support/`): the adventure's `AdventureData.variables` plus the engine's `VISITED`. Set Variable allows typing a 
+(`view/support/`): the adventure's `AdventureData.variables` plus the engine's `VISITED` and `TURNS`. Set Variable allows typing a 
 new name and calls `adventureData.defineVariable(name)` the moment the name is entered (and again on `validate()`), so 
 conditions can pick it before the command is saved; it is persisted with the adventure on the next save. The others 
 accept only defined names, and a stored name that is no longer defined fails `validate()`. Increment/Decrement do not 

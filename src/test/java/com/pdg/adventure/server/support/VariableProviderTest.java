@@ -29,6 +29,17 @@ class VariableProviderTest {
     }
 
     @Test
+    void increment_addsOneToAnExistingVariable_andStartsAnUnknownOneAtOne() {
+        VariableProvider provider = new VariableProvider();
+        provider.set("score", 7);
+
+        assertThat(provider.increment("score")).isEqualTo(8);
+        assertThat(provider.increment("fresh")).isEqualTo(1);
+        assertThat(provider.get("score").map(Variable::value)).contains(8);
+        assertThat(provider.get("fresh").map(Variable::value)).contains(1);
+    }
+
+    @Test
     void get_ofAnUndefinedName_stillYieldsZeroWithoutDefiningIt() {
         VariableProvider provider = new VariableProvider();
         Optional<Variable> variable = provider.get("nope");

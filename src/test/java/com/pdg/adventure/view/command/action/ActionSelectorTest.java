@@ -1,5 +1,9 @@
 package com.pdg.adventure.view.command.action;
 
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +18,9 @@ import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.action.ActionData;
+import com.pdg.adventure.model.action.PrintVariableActionData;
+import com.pdg.adventure.model.action.PrintVariablesActionData;
+import com.pdg.adventure.model.action.TurnsActionData;
 
 class ActionSelectorTest {
 
@@ -72,6 +79,61 @@ class ActionSelectorTest {
         // Then - The selector should have been created with available action types
         // We verify this indirectly by checking that the component has children
         assertThat(actionSelector.getChildren().count()).isEqualTo(2); // ComboBox and Button
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void choosingTurnsAndPressingAdd_handsTheListenerANewTurnsActionData() {
+        AtomicReference<ActionData> captured = new AtomicReference<>();
+        actionSelector.setEditorSelectedListener(captured::set);
+        ComboBox<Object> typeSelector = (ComboBox<Object>) actionSelector.getChildren()
+                .filter(ComboBox.class::isInstance).findFirst().orElseThrow();
+        Button add = (Button) actionSelector.getChildren().filter(Button.class::isInstance).findFirst().orElseThrow();
+        Object turns = typeSelector.getListDataView().getItems()
+                .filter(item -> "Turns".equals(typeSelector.getItemLabelGenerator().apply(item)))
+                .findFirst().orElseThrow();
+
+        typeSelector.setValue(turns);
+        assertThat(add.isEnabled()).isTrue();
+        ComponentUtil.fireEvent(add, new ClickEvent<>(add));
+
+        assertThat(captured.get()).isInstanceOf(TurnsActionData.class);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void choosingPrintVariableAndPressingAdd_handsTheListenerANewPrintVariableActionData() {
+        AtomicReference<ActionData> captured = new AtomicReference<>();
+        actionSelector.setEditorSelectedListener(captured::set);
+        ComboBox<Object> typeSelector = (ComboBox<Object>) actionSelector.getChildren()
+                .filter(ComboBox.class::isInstance).findFirst().orElseThrow();
+        Button add = (Button) actionSelector.getChildren().filter(Button.class::isInstance).findFirst().orElseThrow();
+        Object printVariable = typeSelector.getListDataView().getItems()
+                .filter(item -> "Print Variable".equals(typeSelector.getItemLabelGenerator().apply(item)))
+                .findFirst().orElseThrow();
+
+        typeSelector.setValue(printVariable);
+        ComponentUtil.fireEvent(add, new ClickEvent<>(add));
+
+        assertThat(captured.get()).isInstanceOf(PrintVariableActionData.class);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void choosingPrintVariablesAndPressingAdd_handsTheListenerANewPrintVariablesActionData() {
+        AtomicReference<ActionData> captured = new AtomicReference<>();
+        actionSelector.setEditorSelectedListener(captured::set);
+        ComboBox<Object> typeSelector = (ComboBox<Object>) actionSelector.getChildren()
+                .filter(ComboBox.class::isInstance).findFirst().orElseThrow();
+        Button add = (Button) actionSelector.getChildren().filter(Button.class::isInstance).findFirst().orElseThrow();
+        Object printVariables = typeSelector.getListDataView().getItems()
+                .filter(item -> "Print Variables".equals(typeSelector.getItemLabelGenerator().apply(item)))
+                .findFirst().orElseThrow();
+
+        typeSelector.setValue(printVariables);
+        ComponentUtil.fireEvent(add, new ClickEvent<>(add));
+
+        assertThat(captured.get()).isInstanceOf(PrintVariablesActionData.class);
     }
 
     @Test

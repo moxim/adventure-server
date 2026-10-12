@@ -32,11 +32,14 @@ order, when that command fires.
 | **Move Item** | Moves an item into a different container | The item; the destination (a location or the player's pocket) |
 | **Move Player** | Moves the player to a location and shows its description | Destination location |
 | **Picture** | Shows a [picture](11-pictures.md) in the play screen's picture panel until the next move, look or Picture action | The picture |
+| **Print Variable** | Prints a variable's name and its current value, e.g. *"VISITED : 14"* | The variable, chosen from the dropdown (`VISITED` and `TURNS` are always listed) |
+| **Print Variables** | Prints every variable and its current value, one per line, sorted by name: *"TURNS : 3"*, *"VISITED : 14"* | Nothing - fully automatic |
 | **Quit** | Ends the game session | Nothing — pair it with a **Message** action for a farewell line |
 | **Remove** | Takes a worn item off the player | The item |
 | **Save Game** | Saves the running game into the slot the player typed (`save 3`), or the first free one; each player has 10 slots per adventure | Nothing — use it in a Response with the verb `save` and the noun `~` |
 | **Set Variable** | Sets a named variable to an exact value | Variable name; value |
 | **Take** | Player picks up an item into their pocket | The item |
+| **Turns** | Tells the player how many turns they have taken: *"You have taken 1 turn."*, *"You have taken 5 turns."* | Nothing — it reads the standard `TURNS` variable (see below); its wording is system messages SM17 to SM20 |
 | **Wear** | Player puts on a wearable item | The item |
 
 Variable names are chosen from a dropdown, not typed. **Set Variable** is the
@@ -44,8 +47,8 @@ action that creates a variable: pick an existing name or type a new one. As
 soon as you enter the name in that action, it shows up in the dropdowns of
 **Increment Variable**, **Decrement Variable** and the variable conditions
 (**Equals**, **Greater Than**, **Less Than**, **Same**), which accept only
-names that are already set somewhere. The engine's own `VISITED` counter is
-always listed. The variable is stored with the adventure when you save the
+names that are already set somewhere. The engine's own `VISITED` and `TURNS`
+variables are always listed. The variable is stored with the adventure when you save the
 command, and it stays defined even if you later delete the Set action. A
 condition naming a variable that was never defined is flagged as invalid when
 you open it.
@@ -54,6 +57,29 @@ Variables are your own free-form named counters — use them for anything
 that needs to be remembered across turns: a score, a flag ("door_unlocked"),
 a counter of attempts, and so on. Nothing pre-declares them; a Set Variable
 action creates one.
+
+### The standard variable `TURNS`
+
+`TURNS` is a variable the engine keeps for you, the same idea as the turn
+counter of the original Professional Adventure Writer. It starts at 0 whenever
+a game starts, and goes up by one for every command the game understands,
+whether or not that command then succeeds. Input the game could not make
+sense of ("I was not able to understand any of that") is not a turn, and
+`take key and open door` is two turns. The command that is being run already
+counts, so a **Turns** action in a `turns` Response reports *"You have taken
+1 turn."* the first time the player types it.
+
+Use it like any other variable: test it with **Greater Than**, **Less Than**
+or **Equals** (to end a timed adventure after 50 turns, say), or change it
+with **Set Variable**, **Increment Variable** and **Decrement Variable**.
+Loading a saved game restores the turn count it was saved with.
+
+The **Turns** action prints the value using four
+[system messages](10-messages.md), so you can reword them under **Manage
+System Messages**: SM17 (*"You have taken "*, before the number), SM18
+(*" turn"*), SM19 (*"s"*, added unless the number is exactly 1) and SM20
+(*"."*). The spaces in SM17 and SM18 matter: keep them if you change the
+wording.
 
 ## PreConditions
 

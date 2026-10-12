@@ -13,13 +13,17 @@ import java.util.*;
  * <p>
  * Holds all variables of the loaded adventure: those the author defined (loaded by
  * {@code VariableMapper} when an adventure is mapped, via {@link #define}) as well as any the engine
- * creates on the fly (e.g. {@code VISITED}). Reading an unknown name still yields 0.
+ * creates on the fly (e.g. {@code VISITED}, or {@code TURNS}, which every run starts at 0 and the game loop counts up).
+ * Reading an unknown name still yields 0.
  */
 public class VariableProvider implements Serializable {
     @Serial
     private static final long serialVersionUID = 20261008130300L;
 
     public static final String VISITED_VARIABLE_NAME = "VISITED";
+
+    /** The number of turns the player has taken: PAW's flags 31 and 32, kept as one variable. */
+    public static final String TURNS_VARIABLE_NAME = "TURNS";
 
     private final Map<String, Integer> variables;
 
@@ -40,6 +44,15 @@ public class VariableProvider implements Serializable {
 
     public void set(String aName, int aValue) {
         variables.put(aName, aValue);
+    }
+
+    /**
+     * Adds one to the variable, which counts from 0 if it does not exist yet.
+     *
+     * @return the new value
+     */
+    public int increment(String aName) {
+        return variables.merge(aName, 1, Integer::sum);
     }
 
     public boolean isDefined(String aName) {

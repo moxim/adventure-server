@@ -59,6 +59,7 @@ class AdventureRunSessionFactoryTest {
     private Location startLocation;
 
     private final Map<String, Item> items = new HashMap<>();
+    private final VariableProvider variables = new VariableProvider();
     private GameContext gameContext;
     private ActiveRun activeRun;
     private AdventureRunSessionFactory factory;
@@ -70,7 +71,7 @@ class AdventureRunSessionFactoryTest {
         lenient().when(adventureConfig.allMessages()).thenReturn(new MessagesHolder());
         lenient().when(adventureConfig.allLocations()).thenReturn(new HashMap<>());
         lenient().when(adventureConfig.allItems()).thenReturn(items);
-        lenient().when(adventureConfig.allVariables()).thenReturn(new VariableProvider());
+        lenient().when(adventureConfig.allVariables()).thenReturn(variables);
         lenient().when(adventureConfig.allContainers()).thenReturn(new HashMap<>());
         vocabulary = new Vocabulary();
         lenient().when(adventureConfig.allWords()).thenReturn(vocabulary);
@@ -249,6 +250,31 @@ class AdventureRunSessionFactoryTest {
         assertThat(oldResult.gameOver()).isTrue();
         assertThat(oldResult.lines()).containsExactly(AdventureRunSession.ENDED_ELSEWHERE_TEXT);
         assertThat(replacement.isGameOver()).isFalse();
+    }
+
+    @Test
+    void start_beginsAtTurnZero_andEachCommandTheSessionUnderstandsIsOneTurn() {
+        AdventureData adventureData = startableAdventure();
+
+        AdventureRunSession session = factory.start(adventureData, new RunOwner("player-1"));
+        assertThat(variables.getAllAsMap()).containsEntry(VariableProvider.TURNS_VARIABLE_NAME, 0);
+
+        session.submit("help"); // not "look": that needs a stubbed location, and an error would end the session
+        session.submit("help");
+
+        assertThat(variables.getAllAsMap()).containsEntry(VariableProvider.TURNS_VARIABLE_NAME, 2);
+    }
+
+    @Test
+    void startReplacingActive_startsTheNewRunAtTurnZeroAgain() {
+        AdventureData adventureData = startableAdventure();
+        AdventureRunSession old = factory.start(adventureData, new RunOwner("player-1"));
+        old.submit("help");
+        assertThat(variables.getAllAsMap()).containsEntry(VariableProvider.TURNS_VARIABLE_NAME, 1);
+
+        factory.startReplacingActive(adventureData, new RunOwner("player-1"));
+
+        assertThat(variables.getAllAsMap()).containsEntry(VariableProvider.TURNS_VARIABLE_NAME, 0);
     }
 
     @Test

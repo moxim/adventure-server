@@ -18,6 +18,7 @@ import com.pdg.adventure.server.mapper.WorkflowMapper;
 import com.pdg.adventure.server.parser.Parser;
 import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 /**
@@ -92,6 +93,8 @@ public class AdventureRunSessionFactory {
         // that reads SystemMessageKey text keeps seeing the adventure's own wording.
         try (SystemMessageKey.Binding ignored = SystemMessageKey.bindOverrides(overrides)) {
             loadIntoSharedEngine(anAdventureData);
+            // Every run starts at turn 0, also when it takes over from another run whose count is still in here.
+            adventureConfig.allVariables().set(VariableProvider.TURNS_VARIABLE_NAME, 0);
             gameContext.setRunIdentity(new GameContext.RunIdentity(anOwner.getPlayerId(), anAdventureData.getId(),
                                                                    anAdventureData.getTitle(),
                                                                    anAdventureData.getBuilderVersion()));
@@ -102,7 +105,7 @@ public class AdventureRunSessionFactory {
             Workflow workflow = gameContext.setUpWorkflows();
             workflowMapper.populate(gameContext.getWorkflowData(), workflow);
 
-            GameLoop gameLoop = new GameLoop(new Parser(vocabulary), gameContext);
+            GameLoop gameLoop = new GameLoop(new Parser(vocabulary), gameContext, adventureConfig.allVariables());
             AdventureRunSession session = new AdventureRunSession(gameLoop, gameContext, overrides);
             activeRun.register(session, anOwner);
             return session;
