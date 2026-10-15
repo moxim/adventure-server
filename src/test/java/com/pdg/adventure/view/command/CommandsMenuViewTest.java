@@ -33,7 +33,6 @@ import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
-import com.pdg.adventure.view.command.CommandsMenuView;
 import com.pdg.adventure.view.support.RouteIds;
 
 /**

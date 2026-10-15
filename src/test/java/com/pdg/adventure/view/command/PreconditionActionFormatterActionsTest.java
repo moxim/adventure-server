@@ -47,6 +47,30 @@ class PreconditionActionFormatterActionsTest {
     }
 
     @Test
+    void mes_isShownToTheAuthorAsMsg() {
+        MesActionData a = new MesActionData();
+        a.setMessageId("no-such-message");
+        assertThat(formatter.formatAction(a)).startsWith("MSG ");
+    }
+
+    @Test
+    void print() {
+        PrintActionData a = new PrintActionData();
+        a.setName("score");
+        assertThat(formatter.formatAction(a)).isEqualTo("PRINT score");
+    }
+
+    @Test
+    void addVariable() {
+        assertThat(formatter.formatAction(new AddVariableActionData("bonus", "score"))).isEqualTo("ADD bonus score");
+    }
+
+    @Test
+    void subtractVariable() {
+        assertThat(formatter.formatAction(new SubtractVariableActionData("cost", "score"))).isEqualTo("MINUS cost score");
+    }
+
+    @Test
     void message() {
         MessageActionData a = new MessageActionData();
         a.setMessageId("cage_opened");

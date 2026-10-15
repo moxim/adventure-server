@@ -11,8 +11,6 @@ import com.pdg.adventure.server.parser.CommandExecutionResult;
 /**
  * Shows a message's text, in the message's own font if it has one (see {@link FontMarkup}).
  * <p>
- * TODO: Review needed — only authored messages get a font. Location and item descriptions, the built-in system
- *  messages and other engine text are not wrapped and use the adventure's Run Font.
  */
 @Getter
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)

@@ -14,6 +14,10 @@ import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.action.ActionData;
+import com.pdg.adventure.model.action.AddVariableActionData;
+import com.pdg.adventure.model.action.PrintActionData;
+import com.pdg.adventure.model.action.MesActionData;
+import com.pdg.adventure.model.action.SubtractVariableActionData;
 import com.pdg.adventure.model.action.CreateActionData;
 import com.pdg.adventure.model.action.DecrementVariableActionData;
 import com.pdg.adventure.model.action.DescribeActionData;
@@ -120,6 +124,31 @@ class ActionEditorFactoryTest {
     void createEditor_withIncrementVariableActionData_shouldReturnIncrementVariableActionEditor() {
         ActionEditorComponent editor = ActionEditorFactory.createEditor(new IncrementVariableActionData(), adventureData);
         assertThat(editor).isNotNull().isInstanceOf(IncrementVariableActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withMesActionData_shouldReturnMesActionEditor_shownAsMsg() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new MesActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(MesActionEditor.class);
+        assertThat(editor.getActionTypeName().replace("ActionData", "")).isEqualTo("Msg");
+    }
+
+    @Test
+    void createEditor_withPrintActionData_shouldReturnPrintActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new PrintActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(PrintActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withAddVariableActionData_shouldReturnAddVariableActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new AddVariableActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(AddVariableActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withSubtractVariableActionData_shouldReturnSubtractVariableActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new SubtractVariableActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(SubtractVariableActionEditor.class);
     }
 
     @Test

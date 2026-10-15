@@ -403,7 +403,7 @@ message's `id` — not a collection or document of its own.
 
 `server/storage/message/MessagesHolder.java` is the runtime cache of messages
 keyed by message id. `MessageAction` looks up text here. Text and font are one entry per id
-(`getMessage`, `getFont`; an unknown id has `DEFAULT`), filled by `LoadAdventureAction`.
+(`getMessageId`, `getFont`; an unknown id has `DEFAULT`), filled by `LoadAdventureAction`.
 
 ### Message fonts at run time (`FontMarkup`)
 

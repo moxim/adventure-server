@@ -12,7 +12,6 @@ public class IncrementVariableAction extends AbstractVariableAction {
     private final String name;
     private final Integer value;
 
-
     public IncrementVariableAction(String aName, Integer aValue, VariableProvider aVariableProvider) {
         super(aVariableProvider);
         name = aName;
