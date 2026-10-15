@@ -48,7 +48,8 @@ public final class FlashNotifier {
         }
     }
 
-    private static void show(String message) {
+    /** Shows an error notification right away, without waiting for a navigation. */
+    public static void show(String message) {
         Notification notification = Notification.show(message, 5000, Notification.Position.MIDDLE);
         notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
     }

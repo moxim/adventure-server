@@ -57,6 +57,9 @@ public class AdventureRunSession {
     public <T> T runBound(Supplier<T> aStep) {
         try (SystemMessageKey.Binding ignored = SystemMessageKey.bindOverrides(systemMessageOverrides)) {
             return aStep.get();
+//        } catch (RuntimeException e) {
+//            FlashNotifier.flash("Error during game play: " + e.getMessage());
+//            navigateBack();
         }
     }
 

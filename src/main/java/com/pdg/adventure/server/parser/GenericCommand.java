@@ -84,7 +84,7 @@ public class GenericCommand implements Command {
             ExecutionResult tmp = condition.check();
             if (tmp.getExecutionState() == ExecutionResult.State.FAILURE) {
                 setExecutionResult(result, tmp);
-                break;
+                break; // stop at first failing precondition
             }
         }
         return result;

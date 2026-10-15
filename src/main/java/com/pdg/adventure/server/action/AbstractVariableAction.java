@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import java.util.Optional;
 
 import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.server.exception.ConfigurationException;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
@@ -25,8 +26,10 @@ public abstract class AbstractVariableAction extends AbstractAction {
         CommandExecutionResult result = new CommandExecutionResult();
         Optional<Variable> variableOptional = variableProvider.get(aName);
         if (variableOptional.isEmpty()) {
+            ConfigurationException ce = new ConfigurationException("Variable " + aName + " does not exist!");
             result.setResultMessage("Variable " + aName + " does not exist!");
-            return result;
+            throw ce;
+//            return result;
         }
         Integer baseValue = variableOptional.get().value();
         changeValue(baseValue);
