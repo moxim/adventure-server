@@ -6,5 +6,5 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class PrintVariablesActionData extends ActionData {
+public class DiagnoseVariablesActionData extends ActionData {
 }

@@ -61,6 +61,13 @@ class PreconditionActionFormatterActionsTest {
     }
 
     @Test
+    void random() {
+        RandomActionData a = new RandomActionData();
+        a.setName("dice");
+        assertThat(formatter.formatAction(a)).isEqualTo("RANDOM dice");
+    }
+
+    @Test
     void addVariable() {
         assertThat(formatter.formatAction(new AddVariableActionData("bonus", "score"))).isEqualTo("ADD bonus score");
     }
@@ -175,15 +182,15 @@ class PreconditionActionFormatterActionsTest {
     }
 
     @Test
-    void printVariable() {
-        PrintVariableActionData pv = new PrintVariableActionData();
+    void diagnoseVariable() {
+        DiagnoseVariableActionData pv = new DiagnoseVariableActionData();
         pv.setName("VISITED");
-        assertThat(formatter.formatAction(pv)).isEqualTo("PRINT_VAR VISITED");
+        assertThat(formatter.formatAction(pv)).isEqualTo("DIAGNOSE_VAR VISITED");
     }
 
     @Test
-    void printVariables() {
-        assertThat(formatter.formatAction(new PrintVariablesActionData())).isEqualTo("PRINT_VARS");
+    void diagnoseVariables() {
+        assertThat(formatter.formatAction(new DiagnoseVariablesActionData())).isEqualTo("DIAGNOSE_VARS");
     }
 
     @Test

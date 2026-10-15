@@ -124,7 +124,8 @@ class AdventureRunSessionFactoryTest {
         AdventureRunSession session = factory.start(adventureData, new RunOwner("player-1"));
         RunResult result = session.submit("inventory");
 
-        assertThat(result.lines()).contains(SystemMessageKey.SM9.defaultText());
+        // The header and the contents come back as one text, as the Inventory action returns them together.
+        assertThat(String.join("\n", result.lines())).contains(SystemMessageKey.SM9.defaultText());
     }
 
     @Test

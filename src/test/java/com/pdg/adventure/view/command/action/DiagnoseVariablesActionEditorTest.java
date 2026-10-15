@@ -4,12 +4,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.pdg.adventure.model.action.PrintVariablesActionData;
+import com.pdg.adventure.model.action.DiagnoseVariablesActionData;
 
-class PrintVariablesActionEditorTest {
+class DiagnoseVariablesActionEditorTest {
 
-    private final PrintVariablesActionData data = new PrintVariablesActionData();
-    private final PrintVariablesActionEditor editor = new PrintVariablesActionEditor(data);
+    private final DiagnoseVariablesActionData data = new DiagnoseVariablesActionData();
+    private final DiagnoseVariablesActionEditor editor = new DiagnoseVariablesActionEditor(data);
 
     @Test
     void initialize_buildsTheUI() {

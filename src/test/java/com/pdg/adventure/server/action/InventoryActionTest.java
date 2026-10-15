@@ -5,10 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -23,22 +19,20 @@ class InventoryActionTest {
     @Mock private Container pocket;
 
     @Test
-    void execute_sendsInventoryHeaderAndContentsToConsumer() {
+    void execute_returnsInventoryHeaderAndContentsAsTheResultMessage() {
         when(pocket.listContents()).thenReturn("- a torch\n- a key");
 
-        List<String> captured = new ArrayList<>();
-        Consumer<String> consumer = captured::add;
+        ExecutionResult result = new InventoryAction(new ContainerSupplier(pocket)).execute();
 
-        new InventoryAction(consumer, new ContainerSupplier(pocket)).execute();
-
-        assertThat(captured).containsExactly(SystemMessageKey.SM9.defaultText(), "- a torch\n- a key");
+        assertThat(result.getResultMessage())
+                .isEqualTo(SystemMessageKey.SM9.defaultText() + System.lineSeparator() + "- a torch\n- a key");
     }
 
     @Test
     void execute_returnsSuccess() {
         when(pocket.listContents()).thenReturn("");
 
-        ExecutionResult result = new InventoryAction(_ -> {}, new ContainerSupplier(pocket)).execute();
+        ExecutionResult result = new InventoryAction(new ContainerSupplier(pocket)).execute();
 
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
     }

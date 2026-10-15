@@ -16,6 +16,7 @@ import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.action.AddVariableActionData;
 import com.pdg.adventure.model.action.PrintActionData;
+import com.pdg.adventure.model.action.RandomActionData;
 import com.pdg.adventure.model.action.MesActionData;
 import com.pdg.adventure.model.action.SubtractVariableActionData;
 import com.pdg.adventure.model.action.CreateActionData;
@@ -24,8 +25,8 @@ import com.pdg.adventure.model.action.DescribeActionData;
 import com.pdg.adventure.model.action.DestroyActionData;
 import com.pdg.adventure.model.action.IncrementVariableActionData;
 import com.pdg.adventure.model.action.InventoryActionData;
-import com.pdg.adventure.model.action.PrintVariableActionData;
-import com.pdg.adventure.model.action.PrintVariablesActionData;
+import com.pdg.adventure.model.action.DiagnoseVariableActionData;
+import com.pdg.adventure.model.action.DiagnoseVariablesActionData;
 import com.pdg.adventure.model.action.TurnsActionData;
 import com.pdg.adventure.model.action.LightActionData;
 import com.pdg.adventure.model.action.MessageActionData;
@@ -140,6 +141,12 @@ class ActionEditorFactoryTest {
     }
 
     @Test
+    void createEditor_withRandomActionData_shouldReturnRandomActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new RandomActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(RandomActionEditor.class);
+    }
+
+    @Test
     void createEditor_withAddVariableActionData_shouldReturnAddVariableActionEditor() {
         ActionEditorComponent editor = ActionEditorFactory.createEditor(new AddVariableActionData(), adventureData);
         assertThat(editor).isNotNull().isInstanceOf(AddVariableActionEditor.class);
@@ -183,15 +190,15 @@ class ActionEditorFactoryTest {
     }
 
     @Test
-    void createEditor_withPrintVariableActionData_shouldReturnPrintVariableActionEditor() {
-        ActionEditorComponent editor = ActionEditorFactory.createEditor(new PrintVariableActionData(), adventureData);
-        assertThat(editor).isNotNull().isInstanceOf(PrintVariableActionEditor.class);
+    void createEditor_withDiagnoseVariableActionData_shouldReturnDiagnoseVariableActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new DiagnoseVariableActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(DiagnoseVariableActionEditor.class);
     }
 
     @Test
-    void createEditor_withPrintVariablesActionData_shouldReturnPrintVariablesActionEditor() {
-        ActionEditorComponent editor = ActionEditorFactory.createEditor(new PrintVariablesActionData(), adventureData);
-        assertThat(editor).isNotNull().isInstanceOf(PrintVariablesActionEditor.class);
+    void createEditor_withDiagnoseVariablesActionData_shouldReturnDiagnoseVariablesActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new DiagnoseVariablesActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(DiagnoseVariablesActionEditor.class);
     }
 
     @Test

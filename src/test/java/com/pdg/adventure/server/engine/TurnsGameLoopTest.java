@@ -44,7 +44,7 @@ class TurnsGameLoopTest {
         vocabulary.createNewWord("and", Word.Type.CONJUNCTION);
 
         Workflow workflow = gameContext.setUpWorkflows();
-        add(workflow, "turns", new TurnsAction(gameContext::tell, variables));
+        add(workflow, "turns", new TurnsAction(variables));
         add(workflow, "wait", new MessageAction("Time passes."));
 
         variables.set(VariableProvider.TURNS_VARIABLE_NAME, 0); // as a run starts

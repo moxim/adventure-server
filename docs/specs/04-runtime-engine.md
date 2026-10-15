@@ -106,9 +106,9 @@ The engine talks in terms of small interfaces in `com.pdg.adventure.api`:
 
 | Interface | Contract |
 |-----------|---------|
-| `Action` | `ExecutionResult execute()`, `String getActionName()`. The unit of side effect. Always returns a non-null result. |
+| `Action` | `ExecutionResult execute()`, `String getActionName()`, `default boolean continuesLine()` (false). The unit of side effect. Always returns a non-null result. |
 | `PreCondition` | `ExecutionResult check()`, `String getName()`. Returns `SUCCESS`/`FAILURE` and a message. |
-| `Command` | A `CommandDescription` + an ordered `List<PreCondition>` + an ordered `List<Action>` (`GenericCommand`, the sole implementation). `execute()` runs preconditions in order and stops at the first failure (returning that failure); if all pass, it runs every action in order — a single failing action aborts the rest and returns that action's failure immediately, otherwise all action result messages are joined with newlines into one SUCCESS result. There is no separate "follow-up actions" concept; every action is just the next entry in the same list. |
+| `Command` | A `CommandDescription` + an ordered `List<PreCondition>` + an ordered `List<Action>` (`GenericCommand`, the sole implementation). `execute()` runs preconditions in order and stops at the first failure (returning that failure); if all pass, it runs every action in order — a single failing action aborts the rest and returns that action's failure immediately, otherwise all non-blank action result messages are joined into one SUCCESS result — with a line separator between two texts unless the earlier action `continuesLine()` (see [§ Joining action texts](#joining-action-texts)). There is no separate "follow-up actions" concept; every action is just the next entry in the same list. |
 | `CommandDescription` | A 3-slot key `(verb, adjective, noun)`; equality is by joined-string spec. |
 | `CommandChain` | An ordered list of `Command`s sharing one description; `execute()` runs the first whose preconditions pass. |
 | `HasCommands` | Implemented by anything that can match command descriptions: `Thing`, `GenericDirection`. Wraps a `GenericCommandProvider` via `CommandHandler`. |
@@ -476,21 +476,31 @@ author-placeable:
 | `WearAction(wearable, msgs)` | If `isWearable && !isWorn`, set `isWorn=true`, `SUCCESS` + `SM37`; else `FAILURE` + `SM40`. Interpolates `thing.getStrippedBasicDescription()` (article-less — the `SMnn` texts already carry *"the %s"*). |
 | `RemoveAction(wearable, msgs)` | Inverse of `WearAction`; clears `isWorn`; `SUCCESS` + `SM38` / `FAILURE` + `SM41`. Also interpolates the *stripped* (article-less) description. |
 | `MovePlayerAction(destination, gameContext, variableProvider)` | Set `gameContext.currentLocation = destination`, run `DescribeAction` over `destination.getArrivalDescription()` (visit-aware: long on first visit, short thereafter), set `gameContext.currentPictureId` from that description, record the `VISITED` variable, increment `timesVisited`, then append the Arrival Processes' output. |
-| `InventoryAction(consumer, pocketSupplier, msgs)` | Print the carried-items header (`SM9`) followed by `pocket.listContents()`. |
-| `PrintVariableAction(name, consumer, vars)` | **PRINT_VAR.** Tell `name : value`, e.g. `VISITED : 14`, with the variable's current value. A variable that does not exist prints a hyphen (`ghost : -`) and is not created. Always `SUCCESS`. |
-| `PrintVariablesAction(consumer, vars)` | **PRINT_VARS.** Tell every variable currently in the shared provider as `name : value`, one per line in a single message, sorted by name ignoring case; a single hyphen if there are none. Always `SUCCESS`. |
-| `TurnsAction(consumer, vars)` | **TURNS.** Tell "You have taken x turn(s)." where x is the `TURNS` variable (0 if it does not exist): `SM17`, the number, `SM18`, `SM19` unless x is exactly 1, `SM20` — see [§ The TURNS variable](#the-turns-variable). |
+| `InventoryAction(pocketSupplier)` | Return the carried-items header (`SM9`) followed by `pocket.listContents()`, one per line, as its result message. |
+| `DiagnoseVariableAction(name, vars)` | **DIAGNOSE_VAR.** Return `name : value` as its result message, e.g. `VISITED : 14`, with the variable's current value. A variable that does not exist prints a hyphen (`ghost : -`) and is not created. Always `SUCCESS`. |
+| `DiagnoseVariablesAction(vars)` | **DIAGNOSE_VARS.** Return every variable currently in the shared provider as `name : value`, one per line in a single message, sorted by name ignoring case; a single hyphen if there are none. Always `SUCCESS`. |
+| `TurnsAction(vars)` | **TURNS.** Return "You have taken x turn(s)." as its result message where x is the `TURNS` variable (0 if it does not exist): `SM17`, the number, `SM18`, `SM19` unless x is exactly 1, `SM20` — see [§ The TURNS variable](#the-turns-variable). |
 | `QuitAction(msgs)` | Throw `QuitException` carrying the supplied bye message. |
 | `LoadAdventureAction(service, mapper, config, gameContext)` | Resolve an `adventureId`, load and map the `AdventureData`, throw `ReloadAdventureException` on success (returns normally on failure). Engine-managed — no DO, no editor. |
 | `SetVariableAction(name, value, vars, msgs)` | Write `Variable(name, value)` into the `VariableProvider`. 
 The variable itself is *defined* at authoring time (`AdventureData.variables`); at load, `AdventureMapper.mapToBO` 
 clears the shared `VariableProvider` and defines each authored `VariableData` at its initial value (via `VariableMapper`),
  so every game starts from the authored state. |
+| `MesAction(text/messageId, ...)` | **MES.** Same as `MessageAction` (literal or catalog lookup, with font), but `continuesLine()` is true. Authors see it as "Msg". |
+| `PrintAction(name, vars)` | **PRINT.** Return the variable's current value as a plain number; `continuesLine()` true, informational-only. An unknown variable throws `ConfigurationException`. |
+| `AddVariableAction(first, second, vars)` / `SubtractVariableAction(first, second, vars)` | **ADD / MINUS** (via `AbstractTwoVariablesAction`). Read both variables, write `second + first` / `second - first` into the second; the first is unchanged; always `SUCCESS`, no text. Either variable unknown → `ConfigurationException` ("Variable X does not exist!"). The result is not clamped (PAW keeps a flag within 0..255). |
+| `RandomAction(name, vars)` | **RANDOM.** Write a random integer from 0 to 100 inclusive into the variable. A variable that does not exist is created — no `ConfigurationException`. Always `SUCCESS`, no text. |
 | `IncrementVariableAction(name, vars, msgs)` | Read the variable, parse it as an integer, write `+1`. |
 | `DecrementVariableAction(name, vars, msgs)` | Same, `-1`. |
 | `CreateAction(thing, containerSupplier, msgs)` | Add `thing` to the supplied container; emits `SM58`. Authorable via the "Create Item" action editor. |
 | `DestroyAction(thing, msgs)` | Remove `thing` from its current parent container; emits `SM57`. Authorable via the "Destroy" action editor. |
 | `BreakAction(msgs)` | Stop execution of the current command chain immediately and return the supplied message as SUCCESS. Used to short-circuit multi-action chains when a condition is met. Authorable via the "Break" action editor. |
+
+### Joining action texts
+
+`GenericCommand.execute()` collects the result messages of its actions in order. A line separator is inserted between two texts **unless the previous contributing action returned `continuesLine() == true`**; only `MesAction` and `PrintAction` do (PAW's MES and PRINT, which print without a new line; MESSAGE ends the line). Blank texts are skipped, except that a blank-but-non-empty text from a line-continuing action (a lone space) is kept as the separator before the next text. The rule applies within one command's action list only — joins further up (`GenericCommandChain`, `Workflow`, the run view) do not carry it, and font changes still start a new bubble in the run view.
+
+Actions that show text (`Turns`, `Diagnose Variable(s)`, `Inventory`) return it as their result message instead of calling `GameContext.tell` themselves, so their text takes its place among the other actions' texts; a direct `tell` would appear before the command's collected output.
 
 ### The TURNS variable
 

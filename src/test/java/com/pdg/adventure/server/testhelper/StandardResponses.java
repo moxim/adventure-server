@@ -46,7 +46,7 @@ public final class StandardResponses {
     public static void register(Workflow aWorkflow, GameContext aGameContext) {
         add(aWorkflow, new GenericCommandDescription("help"), new MessageAction(HELP_TEXT));
         add(aWorkflow, new GenericCommandDescription("inventory"),
-            new InventoryAction(aGameContext::tell, new ContainerSupplier(aGameContext::getPocket)));
+            new InventoryAction(new ContainerSupplier(aGameContext::getPocket)));
         add(aWorkflow, new GenericCommandDescription("quit"), new QuitAction());
         add(aWorkflow, new GenericCommandDescription("describe"), new LookAction(aGameContext));
         add(aWorkflow, new GenericCommandDescription("describe", "here"), new LookAction(aGameContext));
