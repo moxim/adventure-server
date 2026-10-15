@@ -25,8 +25,9 @@ public abstract class AbstractVariableCondition extends AbstractCondition {
     protected Variable getVariable(String aVariableName) {
         Optional<Variable> variableOptional = variableProvider.get(aVariableName);
         if (variableOptional.isEmpty()) {
-            ConfigurationException ce = new ConfigurationException("Variable " + aVariableName + " does not exist!");
-            LOG.warn("Variable {} does not exist!", aVariableName, ce);
+            String errorText = "Variable " + aVariableName + " does not exist!";
+            ConfigurationException ce = new ConfigurationException(errorText);
+            LOG.warn(errorText, ce);
             throw ce;
         }
         return variableOptional.get();

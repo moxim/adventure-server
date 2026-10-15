@@ -27,6 +27,7 @@ public class AdventureRunSession {
     @Getter
     private final GameContext gameContext;
     private final Map<String, String> systemMessageOverrides;
+    @Getter
     private boolean gameOver;
     private boolean supersededElsewhere;
 
@@ -57,9 +58,6 @@ public class AdventureRunSession {
     public <T> T runBound(Supplier<T> aStep) {
         try (SystemMessageKey.Binding ignored = SystemMessageKey.bindOverrides(systemMessageOverrides)) {
             return aStep.get();
-//        } catch (RuntimeException e) {
-//            FlashNotifier.flash("Error during game play: " + e.getMessage());
-//            navigateBack();
         }
     }
 
@@ -89,10 +87,6 @@ public class AdventureRunSession {
             gameContext.setOutputSink(null);
         }
         return new RunResult(lines, gameOver);
-    }
-
-    public boolean isGameOver() {
-        return gameOver;
     }
 
     public record RunResult(List<String> lines, boolean gameOver) {
