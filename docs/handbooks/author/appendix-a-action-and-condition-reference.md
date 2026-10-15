@@ -38,7 +38,7 @@ order, when that command fires.
 | **Diagnose Variable** | Prints a variable's name and its current value, e.g. *"VISITED : 14"* | The variable, chosen from the dropdown (`VISITED` and `TURNS` are always listed) |
 | **Diagnose Variables** | Prints every variable and its current value, one per line, sorted by name: *"TURNS : 3"*, *"VISITED : 14"* | Nothing - fully automatic |
 | **Quit** | Ends the game session | Nothing — pair it with a **Message** action for a farewell line |
-| **Random** | Sets a variable to a random whole number from 0 to 100 (both included) | The variable: pick an existing one or type a new name, which creates it (no error for a new name) |
+| **Random** | Sets a variable to a random whole number from 0 to 99 (both included) | The variable: pick an existing one or type a new name, which creates it (no error for a new name) |
 | **Remove** | Takes a worn item off the player | The item |
 | **Save Game** | Saves the running game into the slot the player typed (`save 3`), or the first free one; each player has 10 slots per adventure | Nothing — use it in a Response with the verb `save` and the noun `~` |
 | **Set Variable** | Sets a named variable to an exact value | Variable name; value |
@@ -79,7 +79,7 @@ or Random action creates one.
 
 For a dice roll, use **Random** on a variable such as `dice` and then test it with
 **Greater Than** or **Less Than**: *"if dice is greater than 70, the lock opens"*.
-Each time the action runs the variable gets a new value from 0 to 100, so the
+Each time the action runs the variable gets a new value from 0 to 99, so the
 roll stays the same only until the next Random on that variable.
 
 ### The standard variable `TURNS`

@@ -487,7 +487,7 @@ this chapter only documents the storage shape.
 | `QuitActionData` | end the session (`QuitAction`) |
 | `BreakActionData` | stop the rest of the current command chain / action list (`BreakAction`) |
 | `SetVariableActionData`, `IncrementVariableActionData`, `DecrementVariableActionData` | variable mutations |
-| `RandomActionData` | `RandomAction` (PAW's RANDOM); one field, `name` — the variable set to a random integer 0..100 |
+| `RandomActionData` | `RandomAction` (PAW's RANDOM); one field, `name` — the variable set to a random integer 0..99 |
 | `AddVariableActionData`, `SubtractVariableActionData` | `AddVariableAction` / `SubtractVariableAction` (PAW's ADD / MINUS); fields `firstName`, `secondName` — the first variable's value is added to / subtracted from the second |
 
 Plus a runtime-only `LoadAdventureAction` (no DO; engine-managed).

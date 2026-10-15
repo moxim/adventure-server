@@ -10,7 +10,7 @@ import com.pdg.adventure.view.support.VariableChoices;
 
 /**
  * Editor component for RandomActionData.
- * Allows choosing the variable the game sets to a random number from 0 to 100. Like Set Variable, it may name a
+ * Allows choosing the variable the game sets to a random number from 0 to 99. Like Set Variable, it may name a
  * new variable, which is defined in the adventure straight away so conditions can pick it.
  */
 @AutoRegisterActionEditor
@@ -32,7 +32,7 @@ public class RandomActionEditor extends ActionEditorComponent<RandomActionData> 
     @Override
     protected void buildUI() {
         H4 title = new H4("Random Action");
-        Span description = new Span("Set a variable to a random whole number from 0 to 100");
+        Span description = new Span("Set a variable to a random whole number from 0 to 99");
         description.getStyle().set("color", "var(--lumo-secondary-text-color)");
 
         variableNameField = new VariableNameSelector("Variable Name",

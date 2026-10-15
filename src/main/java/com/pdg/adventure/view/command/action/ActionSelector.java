@@ -88,7 +88,7 @@ public class ActionSelector extends HorizontalLayout {
         new ActionTypeDescriptor("Break", "Stop processing this command chain; other chains are unaffected", BreakActionData::new),
         new ActionTypeDescriptor("Picture", "Show a picture to the player", PictureActionData::new),
         new ActionTypeDescriptor("Turns", "Tell the player how many turns they have taken (the TURNS variable)", TurnsActionData::new),
-        new ActionTypeDescriptor("Random", "Set a variable to a random number from 0 to 100; a new name creates the variable", RandomActionData::new),
+        new ActionTypeDescriptor("Random", "Set a variable to a random number from 0 to 99; a new name creates the variable", RandomActionData::new),
         new ActionTypeDescriptor("Print", "Print the value of a variable, e.g. 14, without ending the line; the next text continues on it", PrintActionData::new),
         new ActionTypeDescriptor("Diagnose Variable", "Print a variable's name and value, e.g. VISITED : 14", DiagnoseVariableActionData::new),
         new ActionTypeDescriptor("Diagnose Variables", "Print all variables and their values, one per line", DiagnoseVariablesActionData::new)

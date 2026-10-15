@@ -11,7 +11,7 @@ import com.pdg.adventure.server.parser.CommandExecutionResult;
 import com.pdg.adventure.server.support.VariableProvider;
 
 /**
- * RANDOM: sets a variable to a random integer from 0 to 100, both included. A variable that does not exist yet is
+ * RANDOM: sets a variable to a random integer from 0 to 99, both included. A variable that does not exist yet is
  * created, so unlike the other variable actions this one never reports an unknown variable.
  */
 @Getter

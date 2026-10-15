@@ -29,22 +29,22 @@ class RandomActionTest {
     }
 
     @Test
-    void execute_asksForAValueBelow101_soZeroAndHundredAreBothPossible() {
+    void execute_asksForAValueBelow100_soZeroAndNinetyNineAreBothPossible() {
         new RandomAction("low", variableProvider, bound -> {
-            assertThat(bound).isEqualTo(101);
+            assertThat(bound).isEqualTo(100);
             return 0;
         }).execute();
         new RandomAction("high", variableProvider, bound -> bound - 1).execute();
 
         assertThat(variableProvider.get("low")).hasValueSatisfying(v -> assertThat(v.value()).isZero());
-        assertThat(variableProvider.get("high")).hasValueSatisfying(v -> assertThat(v.value()).isEqualTo(100));
+        assertThat(variableProvider.get("high")).hasValueSatisfying(v -> assertThat(v.value()).isEqualTo(99));
     }
 
     @RepeatedTest(50)
-    void execute_withTheRealRandom_staysWithinZeroAndHundred() {
+    void execute_withTheRealRandom_staysWithinZeroAndNinetyNine() {
         new RandomAction("dice", variableProvider).execute();
 
-        assertThat(variableProvider.get("dice").orElseThrow().value()).isBetween(0, 100);
+        assertThat(variableProvider.get("dice").orElseThrow().value()).isBetween(0, 99);
     }
 
     @Test

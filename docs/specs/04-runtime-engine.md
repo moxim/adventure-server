@@ -489,7 +489,7 @@ clears the shared `VariableProvider` and defines each authored `VariableData` at
 | `MesAction(text/messageId, ...)` | **MES.** Same as `MessageAction` (literal or catalog lookup, with font), but `continuesLine()` is true. Authors see it as "Msg". |
 | `PrintAction(name, vars)` | **PRINT.** Return the variable's current value as a plain number; `continuesLine()` true, informational-only. An unknown variable throws `ConfigurationException`. |
 | `AddVariableAction(first, second, vars)` / `SubtractVariableAction(first, second, vars)` | **ADD / MINUS** (via `AbstractTwoVariablesAction`). Read both variables, write `second + first` / `second - first` into the second; the first is unchanged; always `SUCCESS`, no text. Either variable unknown → `ConfigurationException` ("Variable X does not exist!"). The result is not clamped (PAW keeps a flag within 0..255). |
-| `RandomAction(name, vars)` | **RANDOM.** Write a random integer from 0 to 100 inclusive into the variable. A variable that does not exist is created — no `ConfigurationException`. Always `SUCCESS`, no text. |
+| `RandomAction(name, vars)` | **RANDOM.** Write a random integer from 0 to 99 inclusive into the variable. A variable that does not exist is created — no `ConfigurationException`. Always `SUCCESS`, no text. |
 | `IncrementVariableAction(name, vars, msgs)` | Read the variable, parse it as an integer, write `+1`. |
 | `DecrementVariableAction(name, vars, msgs)` | Same, `-1`. |
 | `CreateAction(thing, containerSupplier, msgs)` | Add `thing` to the supplied container; emits `SM58`. Authorable via the "Create Item" action editor. |
@@ -636,7 +636,7 @@ conditions wrap others.
 | `HereCondition(item, gc)` | `gc.currentLocation.contains(item)`. Failure message SM26 (default text `"There isn't one of those here."`). |
 | `ItemAtCondition(item, location, gc)` | The item is at the named location. |
 | `PlayerAtCondition(location, gc)` | `gc.currentLocation.equals(location)`. |
-| `ChanceCondition(chance)` | A fresh random integer in `[1, 100]` (`new Random().nextInt(100) + 1`, injectable via a package-private constructor for testing) is `<= chance`. Re-rolled on every attempt — a 20% chance is "roughly one in five tries," not "one in five players." No failure message of its own. |
+| `ChanceCondition(chance)` | A fresh random integer in `[1, 100]` (`ThreadLocalRandom.current().nextInt(100) + 1`, injectable via a package-private constructor for testing) is `<= chance`. Re-rolled on every attempt — a 20% chance is "roughly one in five tries," not "one in five players." No failure message of its own. |
 
 ### Variable comparators
 
