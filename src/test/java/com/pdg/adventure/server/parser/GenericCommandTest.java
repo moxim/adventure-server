@@ -39,4 +39,58 @@ class GenericCommandTest {
         assertThat(result.getResultMessage())
                 .isEqualTo("before" + System.lineSeparator() + "at-break");
     }
+
+    private static Action continuingAction(String message) {
+        Action a = action(message);
+        when(a.continuesLine()).thenReturn(true);
+        return a;
+    }
+
+    @Test
+    void continuesLineAction_isNotFollowedByALineBreak() {
+        GenericCommand command = new GenericCommand(mock(CommandDescription.class));
+        command.addAction(continuingAction("You see "));
+        command.addAction(continuingAction("a door"));
+        command.addAction(action("."));
+        command.addAction(action("Next line."));
+
+        ExecutionResult result = command.execute();
+
+        assertThat(result.getResultMessage())
+                .isEqualTo("You see a door." + System.lineSeparator() + "Next line.");
+    }
+
+    @Test
+    void continuesLineAction_startsOnANewLineAfterAnOrdinaryAction() {
+        GenericCommand command = new GenericCommand(mock(CommandDescription.class));
+        command.addAction(action("First."));
+        command.addAction(continuingAction("Second "));
+        command.addAction(action("third."));
+
+        ExecutionResult result = command.execute();
+
+        assertThat(result.getResultMessage())
+                .isEqualTo("First." + System.lineSeparator() + "Second third.");
+    }
+
+    @Test
+    void continuesLineAction_keepsATextThatIsJustASpace() {
+        GenericCommand command = new GenericCommand(mock(CommandDescription.class));
+        command.addAction(continuingAction("one"));
+        command.addAction(continuingAction(" "));
+        command.addAction(continuingAction("two"));
+
+        assertThat(command.execute().getResultMessage()).isEqualTo("one two");
+    }
+
+    @Test
+    void ordinaryAction_stillDropsABlankText() {
+        GenericCommand command = new GenericCommand(mock(CommandDescription.class));
+        command.addAction(action("one"));
+        command.addAction(action(" "));
+        command.addAction(action("two"));
+
+        assertThat(command.execute().getResultMessage())
+                .isEqualTo("one" + System.lineSeparator() + "two");
+    }
 }

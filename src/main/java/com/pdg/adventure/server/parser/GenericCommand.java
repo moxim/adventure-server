@@ -58,7 +58,8 @@ public class GenericCommand implements Command {
         if (result.getExecutionState() != ExecutionResult.State.SUCCESS) {
             return result;                 // preconditions unmet → command does not apply
         }
-        List<String> messages = new ArrayList<>();
+        StringBuilder messages = new StringBuilder();
+        boolean previousContinuesLine = false;
         for (Action action : actions) {
             ExecutionResult fromAction = action.execute();
             if (fromAction.getExecutionState() == ExecutionResult.State.FAILURE) {
@@ -67,14 +68,19 @@ public class GenericCommand implements Command {
                 return result;             // a failing action fails the whole command
             }
             String msg = fromAction.getResultMessage();
-            if (msg != null && !msg.isBlank()) {
-                messages.add(msg);
+            // A text that continues the line may be just a space, which is what separates it from the next one.
+            if (msg != null && (!msg.isBlank() || (action.continuesLine() && !msg.isEmpty()))) {
+                if (!messages.isEmpty() && !previousContinuesLine) {
+                    messages.append(System.lineSeparator());
+                }
+                messages.append(msg);
+                previousContinuesLine = action.continuesLine();
             }
             if (action.isBreak()) {
                 break;              // stop this command's own action list here
             }
         }
-        result.setResultMessage(String.join(System.lineSeparator(), messages));
+        result.setResultMessage(messages.toString());
         return result;                     // SUCCESS, all action messages joined
     }
 
@@ -84,7 +90,7 @@ public class GenericCommand implements Command {
             ExecutionResult tmp = condition.check();
             if (tmp.getExecutionState() == ExecutionResult.State.FAILURE) {
                 setExecutionResult(result, tmp);
-                break;
+                break; // stop at first failing precondition
             }
         }
         return result;

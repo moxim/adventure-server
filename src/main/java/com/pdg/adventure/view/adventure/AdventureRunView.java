@@ -3,6 +3,7 @@ package com.pdg.adventure.view.adventure;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.ScrollIntoViewOption;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.html.Div;
@@ -16,7 +17,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 import jakarta.annotation.security.RolesAllowed;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -26,12 +26,8 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.AdventureFont;
 import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.server.action.MovePlayerAction;
-import com.pdg.adventure.server.engine.AdventureRunSession;
+import com.pdg.adventure.server.engine.*;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
-import com.pdg.adventure.server.engine.AdventureRunSessionFactory;
-import com.pdg.adventure.server.engine.FontMarkup;
-import com.pdg.adventure.server.engine.RunAlreadyActiveException;
-import com.pdg.adventure.server.engine.RunOwner;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.view.player.PlayerLibraryView;
@@ -113,6 +109,9 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         messageListContainer.setPadding(false);
         messageListContainer.getStyle().set("overflow-y", "auto");
         messageListContainer.getStyle().set("border", "1px solid #e0e0e0");
+        messageListContainer.scrollIntoView(
+                ScrollIntoViewOption.Behavior.SMOOTH, ScrollIntoViewOption.Block.END, ScrollIntoViewOption.Inline.START
+        );
 
         pictureContainer.setWidthFull();
         pictureContainer.getStyle().set("flex", "0 0 auto");
@@ -222,11 +221,15 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     }
 
     private void renderOpeningRoom() {
-        MovePlayerAction movePlayerAction = new MovePlayerAction(session.getGameContext().getCurrentLocation(),
-                                                                 session.getGameContext(), variableProvider);
-        ExecutionResult result = session.runBound(movePlayerAction::execute);
-        renderNarratorLines(List.of(result.getResultMessage()));
-        refreshPictureDisplay();
+        try {
+            MovePlayerAction movePlayerAction = new MovePlayerAction(session.getGameContext().getCurrentLocation(),
+                                                                     session.getGameContext(), variableProvider);
+            ExecutionResult result = session.runBound(movePlayerAction::execute);
+            renderNarratorLines(List.of(result.getResultMessage()));
+            refreshPictureDisplay();
+        } catch (RuntimeException e) {
+            FlashNotifier.show("Error during game play: " + e.getMessage());
+        }
     }
 
     @Override
@@ -306,9 +309,14 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             return;
         }
         String input = event.getValue();
-        messageList.addItem(new MessageListItem(input, Instant.now(), ViewSupporter.getCurrentUser().getUsername()));
-
-        handleInput(input);
+//        messageList.addItem(new MessageListItem(input, Instant.now(), ViewSupporter.getCurrentUser().getUsername()));
+        messageList.addItem(new MessageListItem(input));
+        try {
+            handleInput(input);
+        } catch (RuntimeException e) {
+            FlashNotifier.show("Error during game play: " + e.getMessage());
+//            navigateBack();
+        }
     }
 
     private void handleInput(final String input) {

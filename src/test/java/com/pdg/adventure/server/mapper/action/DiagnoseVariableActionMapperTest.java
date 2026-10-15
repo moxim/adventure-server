@@ -7,46 +7,42 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.pdg.adventure.model.action.PrintVariableActionData;
-import com.pdg.adventure.server.action.PrintVariableAction;
-import com.pdg.adventure.server.engine.GameContext;
+import com.pdg.adventure.model.action.DiagnoseVariableActionData;
+import com.pdg.adventure.server.action.DiagnoseVariableAction;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.support.VariableProvider;
 
 @ExtendWith(MockitoExtension.class)
-class PrintVariableActionMapperTest {
+class DiagnoseVariableActionMapperTest {
 
     @Mock private MapperSupporter mapperSupporter;
-    @Mock private GameContext gameContext;
 
-    @InjectMocks private PrintVariableActionMapper mapper;
+    @InjectMocks private DiagnoseVariableActionMapper mapper;
 
     @Test
-    void mapToBO_buildsAnActionThatPrintsTheSharedVariableThroughTheGameContext() {
+    void mapToBO_buildsAnActionThatPrintsTheSharedVariable() {
         VariableProvider variables = new VariableProvider();
         variables.set("VISITED", 14);
         when(mapperSupporter.getVariableProvider()).thenReturn(variables);
-        PrintVariableActionData data = new PrintVariableActionData();
+        DiagnoseVariableActionData data = new DiagnoseVariableActionData();
         data.setId("a1");
         data.setName("VISITED");
 
-        PrintVariableAction result = mapper.mapToBO(data);
-        result.execute();
+        DiagnoseVariableAction result = mapper.mapToBO(data);
 
         assertThat(result.getId()).isEqualTo("a1");
         assertThat(result.getName()).isEqualTo("VISITED");
-        verify(gameContext).tell("VISITED : 14");
+        assertThat(result.execute().getResultMessage()).isEqualTo("VISITED : 14");
     }
 
     @Test
     void mapToDO_roundTripsIdAndName() {
-        PrintVariableAction action = new PrintVariableAction("score", s -> { }, new VariableProvider());
+        DiagnoseVariableAction action = new DiagnoseVariableAction("score", new VariableProvider());
         action.setId("a2");
 
-        PrintVariableActionData result = mapper.mapToDO(action);
+        DiagnoseVariableActionData result = mapper.mapToDO(action);
 
         assertThat(result.getId()).isEqualTo("a2");
         assertThat(result.getName()).isEqualTo("score");

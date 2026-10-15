@@ -61,10 +61,13 @@ public class ActionSelector extends HorizontalLayout {
         new ActionTypeDescriptor("Move Player", "Move the player to a different location", MovePlayerActionData::new),
         new ActionTypeDescriptor("Move Item", "Move an item to a different container", MoveItemActionData::new),
         new ActionTypeDescriptor("Message", "Display a message to the player", MessageActionData::new),
+        new ActionTypeDescriptor("Msg", "Display a message without ending the line; the next text continues on it", MesActionData::new),
         new ActionTypeDescriptor("Destroy", "Remove an item from the game permanently", DestroyActionData::new),
         new ActionTypeDescriptor("Remove (Un-wear)", "Remove a wearable item from the player", RemoveActionData::new),
         new ActionTypeDescriptor("Increment Variable", "Increment a named variable by an amount", IncrementVariableActionData::new),
         new ActionTypeDescriptor("Decrement Variable", "Decrement a named variable by an amount", DecrementVariableActionData::new),
+        new ActionTypeDescriptor("Add Variable", "Add the value of one variable to another", AddVariableActionData::new),
+        new ActionTypeDescriptor("Subtract Variable", "Subtract the value of one variable from another", SubtractVariableActionData::new),
         new ActionTypeDescriptor("Describe", "Show the description of an item or location", DescribeActionData::new),
         new ActionTypeDescriptor("Create Item", "Place an item into a container or location", CreateActionData::new),
         new ActionTypeDescriptor("Look", "Describe the player's current location, with its picture", LookActionData::new),
@@ -85,8 +88,10 @@ public class ActionSelector extends HorizontalLayout {
         new ActionTypeDescriptor("Break", "Stop processing this command chain; other chains are unaffected", BreakActionData::new),
         new ActionTypeDescriptor("Picture", "Show a picture to the player", PictureActionData::new),
         new ActionTypeDescriptor("Turns", "Tell the player how many turns they have taken (the TURNS variable)", TurnsActionData::new),
-        new ActionTypeDescriptor("Print Variable", "Print a variable's name and value, e.g. VISITED : 14", PrintVariableActionData::new),
-        new ActionTypeDescriptor("Print Variables", "Print all variables and their values, one per line", PrintVariablesActionData::new)
+        new ActionTypeDescriptor("Random", "Set a variable to a random number from 0 to 99; a new name creates the variable", RandomActionData::new),
+        new ActionTypeDescriptor("Print", "Print the value of a variable, e.g. 14, without ending the line; the next text continues on it", PrintActionData::new),
+        new ActionTypeDescriptor("Diagnose Variable", "Print a variable's name and value, e.g. VISITED : 14", DiagnoseVariableActionData::new),
+        new ActionTypeDescriptor("Diagnose Variables", "Print all variables and their values, one per line", DiagnoseVariablesActionData::new)
         ).sorted(Comparator.comparing(ActionTypeDescriptor::displayName, String.CASE_INSENSITIVE_ORDER)).toList();
     }
 

@@ -464,6 +464,9 @@ grid/dialog read-model record.
 | `ActionEditorRegistry` | One-time classpath scan (`ClassPathScanningCandidateComponentProvider`) for `@AutoRegisterActionEditor`-annotated `ActionEditorComponent`s, keyed by the `ActionData` subtype resolved from each editor's generic type argument. Replaced a hand-maintained `switch` statement — adding a new action editor means writing the class and annotating it, not touching the factory. Reflectively picks a `(ActionData)` or `(ActionData, AdventureData)` constructor to instantiate. |
 | `PictureActionEditor` | Required **Picture** combo box over the adventure's pictures (sorted by name, labelled by name); stores the picture's id. |
 | `MessageActionEditor` | Combo box over the adventure's messages — stores the chosen message's id, shows its summary — with a live preview of the text. A typed custom value is kept as literal text. |
+| `MesActionEditor` | Same as `MessageActionEditor` (both extend `AbstractMessageActionEditor`), titled "Msg Action"; `getActionTypeName()` returns `MsgActionData`, so authors see "Msg" in the action list and selector although the data class is `MesActionData`. |
+| `RandomActionEditor` | Variable name combo box that accepts a new name (like Set Variable); a new name is defined in the adventure at 0 straight away, an existing variable keeps its initial value. Shown in the selector as "Random". |
+| `PrintActionEditor` | Variable name dropdown (defined variables only, `VISITED` and `TURNS` included). Shown in the selector as "Print". |
 | `MoveItemActionEditor` | Item selector (uses `ViewSupporter.collectAllItems`). |
 | `MovePlayerActionEditor` | Location selector (uses `ViewSupporter.collectAllLocations`). |
 | `WearActionEditor` | Item selector (wearable items only, via `AbstractSingleItemActionEditor`). |
@@ -474,12 +477,13 @@ grid/dialog read-model record.
 | `CreateActionEditor` | Container selector (via `AbstractSingleItemActionEditor`, uses `collectAllContainers`). |
 | `DescribeActionEditor` | No extra input (describe current location). |
 | `InventoryActionEditor` | No extra input (list pocket). |
-| `PrintVariableActionEditor` | Variable name dropdown (defined variables only, `VISITED` and `TURNS` included). Shown in the selector as "Print Variable". |
-| `PrintVariablesActionEditor` | No extra input - informational panel only. Shown in the selector as "Print Variables". |
+| `DiagnoseVariableActionEditor` | Variable name dropdown (defined variables only, `VISITED` and `TURNS` included). Shown in the selector as "Diagnose Variable". |
+| `DiagnoseVariablesActionEditor` | No extra input - informational panel only. Shown in the selector as "Diagnose Variables". |
 | `TurnsActionEditor` | No extra input — informational panel only (prints the standard `TURNS` variable using SM17 to SM20). Shown in the selector as "Turns". |
 | `QuitActionEditor` | No extra input. |
 | `IncrementVariableActionEditor` | Variable name text field. |
 | `DecrementVariableActionEditor` | Variable name text field. |
+| `AddVariableActionEditor` / `SubtractVariableActionEditor` | Two `VariableNameSelector` dropdowns, "First Variable" and "Second Variable" (via `AbstractTwoVariablesActionEditor`); summary reads `second += first` / `second -= first`. Shown in the selector as "Add Variable" and "Subtract Variable". |
 | `SetVariableActionEditor` | Variable name + value text fields. |
 | `BreakActionEditor` | No extra input (stops command chain execution immediately). |
 | `AutoTakeActionEditor` / `AutoDropActionEditor` / `AutoWearActionEditor` / `AutoRemoveActionEditor` | 

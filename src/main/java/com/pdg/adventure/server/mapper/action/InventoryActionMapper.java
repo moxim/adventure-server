@@ -27,9 +27,7 @@ public class InventoryActionMapper extends ActionMapper<InventoryActionData, Inv
 
     @Override
     public InventoryAction mapToBO(InventoryActionData actionData) {
-        return new InventoryAction(
-                gameContext::tell,
-                new ContainerSupplier(gameContext::getPocket));
+        return new InventoryAction(new ContainerSupplier(gameContext::getPocket));
     }
 
     @Override

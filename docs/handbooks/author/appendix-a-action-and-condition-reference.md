@@ -12,6 +12,7 @@ order, when that command fires.
 
 | Action | What it does | What you configure |
 |--------|----------------|----------------------|
+| **Add Variable** | Adds the value of the first variable to the second one (*second = second + first*); the first stays as it is | The two variables, chosen from dropdowns |
 | **AutoDrop** | Player drops the item named by the noun they typed; refuses if it's worn | Nothing — use it in a Response with the noun `~` |
 | **AutoRemove** | Player takes off the worn item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
 | **AutoTake** | Player picks up the item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
@@ -29,34 +30,57 @@ order, when that command fires.
 | **Load Game** | Without a slot number lists the player's saved games; with one (`load 3`) restores that game and describes the place again | Nothing — use it in a Response with the verb `load` and the noun `~` |
 | **Look** | Describes the location the player is in, in full, shows its picture and fires your Arrival Processes | Nothing — use it in a Response with your look verb, not in an Arrival Process (Look already fires those) |
 | **Message** | Prints a message from your [message catalog](10-messages.md) | The message (picked by its summary) |
+| **Msg** | Prints a message from your [message catalog](10-messages.md) like **Message**, but does **not** end the line: the text of the next action continues right after it (see below) | The message (picked by its summary) |
 | **Move Item** | Moves an item into a different container | The item; the destination (a location or the player's pocket) |
 | **Move Player** | Moves the player to a location and shows its description | Destination location |
 | **Picture** | Shows a [picture](11-pictures.md) in the play screen's picture panel until the next move, look or Picture action | The picture |
-| **Print Variable** | Prints a variable's name and its current value, e.g. *"VISITED : 14"* | The variable, chosen from the dropdown (`VISITED` and `TURNS` are always listed) |
-| **Print Variables** | Prints every variable and its current value, one per line, sorted by name: *"TURNS : 3"*, *"VISITED : 14"* | Nothing - fully automatic |
+| **Print** | Prints the value of a variable (just the number, e.g. *14*) and does **not** end the line, so the next text continues right after it (see below) | The variable, chosen from the dropdown |
+| **Diagnose Variable** | Prints a variable's name and its current value, e.g. *"VISITED : 14"* | The variable, chosen from the dropdown (`VISITED` and `TURNS` are always listed) |
+| **Diagnose Variables** | Prints every variable and its current value, one per line, sorted by name: *"TURNS : 3"*, *"VISITED : 14"* | Nothing - fully automatic |
 | **Quit** | Ends the game session | Nothing — pair it with a **Message** action for a farewell line |
+| **Random** | Sets a variable to a random whole number from 0 to 99 (both included) | The variable: pick an existing one or type a new name, which creates it (no error for a new name) |
 | **Remove** | Takes a worn item off the player | The item |
 | **Save Game** | Saves the running game into the slot the player typed (`save 3`), or the first free one; each player has 10 slots per adventure | Nothing — use it in a Response with the verb `save` and the noun `~` |
 | **Set Variable** | Sets a named variable to an exact value | Variable name; value |
+| **Subtract Variable** | Subtracts the value of the first variable from the second one (*second = second - first*); the first stays as it is | The two variables, chosen from dropdowns |
 | **Take** | Player picks up an item into their pocket | The item |
 | **Turns** | Tells the player how many turns they have taken: *"You have taken 1 turn."*, *"You have taken 5 turns."* | Nothing — it reads the standard `TURNS` variable (see below); its wording is system messages SM17 to SM20 |
 | **Wear** | Player puts on a wearable item | The item |
 
-Variable names are chosen from a dropdown, not typed. **Set Variable** is the
-action that creates a variable: pick an existing name or type a new one. As
-soon as you enter the name in that action, it shows up in the dropdowns of
-**Increment Variable**, **Decrement Variable** and the variable conditions
+**Joining texts on one line.** Every text-producing action in a command normally
+starts on a new line. **Msg** and **Print** are the exception: they do not end
+their line, so the text of the next action follows directly. This lets you build
+a sentence from several parts, for example Msg *"You have "*, Print *score*,
+Message *" points."* gives *"You have 14 points."*. A **Message** ends the line
+after its own text. So if a Msg or Print is followed by an action with a text of
+its own, such as **Turns**, the two run together without a line break: finish the
+sequence with a **Message** (or put the break into the text). Joining works
+inside one command only, not across commands, Processes or turns.
+
+**Add Variable**, **Subtract Variable** and **Print** need variables that already exist;
+naming an unknown one shows an error while you test the adventure. The result of an addition
+or subtraction is a plain number and is not limited to a range.
+
+Variable names are chosen from a dropdown, not typed. **Set Variable** and
+**Random** are the actions that create a variable: pick an existing name or type
+a new one. As soon as you enter the name in one of them, it shows up in the dropdowns of
+**Increment Variable**, **Decrement Variable**, **Add Variable**, **Subtract Variable**, **Print**, the **Diagnose** actions and the variable conditions
 (**Equals**, **Greater Than**, **Less Than**, **Same**), which accept only
 names that are already set somewhere. The engine's own `VISITED` and `TURNS`
 variables are always listed. The variable is stored with the adventure when you save the
-command, and it stays defined even if you later delete the Set action. A
+command, and it stays defined even if you later delete the Set or Random action. A
 condition naming a variable that was never defined is flagged as invalid when
 you open it.
 
 Variables are your own free-form named counters — use them for anything
 that needs to be remembered across turns: a score, a flag ("door_unlocked"),
 a counter of attempts, and so on. Nothing pre-declares them; a Set Variable
-action creates one.
+or Random action creates one.
+
+For a dice roll, use **Random** on a variable such as `dice` and then test it with
+**Greater Than** or **Less Than**: *"if dice is greater than 70, the lock opens"*.
+Each time the action runs the variable gets a new value from 0 to 99, so the
+roll stays the same only until the next Random on that variable.
 
 ### The standard variable `TURNS`
 

@@ -4,13 +4,13 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.pdg.adventure.model.action.PrintVariableActionData;
+import com.pdg.adventure.model.action.DiagnoseVariableActionData;
 
-class PrintVariableActionEditorTest {
+class DiagnoseVariableActionEditorTest {
 
     @Test
     void validate_withNoName_returnsFalse() {
-        PrintVariableActionEditor editor = new PrintVariableActionEditor(new PrintVariableActionData());
+        DiagnoseVariableActionEditor editor = new DiagnoseVariableActionEditor(new DiagnoseVariableActionData());
         editor.initialize();
 
         assertThat(editor.validate()).isFalse();
@@ -18,9 +18,9 @@ class PrintVariableActionEditorTest {
 
     @Test
     void validate_withAName_returnsTrue() {
-        PrintVariableActionData data = new PrintVariableActionData();
+        DiagnoseVariableActionData data = new DiagnoseVariableActionData();
         data.setName("VISITED");
-        PrintVariableActionEditor editor = new PrintVariableActionEditor(data);
+        DiagnoseVariableActionEditor editor = new DiagnoseVariableActionEditor(data);
         editor.initialize();
 
         assertThat(editor.validate()).isTrue();
@@ -28,7 +28,7 @@ class PrintVariableActionEditorTest {
 
     @Test
     void initialize_buildsTheUI() {
-        PrintVariableActionEditor editor = new PrintVariableActionEditor(new PrintVariableActionData());
+        DiagnoseVariableActionEditor editor = new DiagnoseVariableActionEditor(new DiagnoseVariableActionData());
 
         editor.initialize();
 
@@ -37,9 +37,9 @@ class PrintVariableActionEditorTest {
 
     @Test
     void getActionSummary_withAName_isTheName() {
-        PrintVariableActionData data = new PrintVariableActionData();
+        DiagnoseVariableActionData data = new DiagnoseVariableActionData();
         data.setName("score");
-        PrintVariableActionEditor editor = new PrintVariableActionEditor(data);
+        DiagnoseVariableActionEditor editor = new DiagnoseVariableActionEditor(data);
         editor.initialize();
 
         assertThat(editor.getActionSummary()).isEqualTo("score");
@@ -47,7 +47,7 @@ class PrintVariableActionEditorTest {
 
     @Test
     void getActionSummary_withoutAName_saysNone() {
-        PrintVariableActionEditor editor = new PrintVariableActionEditor(new PrintVariableActionData());
+        DiagnoseVariableActionEditor editor = new DiagnoseVariableActionEditor(new DiagnoseVariableActionData());
         editor.initialize();
 
         assertThat(editor.getActionSummary()).isEqualTo("(none)");

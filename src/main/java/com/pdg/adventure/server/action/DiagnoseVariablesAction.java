@@ -3,7 +3,6 @@ package com.pdg.adventure.server.action;
 import lombok.EqualsAndHashCode;
 
 import java.util.Comparator;
-import java.util.function.Consumer;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
@@ -11,19 +10,17 @@ import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
 /**
- * PRINT_VARS: prints every variable that exists right now, one per line as {@code NAME : value}, sorted by name
+ * DIAGNOSE_VARS: prints every variable that exists right now, one per line as {@code NAME : value}, sorted by name
  * (ignoring case). With no variables at all it prints a single hyphen.
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class PrintVariablesAction extends AbstractAction {
+public class DiagnoseVariablesAction extends AbstractAction {
 
     private static final String NONE = "-";
 
-    private final transient Consumer<String> messageConsumer;
     private final transient VariableProvider variableProvider;
 
-    public PrintVariablesAction(Consumer<String> aMessageConsumer, VariableProvider aVariableProvider) {
-        messageConsumer = aMessageConsumer;
+    public DiagnoseVariablesAction(VariableProvider aVariableProvider) {
         variableProvider = aVariableProvider;
     }
 
@@ -34,7 +31,6 @@ public class PrintVariablesAction extends AbstractAction {
                                   .thenComparing(Variable::name))
                 .map(variable -> variable.name() + " : " + variable.value())
                 .toList());
-        messageConsumer.accept(lines.isEmpty() ? NONE : lines);
-        return new CommandExecutionResult(ExecutionResult.State.SUCCESS);
+        return new CommandExecutionResult(ExecutionResult.State.SUCCESS, lines.isEmpty() ? NONE : lines);
     }
 }

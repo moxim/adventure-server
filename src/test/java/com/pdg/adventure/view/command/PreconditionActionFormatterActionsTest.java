@@ -47,6 +47,37 @@ class PreconditionActionFormatterActionsTest {
     }
 
     @Test
+    void mes_isShownToTheAuthorAsMsg() {
+        MesActionData a = new MesActionData();
+        a.setMessageId("no-such-message");
+        assertThat(formatter.formatAction(a)).startsWith("MSG ");
+    }
+
+    @Test
+    void print() {
+        PrintActionData a = new PrintActionData();
+        a.setName("score");
+        assertThat(formatter.formatAction(a)).isEqualTo("PRINT score");
+    }
+
+    @Test
+    void random() {
+        RandomActionData a = new RandomActionData();
+        a.setName("dice");
+        assertThat(formatter.formatAction(a)).isEqualTo("RANDOM dice");
+    }
+
+    @Test
+    void addVariable() {
+        assertThat(formatter.formatAction(new AddVariableActionData("bonus", "score"))).isEqualTo("ADD bonus score");
+    }
+
+    @Test
+    void subtractVariable() {
+        assertThat(formatter.formatAction(new SubtractVariableActionData("cost", "score"))).isEqualTo("MINUS cost score");
+    }
+
+    @Test
     void message() {
         MessageActionData a = new MessageActionData();
         a.setMessageId("cage_opened");
@@ -151,15 +182,15 @@ class PreconditionActionFormatterActionsTest {
     }
 
     @Test
-    void printVariable() {
-        PrintVariableActionData pv = new PrintVariableActionData();
+    void diagnoseVariable() {
+        DiagnoseVariableActionData pv = new DiagnoseVariableActionData();
         pv.setName("VISITED");
-        assertThat(formatter.formatAction(pv)).isEqualTo("PRINT_VAR VISITED");
+        assertThat(formatter.formatAction(pv)).isEqualTo("DIAGNOSE_VAR VISITED");
     }
 
     @Test
-    void printVariables() {
-        assertThat(formatter.formatAction(new PrintVariablesActionData())).isEqualTo("PRINT_VARS");
+    void diagnoseVariables() {
+        assertThat(formatter.formatAction(new DiagnoseVariablesActionData())).isEqualTo("DIAGNOSE_VARS");
     }
 
     @Test

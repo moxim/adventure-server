@@ -20,4 +20,10 @@ public interface Action extends Serializable {
     default boolean isBreak() {
         return false;
     }
+
+    // true only for MesAction (PAW's MES) and PrintAction (PAW's PRINT) - marks an action whose text is not followed
+    // by a line break, so the text of the next action in the same command continues on the same line.
+    default boolean continuesLine() {
+        return false;
+    }
 }

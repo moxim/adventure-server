@@ -18,8 +18,8 @@ import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.action.ActionData;
-import com.pdg.adventure.model.action.PrintVariableActionData;
-import com.pdg.adventure.model.action.PrintVariablesActionData;
+import com.pdg.adventure.model.action.DiagnoseVariableActionData;
+import com.pdg.adventure.model.action.DiagnoseVariablesActionData;
 import com.pdg.adventure.model.action.TurnsActionData;
 
 class ActionSelectorTest {
@@ -102,38 +102,38 @@ class ActionSelectorTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void choosingPrintVariableAndPressingAdd_handsTheListenerANewPrintVariableActionData() {
+    void choosingDiagnoseVariableAndPressingAdd_handsTheListenerANewDiagnoseVariableActionData() {
         AtomicReference<ActionData> captured = new AtomicReference<>();
         actionSelector.setEditorSelectedListener(captured::set);
         ComboBox<Object> typeSelector = (ComboBox<Object>) actionSelector.getChildren()
                 .filter(ComboBox.class::isInstance).findFirst().orElseThrow();
         Button add = (Button) actionSelector.getChildren().filter(Button.class::isInstance).findFirst().orElseThrow();
-        Object printVariable = typeSelector.getListDataView().getItems()
-                .filter(item -> "Print Variable".equals(typeSelector.getItemLabelGenerator().apply(item)))
+        Object diagnoseVariable = typeSelector.getListDataView().getItems()
+                .filter(item -> "Diagnose Variable".equals(typeSelector.getItemLabelGenerator().apply(item)))
                 .findFirst().orElseThrow();
 
-        typeSelector.setValue(printVariable);
+        typeSelector.setValue(diagnoseVariable);
         ComponentUtil.fireEvent(add, new ClickEvent<>(add));
 
-        assertThat(captured.get()).isInstanceOf(PrintVariableActionData.class);
+        assertThat(captured.get()).isInstanceOf(DiagnoseVariableActionData.class);
     }
 
     @Test
     @SuppressWarnings("unchecked")
-    void choosingPrintVariablesAndPressingAdd_handsTheListenerANewPrintVariablesActionData() {
+    void choosingDiagnoseVariablesAndPressingAdd_handsTheListenerANewDiagnoseVariablesActionData() {
         AtomicReference<ActionData> captured = new AtomicReference<>();
         actionSelector.setEditorSelectedListener(captured::set);
         ComboBox<Object> typeSelector = (ComboBox<Object>) actionSelector.getChildren()
                 .filter(ComboBox.class::isInstance).findFirst().orElseThrow();
         Button add = (Button) actionSelector.getChildren().filter(Button.class::isInstance).findFirst().orElseThrow();
-        Object printVariables = typeSelector.getListDataView().getItems()
-                .filter(item -> "Print Variables".equals(typeSelector.getItemLabelGenerator().apply(item)))
+        Object diagnoseVariables = typeSelector.getListDataView().getItems()
+                .filter(item -> "Diagnose Variables".equals(typeSelector.getItemLabelGenerator().apply(item)))
                 .findFirst().orElseThrow();
 
-        typeSelector.setValue(printVariables);
+        typeSelector.setValue(diagnoseVariables);
         ComponentUtil.fireEvent(add, new ClickEvent<>(add));
 
-        assertThat(captured.get()).isInstanceOf(PrintVariablesActionData.class);
+        assertThat(captured.get()).isInstanceOf(DiagnoseVariablesActionData.class);
     }
 
     @Test

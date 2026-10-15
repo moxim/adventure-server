@@ -81,9 +81,6 @@ public class GameLoop {
             return CommandOutcome.CONTINUE;
         } catch (ReloadAdventureException e) {
             throw e;
-        } catch (RuntimeException anException) {
-            LOG.error("An error occurred during the game loop.", anException);
-            return CommandOutcome.ERROR;
         }
     }
 

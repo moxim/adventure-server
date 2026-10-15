@@ -4,25 +4,25 @@ import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
 
 import com.pdg.adventure.model.AdventureData;
-import com.pdg.adventure.model.action.PrintVariableActionData;
+import com.pdg.adventure.model.action.PrintActionData;
 import com.pdg.adventure.view.command.VariableNameSelector;
 import com.pdg.adventure.view.support.VariableChoices;
 
 /**
- * Editor component for PrintVariableActionData.
- * Allows choosing the variable whose name and value the game prints, e.g. "VISITED : 14".
+ * Editor component for PrintActionData.
+ * Allows choosing the variable whose value the game prints, e.g. "14", without ending the line.
  */
 @AutoRegisterActionEditor
-public class PrintVariableActionEditor extends ActionEditorComponent<PrintVariableActionData> {
-    private final PrintVariableActionData printActionData;
+public class PrintActionEditor extends ActionEditorComponent<PrintActionData> {
+    private final PrintActionData printActionData;
     private final AdventureData adventureData;
     private VariableNameSelector variableNameField;
 
-    public PrintVariableActionEditor(PrintVariableActionData actionData) {
+    public PrintActionEditor(PrintActionData actionData) {
         this(actionData, null);
     }
 
-    public PrintVariableActionEditor(PrintVariableActionData actionData, AdventureData anAdventureData) {
+    public PrintActionEditor(PrintActionData actionData, AdventureData anAdventureData) {
         super(actionData);
         this.printActionData = actionData;
         this.adventureData = anAdventureData;
@@ -31,8 +31,8 @@ public class PrintVariableActionEditor extends ActionEditorComponent<PrintVariab
 
     @Override
     protected void buildUI() {
-        H4 title = new H4("Print Variable Action");
-        Span description = new Span("Print a variable's name and value, for example VISITED : 14");
+        H4 title = new H4("Print Action");
+        Span description = new Span("Print a variable's value, for example 14, without ending the line");
         description.getStyle().set("color", "var(--lumo-secondary-text-color)");
 
         variableNameField = new VariableNameSelector("Variable Name",

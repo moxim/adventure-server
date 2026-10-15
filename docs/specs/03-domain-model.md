@@ -403,7 +403,7 @@ message's `id` — not a collection or document of its own.
 
 `server/storage/message/MessagesHolder.java` is the runtime cache of messages
 keyed by message id. `MessageAction` looks up text here. Text and font are one entry per id
-(`getMessage`, `getFont`; an unknown id has `DEFAULT`), filled by `LoadAdventureAction`.
+(`getMessageId`, `getFont`; an unknown id has `DEFAULT`), filled by `LoadAdventureAction`.
 
 ### Message fonts at run time (`FontMarkup`)
 
@@ -477,14 +477,18 @@ this chapter only documents the storage shape.
 | `DropActionData`, `TakeActionData`, `WearActionData`, `RemoveActionData` | inventory-handling actions |
 | `AutoTakeActionData`, `AutoDropActionData`, `AutoWearActionData`, `AutoRemoveActionData` | AutoTake / AutoDrop / AutoWear / AutoRemove — parameterless; the item is resolved at runtime from the typed noun (see [`04-runtime-engine.md` § Auto item actions](04-runtime-engine.md#auto-item-actions-autotake-autodrop-autowear-autoremove)) |
 | `MovePlayerActionData`, `MoveItemActionData` | spatial actions |
-| `MessageActionData` | text emission |
+| `MessageActionData` | text emission; ends the line after its text (PAW's MESSAGE) |
+| `MesActionData` | text emission without a line break (`MesAction`, PAW's MES); same `messageId` field as `MessageActionData`; shown to authors as "Msg" |
+| `PrintActionData` | print a variable's value without a line break (`PrintAction`, PAW's PRINT); one field, `name` |
 | `InventoryActionData` | print pocket |
-| `PrintVariableActionData` | print a variable's name and value (`PrintVariableAction`); one field, `name` |
-| `PrintVariablesActionData` | print every variable and its value, one per line (`PrintVariablesAction`); parameterless |
+| `DiagnoseVariableActionData` | print a variable's name and value (`DiagnoseVariableAction`); one field, `name` |
+| `DiagnoseVariablesActionData` | print every variable and its value, one per line (`DiagnoseVariablesAction`); parameterless |
 | `TurnsActionData` | print the number of turns taken (`TurnsAction`); parameterless, it reads the standard `TURNS` variable |
 | `QuitActionData` | end the session (`QuitAction`) |
 | `BreakActionData` | stop the rest of the current command chain / action list (`BreakAction`) |
 | `SetVariableActionData`, `IncrementVariableActionData`, `DecrementVariableActionData` | variable mutations |
+| `RandomActionData` | `RandomAction` (PAW's RANDOM); one field, `name` — the variable set to a random integer 0..99 |
+| `AddVariableActionData`, `SubtractVariableActionData` | `AddVariableAction` / `SubtractVariableAction` (PAW's ADD / MINUS); fields `firstName`, `secondName` — the first variable's value is added to / subtracted from the second |
 
 Plus a runtime-only `LoadAdventureAction` (no DO; engine-managed).
 
