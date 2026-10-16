@@ -636,7 +636,7 @@ conditions wrap others.
 | `HereCondition(item, gc)` | `gc.currentLocation.contains(item)`. Failure message SM26 (default text `"There isn't one of those here."`). |
 | `ItemAtCondition(item, location, gc)` | The item is at the named location. |
 | `PlayerAtCondition(location, gc)` | `gc.currentLocation.equals(location)`. |
-| `ChanceCondition(chance)` | A fresh random integer in `[1, 100]` (`ThreadLocalRandom.current().nextInt(100) + 1`, injectable via a package-private constructor for testing) is `<= chance`. Re-rolled on every attempt — a 20% chance is "roughly one in five tries," not "one in five players." No failure message of its own. |
+| `ChanceCondition(chance)` | A fresh random integer in `[1, 100]` (`new SecureRandom().nextInt(100) + 1`, injectable via a package-private constructor for testing) is `<= chance`. Re-rolled on every attempt — a 20% chance is "roughly one in five tries," not "one in five players." No failure message of its own. |
 
 ### Variable comparators
 

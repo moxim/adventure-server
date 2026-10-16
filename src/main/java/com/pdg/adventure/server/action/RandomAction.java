@@ -20,12 +20,14 @@ public class RandomAction extends AbstractAction {
     public static final int MIN_VALUE = 0;
     public static final int MAX_VALUE = 99;
 
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     private final String name;
     private final transient VariableProvider variableProvider;
     private final transient IntUnaryOperator randomBelow;
 
     public RandomAction(String aName, VariableProvider aVariableProvider) {
-        this(aName, aVariableProvider, bound -> new SecureRandom().nextInt(bound));
+        this(aName, aVariableProvider, RANDOM::nextInt);
     }
 
     /**

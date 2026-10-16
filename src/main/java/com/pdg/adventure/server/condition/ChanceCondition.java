@@ -11,13 +11,14 @@ import com.pdg.adventure.server.parser.CommandExecutionResult;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class ChanceCondition extends AbstractCondition {
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     @Getter
     private final Integer chance;
     private final transient IntSupplier randomSource;
 
     public ChanceCondition(Integer aChance) {
-        this(aChance, () -> new SecureRandom().nextInt(100) + 1);
+        this(aChance, () -> RANDOM.nextInt(100) + 1);
     }
 
     ChanceCondition(Integer aChance, IntSupplier aRandomSource) {
