@@ -68,6 +68,18 @@ class PreconditionActionFormatterActionsTest {
     }
 
     @Test
+    void newLine() {
+        assertThat(formatter.formatAction(new NewLineActionData())).isEqualTo("NEWLINE");
+    }
+
+    @Test
+    void sysMes() {
+        SysMesActionData a = new SysMesActionData();
+        a.setMessageKeyId("15");
+        assertThat(formatter.formatAction(a)).isEqualTo("SYSMESS 15");
+    }
+
+    @Test
     void addVariable() {
         assertThat(formatter.formatAction(new AddVariableActionData("bonus", "score"))).isEqualTo("ADD bonus score");
     }

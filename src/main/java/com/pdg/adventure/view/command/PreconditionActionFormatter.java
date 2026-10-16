@@ -37,7 +37,9 @@ import com.pdg.adventure.model.action.QuitActionData;
 import com.pdg.adventure.model.action.SaveGameActionData;
 import com.pdg.adventure.model.action.RemoveActionData;
 import com.pdg.adventure.model.action.PrintActionData;
+import com.pdg.adventure.model.action.NewLineActionData;
 import com.pdg.adventure.model.action.RandomActionData;
+import com.pdg.adventure.model.action.SysMesActionData;
 import com.pdg.adventure.model.action.DiagnoseVariableActionData;
 import com.pdg.adventure.model.action.DiagnoseVariablesActionData;
 import com.pdg.adventure.model.action.SetVariableActionData;
@@ -130,6 +132,8 @@ public class PreconditionActionFormatter {
             case DiagnoseVariableActionData pv -> "DIAGNOSE_VAR " + txt(pv.getName());
             case MessageActionData m -> "MESSAGE " + resolveMessage(m.getMessageId());
             case MesActionData m -> "MSG " + resolveMessage(m.getMessageId());
+            case NewLineActionData _ -> "NEWLINE";
+            case SysMesActionData s -> "SYSMESS " + txt(s.getMessageKeyId());
             case DestroyActionData d -> "DESTROY " + resolveName(d.getThingId());
             case DropActionData d -> "DROP " + resolveName(d.getThingId());
             case TakeActionData t -> "TAKE " + resolveName(t.getThingId());

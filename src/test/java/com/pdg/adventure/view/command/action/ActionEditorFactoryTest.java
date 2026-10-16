@@ -16,7 +16,9 @@ import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.action.AddVariableActionData;
 import com.pdg.adventure.model.action.PrintActionData;
+import com.pdg.adventure.model.action.NewLineActionData;
 import com.pdg.adventure.model.action.RandomActionData;
+import com.pdg.adventure.model.action.SysMesActionData;
 import com.pdg.adventure.model.action.MesActionData;
 import com.pdg.adventure.model.action.SubtractVariableActionData;
 import com.pdg.adventure.model.action.DecrementVariableActionData;
@@ -143,6 +145,18 @@ class ActionEditorFactoryTest {
     void createEditor_withRandomActionData_shouldReturnRandomActionEditor() {
         ActionEditorComponent editor = ActionEditorFactory.createEditor(new RandomActionData(), adventureData);
         assertThat(editor).isNotNull().isInstanceOf(RandomActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withNewLineActionData_shouldReturnNewLineActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new NewLineActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(NewLineActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withSysMesActionData_shouldReturnSysMesActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new SysMesActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(SysMesActionEditor.class);
     }
 
     @Test

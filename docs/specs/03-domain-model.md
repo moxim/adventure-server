@@ -487,6 +487,8 @@ this chapter only documents the storage shape.
 | `QuitActionData` | end the session (`QuitAction`) |
 | `BreakActionData` | stop the rest of the current command chain / action list (`BreakAction`) |
 | `SetVariableActionData`, `IncrementVariableActionData`, `DecrementVariableActionData` | variable mutations |
+| `NewLineActionData` | `NewLineAction` (PAW's NEWLINE); no fields; shown to authors as "NewLine" |
+| `SysMesActionData` | `SysMesAction` (PAW's SYSMESS); one field, `messageKeyId` — the id of a `SystemMessageKey`, e.g. `"15"`; shown to authors as "SystemMsg" |
 | `RandomActionData` | `RandomAction` (PAW's RANDOM); one field, `name` — the variable set to a random integer 0..99 |
 | `AddVariableActionData`, `SubtractVariableActionData` | `AddVariableAction` / `SubtractVariableAction` (PAW's ADD / MINUS); fields `firstName`, `secondName` — the first variable's value is added to / subtracted from the second |
 

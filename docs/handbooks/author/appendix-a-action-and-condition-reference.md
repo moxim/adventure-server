@@ -30,6 +30,8 @@ order, when that command fires.
 | **Look** | Describes the location the player is in, in full, shows its picture and fires your Arrival Processes | Nothing — use it in a Response with your look verb, not in an Arrival Process (Look already fires those) |
 | **Message** | Prints a message from your [message catalog](10-messages.md) | The message (picked by its summary) |
 | **Msg** | Prints a message from your [message catalog](10-messages.md) like **Message**, but does **not** end the line: the text of the next action continues right after it (see below) | The message (picked by its summary) |
+| **SystemMsg** | Prints one of the built-in [system messages](10-messages.md), e.g. *15: OK.*, in your adventure's own wording of it, and, like **Msg**, does **not** end the line. Messages that need a name or number filled in (the ones with a `%s`) are not offered | The system message (picked by its number and text) |
+| **NewLine** | Ends the line, so the text of the next action starts on a new line. Use it after **Msg**, **SystemMsg** or **Print**; after a **Message**, which ends its line itself, it leaves an empty line. On its own in a command it shows nothing | – |
 | **Move Item** | Moves an item into a different container | The item; the destination (a location or the player's pocket) |
 | **Move Player** | Moves the player to a location and shows its description | Destination location |
 | **Picture** | Shows a [picture](11-pictures.md) in the play screen's picture panel until the next move, look or Picture action | The picture |
@@ -47,7 +49,7 @@ order, when that command fires.
 | **Wear** | Player puts on a wearable item | The item |
 
 **Joining texts on one line.** Every text-producing action in a command normally
-starts on a new line. **Msg** and **Print** are the exception: they do not end
+starts on a new line. **Msg**, **SystemMsg** and **Print** are the exception: they do not end
 their line, so the text of the next action follows directly. This lets you build
 a sentence from several parts, for example Msg *"You have "*, Print *score*,
 Message *" points."* gives *"You have 14 points."*. A **Message** ends the line

@@ -39,6 +39,7 @@ class FirstSelectBoxTest {
         assertThat(editorFor(new MessageActionData()).firstSelectBox()).isPresent();
         assertThat(editorFor(new MesActionData()).firstSelectBox()).isPresent();
         assertThat(editorFor(new RandomActionData()).firstSelectBox()).isPresent();
+        assertThat(editorFor(new SysMesActionData()).firstSelectBox()).isPresent();
         assertThat(editorFor(new PrintActionData()).firstSelectBox()).isPresent();
         assertThat(editorFor(new LightActionData()).firstSelectBox()).isPresent();
     }
@@ -48,6 +49,7 @@ class FirstSelectBoxTest {
         assertThat(editorFor(new QuitActionData()).firstSelectBox()).isEmpty();
         assertThat(editorFor(new InventoryActionData()).firstSelectBox()).isEmpty();
         assertThat(editorFor(new TurnsActionData()).firstSelectBox()).isEmpty();
+        assertThat(editorFor(new NewLineActionData()).firstSelectBox()).isEmpty();
     }
 
     @Test
