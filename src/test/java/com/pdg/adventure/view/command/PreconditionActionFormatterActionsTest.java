@@ -104,14 +104,6 @@ class PreconditionActionFormatterActionsTest {
     }
 
     @Test
-    void create() {
-        CreateActionData a = new CreateActionData();
-        a.setThingId("chest");
-        a.setContainerProviderId("room");
-        assertThat(formatter.formatAction(a)).isEqualTo("CREATE chest");
-    }
-
-    @Test
     void destroy() {
         DestroyActionData a = new DestroyActionData();
         a.setThingId("vase");

@@ -17,3 +17,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - A Diagnose Variable action (DIAGNOSE_VAR): authors pick a variable and the game prints its name and current value, for example "VISITED : 14". Handy for scores, counters and for testing an adventure.
 - A Diagnose Variables action (DIAGNOSE_VARS): the game lists every variable with its current value, one per line, sorted by name.
 - Export an adventure as a JSON file and import it into another database: authors can move an adventure between installations. Import always creates a new, independent adventure and validates the file first.
+
+### Removed
+- The Create Item action (CREATE) is gone from the action list and the engine. Commands saved with it can no longer be loaded; replace it with another way of bringing the item into play.

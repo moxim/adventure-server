@@ -471,7 +471,7 @@ this chapter only documents the storage shape.
 
 | ActionData | Maps to |
 |------------|---------|
-| `CreateActionData`, `DestroyActionData` | `CreateAction` (add to a container), `DestroyAction` (remove from its parent container) — both authorable via the Action editor ("Create Item" / "Destroy") |
+| `DestroyActionData` | `DestroyAction` (remove from its parent container) — authorable via the Action editor ("Destroy") |
 | `DescribeActionData` | `DescribeAction` |
 | `PictureActionData` | `PictureAction` (`pictureId` — a key of `AdventureData.pictureData`) |
 | `DropActionData`, `TakeActionData`, `WearActionData`, `RemoveActionData` | inventory-handling actions |

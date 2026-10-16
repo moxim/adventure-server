@@ -19,7 +19,6 @@ import com.pdg.adventure.model.action.ExamineActionData;
 import com.pdg.adventure.model.action.LookActionData;
 import com.pdg.adventure.model.action.AutoWearActionData;
 import com.pdg.adventure.model.action.BreakActionData;
-import com.pdg.adventure.model.action.CreateActionData;
 import com.pdg.adventure.model.action.DecrementVariableActionData;
 import com.pdg.adventure.model.action.DescribeActionData;
 import com.pdg.adventure.model.action.DestroyActionData;
@@ -131,7 +130,6 @@ public class PreconditionActionFormatter {
             case DiagnoseVariableActionData pv -> "DIAGNOSE_VAR " + txt(pv.getName());
             case MessageActionData m -> "MESSAGE " + resolveMessage(m.getMessageId());
             case MesActionData m -> "MSG " + resolveMessage(m.getMessageId());
-            case CreateActionData cr -> "CREATE " + resolveName(cr.getThingId());
             case DestroyActionData d -> "DESTROY " + resolveName(d.getThingId());
             case DropActionData d -> "DROP " + resolveName(d.getThingId());
             case TakeActionData t -> "TAKE " + resolveName(t.getThingId());

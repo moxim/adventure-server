@@ -492,7 +492,6 @@ clears the shared `VariableProvider` and defines each authored `VariableData` at
 | `RandomAction(name, vars)` | **RANDOM.** Write a random integer from 0 to 99 inclusive into the variable. A variable that does not exist is created — no `ConfigurationException`. Always `SUCCESS`, no text. |
 | `IncrementVariableAction(name, vars, msgs)` | Read the variable, parse it as an integer, write `+1`. |
 | `DecrementVariableAction(name, vars, msgs)` | Same, `-1`. |
-| `CreateAction(thing, containerSupplier, msgs)` | Add `thing` to the supplied container; emits `SM58`. Authorable via the "Create Item" action editor. |
 | `DestroyAction(thing, msgs)` | Remove `thing` from its current parent container; emits `SM57`. Authorable via the "Destroy" action editor. |
 | `BreakAction(msgs)` | Stop execution of the current command chain immediately and return the supplied message as SUCCESS. Used to short-circuit multi-action chains when a condition is met. Authorable via the "Break" action editor. |
 

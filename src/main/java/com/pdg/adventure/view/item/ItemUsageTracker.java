@@ -186,9 +186,6 @@ public class ItemUsageTracker {
         } else if (action instanceof MoveItemActionData moveAction) {
             thingId = moveAction.getThingId();
             actionType = "Move Item Action";
-        } else if (action instanceof CreateActionData createAction) {
-            thingId = createAction.getThingId();
-            actionType = "Create Action";
         } else if (action instanceof DestroyActionData destroyAction) {
             thingId = destroyAction.getThingId();
             actionType = "Destroy Action";
