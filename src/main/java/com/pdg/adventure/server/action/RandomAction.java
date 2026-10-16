@@ -3,7 +3,7 @@ package com.pdg.adventure.server.action;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import java.util.concurrent.ThreadLocalRandom;
+import java.security.SecureRandom;
 import java.util.function.IntUnaryOperator;
 
 import com.pdg.adventure.api.ExecutionResult;
@@ -25,7 +25,7 @@ public class RandomAction extends AbstractAction {
     private final transient IntUnaryOperator randomBelow;
 
     public RandomAction(String aName, VariableProvider aVariableProvider) {
-        this(aName, aVariableProvider, bound -> ThreadLocalRandom.current().nextInt(bound));
+        this(aName, aVariableProvider, bound -> new SecureRandom().nextInt(bound));
     }
 
     /**
