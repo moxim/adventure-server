@@ -27,6 +27,7 @@ import com.pdg.adventure.model.action.IncrementVariableActionData;
 import com.pdg.adventure.model.action.InventoryActionData;
 import com.pdg.adventure.model.action.LoadGameActionData;
 import com.pdg.adventure.model.action.LightActionData;
+import com.pdg.adventure.model.action.ListAtActionData;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MesActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
@@ -74,12 +75,14 @@ public class PreconditionActionFormatter {
     private final Map<String, LocationData> locationsById;
     private final Map<String, PictureData> picturesById;
     private final Map<String, MessageData> messagesById;
+    private final String pocketId;
 
     public PreconditionActionFormatter(AdventureData adventureData) {
         itemsById = indexItems(adventureData);
         locationsById = adventureData.getLocationData() == null ? Map.of() : adventureData.getLocationData();
         picturesById = adventureData.getPictureData() == null ? Map.of() : adventureData.getPictureData();
         messagesById = adventureData.getMessages() == null ? Map.of() : adventureData.getMessages();
+        pocketId = adventureData.getPlayerPocket() == null ? null : adventureData.getPlayerPocket().getId();
     }
 
     public List<String> formatConditions(List<PreConditionData> conditions) {
@@ -133,6 +136,7 @@ public class PreconditionActionFormatter {
             case MessageActionData m -> "MESSAGE " + resolveMessage(m.getMessageId());
             case MesActionData m -> "MSG " + resolveMessage(m.getMessageId());
             case NewLineActionData _ -> "NEWLINE";
+            case ListAtActionData la -> "LISTAT " + resolveContainer(la.getContainerId());
             case SysMesActionData s -> "SYSMESS " + txt(s.getMessageKeyId());
             case DestroyActionData d -> "DESTROY " + resolveName(d.getThingId());
             case DropActionData d -> "DROP " + resolveName(d.getThingId());
@@ -192,6 +196,21 @@ public class PreconditionActionFormatter {
             return ViewSupporter.getLocationsShortedDescription(location);
         }
         return id;
+    }
+
+    /** A container's name for the formatted action: "pocket", or the location the container belongs to. */
+    private String resolveContainer(String id) {
+        if (id == null || id.isBlank()) {
+            return "?";
+        }
+        if (pocketId != null && pocketId.equals(id)) {
+            return "pocket";
+        }
+        return locationsById.values().stream()
+                            .filter(l -> l.getItemContainerData() != null && id.equals(l.getItemContainerData().getId()))
+                            .findFirst()
+                            .map(ViewSupporter::getLocationsShortedDescription)
+                            .orElse(id);
     }
 
     private static String txt(String s) {

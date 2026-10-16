@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The texts of the Turns, Diagnose Variable, Diagnose Variables and Inventory actions now appear in the order of the command's actions; before, they showed up ahead of the texts of Message actions in the same command.
 
 ### Added
+- A ListAt action (PAW's LISTAT): authors pick a location or the player's pocket, and the game prints the items in it, or "nothing." if there are none. No heading is added; a Message in front can supply one.
 - A NewLine action (PAW's NEWLINE): ends the line, so the next text starts on a new line. It completes Msg, SystemMsg and Print, which do not end their line; after a Message it leaves an empty line.
 - A SystemMsg action (PAW's SYSMESS): authors pick one of the built-in system messages, e.g. "15: OK.", and the game shows it in the adventure's own wording of it. Like Msg it does not end the line. Messages that need a name or number filled in are not offered.
 - A standard variable PROMPT, as PAW's flag 42, steers the question the game asks for input: 0 (the start value) leaves it to chance, 2 to 5 pick "What now?", "What next?", "What should I do now?" or "What should I do next?", and higher values start over from 2 (6 is "What now?" again, and so on). Authors set it like any variable.

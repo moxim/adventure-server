@@ -16,6 +16,7 @@ import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.action.AddVariableActionData;
 import com.pdg.adventure.model.action.PrintActionData;
+import com.pdg.adventure.model.action.ListAtActionData;
 import com.pdg.adventure.model.action.NewLineActionData;
 import com.pdg.adventure.model.action.RandomActionData;
 import com.pdg.adventure.model.action.SysMesActionData;
@@ -145,6 +146,12 @@ class ActionEditorFactoryTest {
     void createEditor_withRandomActionData_shouldReturnRandomActionEditor() {
         ActionEditorComponent editor = ActionEditorFactory.createEditor(new RandomActionData(), adventureData);
         assertThat(editor).isNotNull().isInstanceOf(RandomActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withListAtActionData_shouldReturnListAtActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new ListAtActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(ListAtActionEditor.class);
     }
 
     @Test

@@ -7,6 +7,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.action.*;
 
@@ -65,6 +66,22 @@ class PreconditionActionFormatterActionsTest {
         RandomActionData a = new RandomActionData();
         a.setName("dice");
         assertThat(formatter.formatAction(a)).isEqualTo("RANDOM dice");
+    }
+
+    @Test
+    void listAt_namesThePocket() {
+        ItemContainerData pocket = new ItemContainerData("player-pocket");
+        pocket.setId("pocket-1");
+        adventureData.setPlayerPocket(pocket);
+        ListAtActionData a = new ListAtActionData();
+        a.setContainerId("pocket-1");
+
+        assertThat(new PreconditionActionFormatter(adventureData).formatAction(a)).isEqualTo("LISTAT pocket");
+    }
+
+    @Test
+    void listAt_withoutAContainer_showsAQuestionMark() {
+        assertThat(formatter.formatAction(new ListAtActionData())).isEqualTo("LISTAT ?");
     }
 
     @Test

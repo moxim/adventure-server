@@ -32,6 +32,7 @@ order, when that command fires.
 | **Msg** | Prints a message from your [message catalog](10-messages.md) like **Message**, but does **not** end the line: the text of the next action continues right after it (see below) | The message (picked by its summary) |
 | **SystemMsg** | Prints one of the built-in [system messages](10-messages.md), e.g. *15: OK.*, in your adventure's own wording of it, and, like **Msg**, does **not** end the line. Messages that need a name or number filled in (the ones with a `%s`) are not offered | The system message (picked by its number and text) |
 | **NewLine** | Ends the line, so the text of the next action starts on a new line. Use it after **Msg**, **SystemMsg** or **Print**; after a **Message**, which ends its line itself, it leaves an empty line. On its own in a command it shows nothing | – |
+| **ListAt** | Prints the items in one place, as a list like the one under a room description. It adds no heading: put a **Message** such as *"On the beach lie:"* in front. A place without items shows *"nothing."* (system message 53) | The place: your pocket, or any location |
 | **Move Item** | Moves an item into a different container | The item; the destination (a location or the player's pocket) |
 | **Move Player** | Moves the player to a location and shows its description | Destination location |
 | **Picture** | Shows a [picture](11-pictures.md) in the play screen's picture panel until the next move, look or Picture action | The picture |

@@ -465,6 +465,7 @@ grid/dialog read-model record.
 | `PictureActionEditor` | Required **Picture** combo box over the adventure's pictures (sorted by name, labelled by name); stores the picture's id. |
 | `MessageActionEditor` | Combo box over the adventure's messages — stores the chosen message's id, shows its summary — with a live preview of the text. A typed custom value is kept as literal text. |
 | `MesActionEditor` | Same as `MessageActionEditor` (both extend `AbstractMessageActionEditor`), titled "Msg Action"; `getActionTypeName()` returns `MsgActionData`, so authors see "Msg" in the action list and selector although the data class is `MesActionData`. |
+| `ListAtActionEditor` | Combo box of the player's pocket ("your pocket") and every location (by its short description). Shown in the selector as "ListAt". |
 | `NewLineActionEditor` | No parameters; explains the action in a short note. Shown in the selector as "NewLine". |
 | `SysMesActionEditor` | Combo box of the system messages, labelled "id: text" (e.g. "15: OK."), with the message's description below it. Messages whose text contains a `%s` placeholder are not offered. `getActionTypeName()` returns `SystemMsgActionData`. Shown in the selector as "SystemMsg". |
 | `RandomActionEditor` | Variable name combo box that accepts a new name (like Set Variable); a new name is defined in the adventure at 0 straight away, an existing variable keeps its initial value. Shown in the selector as "Random". |
