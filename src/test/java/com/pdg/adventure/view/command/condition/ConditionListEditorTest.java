@@ -1,10 +1,16 @@
 package com.pdg.adventure.view.command.condition;
 
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.server.VaadinSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
@@ -205,5 +213,114 @@ class ConditionListEditorTest {
                 .findFirst()
                 .orElseThrow();
         field.setValue(value);
+    }
+
+    @Test
+    void addingAConditionFromTheSelector_focusesItsFirstSelectBoxAndScrollsItIntoView() {
+        UI ui = attachedUi();
+        ConditionListEditor editor = new ConditionListEditor(adventureData);
+        ui.add(editor);
+
+        chooseAndAdd(editor, "Carried (item in inventory)");
+
+        Component selectBox = firstSelectBoxOf(rowsOf(editor).getFirst());
+        assertThat(pendingCallsFor(ui, selectBox)).anyMatch(call -> call.contains("focus"))
+                                                  .anyMatch(call -> call.contains("scrollIntoView"));
+    }
+
+    @Test
+    void loadingExistingConditions_doesNotMoveTheFocus() {
+        UI ui = attachedUi();
+        ConditionListEditor editor = new ConditionListEditor(adventureData);
+        ui.add(editor);
+
+        editor.setConditions(List.of(new CarriedConditionData()));
+
+        Component selectBox = firstSelectBoxOf(rowsOf(editor).getFirst());
+        assertThat(pendingCallsFor(ui, selectBox)).noneMatch(call -> call.contains("focus")
+                                                                     || call.contains("scrollIntoView"));
+    }
+
+    @Test
+    void addingAConditionWithoutSelectBox_doesNotFail() {
+        UI ui = attachedUi();
+        ConditionListEditor editor = new ConditionListEditor(adventureData);
+        ui.add(editor);
+
+        chooseAndAdd(editor, "Chance (1-100)");
+
+        assertThat(rowsOf(editor)).hasSize(1);
+    }
+
+    @Test
+    void addingACondition_doesNotMarkItsEmptyFieldsInvalid() {
+        UI ui = attachedUi();
+        ConditionListEditor editor = new ConditionListEditor(adventureData);
+        ui.add(editor);
+
+        chooseAndAdd(editor, "Carried (item in inventory)");
+
+        assertThat(((ComboBox<?>) firstSelectBoxOf(rowsOf(editor).getFirst())).isInvalid()).isFalse();
+    }
+
+    @Test
+    void validate_marksTheInvalidFieldsOfEveryCondition_notOnlyOfTheFirstInvalidOne() {
+        ConditionListEditor editor = new ConditionListEditor(adventureData);
+        editor.setConditions(List.of(new CarriedConditionData(), new CarriedConditionData()));
+
+        boolean valid = editor.validate();
+
+        assertThat(valid).isFalse();
+        assertThat(rowsOf(editor)).allSatisfy(
+                row -> assertThat(((ComboBox<?>) firstSelectBoxOf(row)).isInvalid()).isTrue());
+    }
+
+    @Test
+    void validate_withoutConditions_isTrue() {
+        assertThat(new ConditionListEditor(adventureData).validate()).isTrue();
+    }
+
+    private static UI attachedUi() {
+        UI ui = new UI();
+        VaadinSession session = mock(VaadinSession.class);
+        when(session.hasLock()).thenReturn(true);
+        ui.getInternals().setSession(session);
+        UI.setCurrent(ui);
+        return ui;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void chooseAndAdd(ConditionListEditor editor, String conditionLabel) {
+        ConditionSelector selector = editor.getChildren().filter(ConditionSelector.class::isInstance)
+                .map(ConditionSelector.class::cast).findFirst().orElseThrow();
+        ComboBox<Object> typeSelector = (ComboBox<Object>) selector.getChildren()
+                .filter(ComboBox.class::isInstance).findFirst().orElseThrow();
+        Button add = (Button) selector.getChildren().filter(Button.class::isInstance).findFirst().orElseThrow();
+        Object type = typeSelector.getListDataView().getItems()
+                .filter(item -> conditionLabel.equals(typeSelector.getItemLabelGenerator().apply(item)))
+                .findFirst().orElseThrow();
+        typeSelector.setValue(type);
+        ComponentUtil.fireEvent(add, new ClickEvent<>(add));
+    }
+
+    // ConditionRow (Details) -> Div -> ConditionEditorComponent -> first select box
+    private static Component firstSelectBoxOf(ConditionRow row) {
+        ConditionEditorComponent<?> editor = row.getChildren()
+                .filter(c -> c instanceof Div).findFirst()
+                .flatMap(div -> ((Div) div).getChildren()
+                        .filter(c -> c instanceof ConditionEditorComponent).findFirst())
+                .map(c -> (ConditionEditorComponent<?>) c)
+                .orElseThrow();
+        return editor.firstSelectBox().orElseThrow();
+    }
+
+    // focus() and scrollIntoView() reach the browser as pending JavaScript invocations; reading them clears the queue.
+    private static List<String> pendingCallsFor(UI ui, Component component) {
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        return ui.getInternals().dumpPendingJavaScriptInvocations().stream()
+                .map(pending -> pending.getInvocation())
+                .filter(invocation -> invocation.getParameters().contains(component.getElement()))
+                .map(invocation -> invocation.getExpression())
+                .toList();
     }
 }

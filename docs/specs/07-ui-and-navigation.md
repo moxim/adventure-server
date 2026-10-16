@@ -457,7 +457,7 @@ grid/dialog read-model record.
 
 | Class | Role |
 |-------|------|
-| `ActionEditorComponent` | Abstract base for all per-action sub-editors. |
+| `ActionEditorComponent` | Abstract base for all per-action sub-editors. Validation (`validate()`, which marks the empty required fields invalid) is not run while the author edits: the command editor's Save button is enabled by the changes and the command's own fields alone, and pressing Save validates all conditions and all actions at once (`PreconditionActionEditor.validate()`), marking every invalid field and not saving. `focusFirstSelectBox()` puts the cursor into the editor's first select box (`ComboBox` or `Select`, found in display order) and scrolls it into view; an editor without a select box ignores it. `ActionListEditor` calls it for a freshly added action (not for actions loaded into folded rows), so the author can start choosing right away. |
 | `AbstractSingleItemActionEditor<T extends ActionData>` | Generic abstract mid-layer for the 8 editors that need one `ItemData` selector (title, description, label, placeholder, error text customised per subclass). |
 | `ActionSelector` | A combo-box of the 22 authorable `Action` kinds, sorted alphabetically by display name. Picking one and clicking **Add** doesn't build an editor itself — it calls `ActionEditorSelectedListener.onEditorSelected(ActionData)` with a freshly-constructed, empty `ActionData`; the listener (`ActionListEditor`) turns that into the matching editor via `ActionEditorFactory`. This mirrors `ConditionSelector` / `ConditionListEditor` exactly. |
 | `ActionEditorFactory` | `createEditor(ActionData, AdventureData)` — the stable entry point every call site uses. Delegates lookup to `ActionEditorRegistry` (package-private); covers all 22 authorable action types. |
@@ -508,7 +508,7 @@ it needs two fields). Sets an item's light level. |
 
 | Class | Role |
 |-------|------|
-| `ConditionEditorComponent` | Abstract base for all per-condition sub-editors. |
+| `ConditionEditorComponent` | Abstract base for all per-condition sub-editors. Like `ActionEditorComponent`, `focusFirstSelectBox()` (via `view/support/SelectBoxFocus`) focuses the first select box and scrolls it into view; `ConditionListEditor` calls it for a freshly added condition, not for conditions loaded into folded rows. |
 | `AbstractSingleItemConditionEditor` | Abstract mid-layer for the 3 item-presence conditions (Carried / Here / Worn) that share one `ItemData` selector. |
 | `AbstractNumericComparisonConditionEditor` | Abstract mid-layer for the 2 numeric-comparison conditions (GreaterThan / LessThan) that share a variable-name field and a numeric value field. |
 | `AbstractSingleWordConditionEditor<T extends PreConditionData>` | Generic abstract mid-layer for the 4 conditions that pick one `Word` of a fixed `Word.Type` via a `VocabularyPickerField` (Preposition, Adverb, Noun 2, Adjective 2). |

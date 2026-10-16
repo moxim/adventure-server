@@ -1,8 +1,12 @@
 package com.pdg.adventure.view.command.action;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
+import java.util.Optional;
+
 import com.pdg.adventure.model.action.ActionData;
+import com.pdg.adventure.view.support.SelectBoxFocus;
 
 /**
  * Base abstract class for all action editors.
@@ -28,6 +32,19 @@ public abstract class ActionEditorComponent<D extends ActionData> extends Vertic
      */
     public final void initialize() {
         buildUI();
+    }
+
+    /**
+     * Puts the cursor into the editor's first select box and scrolls it into view, so the author can start choosing
+     * right away. Does nothing for an editor without a select box (the ones that take no arguments).
+     */
+    public void focusFirstSelectBox() {
+        SelectBoxFocus.focusFirstIn(this);
+    }
+
+    /** The first select box in this editor, in display order. */
+    Optional<Component> firstSelectBox() {
+        return SelectBoxFocus.firstIn(this);
     }
 
     /**

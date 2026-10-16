@@ -36,8 +36,11 @@ public class PreconditionActionEditor extends VerticalLayout {
         commandData.setActions(actionListEditor.getActions());
     }
 
+    /** Validates the conditions and the actions, marking the invalid fields of all of them. */
     public boolean validate() {
-        return actionListEditor.validate();
+        boolean conditionsValid = conditionListEditor.validate();
+        boolean actionsValid = actionListEditor.validate();
+        return conditionsValid && actionsValid;
     }
 
     /** Wire a single change callback to both editors so the host view can track dirtiness. */

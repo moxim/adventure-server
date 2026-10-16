@@ -223,16 +223,19 @@ public class CommandEditorView extends VerticalLayout
     }
 
     /**
-     * Update the save button state based on binder and action editor validity.
+     * Update the save button state based on binder validity and changes.
+     * <p>
+     * The action editors' validity is deliberately not part of it: validating marks their empty required fields in
+     * red, which would happen the moment an action is added. They are validated, and the fields marked, when the
+     * author presses Save ({@link #validateSave}), which then does not save.
      */
     private void updateSaveButtonState() {
         boolean binderValid = binder.isValid();
         boolean binderHasChanges = binder.hasChanges();
 
         // Save button should be enabled only if:
-        // 1. (Binder has changes OR the precondition/action editor has changes) AND binder is valid
-        // 2. The precondition/action editor is valid
-        saveButton.setEnabled((binderHasChanges || editorHasChanges) && binderValid && preconditionActionEditor.validate());
+        // (Binder has changes OR the precondition/action editor has changes) AND binder is valid
+        saveButton.setEnabled((binderHasChanges || editorHasChanges) && binderValid);
     }
 
     private void validateSave(CommandProviderData aCommandProviderData) {

@@ -50,6 +50,15 @@ public class ConditionListEditor extends VerticalLayout {
                 .collect(Collectors.toList());
     }
 
+    /** Validates every condition and marks all its invalid fields, not just those of the first invalid condition. */
+    public boolean validate() {
+        return rowsLayout.getChildren()
+                .filter(ConditionRow.class::isInstance)
+                .map(ConditionRow.class::cast)
+                .map(ConditionRow::validate)
+                .reduce(true, Boolean::logicalAnd);
+    }
+
     private void addRow(PreConditionData data, boolean negate, boolean opened) {
         ConditionEditorComponent editor = ConditionEditorFactory.createEditor(data, adventureData);
         ConditionRow row = new ConditionRow(editor, negate, opened);
@@ -58,6 +67,10 @@ public class ConditionListEditor extends VerticalLayout {
         row.setOnMoveUp(() -> moveRow(row, -1));
         row.setOnMoveDown(() -> moveRow(row, 1));
         rowsLayout.add(row);
+        if (opened) {
+            // A freshly chosen condition: the author's next step is to fill in its first argument.
+            editor.focusFirstSelectBox();
+        }
         // On leaf-field edits: refresh the row header live, and mark dirty (mirrors ActionListEditor,
         // including not gating on isFromClient() - see its comment for why).
         editor.getChildren().forEach(child -> {
