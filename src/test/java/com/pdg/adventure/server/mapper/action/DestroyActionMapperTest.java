@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 import com.pdg.adventure.model.action.DestroyActionData;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.DestroyAction;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.Item;
@@ -30,6 +31,7 @@ class DestroyActionMapperTest {
     @Mock private AdventureConfig adventureConfig;
     @Mock private MessagesHolder messagesHolder;
     @Mock private Item thing;
+    @Mock private GameContext gameContext;
 
     @InjectMocks private DestroyActionMapper mapper;
 
@@ -65,7 +67,7 @@ class DestroyActionMapperTest {
     @Test
     void mapToDO_roundTripsThingId() {
         when(thing.getId()).thenReturn(THING_ID);
-        DestroyAction action = new DestroyAction(thing);
+        DestroyAction action = new DestroyAction(thing, gameContext);
 
         DestroyActionData data = mapper.mapToDO(action);
 

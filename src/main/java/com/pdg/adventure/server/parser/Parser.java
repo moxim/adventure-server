@@ -16,6 +16,9 @@ import com.pdg.adventure.server.vocabulary.Vocabulary;
 
 public class Parser {
 
+    /** Separates sentences like the full stop does ("s, w, s"); unlike that one, authors cannot reword it. */
+    private static final String COMMA = ",";
+
     private final Vocabulary vocabulary;
     private String lastVerb = VocabularyData.EMPTY_STRING;
     private String lastNoun = VocabularyData.EMPTY_STRING;
@@ -34,7 +37,7 @@ public class Parser {
             while (scanner.hasNext()) {
                 String token = scanner.next();
                 Word resolved = null;
-                boolean isSeparator = SystemMessageKey.SM51.defaultText().equals(token);
+                boolean isSeparator = SystemMessageKey.SM51.defaultText().equals(token) || COMMA.equals(token);
 
                 if (!isSeparator) {
                     Optional<Word> optionalWord = vocabulary.findWord(token);
@@ -81,11 +84,14 @@ public class Parser {
         return word.getSynonym() == null ? word : word.getSynonym();
     }
 
-    // "." is not itself a vocabulary word (it can't be looked up by findWord), so it is split
-    // out into its own token here, before the whitespace-based Scanner tokenizing above, rather
-    // than being treated as a hardcoded command string like a real word would be.
+    // "." and "," are not vocabulary words (they can't be looked up by findWord), so they are split
+    // out into tokens of their own here, before the whitespace-based Scanner tokenizing above, rather
+    // than being treated as hardcoded command strings like real words would be. Left attached to
+    // a word ("s,"), the word would be unknown and silently dropped.
     private static String withSpacedTerminators(String anInput) {
-        return anInput.toLowerCase().replace(SystemMessageKey.SM51.defaultText(), " " + SystemMessageKey.SM51.defaultText() + " ");
+        return anInput.toLowerCase()
+                      .replace(SystemMessageKey.SM51.defaultText(), " " + SystemMessageKey.SM51.defaultText() + " ")
+                      .replace(COMMA, " " + COMMA + " ");
     }
 
     private static GenericCommandDescription toDescription(SimpleSentence aSentence) {

@@ -495,7 +495,9 @@ clears the shared `VariableProvider` and defines each authored `VariableData` at
 | `RandomAction(name, vars)` | **RANDOM.** Write a random integer from 0 to 99 inclusive into the variable. A variable that does not exist is created — no `ConfigurationException`. Always `SUCCESS`, no text. |
 | `IncrementVariableAction(name, vars, msgs)` | Read the variable, parse it as an integer, write `+1`. |
 | `DecrementVariableAction(name, vars, msgs)` | Same, `-1`. |
-| `DestroyAction(thing, msgs)` | Remove `thing` from its current parent container; emits `SM57`. Authorable via the "Destroy" action editor. |
+| `CreateAction(thing, containerSupplier, gameContext)` | Take `thing` out of its current container (a `DestroyAction`, whose message is dropped), then add it to the supplied container. Emits `SM58` only if `GameContext.playerNoticesChangeIn(container)`; otherwise the thing is placed without a message. Authorable via the "Create Item" action editor. |
+| `DestroyAction(thing, gameContext)` | Remove `thing` from its current parent container. Emits `SM57` only if `GameContext.playerNoticesChangeIn(parent)`, asked before the removal; otherwise the thing is removed without a message. Authorable via the "Destroy" action editor. |
+| `GameContext.playerNoticesChangeIn(container)` | Whether the player would notice a change in a container: it is the player's pocket (felt even in the dark) or the item container of the current location, unless that location is too dark to see (`Location.isTooDarkToSee()`). Any other container, a chest or bag included, goes unnoticed. Location and pocket are read on every call, as the player moves. |
 | `BreakAction(msgs)` | Stop execution of the current command chain immediately and return the supplied message as SUCCESS. Used to short-circuit multi-action chains when a condition is met. Authorable via the "Break" action editor. |
 
 ### Joining action texts

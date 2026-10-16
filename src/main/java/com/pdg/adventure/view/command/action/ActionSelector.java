@@ -72,6 +72,7 @@ public class ActionSelector extends HorizontalLayout {
         new ActionTypeDescriptor("Add Variable", "Add the value of one variable to another", AddVariableActionData::new),
         new ActionTypeDescriptor("Subtract Variable", "Subtract the value of one variable from another", SubtractVariableActionData::new),
         new ActionTypeDescriptor("Describe", "Show the description of an item or location", DescribeActionData::new),
+        new ActionTypeDescriptor("Create Item", "Place an item into a container or location", CreateActionData::new),
         new ActionTypeDescriptor("Look", "Describe the player's current location, with its picture", LookActionData::new),
         new ActionTypeDescriptor("Examine", "Describe the item named by the typed noun", ExamineActionData::new),
         new ActionTypeDescriptor("Inventory", "Show the player's inventory", InventoryActionData::new),

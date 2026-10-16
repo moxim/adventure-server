@@ -74,6 +74,27 @@ public class GameContext {
     }
 
     /**
+     * Whether the player would notice a thing being added to or removed from the container, so that actions like
+     * Create and Destroy show their message only to a player who is there to see it. That is the case for the player's
+     * pocket (it is felt even in the dark) and for the item container of the current location, unless that is too dark
+     * to see anything. What happens inside any other container, a chest in the room included, goes unnoticed.
+     * <p>
+     * The location and the pocket are looked at on every call: the player moves during a game.
+     *
+     * @param aContainer where a thing is added or removed; null (a thing without a container) is not noticed
+     */
+    public boolean playerNoticesChangeIn(Container aContainer) {
+        if (aContainer == null) {
+            return false;
+        }
+        if (aContainer.equals(pocket)) {
+            return true;
+        }
+        return currentLocation != null && !currentLocation.isTooDarkToSee()
+               && aContainer.equals(currentLocation.getItemContainer());
+    }
+
+    /**
      * The preposition word (e.g. "on", "off") parsed out of the sub-command currently being
      * dispatched, if any - set fresh by GameLoop before each sub-command so PrepositionCondition
      * can check against it. Never null; VocabularyData.EMPTY_STRING when the input had none.

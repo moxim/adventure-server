@@ -161,7 +161,7 @@ public class Location extends Thing implements Visitable {
         return total;
     }
 
-    private boolean isTooDarkToSee() {
+    public boolean isTooDarkToSee() {
         return getPerceivedLight() < MINIMUM_LIGHT_TO_SEE;
     }
 

@@ -18,10 +18,11 @@ order, when that command fires.
 | **AutoTake** | Player picks up the item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
 | **AutoWear** | Player puts on the carried item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
 | **Break** | Stops the rest of this action list — and the rest of the command chain — immediately | Nothing — pair it with a **Message** action if you want it to say something as it stops |
+| **Create Item** | Places an item into a location (bringing it into play). The player is only told ("... appears in the ...") if it appears in the room they are in (and the room is not too dark to see) or in their pocket; what happens inside a chest or bag goes unnoticed | The item; the destination location |
 | **Decrement Variable** | Subtracts an amount from a named variable | Variable name; amount |
 | **Describe** | Prints the description of one fixed item or location | The target |
 | **Examine** | Prints the long description of the item the player named, carried or here; says "There isn't one of those here." otherwise | Nothing — use it in a Response with your look verb and the noun `~` |
-| **Destroy** | Deletes an item from the game permanently | The item |
+| **Destroy** | Deletes an item from the game permanently. The player is only told if the item was loose in the room they are in (and the room is not too dark to see) or in their pocket; what happens inside a chest or bag goes unnoticed | The item |
 | **Drop** | Player drops an item at the current location | The item |
 | **Increment Variable** | Adds an amount to a named variable | Variable name; amount |
 | **Inventory** | Lists everything the player carries | Nothing — fully automatic |
