@@ -38,7 +38,7 @@ List<GenericCommandDescription>       ← one per conjunction/period-separated s
    │
    ▼  for each sub-command, in order (stop at the first that fails):
    │
-   ├─ GameContext.runProcesses()         ← Workflow Processes (+ the "What now?" (SM2) prompt)
+   ├─ GameContext.runProcesses()         ← Workflow Processes (the SM2 to SM5 prompt is added by `AdventureRunSession`, not here)
    │                                        run once BEFORE each sub-command,
    │                                        not once per typed line
    ├─ empty-verb check → SM6 ("I was not able to understand any of that…"); stop the sequence
@@ -501,6 +501,22 @@ clears the shared `VariableProvider` and defines each authored `VariableData` at
 
 Actions that show text (`Turns`, `Diagnose Variable(s)`, `Inventory`) return it as their result message instead of calling `GameContext.tell` themselves, so their text takes its place among the other actions' texts; a direct `tell` would appear before the command's collected output.
 
+### The PROMPT variable
+
+PAW's flag 42 (which fixes the question asked for input) is one ordinary variable,
+`VariableProvider.PROMPT_VARIABLE_NAME` (`PROMPT`), listed by `VariableChoices` next to `VISITED` and `TURNS`.
+
+- **Start.** `AdventureRunSessionFactory.startRun` sets it to 0, for every run, including a run that takes over
+  from another; the factory also hands the shared provider to `AdventureRunSession`.
+- **Reading.** `AdventureRunSession.prompt()` reads it each time a question is needed (after the opening room and after
+  every turn, so a Process that set it already steers that turn's question). `promptKeyFor(value)`: below 2
+  (0, the start value; 1; negatives) leaves the choice to a random pick of SM2 to SM5; 2 to 5 pick that system message;
+  above 5 wraps around with `2 + (value - 2) % 4` (6 is SM2, 7 SM3, 8 SM4, 9 SM5, 10 SM2, ...). The text is read through
+  `defaultText()`, so the adventure's overrides apply. A session built without a provider (tests) always picks at random.
+- **Saved games.** Like every variable it is part of the snapshot.
+- **Open point.** PAW only honours a flag value that is a valid message number; wrapping above 5 and treating 1 and
+  negatives as "not set" is this project's choice (`TODO: Review needed` in `promptKeyFor`).
+
 ### The TURNS variable
 
 PAW counts every valid phrase the parser extracts in flags 31 and 32; here that count is one ordinary variable,
@@ -762,7 +778,12 @@ engine, without touching `GameLoop`/`GameContext` directly:
      sub-command — `submit` no longer calls it), collects the
      non-blank/non-prompt lines, and **always** clears the sink
      (`setOutputSink(null)`) in a `finally` block before returning.
-   - Returns a `RunResult(List<String> lines, boolean gameOver)`.
+   - Returns a `RunResult(List<String> lines, boolean gameOver, String prompt)`. `prompt` is the question that
+     tells the player the game waits for input: one of system messages SM2 to SM5 ("What now?", "What next?", "What
+     should I do now?", "What should I do next?"), picked at random with the session's overrides bound, via
+     `AdventureRunSession.prompt()`; empty once the game is over. `AdventureRunView` shows it as the last line of the
+     output, after the opening room and after every turn. The `PROMPT` variable steers the pick, see
+     [§ The PROMPT variable](#the-prompt-variable).
    - Binds the session's system-message overrides
      (`SystemMessageKey.bindOverrides`) for the whole turn and unbinds in a
      `finally`.

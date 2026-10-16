@@ -17,6 +17,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 import jakarta.annotation.security.RolesAllowed;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -225,7 +226,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             MovePlayerAction movePlayerAction = new MovePlayerAction(session.getGameContext().getCurrentLocation(),
                                                                      session.getGameContext(), variableProvider);
             ExecutionResult result = session.runBound(movePlayerAction::execute);
-            renderNarratorLines(List.of(result.getResultMessage()));
+            renderNarratorLines(withPrompt(List.of(result.getResultMessage()), session.prompt()));
             refreshPictureDisplay();
         } catch (RuntimeException e) {
             FlashNotifier.show("Error during game play: " + e.getMessage());
@@ -321,12 +322,22 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
 
     private void handleInput(final String input) {
         RunResult result = session.submit(input);
-        renderNarratorLines(result.lines());
+        renderNarratorLines(withPrompt(result.lines(), result.prompt()));
         refreshPictureDisplay();
         messageInput.setEnabled(!result.gameOver());
         if (result.gameOver()) {
             sessionFactory.release(runOwner);
         }
+    }
+
+    /** The lines with the question that asks for the next input as their last line, if there is one. */
+    private static List<String> withPrompt(List<String> lines, String prompt) {
+        if (prompt == null || prompt.isBlank()) {
+            return lines;
+        }
+        List<String> withPrompt = new ArrayList<>(lines);
+        withPrompt.add(prompt);
+        return withPrompt;
     }
 
     private void renderNarratorLines(List<String> lines) {

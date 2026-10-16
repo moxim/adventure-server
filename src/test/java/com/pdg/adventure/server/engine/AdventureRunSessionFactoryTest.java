@@ -267,6 +267,18 @@ class AdventureRunSessionFactoryTest {
     }
 
     @Test
+    void start_leavesThePromptToChance_andAReplacingRunStartsThatWayAgain() {
+        AdventureData adventureData = startableAdventure();
+        AdventureRunSession old = factory.start(adventureData, new RunOwner("player-1"));
+        assertThat(variables.getAllAsMap()).containsEntry(VariableProvider.PROMPT_VARIABLE_NAME, 0);
+        variables.set(VariableProvider.PROMPT_VARIABLE_NAME, 4);
+
+        factory.startReplacingActive(adventureData, new RunOwner("player-1"));
+
+        assertThat(variables.getAllAsMap()).containsEntry(VariableProvider.PROMPT_VARIABLE_NAME, 0);
+    }
+
+    @Test
     void startReplacingActive_startsTheNewRunAtTurnZeroAgain() {
         AdventureData adventureData = startableAdventure();
         AdventureRunSession old = factory.start(adventureData, new RunOwner("player-1"));

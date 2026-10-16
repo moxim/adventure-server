@@ -95,6 +95,8 @@ public class AdventureRunSessionFactory {
             loadIntoSharedEngine(anAdventureData);
             // Every run starts at turn 0, also when it takes over from another run whose count is still in here.
             adventureConfig.allVariables().set(VariableProvider.TURNS_VARIABLE_NAME, 0);
+            // ... and leaves the question that asks for input to chance, until the adventure steers it.
+            adventureConfig.allVariables().set(VariableProvider.PROMPT_VARIABLE_NAME, 0);
             gameContext.setRunIdentity(new GameContext.RunIdentity(anOwner.getPlayerId(), anAdventureData.getId(),
                                                                    anAdventureData.getTitle(),
                                                                    anAdventureData.getBuilderVersion()));
@@ -106,7 +108,8 @@ public class AdventureRunSessionFactory {
             workflowMapper.populate(gameContext.getWorkflowData(), workflow);
 
             GameLoop gameLoop = new GameLoop(new Parser(vocabulary), gameContext, adventureConfig.allVariables());
-            AdventureRunSession session = new AdventureRunSession(gameLoop, gameContext, overrides);
+            AdventureRunSession session = new AdventureRunSession(gameLoop, gameContext, overrides,
+                                                                  adventureConfig.allVariables());
             activeRun.register(session, anOwner);
             return session;
         }

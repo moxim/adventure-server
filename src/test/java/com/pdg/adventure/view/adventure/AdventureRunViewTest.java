@@ -152,6 +152,44 @@ class AdventureRunViewTest extends BrowserlessTest {
     }
 
     @Test
+    void thePromptIsTheLastLineOfTheOpeningRoom() {
+        stubOpeningRoom("A grand throne room.");
+        when(session.prompt()).thenReturn("What now?");
+
+        enterViaAuthorRoute();
+
+        MessageList messageList = find(MessageList.class, view).single();
+        assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
+                .containsExactly("A grand throne room.\nWhat now?");
+    }
+
+    @Test
+    void thePromptIsTheLastLineOfEveryTurn() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(session.submit("go north")).thenReturn(new RunResult(List.of("You head north."), false, "What next?"));
+
+        test(find(MessageInput.class, view).single()).send("go north");
+
+        MessageList messageList = find(MessageList.class, view).single();
+        assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
+                .containsExactly("A grand throne room.", "go north", "You head north.\nWhat next?");
+    }
+
+    @Test
+    void whenTheGameEnds_noPromptIsShown() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(session.submit("quit")).thenReturn(new RunResult(List.of("Bye."), true, ""));
+
+        test(find(MessageInput.class, view).single()).send("quit");
+
+        MessageList messageList = find(MessageList.class, view).single();
+        assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
+                .containsExactly("A grand throne room.", "quit", "Bye.");
+    }
+
+    @Test
     void multipleNarratorLinesFromOneTurn_arePooledIntoASingleMessageListItem() {
         // The opening room is now rendered directly via MovePlayerAction, not via session.submit(),
         // so the multi-line-pooling behavior (renderNarratorLines joining several lines into one

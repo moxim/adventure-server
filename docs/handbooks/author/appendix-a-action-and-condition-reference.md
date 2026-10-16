@@ -34,7 +34,7 @@ order, when that command fires.
 | **Move Player** | Moves the player to a location and shows its description | Destination location |
 | **Picture** | Shows a [picture](11-pictures.md) in the play screen's picture panel until the next move, look or Picture action | The picture |
 | **Print** | Prints the value of a variable (just the number, e.g. *14*) and does **not** end the line, so the next text continues right after it (see below) | The variable, chosen from the dropdown |
-| **Diagnose Variable** | Prints a variable's name and its current value, e.g. *"VISITED : 14"* | The variable, chosen from the dropdown (`VISITED` and `TURNS` are always listed) |
+| **Diagnose Variable** | Prints a variable's name and its current value, e.g. *"VISITED : 14"* | The variable, chosen from the dropdown (`VISITED`, `TURNS` and `PROMPT` are always listed) |
 | **Diagnose Variables** | Prints every variable and its current value, one per line, sorted by name: *"TURNS : 3"*, *"VISITED : 14"* | Nothing - fully automatic |
 | **Quit** | Ends the game session | Nothing — pair it with a **Message** action for a farewell line |
 | **Random** | Sets a variable to a random whole number from 0 to 99 (both included) | The variable: pick an existing one or type a new name, which creates it (no error for a new name) |
@@ -65,7 +65,7 @@ Variable names are chosen from a dropdown, not typed. **Set Variable** and
 a new one. As soon as you enter the name in one of them, it shows up in the dropdowns of
 **Increment Variable**, **Decrement Variable**, **Add Variable**, **Subtract Variable**, **Print**, the **Diagnose** actions and the variable conditions
 (**Equals**, **Greater Than**, **Less Than**, **Same**), which accept only
-names that are already set somewhere. The engine's own `VISITED` and `TURNS`
+names that are already set somewhere. The engine's own `VISITED`, `TURNS` and `PROMPT`
 variables are always listed. The variable is stored with the adventure when you save the
 command, and it stays defined even if you later delete the Set or Random action. A
 condition naming a variable that was never defined is flagged as invalid when
@@ -103,6 +103,25 @@ System Messages**: SM17 (*"You have taken "*, before the number), SM18
 (*" turn"*), SM19 (*"s"*, added unless the number is exactly 1) and SM20
 (*"."*). The spaces in SM17 and SM18 matter: keep them if you change the
 wording.
+
+### The standard variable `PROMPT`
+
+`PROMPT` decides which question the game asks when it waits for the player
+(see [System messages](10-messages.md)). It starts at 0 whenever a game starts,
+which leaves the choice to chance. Set it with **Set Variable** to pick one:
+
+| `PROMPT` | The game asks |
+|----------|----------------|
+| 0, 1 or below | A random one of the four (the default) |
+| 2 | *"What now?"* (system message 2) |
+| 3 | *"What next?"* (system message 3) |
+| 4 | *"What should I do now?"* (system message 4) |
+| 5 | *"What should I do next?"* (system message 5) |
+| 6 and above | Starts over: 6 is message 2, 7 is message 3, 8 is message 4, 9 is message 5, 10 is message 2 again, and so on |
+
+The change takes effect with the next question, so a Process that sets `PROMPT`
+changes the question of the very turn it runs in. Set it back to 0 to return to
+chance.
 
 ## PreConditions
 

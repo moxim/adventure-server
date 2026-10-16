@@ -16,10 +16,10 @@ class VariableChoicesTest {
         variableData.addVariable("zeta", 22);
         variableData.addVariable("Alpha", 1);
 
-        assertThat(VariableChoices.of(adventure)).containsExactly("Alpha", "TURNS", "VISITED", "zeta");
+        assertThat(VariableChoices.of(adventure)).containsExactly("Alpha", "PROMPT", "TURNS", "VISITED", "zeta");
 
         variableData.addVariable("beta", 2);
-        assertThat(VariableChoices.of(adventure)).containsExactly("Alpha", "beta", "TURNS", "VISITED", "zeta");
-        assertThat(VariableChoices.of(null)).containsExactly("TURNS", "VISITED");
+        assertThat(VariableChoices.of(adventure)).containsExactly("Alpha", "beta", "PROMPT", "TURNS", "VISITED", "zeta");
+        assertThat(VariableChoices.of(null)).containsExactly("PROMPT", "TURNS", "VISITED");
     }
 }

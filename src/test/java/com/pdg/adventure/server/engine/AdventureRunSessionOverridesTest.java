@@ -53,6 +53,16 @@ class AdventureRunSessionOverridesTest {
     }
 
     @Test
+    void prompt_usesTheAdventuresOwnWording() {
+        AdventureRunSession session = sessionWhoseTurnReads(new ArrayList<>(), Map.of(
+                SystemMessageKey.SM2.id(), "Yes?", SystemMessageKey.SM3.id(), "Yes?",
+                SystemMessageKey.SM4.id(), "Yes?", SystemMessageKey.SM5.id(), "Yes?"));
+
+        assertThat(session.prompt()).isEqualTo("Yes?");
+        assertThat(SystemMessageKey.SM2.defaultText()).isEqualTo("What now?");
+    }
+
+    @Test
     void submit_unbindsEvenWhenTheTurnThrows() {
         GameLoop throwingLoop = new GameLoop(new Parser(vocabulary), gameContext) {
             @Override
