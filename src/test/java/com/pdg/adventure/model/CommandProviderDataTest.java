@@ -34,6 +34,23 @@ class CommandProviderDataTest {
     }
 
     @Test
+    void countCommands_sumsCommandsAcrossAllChains() {
+        CommandProviderData provider = new CommandProviderData();
+        Word open = new Word("open", Word.Type.VERB);
+        Word close = new Word("close", Word.Type.VERB);
+        Word door = new Word("door", Word.Type.NOUN);
+
+        assertThat(provider.countCommands()).isZero();
+
+        provider.add(new CommandData(new CommandDescriptionData(open, null, door)));
+        provider.add(new CommandData(new CommandDescriptionData(open, null, door)));
+        provider.add(new CommandData(new CommandDescriptionData(close, null, door)));
+
+        assertThat(provider.getAvailableCommands()).hasSize(2);
+        assertThat(provider.countCommands()).isEqualTo(3);
+    }
+
+    @Test
     void chainIdSurvivesEditingTheCommandsDescription() {
         CommandProviderData provider = new CommandProviderData();
         Word open = new Word("open", Word.Type.VERB);

@@ -1,8 +1,10 @@
 package com.pdg.adventure.view.location;
 
 import com.vaadin.browserless.BrowserlessTest;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.RouteParam;
@@ -25,7 +27,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.Word;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
@@ -78,6 +83,30 @@ class LocationsMenuViewTest extends BrowserlessTest {
 
         Grid<?> grid = find(Grid.class, view).single();
         assertThat(test(grid).size()).isEqualTo(1);
+    }
+
+    @Test
+    void beforeEnter_gridShowsCommandCountAsRightmostColumn() {
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        Word verb = new Word("open", Word.Type.VERB);
+        location.getCommandProviderData().add(new CommandData(new CommandDescriptionData(verb, null, null)));
+        location.getCommandProviderData().add(new CommandData(new CommandDescriptionData(verb, null, null)));
+        AdventureData adventure = new AdventureData();
+        adventure.setId("adv-1");
+        adventure.setLocationData(Map.of("loc-1", location));
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class)))
+                .thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithAdventureId("adv-1"));
+
+        Grid<?> grid = find(Grid.class, view).single();
+        var visibleColumns = grid.getColumns().stream().filter(Grid.Column::isVisible).toList();
+        int lastColumn = visibleColumns.size() - 1;
+        Component header = visibleColumns.get(lastColumn).getHeaderComponent();
+        assertThat(header).isInstanceOf(Span.class);
+        assertThat(((Span) header).getText()).isEqualTo("Commands");
+        assertThat(test(grid).getCellText(0, lastColumn)).isEqualTo("2");
     }
 
     @Test

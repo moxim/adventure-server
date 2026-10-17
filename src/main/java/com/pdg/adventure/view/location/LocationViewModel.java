@@ -11,6 +11,7 @@ public final class LocationViewModel {
     // "read-only" attributes
     private final LocationData data;
     private final int numberOfExits;
+    private final int numberOfCommands;
     @Setter
     private String adventureId;
 
@@ -26,6 +27,7 @@ public final class LocationViewModel {
     public LocationViewModel(LocationData aLocationData) {
         data = aLocationData;
         numberOfExits = data.getDirectionsData().size();
+        numberOfCommands = data.getCommandProviderData().countCommands();
         id = data.getId();
         lumen = data.getLumen();
         pictureId = data.getPictureId();

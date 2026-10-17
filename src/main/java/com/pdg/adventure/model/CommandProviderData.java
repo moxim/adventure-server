@@ -40,6 +40,15 @@ public class CommandProviderData extends BasicData {
         result.getCommands().add(aCommand);
     }
 
+    /** Total number of commands across all chains (one per row in the commands menu). Not a bean getter on purpose, so it is never serialized. */
+    public int countCommands() {
+        int total = 0;
+        for (CommandChainData chain : availableCommands.values()) {
+            total += chain.getCommands().size();
+        }
+        return total;
+    }
+
     public Optional<String> findChainIdContaining(CommandData aCommand) {
         for (Map.Entry<String, CommandChainData> entry : availableCommands.entrySet()) {
             if (entry.getValue().getCommands().contains(aCommand)) {

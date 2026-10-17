@@ -4,8 +4,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
 
 class LocationDescriptionAdapterTest {
@@ -23,6 +25,19 @@ class LocationDescriptionAdapterTest {
         desc.setLongDescription("A beautiful misty lake.");
         data.setDescriptionData(desc);
         return data;
+    }
+
+    @Test
+    void getCommandCount_returnsNumberOfCommandsInLocation() {
+        LocationData data = createLocationData();
+        LocationDescriptionAdapter adapter = new LocationDescriptionAdapter(data, 0);
+        assertThat(adapter.getCommandCount()).isZero();
+
+        Word verb = new Word("look", Word.Type.VERB);
+        data.getCommandProviderData().add(new CommandData(new CommandDescriptionData(verb, null, null)));
+        data.getCommandProviderData().add(new CommandData(new CommandDescriptionData(verb, null, null)));
+
+        assertThat(adapter.getCommandCount()).isEqualTo(2);
     }
 
     @Test

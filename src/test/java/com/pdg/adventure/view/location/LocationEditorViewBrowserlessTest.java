@@ -4,6 +4,7 @@ import com.vaadin.browserless.BrowserlessTest;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.RouteParameters;
@@ -25,10 +26,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
@@ -123,6 +126,19 @@ class LocationEditorViewBrowserlessTest extends BrowserlessTest {
     void view_hasManageExitsButton() {
         enterWithLocationId(null);
         assertThat(find(Button.class, view).withText("Manage Exits").single()).isNotNull();
+    }
+
+    @Test
+    void numberOfCommandsField_isReadOnlyAndShowsCommandCount() {
+        Word verb = new Word("open", Word.Type.VERB);
+        locationData.getCommandProviderData().add(new CommandData(new CommandDescriptionData(verb, null, null)));
+        locationData.getCommandProviderData().add(new CommandData(new CommandDescriptionData(verb, null, null)));
+
+        enterWithLocationId("loc-1");
+
+        IntegerField commands = find(IntegerField.class, view).withLabel("Number of commands").single();
+        assertThat(commands.isReadOnly()).isTrue();
+        assertThat(commands.getValue()).isEqualTo(2);
     }
 
     @Test
