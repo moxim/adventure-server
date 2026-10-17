@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
+- The command lists and the command chain write preconditions and actions in plainer words: `VAR score >? 3` (instead of `GT score 3`), `PLAYER AT cave`, `ITEM gem AT vault`, `CHANCE <? 75`, `PREPOSITION =? on`, `SETVAR b_fill = 1`, `INCVAR score += 2`, `ADD bonus TO score`, `DEDUCT cost FROM score`, `RANDOM -> dice`, `MOVE apple TO basket` and `MOVE PLAYER TO cave`.
 - The command chain in the command editor now lists all preconditions and all actions of each command, one per line like the command lists do, under the headers "Preconditions" and "Actions" (before: only the "First Precondition" and "First Action").
 
 ### Fixed

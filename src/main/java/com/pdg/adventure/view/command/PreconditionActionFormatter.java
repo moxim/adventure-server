@@ -67,9 +67,12 @@ import com.pdg.adventure.model.condition.WornConditionData;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 /**
- * Renders preconditions and actions to compact, single-line text for the commands listing grid
- * (e.g. "NOT_HERE dragon", "SETVAR b_fill 1"). Pure: depends only on the supplied AdventureData
- * for id -> display-name resolution. No Vaadin UI, so it is unit-testable in isolation.
+ * Renders preconditions and actions to compact, single-line text for the command grids: the
+ * commands listing ({@link CommandGrid}) and the Command Chain grid of the {@link CommandEditorView}
+ * (e.g. "NOT_HERE dragon", "VAR score >? 3", "SETVAR b_fill = 1", "MOVE apple TO pocket"). Each
+ * precondition and each action is one line; the grids stack them in a cell. Pure: depends only on
+ * the supplied AdventureData for id -> display-name resolution. No Vaadin UI, so it is
+ * unit-testable in isolation.
  */
 public class PreconditionActionFormatter {
     private final Map<String, ItemData> itemsById;

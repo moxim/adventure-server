@@ -28,8 +28,9 @@ adventure's locations — a running **Locations: N** count, plus **Edit
 Location** (enabled once you select a row), **Create Location**, and
 **Back** on the left; a **Find location** search field (filters by id,
 noun, or short description) and the grid itself on the right, showing each
-location's description, **Lumen** (light level), and **Used** (how many
-exits currently lead to it).
+location's description, **Lumen** (light level), **Used** (how many
+exits currently lead to it), and **Commands** (how many commands you have
+defined in the location).
 
 Right-click a row for **Edit**, **Select as start** (see below),
 **Find Usage**, and **Delete**. Deleting a location that's still in use
@@ -56,6 +57,7 @@ start** context-menu entry does the same thing.
 | **Lighting (Lumen)** | An integer, 0–100. Also decides whether a player can see this location's picture — see [Chapter 11](11-pictures.md#a-locations-default-picture). |
 | **Default Picture** | Optional. One of your adventure's [pictures](11-pictures.md), shown to the player when they arrive for the first time and whenever they `look`. |
 | **Number of exits** | Read-only. |
+| **Number of commands** | Read-only: how many commands this location has (the rows you see under **Manage Commands**). |
 | **Location ID** / **Adventure ID** | Read-only identifiers. |
 
 Three buttons take you further into this one location's content:

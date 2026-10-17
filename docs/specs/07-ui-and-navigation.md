@@ -314,13 +314,29 @@ the dialogue:
 
 This cascade is `VocabularyData.findWordsBySynonym`'s primary call site.
 
+### Locations list and editor: counts
+
+`LocationsMenuView`'s grid (via `GridProvider`, ID column hidden) shows the location's
+description plus **Lumen**, **Used** (`LocationUsageTracker.countLocationUsages`, exits
+leading here) and, as its rightmost column, **Commands**
+(`LocationDescriptionAdapter.getCommandCount()`). `LocationEditorView` shows the read-only
+integer fields **Number of exits** and, right next to it, **Number of commands**, both
+bound with `bindReadOnly` to `LocationViewModel.getNumberOfExits()` /
+`getNumberOfCommands()`, read when the location is loaded. The number of commands is
+`CommandProviderData.countCommands()`: the commands summed over all chains, i.e. the
+rows `CommandsMenuView` lists for the location.
+
 ### `CommandEditorView` layout
 
 `CommandEditorView` is a two-column layout below the Verb/Adjective/Noun
 picker row (`commandLayout`):
 
 - **Left column** (`vl1`): a "Command Chain" label, the Command Chain grid
-  (see below), and the `ResetBackSaveView` button bar directly beneath it —
+  (one row per command variant; **Preconditions** and **Actions** columns that
+  list *all* of the variant's preconditions and actions, one per line, via
+  `PreconditionActionFormatter` and `CommandGrid.stack` — an empty list shows an
+  empty cell; see [Preconditions and actions as text](#preconditions-and-actions-as-text)),
+  and the `ResetBackSaveView` button bar directly beneath it —
   Save/Reset/Back apply to the whole editor (chain + currently selected
   variant), not just the grid, but sit in this column rather than spanning
   the full view width.
@@ -333,7 +349,7 @@ Both columns are wrapped in one `HorizontalLayout` (`hl1`).
 ### `CommandsMenuView` grid
 
 `CommandsMenuView` shows a **read-only** summary grid of the scope's commands
-(verb / adjective / noun / first precondition / first action). Editing is via
+(verb / adjective / noun / preconditions / actions — every precondition and action of a command, one per line). Editing is via
 double-click or a right-click **Edit** into `CommandEditorView`; right-click
 **Delete** removes one chain variant after a `ConfirmDialog` (header
 "Delete Command"; the view has no Save/Reset buttons — a delete persists
@@ -343,6 +359,46 @@ which `CommandListEditorView` uses too. (The former in-place
 `GridUnbufferedInlineEditor` / `SimpleCommandDescription` spec-string editors
 were deleted — commands are now identified by a stable chain id, not a
 derived spec string.)
+
+### Preconditions and actions as text
+
+`PreconditionActionFormatter` (`view/command/`) turns each `PreConditionData` and
+`ActionData` into one compact line, used by `CommandGrid` (commands listing, and the
+workflow editors) and by the Command Chain grid in `CommandEditorView`. It is pure:
+ids are resolved to names from the `AdventureData` given at construction (items,
+locations, pictures, messages, the player's pocket); an unresolvable id is shown
+verbatim, a missing one as `?`, and an unknown type falls back to its class name
+without `ConditionData`/`ActionData`, upper-cased.
+
+| Precondition | Reads as |
+|--------------|----------|
+| Here / Carried / Worn | `HERE x`, `CARRIED x`, `WORN x` |
+| Player At | `PLAYER AT location` |
+| Item At | `ITEM x AT location` |
+| Equals / Greater Than / Less Than | `VAR name =? 5`, `VAR name >? 5`, `VAR name <? 5` |
+| Same | `VAR a =? b` |
+| Chance | `CHANCE <? 75` |
+| Preposition / Adverb / Noun 2 / Adjective 2 | `PREPOSITION =? on`, `ADVERB =? slowly`, `NOUN2 =? x`, `ADJECTIVE2 =? x` |
+| Not | `NOT_` + the wrapped condition, e.g. `NOT_HERE dragon` |
+
+| Action | Reads as |
+|--------|----------|
+| Set / Increment / Decrement Variable | `SETVAR name = 1`, `INCVAR name += 2`, `DECVAR name -= 1` |
+| Add / Subtract Variable | `ADD first TO second`, `DEDUCT first FROM second` |
+| Random | `RANDOM -> name` |
+| Print / Diagnose Variable / Diagnose Variables | `PRINT name`, `DIAGNOSE_VAR name`, `DIAGNOSE_VARS` |
+| Message / Msg | `MESSAGE summary`, `MSG summary` (the message's summary, else the id verbatim) |
+| SystemMsg / NewLine | `SYSMESS key`, `NEWLINE` |
+| ListAt | `LISTAT container` |
+| Create / Destroy / Drop / Take / Wear / Remove | `CREATE x`, `DESTROY x`, `DROP x`, `TAKE x`, `WEAR x`, `REMOVE x` |
+| Light | `LIGHT x 50` |
+| Move Item | `MOVE x TO container` |
+| Move Player | `MOVE PLAYER TO location` |
+| Describe / Picture | `DESCRIBE x`, `PICTURE name` |
+| Look, Examine, AutoTake/Drop/Wear/Remove, Save, Load, Inventory, Quit, Break | `LOOK`, `EXAMINE`, `AUTOTAKE`, `AUTODROP`, `AUTOWEAR`, `AUTOREMOVE`, `SAVE`, `LOAD`, `INVENTORY`, `QUIT`, `BREAK` |
+
+A *container* (ListAt, Move Item destination) reads as `pocket` for the player's
+pocket and as the location's description for a location's item container.
 
 ### Workflow editors: `CommandListEditorView`
 
