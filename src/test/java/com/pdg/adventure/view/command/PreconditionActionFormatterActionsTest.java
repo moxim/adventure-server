@@ -192,6 +192,16 @@ class PreconditionActionFormatterActionsTest {
     }
 
     @Test
+    void moveItem_toThePocket_namesThePocket() {
+        ItemContainerData pocket = new ItemContainerData("player-pocket");
+        pocket.setId("pocket-1");
+        adventureData.setPlayerPocket(pocket);
+        MoveItemActionData a = new MoveItemActionData("apple", "pocket-1");
+
+        assertThat(new PreconditionActionFormatter(adventureData).formatAction(a)).isEqualTo("MOVE_ITEM apple pocket");
+    }
+
+    @Test
     void movePlayer() {
         MovePlayerActionData a = new MovePlayerActionData();
         a.setLocationId("cave");

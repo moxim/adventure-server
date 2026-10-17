@@ -100,17 +100,17 @@ public class PreconditionActionFormatter {
             case HereConditionData here -> "HERE " + resolveName(here.getThingId());
             case CarriedConditionData carried -> "CARRIED " + resolveName(carried.getItemId());
             case WornConditionData worn -> "WORN " + resolveName(worn.getThingId());
-            case PlayerAtConditionData playerAt -> "PLAYER_AT " + resolveName(playerAt.getLocationId());
-            case ItemAtConditionData itemAt -> "ITEM_AT " + resolveName(itemAt.getThingId()) + " " + resolveName(itemAt.getLocationId());
-            case EqualsConditionData eq -> "EQ " + txt(eq.getVariableName()) + " " + num(eq.getValue());
-            case GreaterThanConditionData gt -> "GT " + txt(gt.getVariableName()) + " " + num(gt.getValue());
-            case LessThanConditionData lt -> "LT " + txt(lt.getVariableName()) + " " + num(lt.getValue());
-            case SameConditionData same -> "SAME " + txt(same.getVariableNameOne()) + " " + txt(same.getVariableNameTwo());
-            case ChanceConditionData chance -> "CHANCE " + num(chance.getValue());
-            case PrepositionConditionData preposition -> "PREPOSITION " + txt(preposition.getPrepositionText());
-            case AdverbConditionData adverb -> "ADVERB " + txt(adverb.getAdverbText());
-            case Noun2ConditionData noun2 -> "NOUN2 " + txt(noun2.getNoun2Text());
-            case Adjective2ConditionData adjective2 -> "ADJECTIVE2 " + txt(adjective2.getAdjective2Text());
+            case PlayerAtConditionData playerAt -> "PLAYER AT " + resolveName(playerAt.getLocationId());
+            case ItemAtConditionData itemAt -> "ITEM " + resolveName(itemAt.getThingId()) + " AT " + resolveName(itemAt.getLocationId());
+            case EqualsConditionData eq -> txt(eq.getVariableName()) + " =? " + num(eq.getValue());
+            case GreaterThanConditionData gt -> txt(gt.getVariableName()) + " >? " + num(gt.getValue());
+            case LessThanConditionData lt -> txt(lt.getVariableName()) + " <? " + num(lt.getValue());
+            case SameConditionData same -> txt(same.getVariableNameOne()) + " =? " + txt(same.getVariableNameTwo());
+            case ChanceConditionData chance -> "CHANCE <? " + num(chance.getValue());
+            case PrepositionConditionData preposition -> "PREPOSITION ?= " + txt(preposition.getPrepositionText());
+            case AdverbConditionData adverb -> "ADVERB =? " + txt(adverb.getAdverbText());
+            case Noun2ConditionData noun2 -> "NOUN2 =? " + txt(noun2.getNoun2Text());
+            case Adjective2ConditionData adjective2 -> "ADJECTIVE2 =? " + txt(adjective2.getAdjective2Text());
             default -> c.getPreconditionName().replace("ConditionData", "").toUpperCase(Locale.ROOT);
         };
     }
@@ -125,13 +125,13 @@ public class PreconditionActionFormatter {
     public String formatAction(ActionData a) {
         return switch (a) {
             case null -> "?";
-            case SetVariableActionData sv -> "SETVAR " + txt(sv.getVariableName()) + " " + num(sv.getVariableValue());
-            case IncrementVariableActionData iv -> "INCVAR " + txt(iv.getName()) + " " + num(iv.getValue());
-            case DecrementVariableActionData dv -> "DECVAR " + txt(dv.getName()) + " " + num(dv.getValue());
-            case AddVariableActionData av -> "ADD " + txt(av.getFirstName()) + " " + txt(av.getSecondName());
-            case SubtractVariableActionData sv -> "MINUS " + txt(sv.getFirstName()) + " " + txt(sv.getSecondName());
+            case SetVariableActionData sv -> "SETVAR " + txt(sv.getVariableName()) + " = " + num(sv.getVariableValue());
+            case IncrementVariableActionData iv -> "INCVAR " + txt(iv.getName()) + " += " + num(iv.getValue());
+            case DecrementVariableActionData dv -> "DECVAR " + txt(dv.getName()) + " -= " + num(dv.getValue());
+            case AddVariableActionData av -> "ADD " + txt(av.getFirstName()) + " to " + txt(av.getSecondName());
+            case SubtractVariableActionData sv -> "DEDUCT " + txt(sv.getFirstName()) + " from " + txt(sv.getSecondName());
             case DiagnoseVariablesActionData _ -> "DIAGNOSE_VARS";
-            case RandomActionData r -> "RANDOM " + txt(r.getName());
+            case RandomActionData r -> "RANDOM -> " + txt(r.getName());
             case PrintActionData p -> "PRINT " + txt(p.getName());
             case DiagnoseVariableActionData pv -> "DIAGNOSE_VAR " + txt(pv.getName());
             case MessageActionData m -> "MESSAGE " + resolveMessage(m.getMessageId());
@@ -146,8 +146,8 @@ public class PreconditionActionFormatter {
             case WearActionData w -> "WEAR " + resolveName(w.getThingId());
             case RemoveActionData r -> "REMOVE " + resolveName(r.getThingId());
             case LightActionData l -> "LIGHT " + resolveName(l.getThingId()) + " " + num(l.getLumen());
-            case MoveItemActionData mi -> "MOVE_ITEM " + resolveName(mi.getThingId()) + " " + resolveName(mi.getDestinationId());
-            case MovePlayerActionData mp -> "MOVE_PLAYER " + resolveName(mp.getLocationId());
+            case MoveItemActionData mi -> "MOVE " + resolveName(mi.getThingId()) + " TO " + resolveContainer(mi.getDestinationId());
+            case MovePlayerActionData mp -> "MOVE PLAYER TO " + resolveName(mp.getLocationId());
             case DescribeActionData de -> "DESCRIBE " + resolveName(de.getTargetId());
             case PictureActionData p -> "PICTURE " + resolvePictureName(p.getPictureId());
             case LookActionData _ -> "LOOK";
@@ -200,7 +200,10 @@ public class PreconditionActionFormatter {
         return id;
     }
 
-    /** A container's name for the formatted action: "pocket", or the location the container belongs to. */
+    /**
+     * A container's name for the formatted action: "pocket", the location the container belongs to, or else whatever
+     * {@link #resolveName} makes of the id.
+     */
     private String resolveContainer(String id) {
         if (id == null || id.isBlank()) {
             return "?";
@@ -212,7 +215,7 @@ public class PreconditionActionFormatter {
                             .filter(l -> l.getItemContainerData() != null && id.equals(l.getItemContainerData().getId()))
                             .findFirst()
                             .map(ViewSupporter::getLocationsShortedDescription)
-                            .orElse(id);
+                            .orElseGet(() -> resolveName(id));
     }
 
     private static String txt(String s) {

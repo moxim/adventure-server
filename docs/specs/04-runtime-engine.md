@@ -182,7 +182,9 @@ Every `Thing` and `GenericDirection` composes a `CommandHandler`
    the [Auto item actions](#auto-item-actions-autotake-autodrop-autowear-autoremove) would. A
    chain counts as a take, drop, wear or remove chain if it contains a `TakeAction`,
    `DropAction`, `WearAction` or `RemoveAction` (a chain built from other actions is left to
-   the ranking below); the item comes from the action. The origin of each chain (pocket or
+   the ranking below) **and the item itself holds that chain**; the item comes from the action.
+   A chain authored elsewhere, e.g. on a location ("wear neoprene suit" at the west dunes),
+   is left to the ranking too, whatever container the item is in. The origin of each chain (pocket or
    location) is known from which of the two lookups returned it. Then: a typed adjective keeps
    only the items with exactly that adjective when any exists in either container (otherwise it
    is ignored); take **honours the location**, the others **the pocket** — the candidates from

@@ -435,7 +435,7 @@ tests can drive them without a context-menu click.
   **Picture** combo box. `PreconditionActionFormatter` renders a Picture action
   as `PICTURE <name>` (`?` for an unknown id).
 - **Where they are shown** — `AdventureRunView` has a picture panel above the
-  transcript (an `Image`, at most 640×480, hidden when empty) refreshed by
+  transcript (an `Image`, at most 1280×720 and at most half the window height so the transcript keeps its room, hidden when empty) refreshed by
   `refreshPictureDisplay()` after each submit. The rules for what is shown when
   are in [`04-runtime-engine.md` § Pictures](04-runtime-engine.md#pictures).
 
@@ -596,7 +596,7 @@ swapping the brand image per layout and using `LumoUtility` classes.
   bookmark-friendly URLs and re-enable it, or remove the dead annotation.
 - **`LocationMapView` shows a picture, not the real locations.** It renders the
   adventure's `worldMapPictureId` picture (chosen in `AdventureEditorView`) stretched
-  into a 16:9 frame of at most 1280×720px, under a fixed 10×10 grid of cells
+  into a 16:9 frame of at most 1280×720px and at most half the window height, under a fixed 10×10 grid of cells
   that just pop a `"Location X : Y"` notification on click — the grid is not
   bound to `LocationData` at all. Without a chosen picture it shows a hint and a
   button to the adventure editor. The "The World" drawer entry linking to it is

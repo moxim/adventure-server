@@ -69,7 +69,7 @@ final class ItemChainResolver {
         if (VocabularyData.EMPTY_STRING.equals(aCommand.getNoun())) {
             return Optional.empty(); // a bare "take" asks "what?" - there is no item to resolve
         }
-        List<ItemChain> itemChains = someAvailableChains.stream().map(ItemChainResolver::describe)
+        List<ItemChain> itemChains = someAvailableChains.stream().map(c -> describe(c, aCommand))
                                                         .flatMap(Optional::stream).toList();
         if (itemChains.isEmpty() || itemChains.stream().map(ItemChain::kind).distinct().count() > 1) {
             return Optional.empty();
@@ -174,28 +174,30 @@ final class ItemChainResolver {
         return someItemChains.stream().map(ItemChain::identity).distinct().count();
     }
 
-    private static Optional<ItemChain> describe(CommandChain aChain) {
+    // A chain counts as an item's command only if the item itself holds it. One authored elsewhere (the west dunes'
+    // "wear neoprene suit" in The Demo) may act on an item all the same, but says nothing about which suit is meant:
+    // it is left to the ranking, whatever container the item is in.
+    private static Optional<ItemChain> describe(CommandChain aChain, CommandDescription aCommand) {
         for (Command command : aChain.getCommands()) {
             for (Action action : command.getActions()) {
-                switch (action) {
-                    case TakeAction take -> {
-                        return Optional.of(new ItemChain(aChain, take.getItem(), Kind.TAKE));
-                    }
-                    case DropAction drop -> {
-                        return Optional.of(new ItemChain(aChain, drop.getItem(), Kind.DROP));
-                    }
-                    case WearAction wear when wear.getThing() instanceof Item item -> {
-                        return Optional.of(new ItemChain(aChain, item, Kind.WEAR));
-                    }
-                    case RemoveAction remove when remove.getThing() instanceof Item item -> {
-                        return Optional.of(new ItemChain(aChain, item, Kind.REMOVE));
-                    }
-                    case null, default -> {
-                        // there is no take/drop/wear/remove action in the chain so nothing is returned for it
-                    }
+                Optional<ItemChain> itemChain = switch (action) {
+                    case TakeAction take -> Optional.of(new ItemChain(aChain, take.getItem(), Kind.TAKE));
+                    case DropAction drop -> Optional.of(new ItemChain(aChain, drop.getItem(), Kind.DROP));
+                    case WearAction wear when wear.getThing() instanceof Item item ->
+                            Optional.of(new ItemChain(aChain, item, Kind.WEAR));
+                    case RemoveAction remove when remove.getThing() instanceof Item item ->
+                            Optional.of(new ItemChain(aChain, item, Kind.REMOVE));
+                    case null, default -> Optional.empty(); // not a take/drop/wear/remove action
+                };
+                if (itemChain.isPresent()) {
+                    return itemChain.filter(c -> heldByItself(c.item(), aChain, aCommand));
                 }
             }
         }
         return Optional.empty();
+    }
+
+    private static boolean heldByItself(Item anItem, CommandChain aChain, CommandDescription aCommand) {
+        return anItem.getMatchingCommandChain(aCommand).stream().anyMatch(c -> c == aChain);
     }
 }
