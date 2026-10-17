@@ -28,7 +28,7 @@ class PreconditionActionFormatterActionsTest {
 
     @Test
     void setVariable() {
-        assertThat(formatter.formatAction(new SetVariableActionData("b_fill", 1))).isEqualTo("SETVAR b_fill 1");
+        assertThat(formatter.formatAction(new SetVariableActionData("b_fill", 1))).isEqualTo("SETVAR b_fill = 1");
     }
 
     @Test
@@ -36,7 +36,7 @@ class PreconditionActionFormatterActionsTest {
         IncrementVariableActionData a = new IncrementVariableActionData();
         a.setName("score");
         a.setValue(2);
-        assertThat(formatter.formatAction(a)).isEqualTo("INCVAR score 2");
+        assertThat(formatter.formatAction(a)).isEqualTo("INCVAR score += 2");
     }
 
     @Test
@@ -44,7 +44,7 @@ class PreconditionActionFormatterActionsTest {
         DecrementVariableActionData a = new DecrementVariableActionData();
         a.setName("score");
         a.setValue(1);
-        assertThat(formatter.formatAction(a)).isEqualTo("DECVAR score 1");
+        assertThat(formatter.formatAction(a)).isEqualTo("DECVAR score -= 1");
     }
 
     @Test
@@ -65,7 +65,7 @@ class PreconditionActionFormatterActionsTest {
     void random() {
         RandomActionData a = new RandomActionData();
         a.setName("dice");
-        assertThat(formatter.formatAction(a)).isEqualTo("RANDOM dice");
+        assertThat(formatter.formatAction(a)).isEqualTo("RANDOM -> dice");
     }
 
     @Test
@@ -98,12 +98,12 @@ class PreconditionActionFormatterActionsTest {
 
     @Test
     void addVariable() {
-        assertThat(formatter.formatAction(new AddVariableActionData("bonus", "score"))).isEqualTo("ADD bonus score");
+        assertThat(formatter.formatAction(new AddVariableActionData("bonus", "score"))).isEqualTo("ADD bonus TO score");
     }
 
     @Test
     void subtractVariable() {
-        assertThat(formatter.formatAction(new SubtractVariableActionData("cost", "score"))).isEqualTo("MINUS cost score");
+        assertThat(formatter.formatAction(new SubtractVariableActionData("cost", "score"))).isEqualTo("DEDUCT cost FROM score");
     }
 
     @Test
@@ -188,7 +188,7 @@ class PreconditionActionFormatterActionsTest {
         MoveItemActionData a = new MoveItemActionData();
         a.setThingId("apple");
         a.setDestinationId("basket");
-        assertThat(formatter.formatAction(a)).isEqualTo("MOVE_ITEM apple basket");
+        assertThat(formatter.formatAction(a)).isEqualTo("MOVE apple TO basket");
     }
 
     @Test
@@ -198,14 +198,14 @@ class PreconditionActionFormatterActionsTest {
         adventureData.setPlayerPocket(pocket);
         MoveItemActionData a = new MoveItemActionData("apple", "pocket-1");
 
-        assertThat(new PreconditionActionFormatter(adventureData).formatAction(a)).isEqualTo("MOVE_ITEM apple pocket");
+        assertThat(new PreconditionActionFormatter(adventureData).formatAction(a)).isEqualTo("MOVE apple TO pocket");
     }
 
     @Test
     void movePlayer() {
         MovePlayerActionData a = new MovePlayerActionData();
         a.setLocationId("cave");
-        assertThat(formatter.formatAction(a)).isEqualTo("MOVE_PLAYER cave");
+        assertThat(formatter.formatAction(a)).isEqualTo("MOVE PLAYER TO cave");
     }
 
     @Test

@@ -89,7 +89,7 @@ public class CommandGrid extends Grid<CommandData> {
     }
 
     /** Stack each rendered line in its own Span so multi-entry precondition/action cells wrap vertically. */
-    private static Component stack(List<String> lines) {
+    static Component stack(List<String> lines) {
         Div box = new Div();
         box.getStyle().set("display", "flex").set("flex-direction", "column");
         lines.forEach(line -> box.add(new Span(line)));

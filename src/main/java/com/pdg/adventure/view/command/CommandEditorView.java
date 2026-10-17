@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.html.NativeLabel;
@@ -13,6 +14,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.*;
 import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
@@ -129,8 +131,11 @@ public class CommandEditorView extends VerticalLayout
     private Grid<CommandData> createCommandChainGrid() {
         final Grid<CommandData> newCommandChainGrid = new Grid<>(CommandData.class, false);
 
-        newCommandChainGrid.addColumn(this::firstPreconditionLabel).setHeader("First Precondition").setAutoWidth(true);
-        newCommandChainGrid.addColumn(this::firstActionLabel).setHeader("First Action").setAutoWidth(true);
+        newCommandChainGrid.addColumn(new ComponentRenderer<>(cmd -> CommandGrid.stack(preconditionLabels(cmd))))
+                           .setHeader("Preconditions").setAutoWidth(true);
+        newCommandChainGrid.addColumn(new ComponentRenderer<>(cmd -> CommandGrid.stack(actionLabels(cmd))))
+                           .setHeader("Actions").setAutoWidth(true);
+        newCommandChainGrid.addThemeVariants(GridVariant.LUMO_WRAP_CELL_CONTENT);
 
         newCommandChainGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
         newCommandChainGrid.setMaxHeight("300px"); // Limit height so it doesn't dominate the UI
@@ -151,24 +156,14 @@ public class CommandEditorView extends VerticalLayout
         return newCommandChainGrid;
     }
 
-    /** Label for the command-chain grid's "First Action" column: friendly text, never a class name. */
-    String firstActionLabel(CommandData cmd) {
-        if (cmd.getActions().isEmpty()) {
-            return "none";
-        }
-        return chainFormatter.formatAction(cmd.getActions().getFirst());
+    /** Lines for the command-chain grid's "Actions" column, one per action: friendly text, never a class name. */
+    List<String> actionLabels(CommandData cmd) {
+        return chainFormatter.formatActions(cmd.getActions());
     }
 
-    /** Label for the command-chain grid's "First Precondition" column: friendly text, never a class name. */
-    String firstPreconditionLabel(CommandData cmd) {
-        if (cmd.getPreConditions() != null && !cmd.getPreConditions().isEmpty()) {
-            try {
-                return chainFormatter.formatCondition(cmd.getPreConditions().getFirst());
-            } catch (UnsupportedOperationException _) {
-                return "none";
-            }
-        }
-        return "none";
+    /** Lines for the command-chain grid's "Preconditions" column, one per precondition: friendly text, never a class name. */
+    List<String> preconditionLabels(CommandData cmd) {
+        return chainFormatter.formatConditions(cmd.getPreConditions());
     }
 
     private void setUpBinding() {

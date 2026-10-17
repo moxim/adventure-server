@@ -45,7 +45,7 @@ class PreconditionActionFormatterConditionsTest {
     void playerAt() {
         PlayerAtConditionData c = new PlayerAtConditionData();
         c.setLocationId("cave");
-        assertThat(formatter.formatCondition(c)).isEqualTo("PLAYER_AT cave");
+        assertThat(formatter.formatCondition(c)).isEqualTo("PLAYER AT cave");
     }
 
     @Test
@@ -53,7 +53,7 @@ class PreconditionActionFormatterConditionsTest {
         ItemAtConditionData c = new ItemAtConditionData();
         c.setThingId("gem");
         c.setLocationId("vault");
-        assertThat(formatter.formatCondition(c)).isEqualTo("ITEM_AT gem vault");
+        assertThat(formatter.formatCondition(c)).isEqualTo("ITEM gem AT vault");
     }
 
     @Test
@@ -61,7 +61,7 @@ class PreconditionActionFormatterConditionsTest {
         EqualsConditionData c = new EqualsConditionData();
         c.setVariableName("score");
         c.setValue(5);
-        assertThat(formatter.formatCondition(c)).isEqualTo("EQ score 5");
+        assertThat(formatter.formatCondition(c)).isEqualTo("VAR score =? 5");
     }
 
     @Test
@@ -69,7 +69,7 @@ class PreconditionActionFormatterConditionsTest {
         GreaterThanConditionData c = new GreaterThanConditionData();
         c.setVariableName("score");
         c.setValue(3);
-        assertThat(formatter.formatCondition(c)).isEqualTo("GT score 3");
+        assertThat(formatter.formatCondition(c)).isEqualTo("VAR score >? 3");
     }
 
     @Test
@@ -77,7 +77,7 @@ class PreconditionActionFormatterConditionsTest {
         LessThanConditionData c = new LessThanConditionData();
         c.setVariableName("score");
         c.setValue(10);
-        assertThat(formatter.formatCondition(c)).isEqualTo("LT score 10");
+        assertThat(formatter.formatCondition(c)).isEqualTo("VAR score <? 10");
     }
 
     @Test
@@ -85,42 +85,42 @@ class PreconditionActionFormatterConditionsTest {
         SameConditionData c = new SameConditionData();
         c.setVariableNameOne("a");
         c.setVariableNameTwo("b");
-        assertThat(formatter.formatCondition(c)).isEqualTo("SAME a b");
+        assertThat(formatter.formatCondition(c)).isEqualTo("VAR a =? b");
     }
 
     @Test
     void chance() {
         ChanceConditionData c = new ChanceConditionData();
         c.setValue(75);
-        assertThat(formatter.formatCondition(c)).isEqualTo("CHANCE 75");
+        assertThat(formatter.formatCondition(c)).isEqualTo("CHANCE <? 75");
     }
 
     @Test
     void preposition() {
         PrepositionConditionData c = new PrepositionConditionData();
         c.setPrepositionText("on");
-        assertThat(formatter.formatCondition(c)).isEqualTo("PREPOSITION on");
+        assertThat(formatter.formatCondition(c)).isEqualTo("PREPOSITION =? on");
     }
 
     @Test
     void adverb() {
         AdverbConditionData c = new AdverbConditionData();
         c.setAdverbText("slowly");
-        assertThat(formatter.formatCondition(c)).isEqualTo("ADVERB slowly");
+        assertThat(formatter.formatCondition(c)).isEqualTo("ADVERB =? slowly");
     }
 
     @Test
     void noun2() {
         Noun2ConditionData c = new Noun2ConditionData();
         c.setNoun2Text("machine");
-        assertThat(formatter.formatCondition(c)).isEqualTo("NOUN2 machine");
+        assertThat(formatter.formatCondition(c)).isEqualTo("NOUN2 =? machine");
     }
 
     @Test
     void adjective2() {
         Adjective2ConditionData c = new Adjective2ConditionData();
         c.setAdjective2Text("ancient");
-        assertThat(formatter.formatCondition(c)).isEqualTo("ADJECTIVE2 ancient");
+        assertThat(formatter.formatCondition(c)).isEqualTo("ADJECTIVE2 =? ancient");
     }
 
     @Test

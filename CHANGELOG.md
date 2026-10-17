@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- The command chain in the command editor now lists all preconditions and all actions of each command, one per line like the command lists do, under the headers "Preconditions" and "Actions" (before: only the "First Precondition" and "First Action").
+
 ### Fixed
 - In the command lists a Move Item action now names its destination: "pocket" for the player's pocket, the location for a location's item container; before, it showed the container's id.
 - A wear, remove, take or drop command authored on a location (not on the item), like the west dunes' "wear neoprene suit" in The Demo, works again for a carried item; before, the game answered "I don't have the neoprene suit." The item resolution now only applies to commands the item itself holds.

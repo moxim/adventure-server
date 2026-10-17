@@ -102,12 +102,12 @@ public class PreconditionActionFormatter {
             case WornConditionData worn -> "WORN " + resolveName(worn.getThingId());
             case PlayerAtConditionData playerAt -> "PLAYER AT " + resolveName(playerAt.getLocationId());
             case ItemAtConditionData itemAt -> "ITEM " + resolveName(itemAt.getThingId()) + " AT " + resolveName(itemAt.getLocationId());
-            case EqualsConditionData eq -> txt(eq.getVariableName()) + " =? " + num(eq.getValue());
-            case GreaterThanConditionData gt -> txt(gt.getVariableName()) + " >? " + num(gt.getValue());
-            case LessThanConditionData lt -> txt(lt.getVariableName()) + " <? " + num(lt.getValue());
-            case SameConditionData same -> txt(same.getVariableNameOne()) + " =? " + txt(same.getVariableNameTwo());
+            case EqualsConditionData eq -> "VAR " + txt(eq.getVariableName()) + " =? " + num(eq.getValue());
+            case GreaterThanConditionData gt -> "VAR " + txt(gt.getVariableName()) + " >? " + num(gt.getValue());
+            case LessThanConditionData lt -> "VAR " + txt(lt.getVariableName()) + " <? " + num(lt.getValue());
+            case SameConditionData same -> "VAR " + txt(same.getVariableNameOne()) + " =? " + txt(same.getVariableNameTwo());
             case ChanceConditionData chance -> "CHANCE <? " + num(chance.getValue());
-            case PrepositionConditionData preposition -> "PREPOSITION ?= " + txt(preposition.getPrepositionText());
+            case PrepositionConditionData preposition -> "PREPOSITION =? " + txt(preposition.getPrepositionText());
             case AdverbConditionData adverb -> "ADVERB =? " + txt(adverb.getAdverbText());
             case Noun2ConditionData noun2 -> "NOUN2 =? " + txt(noun2.getNoun2Text());
             case Adjective2ConditionData adjective2 -> "ADJECTIVE2 =? " + txt(adjective2.getAdjective2Text());
@@ -128,8 +128,8 @@ public class PreconditionActionFormatter {
             case SetVariableActionData sv -> "SETVAR " + txt(sv.getVariableName()) + " = " + num(sv.getVariableValue());
             case IncrementVariableActionData iv -> "INCVAR " + txt(iv.getName()) + " += " + num(iv.getValue());
             case DecrementVariableActionData dv -> "DECVAR " + txt(dv.getName()) + " -= " + num(dv.getValue());
-            case AddVariableActionData av -> "ADD " + txt(av.getFirstName()) + " to " + txt(av.getSecondName());
-            case SubtractVariableActionData sv -> "DEDUCT " + txt(sv.getFirstName()) + " from " + txt(sv.getSecondName());
+            case AddVariableActionData av -> "ADD " + txt(av.getFirstName()) + " TO " + txt(av.getSecondName());
+            case SubtractVariableActionData sv -> "DEDUCT " + txt(sv.getFirstName()) + " FROM " + txt(sv.getSecondName());
             case DiagnoseVariablesActionData _ -> "DIAGNOSE_VARS";
             case RandomActionData r -> "RANDOM -> " + txt(r.getName());
             case PrintActionData p -> "PRINT " + txt(p.getName());

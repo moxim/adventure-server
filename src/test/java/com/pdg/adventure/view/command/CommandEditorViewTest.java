@@ -1,5 +1,6 @@
 package com.pdg.adventure.view.command;
 
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
@@ -15,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -198,7 +200,7 @@ class CommandEditorViewTest {
 
     @Test
     void commandChainGridLabels_useFriendlyText_notInternalClassNames() {
-        // given: a command whose first action is a Message and first precondition is Worn,
+        // given: a command with two actions (Message, Message) and two preconditions (Worn, Worn),
         // added to the provider so setData() loads it by its chain id and builds the formatter.
         Word go = vocabularyData.getWords().stream()
                 .filter(w -> "go".equals(w.getText())).findFirst().orElseThrow();
@@ -216,8 +218,14 @@ class CommandEditorViewTest {
 
         CommandData command = new CommandData();
         command.setCommandDescription(description);
+        MessageActionData secondMessage = new MessageActionData();
+        secondMessage.setMessageId("farewell");
+        WornConditionData secondWorn = new WornConditionData();
+        secondWorn.setThingId("hat-id");
         command.addAction(message);
+        command.addAction(secondMessage);
         command.getPreConditions().add(worn);
+        command.getPreConditions().add(secondWorn);
         commandProviderData.add(command);
         String chainId = commandProviderData.findChainIdContaining(command).orElseThrow();
 
@@ -225,12 +233,25 @@ class CommandEditorViewTest {
         enterWithCommandId(chainId);
 
         // when
-        String actionLabel = view.firstActionLabel(command);
-        String preconditionLabel = view.firstPreconditionLabel(command);
+        List<String> actionLabels = view.actionLabels(command);
+        List<String> preconditionLabels = view.preconditionLabels(command);
 
-        // then: the grid shows human-readable text, never internal *Data class names
-        assertThat(actionLabel).doesNotContain("ActionData").startsWith("MESSAGE");
-        assertThat(preconditionLabel).doesNotContain("ConditionData").startsWith("WORN");
+        // then: the grid lists every action and precondition as human-readable text, never internal *Data class names
+        assertThat(actionLabels).hasSize(2).allSatisfy(l -> assertThat(l).doesNotContain("ActionData").startsWith("MESSAGE"));
+        assertThat(preconditionLabels).hasSize(2).allSatisfy(l -> assertThat(l).doesNotContain("ConditionData").startsWith("WORN"));
+    }
+
+    @Test
+    void commandChainGrid_hasPreconditionsAndActionsColumns() throws Exception {
+        view = new CommandEditorView(adventureService, itemService, accessService);
+        enterWithCommandId(null);
+
+        Field gridField = CommandEditorView.class.getDeclaredField("commandChainGrid");
+        gridField.setAccessible(true);
+        Grid<?> chainGrid = (Grid<?>) gridField.get(view);
+
+        assertThat(chainGrid.getColumns().stream().map(Grid.Column::getHeaderText))
+                .containsExactly("Preconditions", "Actions");
     }
 
     @Test
