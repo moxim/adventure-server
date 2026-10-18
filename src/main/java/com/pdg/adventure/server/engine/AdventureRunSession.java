@@ -68,6 +68,17 @@ public class AdventureRunSession {
         return runBound(() -> playTurn(rawInput));
     }
 
+    /** A click on the picture, in the cell given as column and row of the picture grid; see {@link GameLoop#processClick}. */
+    public RunResult submitClick(int aColumn, int aRow) {
+        if (supersededElsewhere) {
+            return new RunResult(List.of(ENDED_ELSEWHERE_TEXT), true);
+        }
+        if (gameOver) {
+            return new RunResult(List.of(), true);
+        }
+        return runBound(() -> play(() -> gameLoop.processClick(aColumn, aRow)));
+    }
+
     /**
      * Runs the step with this session's system-message overrides bound to the current thread. For work done
      * outside {@link #submit} that still prints engine text, e.g. rendering the opening room.
@@ -109,6 +120,10 @@ public class AdventureRunSession {
     }
 
     private RunResult playTurn(String rawInput) {
+        return play(() -> gameLoop.processCommand(rawInput));
+    }
+
+    private RunResult play(Supplier<GameLoop.CommandOutcome> aStep) {
         List<String> lines = new ArrayList<>();
         gameContext.setOutputSink(line -> {
             if (line != null && !line.isBlank() && !SystemMessageKey.SM2.defaultText().equals(line)) {
@@ -116,7 +131,7 @@ public class AdventureRunSession {
             }
         });
         try {
-            GameLoop.CommandOutcome outcome = gameLoop.processCommand(rawInput);
+            GameLoop.CommandOutcome outcome = aStep.get();
             gameOver = outcome != GameLoop.CommandOutcome.CONTINUE;
         } catch (ReloadAdventureException unexpected) {
             // A run session never registers the cross-adventure "load X" command, so this

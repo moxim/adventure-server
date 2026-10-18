@@ -298,7 +298,9 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     `ConditionSelector`; all 14 selectable condition types have editors,
     including `ChanceCondition` (a random-roll gate) and the four
     ambient-state conditions `PrepositionCondition`, `AdverbCondition`,
-    `Noun2Condition`, `Adjective2Condition` (see
+    `Noun2Condition`, `Adjective2Condition`, and, for Processes only,
+    `ClickedCondition` (a click on a cell of the picture grid, a second input
+    stream; see
     [`04-runtime-engine.md`](04-runtime-engine.md) for what these check).
     `NotConditionData` is applied structurally via the Negate checkbox
     above rather than being one of the 14 selectable kinds. Its dropdown

@@ -20,9 +20,15 @@ public class ConditionSelector extends HorizontalLayout {
     private transient ConditionSelectedListener conditionSelectedListener;
 
 
+    /** The selector for a list where a click on the picture cannot happen: CLICKED is not offered. */
     public ConditionSelector() {
+        this(false);
+    }
+
+    /** @param offersClicked whether CLICKED is offered; only the Processes can be run by a click */
+    public ConditionSelector(boolean offersClicked) {
         typeSelector = new ComboBox<>("Add Condition");
-        typeSelector.setItems(availableTypes());
+        typeSelector.setItems(availableTypes(offersClicked));
         typeSelector.setItemLabelGenerator(ConditionTypeDescriptor::displayName);
         typeSelector.setPlaceholder("Choose condition type…");
         typeSelector.setWidthFull();
@@ -49,8 +55,11 @@ public class ConditionSelector extends HorizontalLayout {
         expand(typeSelector);
     }
 
-    private List<ConditionTypeDescriptor> availableTypes() {
-        return Stream.of(
+    private List<ConditionTypeDescriptor> availableTypes(boolean offersClicked) {
+        Stream<ConditionTypeDescriptor> clicked = offersClicked
+            ? Stream.of(new ConditionTypeDescriptor("Clicked (matches a click on the picture)", ClickedConditionData::new))
+            : Stream.empty();
+        return Stream.concat(clicked, Stream.of(
             new ConditionTypeDescriptor("Carried (item in inventory)", CarriedConditionData::new),
             new ConditionTypeDescriptor("Here (item at current location)", HereConditionData::new),
             new ConditionTypeDescriptor("Worn (item being worn)", WornConditionData::new),
@@ -65,7 +74,7 @@ public class ConditionSelector extends HorizontalLayout {
             new ConditionTypeDescriptor("Adverb (matches typed adverb)", AdverbConditionData::new),
             new ConditionTypeDescriptor("Noun 2 (matches typed second noun)", Noun2ConditionData::new),
             new ConditionTypeDescriptor("Adjective 2 (matches typed second adjective)", Adjective2ConditionData::new)
-        ).sorted(Comparator.comparing(ConditionTypeDescriptor::displayName, String.CASE_INSENSITIVE_ORDER)).toList();
+        )).sorted(Comparator.comparing(ConditionTypeDescriptor::displayName, String.CASE_INSENSITIVE_ORDER)).toList();
     }
 
     @FunctionalInterface

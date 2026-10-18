@@ -57,6 +57,35 @@ That second sentence of the reminder is the single most common surprise:
 > want "only say something when a specific command is typed," you want a
 > **Response**, not a Process.
 
+### Clicking the picture
+
+A player can also **click the picture** in the running game. Then the game runs your
+Processes, and nothing else: it reads no words, so Responses and the commands of locations and
+items do not take part. A Process reacts to the click with the **Clicked** condition, which
+takes the cell: the picture is divided into a 10 × 10 grid like the world map, **X** is the
+column (0 at the left to 9 at the right) and **Y** the row (0 at the top to 9 at the bottom).
+
+For example, the picture shows a door in the cell at column 3, row 4: add a Process with the
+precondition `Clicked 3, 4` and a Move Player action to the room behind the door. Clicking the
+door moves the player, clicking elsewhere does not.
+
+- A click counts when a Process with a `Clicked` condition for that cell applied (its other
+  preconditions held), whether or not it printed anything and even if one of its actions then
+  fails (the game then tells the failure instead of "not understood"). It counts as
+  a turn (the `TURNS` variable goes up by one).
+- Any other click is not understood. The game answers "I was not able to understand any of that.
+  Please try again." (system message 6), then the usual "What now?" question. That is not a turn.
+  Processes without a `Clicked` condition run on every click, as they do after every typed command.
+- While a click is handled the words of the last typed command are forgotten, so a leftover
+  preposition cannot make a Process fire. A Process with a negated `Clicked` never counts as a
+  click that was understood.
+- A click does not run Arrival Processes by itself. A Move Player or Look action inside a clicked
+  Process describes the location as usual and so runs its Arrival Processes.
+- Clicks in the empty margin around a picture that is shown smaller than its frame are ignored.
+- `Clicked` is offered only here, not in Responses, Arrival Processes and location or item commands:
+  a click does not run those by itself.
+- Once the game is over the picture can no longer be clicked.
+
 ## Arrival Processes: run when a location is described
 
 **Workflow I** opens the screen headed *"Arrival Processes for {your title}"*.

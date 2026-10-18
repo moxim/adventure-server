@@ -14,7 +14,12 @@ public class PreconditionActionEditor extends VerticalLayout {
     private final ActionListEditor actionListEditor;
 
     public PreconditionActionEditor(AdventureData adventureData) {
-        conditionListEditor = new ConditionListEditor(adventureData);
+        this(adventureData, false);
+    }
+
+    /** @param offersClicked whether the CLICKED condition can be added: only for the list of Processes */
+    public PreconditionActionEditor(AdventureData adventureData, boolean offersClicked) {
+        conditionListEditor = new ConditionListEditor(adventureData, offersClicked);
         actionListEditor = new ActionListEditor(adventureData);
 
         VerticalLayout preconditionsSection = new VerticalLayout(new NativeLabel("Preconditions"), conditionListEditor);

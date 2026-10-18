@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The texts of the Turns, Diagnose Variable, Diagnose Variables and Inventory actions now appear in the order of the command's actions; before, they showed up ahead of the texts of Message actions in the same command.
 
 ### Added
+- A Clicked condition for Processes: the player can click the picture in a running game. The picture is divided into a 10 × 10 grid like the world map, and a Process with `Clicked x, y` (x the column, y the row, each 0 to 9) performs its actions when that cell is clicked, e.g. a Move Player action for a door in the picture. A click no Process answers is answered with "I was not able to understand any of that. Please try again." and does not count as a turn; a click that is answered counts as one (the TURNS variable). Responses, Arrival Processes and location or item commands cannot use it.
 - Authors see how many commands a location defines: the locations list has a new rightmost "Commands" column, and the location editor shows "Number of commands" next to the number of exits.
 - A ListAt action (PAW's LISTAT): authors pick a location or the player's pocket, and the game prints the items in it, or "nothing." if there are none. No heading is added; a Message in front can supply one.
 - A NewLine action (PAW's NEWLINE): ends the line, so the next text starts on a new line. It completes Msg, SystemMsg and Print, which do not end their line; after a Message it leaves an empty line.

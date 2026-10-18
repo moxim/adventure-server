@@ -165,4 +165,27 @@ class PreconditionActionFormatterConditionsTest {
         PreconditionActionFormatter f = new PreconditionActionFormatter(adventureData);
         assertThat(f.formatCondition(here("item-1"))).isEqualTo("HERE bucket");
     }
+
+    @Test
+    void clicked() {
+        ClickedConditionData c = new ClickedConditionData();
+        c.setX(3);
+        c.setY(4);
+        assertThat(formatter.formatCondition(c)).isEqualTo("CLICKED 3, 4");
+    }
+
+    @Test
+    void clicked_negated() {
+        ClickedConditionData c = new ClickedConditionData();
+        c.setX(3);
+        c.setY(4);
+        NotConditionData not = new NotConditionData();
+        not.setPreCondition(c);
+        assertThat(formatter.formatCondition(not)).isEqualTo("NOT_CLICKED 3, 4");
+    }
+
+    @Test
+    void clicked_withoutCoordinates_showsPlaceholders() {
+        assertThat(formatter.formatCondition(new ClickedConditionData())).isEqualTo("CLICKED ?, ?");
+    }
 }

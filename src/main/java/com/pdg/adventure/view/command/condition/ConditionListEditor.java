@@ -19,13 +19,18 @@ public class ConditionListEditor extends VerticalLayout {
     private transient Runnable onChange;
 
     public ConditionListEditor(AdventureData adventureData) {
+        this(adventureData, false);
+    }
+
+    /** @param offersClicked whether the CLICKED condition can be added: only for the list of Processes */
+    public ConditionListEditor(AdventureData adventureData, boolean offersClicked) {
         this.adventureData = adventureData;
 
         rowsLayout = new VerticalLayout();
         rowsLayout.setPadding(false);
         rowsLayout.setSpacing(true);
 
-        ConditionSelector selector = new ConditionSelector();
+        ConditionSelector selector = new ConditionSelector(offersClicked);
         selector.setConditionSelectedListener(data -> { addRow(data, false, true); notifyChange(); });
 
         setPadding(false);

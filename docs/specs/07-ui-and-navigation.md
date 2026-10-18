@@ -378,6 +378,7 @@ without `ConditionData`/`ActionData`, upper-cased.
 | Equals / Greater Than / Less Than | `VAR name =? 5`, `VAR name >? 5`, `VAR name <? 5` |
 | Same | `VAR a =? b` |
 | Chance | `CHANCE <? 75` |
+| Clicked | `CLICKED 3, 4` (column, row) |
 | Preposition / Adverb / Noun 2 / Adjective 2 | `PREPOSITION =? on`, `ADVERB =? slowly`, `NOUN2 =? x`, `ADJECTIVE2 =? x` |
 | Not | `NOT_` + the wrapped condition, e.g. `NOT_HERE dragon` |
 
@@ -492,7 +493,14 @@ tests can drive them without a context-menu click.
   as `PICTURE <name>` (`?` for an unknown id).
 - **Where they are shown** — `AdventureRunView` has a picture panel above the
   transcript (an `Image`, at most 1280×720 and at most half the window height so the transcript keeps its room, hidden when empty) refreshed by
-  `refreshPictureDisplay()` after each submit. The rules for what is shown when
+  `refreshPictureDisplay()` after each submit. The picture is **clickable**: a DOM `click`
+  listener on the image requests `event.offsetX/offsetY`, `element.clientWidth/clientHeight`
+  and `element.naturalWidth/naturalHeight`; `AdventureRunView.handlePictureClick` hands them
+  to `view/support/PictureGrid.cellAt`, which draws the picture like CSS `object-fit: contain`
+  (scaled to fit and centred), ignores clicks in the empty margin, and numbers the cell on
+  the same 10 × 10 grid as `LocationMapView` (`PictureGrid.SIZE`; column from the left, row
+  from the top, from 0). A cell goes to `AdventureRunSession.submitClick` and its result is
+  rendered like a typed turn (the click itself is not echoed). Clicks are ignored while the message input is disabled (game over, or a run conflict), so a finished game cannot be clicked on. The rules for what is shown when
   are in [`04-runtime-engine.md` § Pictures](04-runtime-engine.md#pictures).
 
 ### System-messages editor: `SystemMessagesView`
@@ -571,13 +579,14 @@ it needs two fields). Sets an item's light level. |
 | `AbstractSingleItemConditionEditor` | Abstract mid-layer for the 3 item-presence conditions (Carried / Here / Worn) that share one `ItemData` selector. |
 | `AbstractNumericComparisonConditionEditor` | Abstract mid-layer for the 2 numeric-comparison conditions (GreaterThan / LessThan) that share a variable-name field and a numeric value field. |
 | `AbstractSingleWordConditionEditor<T extends PreConditionData>` | Generic abstract mid-layer for the 4 conditions that pick one `Word` of a fixed `Word.Type` via a `VocabularyPickerField` (Preposition, Adverb, Noun 2, Adjective 2). |
-| `ConditionSelector` | A combo-box of the 14 selectable `PreCondition` kinds, sorted alphabetically by display name; `NotCondition` is not among them (see below). Picking one and clicking **Add** calls `ConditionSelectedListener.onConditionSelected(PreConditionData)` with a freshly-constructed, empty data object — the listener (`ConditionListEditor`) builds the matching editor via `ConditionEditorFactory`. |
+| `ConditionSelector` | A combo-box of the 14 selectable `PreCondition` kinds (15 with "Clicked (matches a click on the picture)", which `new ConditionSelector(true)` adds and only the Processes editor asks for: `SingleCommandEditorView` passes `PreconditionActionEditor(adventureData, offersClicked)` down through `ConditionListEditor`; Responses, Arrival Processes and location/item commands use the one-argument forms, which leave it out), sorted alphabetically by display name; `NotCondition` is not among them (see below). Picking one and clicking **Add** calls `ConditionSelectedListener.onConditionSelected(PreConditionData)` with a freshly-constructed, empty data object — the listener (`ConditionListEditor`) builds the matching editor via `ConditionEditorFactory`. |
 | `ConditionEditorFactory` | Entry point for condition editors, mirroring `ActionEditorFactory`'s shape. Delegates to `ConditionEditorRegistry`; covers all 14 selectable condition types. |
 | `ConditionEditorRegistry` | Classpath scan for `@AutoRegisterConditionEditor`-annotated `ConditionEditorComponent`s, the condition-side twin of `ActionEditorRegistry` above — same replaced-the-switch-statement story. |
 | `CarriedConditionEditor` | Item selector (via `AbstractSingleItemConditionEditor`). |
 | `HereConditionEditor` | Item selector (via `AbstractSingleItemConditionEditor`). |
 | `WornConditionEditor` | Item selector (via `AbstractSingleItemConditionEditor`). |
 | `ChanceConditionEditor` | A single numeric field for the 1–100 chance percentage. |
+| `ClickedConditionEditor` | Two required integer fields, "X (column, 0–9)" and "Y (row, 0–9)", validated against `PictureGrid.SIZE`. Matches a click on that cell of the picture grid (see [`04-runtime-engine.md` § Clicks on the picture](04-runtime-engine.md#clicks-on-the-picture-gameloopprocessclick)). |
 | `EqualsConditionEditor` | Variable name + value text fields. |
 | `GreaterThanConditionEditor` | Variable name + numeric threshold (via `AbstractNumericComparisonConditionEditor`). |
 | `LessThanConditionEditor` | Variable name + numeric threshold (via `AbstractNumericComparisonConditionEditor`). |

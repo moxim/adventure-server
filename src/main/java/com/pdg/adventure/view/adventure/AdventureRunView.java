@@ -12,10 +12,12 @@ import com.vaadin.flow.component.messages.MessageInput;
 import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 import jakarta.annotation.security.RolesAllowed;
+import tools.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +36,7 @@ import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.view.player.PlayerLibraryView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.FlashNotifier;
+import com.pdg.adventure.view.support.PictureGrid;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -63,6 +66,12 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     private static final String FROM_QUERY_PARAM = "from";
     private static final String FROM_MENU = "menu";
     private static final String LUMO_FONT_FAMILY = "--lumo-font-family";
+    private static final String OFFSET_X = "event.offsetX";
+    private static final String OFFSET_Y = "event.offsetY";
+    private static final String BOX_WIDTH = "element.clientWidth";
+    private static final String BOX_HEIGHT = "element.clientHeight";
+    private static final String NATURAL_WIDTH = "element.naturalWidth";
+    private static final String NATURAL_HEIGHT = "element.naturalHeight";
 
     private enum Origin { EDITOR, MENU, LIBRARY }
 
@@ -125,6 +134,12 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         pictureDisplay.getStyle().set("object-fit", "contain");
         pictureDisplay.getStyle().set("display", "block");
         pictureDisplay.getStyle().set("margin", "0 auto");
+        // A click on the picture is a second input stream: the browser reports where it landed and how big the box and
+        // the picture are, and PictureGrid works out the cell (the picture may be letterboxed inside its box).
+        pictureDisplay.getElement().addEventListener("click", this::onPictureClick)
+                      .addEventData(OFFSET_X).addEventData(OFFSET_Y)
+                      .addEventData(BOX_WIDTH).addEventData(BOX_HEIGHT)
+                      .addEventData(NATURAL_WIDTH).addEventData(NATURAL_HEIGHT);
 
         // The combined picture+description section: the picture (when shown) takes only the
         // natural space it needs (capped at 1280x720 and at half the window height above), and the description always fills
@@ -322,7 +337,38 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     }
 
     private void handleInput(final String input) {
-        RunResult result = session.submit(input);
+        render(session.submit(input));
+    }
+
+    private void onPictureClick(DomEvent event) {
+        JsonNode data = event.getEventData();
+        handlePictureClick(data.get(OFFSET_X).asDouble(), data.get(OFFSET_Y).asDouble(),
+                           data.get(BOX_WIDTH).asDouble(), data.get(BOX_HEIGHT).asDouble(),
+                           data.get(NATURAL_WIDTH).asDouble(), data.get(NATURAL_HEIGHT).asDouble());
+    }
+
+    /**
+     * A click on the picture: the offsets are measured from the top-left corner of the box that shows the picture, the
+     * natural size is the picture's own. Clicks outside the drawn picture (the margin of a letterboxed one) are ignored,
+     * and so are all clicks while the input is disabled: the game is over, or another game of this browser session runs.
+     * TODO: Review needed — a click is not echoed into the message list the way typed input is.
+     */
+    void handlePictureClick(double anOffsetX, double anOffsetY, double aBoxWidth, double aBoxHeight,
+                            double aNaturalWidth, double aNaturalHeight) {
+        if (session == null || !messageInput.isEnabled()) {
+            return;
+        }
+        PictureGrid.cellAt(anOffsetX, anOffsetY, aBoxWidth, aBoxHeight, aNaturalWidth, aNaturalHeight)
+                   .ifPresent(cell -> {
+                       try {
+                           render(session.submitClick(cell.column(), cell.row()));
+                       } catch (RuntimeException e) {
+                           FlashNotifier.show("Error during game play: " + e.getMessage());
+                       }
+                   });
+    }
+
+    private void render(RunResult result) {
         renderNarratorLines(withPrompt(result.lines(), result.prompt()));
         refreshPictureDisplay();
         messageInput.setEnabled(!result.gameOver());

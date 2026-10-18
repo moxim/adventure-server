@@ -84,6 +84,9 @@ every kind alphabetically. Each row:
   express "NOT" — there's no separate "Not" entry in the dropdown; every
   condition can be negated in place instead.
 
+The **Clicked** condition (a click on a cell of the picture) appears in the dropdown only when
+you edit a Process, see [Chapter 9](09-workflow.md#clicking-the-picture).
+
 All the preconditions on one command variant are combined with **AND** —
 every one of them must pass. There's no OR; if you need "either of these
 two things," build it as two separate command-chain variants instead, each

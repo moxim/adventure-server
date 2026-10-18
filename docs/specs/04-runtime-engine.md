@@ -92,13 +92,43 @@ short-circuit:
   [§ AdventureRunSession](#adventurerunsession-the-in-browser-play-surface)).
 - Any other `RuntimeException` is logged at ERROR and returns `ERROR`.
 
-`GameLoop.processCommand(String)` is the **only** per-line entry point. The
+`GameLoop.processCommand(String)` is the **only** per-line entry point for typed input (a click on the picture has its own, `processClick`, below). The
 former `GameLoop.run(BufferedReader)` console read-loop has been deleted with
 the CLI runner; `processCommand` now calls `GameContext.runProcesses()`
 itself — once for **each** parsed sub-command of the line — rather than
 relying on the caller to do it first. A conjunction-joined turn
 ("take x and drop y") therefore runs every Workflow Process once per
 sub-command.
+
+### Clicks on the picture: `GameLoop.processClick`
+
+A click on the picture is a second input stream. `GameLoop.processClick(int column, int row)`
+(reached through `AdventureRunSession.submitClick`, with the same game-over and
+"ended in another tab" guards as `submit`) runs the Workflow **Processes** only: no
+parsing, no `CommandExecutor`, no Responses, no Arrival Processes of its own. (A MovePlayer
+or Look action inside a clicked Process describes the location and so runs the Arrival
+Processes as always, while the click is still recorded.)
+
+1. `GameContext.beginClick(column, row)` records the cell (the 10 × 10 grid of the
+   picture, counted from 0, column from the left, row from the top), empties the typed
+   fields (verb, adjective, noun, preposition, adverb, noun 2, adjective 2) so that
+   leftovers of the last typed command cannot satisfy a condition, and resets the
+   "handled" flag.
+2. `runProcesses()` runs as always (every Process is tried, not only those with a
+   CLICKED condition). `ClickedCondition.check()` is true only while a click at its
+   cell is recorded, so it is never true on a typed turn.
+3. **Hit or miss.** `PreCondition.commandApplied()` is a default no-op that
+   `GenericCommand.execute()` calls on each of its preconditions once all passed, just
+   before its actions run (a failing action does not undo the hit; its text is told
+   instead of SM6). `ClickedCondition` reacts by `GameContext.markClickHandled()`.
+   `NotCondition` does not pass the call on, so `NOT_CLICKED` never makes a hit. A hit
+   increases `TURNS` by one (after the Processes ran, so a Turns action in the clicked
+   Process still shows the count without this click); a miss tells **SM6** first. The
+   Processes' messages follow. `AdventureRunSession` then adds the usual prompt.
+4. `endClick()` runs in a `finally`. `QuitException` ends the game and
+   `UnresolvedReferenceException` is told, as in `processCommand`.
+
+The click is not part of a saved game: `GameStateSnapshotter` does not read it.
 
 ## Core API contracts
 
@@ -658,6 +688,7 @@ conditions wrap others.
 | `HereCondition(item, gc)` | `gc.currentLocation.contains(item)`. Failure message SM26 (default text `"There isn't one of those here."`). |
 | `ItemAtCondition(item, location, gc)` | The item is at the named location. |
 | `PlayerAtCondition(location, gc)` | `gc.currentLocation.equals(location)`. |
+| `ClickedCondition(x, y, gc)` | `gc.isClickAt(x, y)`: the click `GameLoop.processClick` is running is in that cell of the picture grid. Never true outside a click run; a missing or out-of-range coordinate never matches. No failure message. Its `commandApplied()` marks the click as handled (see [§ Clicks on the picture](#clicks-on-the-picture-gameloopprocessclick)). |
 | `ChanceCondition(chance)` | A fresh random integer in `[1, 100]` (`new SecureRandom().nextInt(100) + 1`, injectable via a package-private constructor for testing) is `<= chance`. Re-rolled on every attempt — a 20% chance is "roughly one in five tries," not "one in five players." No failure message of its own. |
 
 ### Variable comparators
@@ -700,6 +731,7 @@ logic is expressed as separate Command Chain variants (see
 - `setUpWorkflows()` — instantiates a fresh `Workflow`.
 - `runProcesses()` / `respondTo(cmd)` — delegate to the workflow.
 
+- `beginClick(col, row)` / `endClick()` / `isClickAt(col, row)` / `markClickHandled()` / `isClickHandled()` — the click being run by `GameLoop.processClick`; see [§ Clicks on the picture](#clicks-on-the-picture-gameloopprocessclick).
 - `currentNoun` / `currentAdjective` — the primary noun and adjective of the sub-command being dispatched (`setCurrentNoun` / `setCurrentAdjective`), set fresh by `GameLoop.processCommand` before each sub-command alongside preposition, adverb, `noun2` and `adjective2`. Actions receive no arguments, so the AUTO* actions read the typed noun from here.
 
 `Workflow.runProcesses()` walks all `processes` **in alphabetical (verb,

@@ -50,6 +50,7 @@ import com.pdg.adventure.model.action.TakeActionData;
 import com.pdg.adventure.model.action.WearActionData;
 import com.pdg.adventure.model.condition.CarriedConditionData;
 import com.pdg.adventure.model.condition.ChanceConditionData;
+import com.pdg.adventure.model.condition.ClickedConditionData;
 import com.pdg.adventure.model.condition.EqualsConditionData;
 import com.pdg.adventure.model.condition.GreaterThanConditionData;
 import com.pdg.adventure.model.condition.HereConditionData;
@@ -109,6 +110,7 @@ public class PreconditionActionFormatter {
             case GreaterThanConditionData gt -> "VAR " + txt(gt.getVariableName()) + " >? " + num(gt.getValue());
             case LessThanConditionData lt -> "VAR " + txt(lt.getVariableName()) + " <? " + num(lt.getValue());
             case SameConditionData same -> "VAR " + txt(same.getVariableNameOne()) + " =? " + txt(same.getVariableNameTwo());
+            case ClickedConditionData clicked -> "CLICKED " + num(clicked.getX()) + ", " + num(clicked.getY());
             case ChanceConditionData chance -> "CHANCE <? " + num(chance.getValue());
             case PrepositionConditionData preposition -> "PREPOSITION =? " + txt(preposition.getPrepositionText());
             case AdverbConditionData adverb -> "ADVERB =? " + txt(adverb.getAdverbText());

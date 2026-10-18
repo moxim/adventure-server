@@ -32,6 +32,10 @@ public class GameContext {
     private String currentNoun = VocabularyData.EMPTY_STRING;
     private String currentAdjective = VocabularyData.EMPTY_STRING;
     private String currentPictureId;
+    // The grid cell of the click GameLoop is running the Processes for; null outside such a run.
+    private Integer clickedColumn;
+    private Integer clickedRow;
+    private boolean clickHandled;
 
     /** Who is playing which adventure, and the builder version the adventure carried; set when a run starts. */
     public record RunIdentity(String playerId, String adventureId, String adventureTitle, String builderVersion) {
@@ -181,6 +185,44 @@ public class GameContext {
 
     public String getCurrentAdjective() {
         return currentAdjective;
+    }
+
+    /**
+     * Starts a click: records the cell of the picture grid (column, row, counted from 0) and empties the typed
+     * fields, so that what the player typed last cannot satisfy a condition during the click run. Ended by
+     * {@link #endClick()}.
+     */
+    public void beginClick(int aColumn, int aRow) {
+        clickedColumn = aColumn;
+        clickedRow = aRow;
+        clickHandled = false;
+        setCurrentVerb(null);
+        setCurrentAdjective(null);
+        setCurrentNoun(null);
+        setCurrentPreposition(null);
+        setCurrentAdverb(null);
+        setCurrentNoun2(null);
+        setCurrentAdjective2(null);
+    }
+
+    public void endClick() {
+        clickedColumn = null;
+        clickedRow = null;
+        clickHandled = false;
+    }
+
+    /** Whether a click is being run and it is in this cell; false for a missing coordinate. */
+    public boolean isClickAt(Integer aColumn, Integer aRow) {
+        return clickedColumn != null && clickedColumn.equals(aColumn) && clickedRow != null && clickedRow.equals(aRow);
+    }
+
+    /** Called when a command with a CLICKED condition for the click ran its actions: the click was understood. */
+    public void markClickHandled() {
+        clickHandled = true;
+    }
+
+    public boolean isClickHandled() {
+        return clickHandled;
     }
 
     public void setCurrentPictureId(String aPictureId) {

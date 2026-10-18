@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.api.Action;
@@ -89,5 +91,62 @@ class GenericCommandExecuteTest {
         ExecutionResult result = cmd.execute();
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.FAILURE);
         assertThat(result.getResultMessage()).isEqualTo("blocked");
+    }
+
+    @Test
+    void execute_whenAllPreconditionsPass_callsCommandAppliedOnEachPrecondition() {
+        GenericCommand cmd = new GenericCommand(mock(CommandDescription.class));
+        PreCondition first = precondition(ExecutionResult.State.SUCCESS, "");
+        PreCondition second = precondition(ExecutionResult.State.SUCCESS, "");
+        cmd.addPreCondition(first);
+        cmd.addPreCondition(second);
+        cmd.addAction(action(ExecutionResult.State.SUCCESS, "ok"));
+
+        cmd.execute();
+
+        verify(first).commandApplied();
+        verify(second).commandApplied();
+    }
+
+    @Test
+    void execute_whenAPreconditionFails_doesNotCallCommandApplied() {
+        GenericCommand cmd = new GenericCommand(mock(CommandDescription.class));
+        PreCondition passing = precondition(ExecutionResult.State.SUCCESS, "");
+        PreCondition failing = precondition(ExecutionResult.State.FAILURE, "");
+        cmd.addPreCondition(passing);
+        cmd.addPreCondition(failing);
+        cmd.addAction(action(ExecutionResult.State.SUCCESS, "ok"));
+
+        cmd.execute();
+
+        verify(passing, never()).commandApplied();
+        verify(failing, never()).commandApplied();
+    }
+
+    @Test
+    void execute_whenAnActionFails_stillCallsCommandApplied_becauseThePreconditionsPassed() {
+        GenericCommand cmd = new GenericCommand(mock(CommandDescription.class));
+        PreCondition passing = precondition(ExecutionResult.State.SUCCESS, "");
+        cmd.addPreCondition(passing);
+        cmd.addAction(action(ExecutionResult.State.FAILURE, "boom"));
+
+        cmd.execute();
+
+        verify(passing).commandApplied();
+    }
+
+    @Test
+    void execute_whenABreakActionEndsTheList_stillCallsCommandApplied() {
+        GenericCommand cmd = new GenericCommand(mock(CommandDescription.class));
+        PreCondition passing = precondition(ExecutionResult.State.SUCCESS, "");
+        cmd.addPreCondition(passing);
+        Action breaking = action(ExecutionResult.State.SUCCESS, "stop");
+        when(breaking.isBreak()).thenReturn(true);
+        cmd.addAction(breaking);
+        cmd.addAction(action(ExecutionResult.State.SUCCESS, "never reached"));
+
+        cmd.execute();
+
+        verify(passing).commandApplied();
     }
 }

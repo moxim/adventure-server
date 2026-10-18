@@ -8,7 +8,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.pdg.adventure.api.Action;
 import com.pdg.adventure.model.VocabularyData;
+import com.pdg.adventure.server.action.MessageAction;
+import com.pdg.adventure.server.action.QuitAction;
+import com.pdg.adventure.server.condition.ClickedCondition;
+import com.pdg.adventure.server.parser.GenericCommand;
+import com.pdg.adventure.server.parser.GenericCommandDescription;
+import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
 import com.pdg.adventure.server.location.Location;
@@ -146,6 +153,77 @@ class AdventureRunSessionTest {
         StringBuilder afterSessionOutput = new StringBuilder();
         // Nothing installs a sink at this point; tell() should already be back to its default,
         // not still routed into a list this test no longer has access to.
+        gameContext.setOutputSink(afterSessionOutput::append);
+        gameContext.tell("hello");
+
+        assertThat(afterSessionOutput.toString()).isEqualTo("hello");
+    }
+
+    private void clickProcess(Action anAction) {
+        GenericCommandDescription description = new GenericCommandDescription(VocabularyData.EMPTY_STRING);
+        GenericCommand command = new GenericCommand(description, anAction);
+        command.addPreCondition(new ClickedCondition(3, 4, gameContext));
+        gameContext.getWorkflow().addProcess(description, command);
+    }
+
+    @Test
+    void submitClick_runsTheProcessForTheCell_andReturnsItsLinesAndThePrompt() {
+        clickProcess(new MessageAction("The door opens."));
+
+        RunResult result = session.submitClick(3, 4);
+
+        assertThat(result.lines()).containsExactly("The door opens.");
+        assertThat(result.gameOver()).isFalse();
+        assertThat(result.prompt()).isIn("What now?", "What next?", "What should I do now?", "What should I do next?");
+    }
+
+    @Test
+    void submitClick_onAMiss_returnsSm6() {
+        clickProcess(new MessageAction("The door opens."));
+
+        RunResult result = session.submitClick(0, 0);
+
+        assertThat(result.lines()).containsExactly(SystemMessageKey.SM6.defaultText());
+    }
+
+    @Test
+    void submitClick_whenAProcessQuits_setsGameOverAndAsksForNothing() {
+        clickProcess(new QuitAction());
+
+        RunResult result = session.submitClick(3, 4);
+
+        assertThat(result.gameOver()).isTrue();
+        assertThat(session.isGameOver()).isTrue();
+        assertThat(result.prompt()).isEmpty();
+    }
+
+    @Test
+    void submitClick_afterGameOver_doesNotRunTheProcesses() {
+        clickProcess(new MessageAction("The door opens."));
+        session.submit("quit");
+
+        RunResult result = session.submitClick(3, 4);
+
+        assertThat(result.lines()).isEmpty();
+        assertThat(result.gameOver()).isTrue();
+    }
+
+    @Test
+    void submitClick_afterSupersede_answersEndedElsewhere_andDoesNotRunTheProcesses() {
+        clickProcess(new MessageAction("The door opens."));
+        session.supersede();
+
+        RunResult result = session.submitClick(3, 4);
+
+        assertThat(result.lines()).containsExactly(AdventureRunSession.ENDED_ELSEWHERE_TEXT);
+        assertThat(result.gameOver()).isTrue();
+    }
+
+    @Test
+    void submitClick_clearsTheOutputSink() {
+        session.submitClick(0, 0);
+
+        StringBuilder afterSessionOutput = new StringBuilder();
         gameContext.setOutputSink(afterSessionOutput::append);
         gameContext.tell("hello");
 

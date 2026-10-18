@@ -85,6 +85,39 @@ public class GameLoop {
     }
 
     /**
+     * Runs a click on the picture, the cell given as column and row of the picture grid (counted from 0): only the
+     * workflow Processes run, with the click recorded in the game context for a CLICKED condition to read; nothing is
+     * dispatched. The click is a hit when a command with a CLICKED condition applied (see
+     * {@link GameContext#isClickHandled()}): it counts as a turn. Otherwise it was not understood and SM6 is told
+     * first, followed by the messages of whatever other Processes ran, as after typed input. The click is cleared
+     * when the run ends, whatever happens.
+     */
+    public CommandOutcome processClick(int aColumn, int aRow) {
+        gameContext.beginClick(aColumn, aRow);
+        try {
+            String processMessage = gameContext.runProcesses().getResultMessage();
+            if (gameContext.isClickHandled()) {
+                // TODO: Review needed — TURNS is increased after the Processes ran (a hit is only known then), so a
+                //  Turns action inside the clicked Process shows the count without this click; a typed command
+                //  counts before it runs.
+                variableProvider.increment(VariableProvider.TURNS_VARIABLE_NAME);
+            } else {
+                gameContext.tell(SystemMessageKey.SM6.defaultText());
+            }
+            gameContext.tell(processMessage);
+            return CommandOutcome.CONTINUE;
+        } catch (QuitException anException) {
+            gameContext.tell(anException.getMessage());
+            return CommandOutcome.QUIT;
+        } catch (UnresolvedReferenceException anException) {
+            gameContext.tell(anException.getMessage());
+            return CommandOutcome.CONTINUE;
+        } finally {
+            gameContext.endClick();
+        }
+    }
+
+    /**
      * Runs one already-parsed sub-command of a (possibly conjunction-joined) turn: tries the
      * current location/pocket commands first (CommandExecutor) and, only if nothing local
      * matched the verb at all (FAILURE carrying the SM8 sentinel), falls back to the workflow

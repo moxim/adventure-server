@@ -122,4 +122,10 @@ class ConditionEditorFactoryTest {
         ConditionEditorComponent editor = ConditionEditorFactory.createEditor(new CarriedConditionData(), adventureData);
         assertThat(editor.getChildren().count()).isGreaterThan(0);
     }
+
+    @Test
+    void createEditor_withClickedConditionData_returnsClickedEditor() {
+        assertThat(ConditionEditorFactory.createEditor(new com.pdg.adventure.model.condition.ClickedConditionData(), adventureData))
+                .isInstanceOf(ClickedConditionEditor.class);
+    }
 }
