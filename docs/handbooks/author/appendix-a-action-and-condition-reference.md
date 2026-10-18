@@ -90,7 +90,8 @@ roll stays the same only until the next Random on that variable.
 `TURNS` is a variable the engine keeps for you, the same idea as the turn
 counter of the original Professional Adventure Writer. It starts at 0 whenever
 a game starts, and goes up by one for every command the game understands,
-whether or not that command then succeeds. Input the game could not make
+whether or not that command then succeeds. Every click on the picture is a
+turn too. Typed input the game could not make
 sense of ("I was not able to understand any of that") is not a turn, and
 `take key and open door` is two turns. The command that is being run already
 counts, so a **Turns** action in a `turns` Response reports *"You have taken

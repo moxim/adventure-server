@@ -70,8 +70,9 @@ The author places CLICKED like any other precondition, with two arguments, x and
    `NOT_CLICKED` never makes a hit. The engine needs a way to know that a command's actions
    ran (an "applied" signal), since today only the message text comes back. *My call* (all
    of this paragraph).
-5. A hit counts as a turn: the TURNS variable goes up by one, as for an understood typed
-   command. A miss (SM6) does not count. *The author's decision.*
+5. Every click counts as a turn, hit or miss: the TURNS variable goes up by one before the
+   Processes run, as for a typed phrase with a verb. *The author's decision* (revised after
+   first deciding that a miss does not count).
 6. Game over / superseded sessions behave as for typed input (the click is ignored or
    answered with the same "game over"/"ended elsewhere" result).
 

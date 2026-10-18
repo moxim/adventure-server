@@ -18,7 +18,7 @@
 - Miss: system message **SM6** first, then the usual prompt (SM2–SM5, steered by PROMPT). Hit: the Processes' messages, then the prompt.
 - A hit = some command whose preconditions include a positive `ClickedCondition` (not inside NOT) had all preconditions pass (its actions then ran, whether they succeeded or not). `NOT_CLICKED` never makes a hit.
 - Typed fields in `GameContext` (verb, adjective, noun, preposition, adverb, noun2, adjective2) are empty during a click run; the click is cleared in a `finally`.
-- A hit counts as a turn (TURNS +1), a miss does not.
+- Every click counts as a turn (TURNS +1 before the Processes run), hit or miss (revised: the author decided so after the first implementation).
 - Selector entry text: `Clicked (matches a click on the picture)`, offered in the Processes editor only. Editor field labels: `X (column, 0–9)` and `Y (row, 0–9)`, both required. Formatter output: `CLICKED 3, 4`, `NOT_CLICKED 3, 4`.
 - Add `// TODO: Review needed — [reason]` where this plan marks an ambiguity.
 - The author commits; **do not run `git commit`**. Each task ends by leaving its files uncommitted.

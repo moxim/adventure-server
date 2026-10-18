@@ -69,12 +69,13 @@ For example, the picture shows a door in the cell at column 3, row 4: add a Proc
 precondition `Clicked 3, 4` and a Move Player action to the room behind the door. Clicking the
 door moves the player, clicking elsewhere does not.
 
-- A click counts when a Process with a `Clicked` condition for that cell applied (its other
+- Every click on the picture is a turn (the `TURNS` variable goes up by one, before your Processes
+  run, like a typed command), whether or not a Process answers it.
+- A click is answered when a Process with a `Clicked` condition for that cell applied (its other
   preconditions held), whether or not it printed anything and even if one of its actions then
-  fails (the game then tells the failure instead of "not understood"). It counts as
-  a turn (the `TURNS` variable goes up by one).
+  fails (the game then tells the failure instead of "not understood").
 - Any other click is not understood. The game answers "I was not able to understand any of that.
-  Please try again." (system message 6), then the usual "What now?" question. That is not a turn.
+  Please try again." (system message 6), then the usual "What now?" question.
   Processes without a `Clicked` condition run on every click, as they do after every typed command.
 - While a click is handled the words of the last typed command are forgotten, so a leftover
   preposition cannot make a Process fire. A Process with a negated `Clicked` never counts as a

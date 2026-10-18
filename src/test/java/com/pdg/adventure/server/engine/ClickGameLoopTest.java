@@ -17,6 +17,7 @@ import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.server.action.MessageAction;
 import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.action.QuitAction;
+import com.pdg.adventure.server.action.TurnsAction;
 import com.pdg.adventure.server.condition.ClickedCondition;
 import com.pdg.adventure.server.condition.NotCondition;
 import com.pdg.adventure.server.condition.PrepositionCondition;
@@ -104,13 +105,33 @@ class ClickGameLoopTest {
     }
 
     @Test
-    void click_onAnotherCell_tellsSm6AndDoesNotCountATurn() {
+    void click_countsTheTurnBeforeTheProcessesRun_soATurnsActionShowsIt() {
+        process(new TurnsAction(variables), clicked(3, 4));
+
+        gameLoop.processClick(3, 4);
+
+        assertThat(String.join(" ", told)).contains("1 turn");
+    }
+
+    @Test
+    void click_everyClickCountsATurn_hitOrMiss() {
+        process("The door opens.", clicked(3, 4));
+
+        gameLoop.processClick(3, 4);
+        gameLoop.processClick(5, 5);
+        gameLoop.processClick(0, 0);
+
+        assertThat(turns()).isEqualTo(3);
+    }
+
+    @Test
+    void click_onAnotherCell_tellsSm6AndStillCountsATurn() {
         process("The door opens.", clicked(3, 4));
 
         gameLoop.processClick(5, 5);
 
         assertThat(told).containsExactly(SystemMessageKey.SM6.defaultText());
-        assertThat(turns()).isZero();
+        assertThat(turns()).isEqualTo(1);
     }
 
     @Test
@@ -122,7 +143,7 @@ class ClickGameLoopTest {
         gameLoop.processClick(3, 4);
 
         assertThat(told).containsExactly(SystemMessageKey.SM6.defaultText());
-        assertThat(turns()).isZero();
+        assertThat(turns()).isEqualTo(1);
     }
 
     @Test
@@ -132,7 +153,7 @@ class ClickGameLoopTest {
         gameLoop.processClick(3, 4);
 
         assertThat(told).containsExactly(SystemMessageKey.SM6.defaultText(), "Not there.");
-        assertThat(turns()).isZero();
+        assertThat(turns()).isEqualTo(1);
     }
 
     @Test
@@ -227,6 +248,6 @@ class ClickGameLoopTest {
         gameLoop.processClick(3, 4);
         assertThat(gameContext.getCurrentLocation()).isSameAs(cellar);
         assertThat(String.join(" ", told)).contains("A damp cellar.").doesNotContain(SystemMessageKey.SM6.defaultText());
-        assertThat(turns()).isEqualTo(1);
+        assertThat(turns()).isEqualTo(2);
     }
 }

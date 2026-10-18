@@ -88,20 +88,19 @@ public class GameLoop {
      * Runs a click on the picture, the cell given as column and row of the picture grid (counted from 0): only the
      * workflow Processes run, with the click recorded in the game context for a CLICKED condition to read; nothing is
      * dispatched. The click is a hit when a command with a CLICKED condition applied (see
-     * {@link GameContext#isClickHandled()}): it counts as a turn. Otherwise it was not understood and SM6 is told
-     * first, followed by the messages of whatever other Processes ran, as after typed input. The click is cleared
+     * {@link GameContext#isClickHandled()}). Otherwise it was not understood and SM6 is told first, followed by
+     * the messages of whatever other Processes ran, as after typed input. Hit or miss, every click counts as a turn
+     * (TURNS goes up before the Processes run), as every typed phrase with a verb does. The click is cleared
      * when the run ends, whatever happens.
      */
     public CommandOutcome processClick(int aColumn, int aRow) {
         gameContext.beginClick(aColumn, aRow);
         try {
+            // Like a typed phrase with a verb, every click is a turn, counted before the Processes run so that a Turns
+            // action and TURNS conditions see it - whether or not a Process answers it.
+            variableProvider.increment(VariableProvider.TURNS_VARIABLE_NAME);
             String processMessage = gameContext.runProcesses().getResultMessage();
-            if (gameContext.isClickHandled()) {
-                // TODO: Review needed — TURNS is increased after the Processes ran (a hit is only known then), so a
-                //  Turns action inside the clicked Process shows the count without this click; a typed command
-                //  counts before it runs.
-                variableProvider.increment(VariableProvider.TURNS_VARIABLE_NAME);
-            } else {
+            if (!gameContext.isClickHandled()) {
                 gameContext.tell(SystemMessageKey.SM6.defaultText());
             }
             gameContext.tell(processMessage);

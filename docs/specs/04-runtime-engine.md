@@ -121,9 +121,10 @@ Processes as always, while the click is still recorded.)
    `GenericCommand.execute()` calls on each of its preconditions once all passed, just
    before its actions run (a failing action does not undo the hit; its text is told
    instead of SM6). `ClickedCondition` reacts by `GameContext.markClickHandled()`.
-   `NotCondition` does not pass the call on, so `NOT_CLICKED` never makes a hit. A hit
-   increases `TURNS` by one (after the Processes ran, so a Turns action in the clicked
-   Process still shows the count without this click); a miss tells **SM6** first. The
+   `NotCondition` does not pass the call on, so `NOT_CLICKED` never makes a hit. Every
+   click, hit or miss, increases `TURNS` by one before the Processes run (as a typed
+   phrase with a verb does, so a Turns action in the clicked Process shows the click);
+   a miss tells **SM6** first. The
    Processes' messages follow. `AdventureRunSession` then adds the usual prompt.
 4. `endClick()` runs in a `finally`. `QuitException` ends the game and
    `UnresolvedReferenceException` is told, as in `processCommand`.
