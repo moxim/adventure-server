@@ -3,7 +3,7 @@ package com.pdg.adventure.server.condition;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import java.util.concurrent.ThreadLocalRandom;
+import java.security.SecureRandom;
 import java.util.function.IntSupplier;
 
 import com.pdg.adventure.api.ExecutionResult;
@@ -11,13 +11,14 @@ import com.pdg.adventure.server.parser.CommandExecutionResult;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class ChanceCondition extends AbstractCondition {
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     @Getter
     private final Integer chance;
     private final transient IntSupplier randomSource;
 
     public ChanceCondition(Integer aChance) {
-        this(aChance, () -> ThreadLocalRandom.current().nextInt(100) + 1);
+        this(aChance, () -> RANDOM.nextInt(100) + 1);
     }
 
     ChanceCondition(Integer aChance, IntSupplier aRandomSource) {

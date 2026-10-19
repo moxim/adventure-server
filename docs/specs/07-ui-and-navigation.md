@@ -314,13 +314,29 @@ the dialogue:
 
 This cascade is `VocabularyData.findWordsBySynonym`'s primary call site.
 
+### Locations list and editor: counts
+
+`LocationsMenuView`'s grid (via `GridProvider`, ID column hidden) shows the location's
+description plus **Lumen**, **Used** (`LocationUsageTracker.countLocationUsages`, exits
+leading here) and, as its rightmost column, **Commands**
+(`LocationDescriptionAdapter.getCommandCount()`). `LocationEditorView` shows the read-only
+integer fields **Number of exits** and, right next to it, **Number of commands**, both
+bound with `bindReadOnly` to `LocationViewModel.getNumberOfExits()` /
+`getNumberOfCommands()`, read when the location is loaded. The number of commands is
+`CommandProviderData.countCommands()`: the commands summed over all chains, i.e. the
+rows `CommandsMenuView` lists for the location.
+
 ### `CommandEditorView` layout
 
 `CommandEditorView` is a two-column layout below the Verb/Adjective/Noun
 picker row (`commandLayout`):
 
 - **Left column** (`vl1`): a "Command Chain" label, the Command Chain grid
-  (see below), and the `ResetBackSaveView` button bar directly beneath it —
+  (one row per command variant; **Preconditions** and **Actions** columns that
+  list *all* of the variant's preconditions and actions, one per line, via
+  `PreconditionActionFormatter` and `CommandGrid.stack` — an empty list shows an
+  empty cell; see [Preconditions and actions as text](#preconditions-and-actions-as-text)),
+  and the `ResetBackSaveView` button bar directly beneath it —
   Save/Reset/Back apply to the whole editor (chain + currently selected
   variant), not just the grid, but sit in this column rather than spanning
   the full view width.
@@ -333,7 +349,7 @@ Both columns are wrapped in one `HorizontalLayout` (`hl1`).
 ### `CommandsMenuView` grid
 
 `CommandsMenuView` shows a **read-only** summary grid of the scope's commands
-(verb / adjective / noun / first precondition / first action). Editing is via
+(verb / adjective / noun / preconditions / actions — every precondition and action of a command, one per line). Editing is via
 double-click or a right-click **Edit** into `CommandEditorView`; right-click
 **Delete** removes one chain variant after a `ConfirmDialog` (header
 "Delete Command"; the view has no Save/Reset buttons — a delete persists
@@ -343,6 +359,48 @@ which `CommandListEditorView` uses too. (The former in-place
 `GridUnbufferedInlineEditor` / `SimpleCommandDescription` spec-string editors
 were deleted — commands are now identified by a stable chain id, not a
 derived spec string.)
+
+### Preconditions and actions as text
+
+`PreconditionActionFormatter` (`view/command/`) turns each `PreConditionData` and
+`ActionData` into one compact line, used by `CommandGrid` (commands listing, and the
+workflow editors) and by the Command Chain grid in `CommandEditorView`. It is pure:
+ids are resolved to names from the `AdventureData` given at construction (items,
+locations, pictures, messages, the player's pocket); an unresolvable id is shown
+verbatim, a missing one as `?`, and an unknown type falls back to its class name
+without `ConditionData`/`ActionData`, upper-cased.
+
+| Precondition | Reads as |
+|--------------|----------|
+| Here / Carried / Worn | `HERE x`, `CARRIED x`, `WORN x` |
+| Player At | `PLAYER AT location` |
+| Item At | `ITEM x AT location` |
+| Equals / Greater Than / Less Than | `VAR name =? 5`, `VAR name >? 5`, `VAR name <? 5` |
+| Same | `VAR a =? b` |
+| Chance | `CHANCE <? 75` |
+| Clicked | `CLICKED 3, 4` (column, row) |
+| Preposition / Adverb / Noun 2 / Adjective 2 | `PREPOSITION =? on`, `ADVERB =? slowly`, `NOUN2 =? x`, `ADJECTIVE2 =? x` |
+| Not | `NOT_` + the wrapped condition, e.g. `NOT_HERE dragon` |
+
+| Action | Reads as |
+|--------|----------|
+| Set / Increment / Decrement Variable | `SETVAR name = 1`, `INCVAR name += 2`, `DECVAR name -= 1` |
+| Add / Subtract Variable | `ADD first TO second`, `DEDUCT first FROM second` |
+| Random | `RANDOM -> name` |
+| Print / Diagnose Variable / Diagnose Variables | `PRINT name`, `DIAGNOSE_VAR name`, `DIAGNOSE_VARS` |
+| Message / Msg | `MESSAGE summary`, `MSG summary` (the message's summary, else the id verbatim) |
+| SystemMsg / NewLine | `SYSMESS key`, `NEWLINE` |
+| ListAt | `LISTAT container` |
+| PictureMode | `PICTUREMODE ON` / `PICTUREMODE OFF` / `PICTUREMODE DEFAULT` (`?` without a mode) |
+| Create / Destroy / Drop / Take / Wear / Remove | `CREATE x`, `DESTROY x`, `DROP x`, `TAKE x`, `WEAR x`, `REMOVE x` |
+| Light | `LIGHT x 50` |
+| Move Item | `MOVE x TO container` |
+| Move Player | `MOVE PLAYER TO location` |
+| Describe / Picture | `DESCRIBE x`, `PICTURE name` |
+| Look, Examine, AutoTake/Drop/Wear/Remove, Save, Load, Inventory, Quit, Break | `LOOK`, `EXAMINE`, `AUTOTAKE`, `AUTODROP`, `AUTOWEAR`, `AUTOREMOVE`, `SAVE`, `LOAD`, `INVENTORY`, `QUIT`, `BREAK` |
+
+A *container* (ListAt, Move Item destination) reads as `pocket` for the player's
+pocket and as the location's description for a location's item container.
 
 ### Workflow editors: `CommandListEditorView`
 
@@ -435,8 +493,15 @@ tests can drive them without a context-menu click.
   **Picture** combo box. `PreconditionActionFormatter` renders a Picture action
   as `PICTURE <name>` (`?` for an unknown id).
 - **Where they are shown** — `AdventureRunView` has a picture panel above the
-  transcript (an `Image`, at most 640×480, hidden when empty) refreshed by
-  `refreshPictureDisplay()` after each submit. The rules for what is shown when
+  transcript (an `Image`, at most 1280×720 and at most half the window height so the transcript keeps its room, hidden when empty) refreshed by
+  `refreshPictureDisplay()` after each submit. The picture is **clickable**: a DOM `click`
+  listener on the image requests `event.offsetX/offsetY`, `element.clientWidth/clientHeight`
+  and `element.naturalWidth/naturalHeight`; `AdventureRunView.handlePictureClick` hands them
+  to `view/support/PictureGrid.cellAt`, which draws the picture like CSS `object-fit: contain`
+  (scaled to fit and centred), ignores clicks in the empty margin, and numbers the cell on
+  the same 10 × 10 grid as `LocationMapView` (`PictureGrid.SIZE`; column from the left, row
+  from the top, from 0). A cell goes to `AdventureRunSession.submitClick` and its result is
+  rendered like a typed turn (the click itself is not echoed). Clicks are ignored while the message input is disabled (game over, or a run conflict), so a finished game cannot be clicked on. The rules for what is shown when
   are in [`04-runtime-engine.md` § Pictures](04-runtime-engine.md#pictures).
 
 ### System-messages editor: `SystemMessagesView`
@@ -457,16 +522,20 @@ grid/dialog read-model record.
 
 | Class | Role |
 |-------|------|
-| `ActionEditorComponent` | Abstract base for all per-action sub-editors. |
+| `ActionEditorComponent` | Abstract base for all per-action sub-editors. Validation (`validate()`, which marks the empty required fields invalid) is not run while the author edits: the command editor's Save button is enabled by the changes and the command's own fields alone, and pressing Save validates all conditions and all actions at once (`PreconditionActionEditor.validate()`), marking every invalid field and not saving. `focusFirstSelectBox()` puts the cursor into the editor's first select box (`ComboBox` or `Select`, found in display order) and scrolls it into view; an editor without a select box ignores it. `ActionListEditor` calls it for a freshly added action (not for actions loaded into folded rows), so the author can start choosing right away. |
 | `AbstractSingleItemActionEditor<T extends ActionData>` | Generic abstract mid-layer for the 8 editors that need one `ItemData` selector (title, description, label, placeholder, error text customised per subclass). |
-| `ActionSelector` | A combo-box of the 22 authorable `Action` kinds, sorted alphabetically by display name. Picking one and clicking **Add** doesn't build an editor itself — it calls `ActionEditorSelectedListener.onEditorSelected(ActionData)` with a freshly-constructed, empty `ActionData`; the listener (`ActionListEditor`) turns that into the matching editor via `ActionEditorFactory`. This mirrors `ConditionSelector` / `ConditionListEditor` exactly. |
-| `ActionEditorFactory` | `createEditor(ActionData, AdventureData)` — the stable entry point every call site uses. Delegates lookup to `ActionEditorRegistry` (package-private); covers all 22 authorable action types. |
+| `ActionSelector` | A combo-box of the 38 authorable `Action` kinds, sorted alphabetically by display name. Picking one and clicking **Add** doesn't build an editor itself — it calls `ActionEditorSelectedListener.onEditorSelected(ActionData)` with a freshly-constructed, empty `ActionData`; the listener (`ActionListEditor`) turns that into the matching editor via `ActionEditorFactory`. This mirrors `ConditionSelector` / `ConditionListEditor` exactly. |
+| `ActionEditorFactory` | `createEditor(ActionData, AdventureData)` — the stable entry point every call site uses. Delegates lookup to `ActionEditorRegistry` (package-private); covers all 38 authorable action types. |
 | `ActionEditorRegistry` | One-time classpath scan (`ClassPathScanningCandidateComponentProvider`) for `@AutoRegisterActionEditor`-annotated `ActionEditorComponent`s, keyed by the `ActionData` subtype resolved from each editor's generic type argument. Replaced a hand-maintained `switch` statement — adding a new action editor means writing the class and annotating it, not touching the factory. Reflectively picks a `(ActionData)` or `(ActionData, AdventureData)` constructor to instantiate. |
 | `PictureActionEditor` | Required **Picture** combo box over the adventure's pictures (sorted by name, labelled by name); stores the picture's id. |
 | `MessageActionEditor` | Combo box over the adventure's messages — stores the chosen message's id, shows its summary — with a live preview of the text. A typed custom value is kept as literal text. |
 | `MesActionEditor` | Same as `MessageActionEditor` (both extend `AbstractMessageActionEditor`), titled "Msg Action"; `getActionTypeName()` returns `MsgActionData`, so authors see "Msg" in the action list and selector although the data class is `MesActionData`. |
+| `ListAtActionEditor` | Combo box of the player's pocket ("your pocket") and every location (by its short description). Shown in the selector as "ListAt". |
+| `PictureModeActionEditor` | Required **Mode** combo box with ON, OFF and DEFAULT (each with a short explanation); stores the `PictureMode`. Summary: the mode's name. Shown in the selector as "PictureMode". |
+| `NewLineActionEditor` | No parameters; explains the action in a short note. Shown in the selector as "NewLine". |
+| `SysMesActionEditor` | Combo box of the system messages, labelled "id: text" (e.g. "15: OK."), with the message's description below it. Messages whose text contains a `%s` placeholder are not offered. `getActionTypeName()` returns `SystemMsgActionData`. Shown in the selector as "SystemMsg". |
 | `RandomActionEditor` | Variable name combo box that accepts a new name (like Set Variable); a new name is defined in the adventure at 0 straight away, an existing variable keeps its initial value. Shown in the selector as "Random". |
-| `PrintActionEditor` | Variable name dropdown (defined variables only, `VISITED` and `TURNS` included). Shown in the selector as "Print". |
+| `PrintActionEditor` | Variable name dropdown (defined variables only, `VISITED`, `TURNS` and `PROMPT` included). Shown in the selector as "Print". |
 | `MoveItemActionEditor` | Item selector (uses `ViewSupporter.collectAllItems`). |
 | `MovePlayerActionEditor` | Location selector (uses `ViewSupporter.collectAllLocations`). |
 | `WearActionEditor` | Item selector (wearable items only, via `AbstractSingleItemActionEditor`). |
@@ -477,7 +546,7 @@ grid/dialog read-model record.
 | `CreateActionEditor` | Container selector (via `AbstractSingleItemActionEditor`, uses `collectAllContainers`). |
 | `DescribeActionEditor` | No extra input (describe current location). |
 | `InventoryActionEditor` | No extra input (list pocket). |
-| `DiagnoseVariableActionEditor` | Variable name dropdown (defined variables only, `VISITED` and `TURNS` included). Shown in the selector as "Diagnose Variable". |
+| `DiagnoseVariableActionEditor` | Variable name dropdown (defined variables only, `VISITED`, `TURNS` and `PROMPT` included). Shown in the selector as "Diagnose Variable". |
 | `DiagnoseVariablesActionEditor` | No extra input - informational panel only. Shown in the selector as "Diagnose Variables". |
 | `TurnsActionEditor` | No extra input — informational panel only (prints the standard `TURNS` variable using SM17 to SM20). Shown in the selector as "Turns". |
 | `QuitActionEditor` | No extra input. |
@@ -494,7 +563,7 @@ runtime; see [`04-runtime-engine.md` § Auto item actions](04-runtime-engine.md#
 | `SetVariableActionEditor` / `IncrementVariableActionEditor` / `DecrementVariableActionEditor`, and the 
 `Equals`/`GreaterThan`/`LessThan`/`Same` condition editors | Variable names come from `VariableNameSelector` 
 (`view/command/`), a `ComboBox<String>` fed live (re-read on focus) by `VariableChoices.of(adventureData)` 
-(`view/support/`): the adventure's `AdventureData.variables` plus the engine's `VISITED` and `TURNS`. Set Variable allows typing a 
+(`view/support/`): the adventure's `AdventureData.variables` plus the engine's `VISITED`, `TURNS` and `PROMPT`. Set Variable allows typing a 
 new name and calls `adventureData.defineVariable(name)` the moment the name is entered (and again on `validate()`), so 
 conditions can pick it before the command is saved; it is persisted with the adventure on the next save. The others 
 accept only defined names, and a stored name that is no longer defined fails `validate()`. Increment/Decrement do not 
@@ -508,17 +577,18 @@ it needs two fields). Sets an item's light level. |
 
 | Class | Role |
 |-------|------|
-| `ConditionEditorComponent` | Abstract base for all per-condition sub-editors. |
+| `ConditionEditorComponent` | Abstract base for all per-condition sub-editors. Like `ActionEditorComponent`, `focusFirstSelectBox()` (via `view/support/SelectBoxFocus`) focuses the first select box and scrolls it into view; `ConditionListEditor` calls it for a freshly added condition, not for conditions loaded into folded rows. |
 | `AbstractSingleItemConditionEditor` | Abstract mid-layer for the 3 item-presence conditions (Carried / Here / Worn) that share one `ItemData` selector. |
 | `AbstractNumericComparisonConditionEditor` | Abstract mid-layer for the 2 numeric-comparison conditions (GreaterThan / LessThan) that share a variable-name field and a numeric value field. |
 | `AbstractSingleWordConditionEditor<T extends PreConditionData>` | Generic abstract mid-layer for the 4 conditions that pick one `Word` of a fixed `Word.Type` via a `VocabularyPickerField` (Preposition, Adverb, Noun 2, Adjective 2). |
-| `ConditionSelector` | A combo-box of the 14 selectable `PreCondition` kinds, sorted alphabetically by display name; `NotCondition` is not among them (see below). Picking one and clicking **Add** calls `ConditionSelectedListener.onConditionSelected(PreConditionData)` with a freshly-constructed, empty data object — the listener (`ConditionListEditor`) builds the matching editor via `ConditionEditorFactory`. |
+| `ConditionSelector` | A combo-box of the 14 selectable `PreCondition` kinds (15 with "Clicked (matches a click on the picture)", which `new ConditionSelector(true)` adds and only the Processes editor asks for: `SingleCommandEditorView` passes `PreconditionActionEditor(adventureData, offersClicked)` down through `ConditionListEditor`; Responses, Arrival Processes and location/item commands use the one-argument forms, which leave it out), sorted alphabetically by display name; `NotCondition` is not among them (see below). Picking one and clicking **Add** calls `ConditionSelectedListener.onConditionSelected(PreConditionData)` with a freshly-constructed, empty data object — the listener (`ConditionListEditor`) builds the matching editor via `ConditionEditorFactory`. |
 | `ConditionEditorFactory` | Entry point for condition editors, mirroring `ActionEditorFactory`'s shape. Delegates to `ConditionEditorRegistry`; covers all 14 selectable condition types. |
 | `ConditionEditorRegistry` | Classpath scan for `@AutoRegisterConditionEditor`-annotated `ConditionEditorComponent`s, the condition-side twin of `ActionEditorRegistry` above — same replaced-the-switch-statement story. |
 | `CarriedConditionEditor` | Item selector (via `AbstractSingleItemConditionEditor`). |
 | `HereConditionEditor` | Item selector (via `AbstractSingleItemConditionEditor`). |
 | `WornConditionEditor` | Item selector (via `AbstractSingleItemConditionEditor`). |
 | `ChanceConditionEditor` | A single numeric field for the 1–100 chance percentage. |
+| `ClickedConditionEditor` | Two required integer fields, "X (column, 0–9)" and "Y (row, 0–9)", validated against `PictureGrid.SIZE`. Matches a click on that cell of the picture grid (see [`04-runtime-engine.md` § Clicks on the picture](04-runtime-engine.md#clicks-on-the-picture-gameloopprocessclick)). |
 | `EqualsConditionEditor` | Variable name + value text fields. |
 | `GreaterThanConditionEditor` | Variable name + numeric threshold (via `AbstractNumericComparisonConditionEditor`). |
 | `LessThanConditionEditor` | Variable name + numeric threshold (via `AbstractNumericComparisonConditionEditor`). |
@@ -593,7 +663,7 @@ swapping the brand image per layout and using `LumoUtility` classes.
   bookmark-friendly URLs and re-enable it, or remove the dead annotation.
 - **`LocationMapView` shows a picture, not the real locations.** It renders the
   adventure's `worldMapPictureId` picture (chosen in `AdventureEditorView`) stretched
-  into a 16:9 frame of at most 1280×720px, under a fixed 10×10 grid of cells
+  into a 16:9 frame of at most 1280×720px and at most half the window height, under a fixed 10×10 grid of cells
   that just pop a `"Location X : Y"` notification on click — the grid is not
   bound to `LocationData` at all. Without a chosen picture it shows a hint and a
   button to the adventure editor. The "The World" drawer entry linking to it is

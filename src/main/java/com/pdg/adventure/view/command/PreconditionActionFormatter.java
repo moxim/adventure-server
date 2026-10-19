@@ -28,6 +28,8 @@ import com.pdg.adventure.model.action.IncrementVariableActionData;
 import com.pdg.adventure.model.action.InventoryActionData;
 import com.pdg.adventure.model.action.LoadGameActionData;
 import com.pdg.adventure.model.action.LightActionData;
+import com.pdg.adventure.model.action.ListAtActionData;
+import com.pdg.adventure.model.action.PictureModeActionData;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MesActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
@@ -38,7 +40,9 @@ import com.pdg.adventure.model.action.QuitActionData;
 import com.pdg.adventure.model.action.SaveGameActionData;
 import com.pdg.adventure.model.action.RemoveActionData;
 import com.pdg.adventure.model.action.PrintActionData;
+import com.pdg.adventure.model.action.NewLineActionData;
 import com.pdg.adventure.model.action.RandomActionData;
+import com.pdg.adventure.model.action.SysMesActionData;
 import com.pdg.adventure.model.action.DiagnoseVariableActionData;
 import com.pdg.adventure.model.action.DiagnoseVariablesActionData;
 import com.pdg.adventure.model.action.SetVariableActionData;
@@ -47,6 +51,7 @@ import com.pdg.adventure.model.action.TakeActionData;
 import com.pdg.adventure.model.action.WearActionData;
 import com.pdg.adventure.model.condition.CarriedConditionData;
 import com.pdg.adventure.model.condition.ChanceConditionData;
+import com.pdg.adventure.model.condition.ClickedConditionData;
 import com.pdg.adventure.model.condition.EqualsConditionData;
 import com.pdg.adventure.model.condition.GreaterThanConditionData;
 import com.pdg.adventure.model.condition.HereConditionData;
@@ -64,21 +69,26 @@ import com.pdg.adventure.model.condition.WornConditionData;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 /**
- * Renders preconditions and actions to compact, single-line text for the commands listing grid
- * (e.g. "NOT_HERE dragon", "SETVAR b_fill 1"). Pure: depends only on the supplied AdventureData
- * for id -> display-name resolution. No Vaadin UI, so it is unit-testable in isolation.
+ * Renders preconditions and actions to compact, single-line text for the command grids: the
+ * commands listing ({@link CommandGrid}) and the Command Chain grid of the {@link CommandEditorView}
+ * (e.g. "NOT_HERE dragon", "VAR score >? 3", "SETVAR b_fill = 1", "MOVE apple TO pocket"). Each
+ * precondition and each action is one line; the grids stack them in a cell. Pure: depends only on
+ * the supplied AdventureData for id -> display-name resolution. No Vaadin UI, so it is
+ * unit-testable in isolation.
  */
 public class PreconditionActionFormatter {
     private final Map<String, ItemData> itemsById;
     private final Map<String, LocationData> locationsById;
     private final Map<String, PictureData> picturesById;
     private final Map<String, MessageData> messagesById;
+    private final String pocketId;
 
     public PreconditionActionFormatter(AdventureData adventureData) {
         itemsById = indexItems(adventureData);
         locationsById = adventureData.getLocationData() == null ? Map.of() : adventureData.getLocationData();
         picturesById = adventureData.getPictureData() == null ? Map.of() : adventureData.getPictureData();
         messagesById = adventureData.getMessages() == null ? Map.of() : adventureData.getMessages();
+        pocketId = adventureData.getPlayerPocket() == null ? null : adventureData.getPlayerPocket().getId();
     }
 
     public List<String> formatConditions(List<PreConditionData> conditions) {
@@ -95,17 +105,18 @@ public class PreconditionActionFormatter {
             case HereConditionData here -> "HERE " + resolveName(here.getThingId());
             case CarriedConditionData carried -> "CARRIED " + resolveName(carried.getItemId());
             case WornConditionData worn -> "WORN " + resolveName(worn.getThingId());
-            case PlayerAtConditionData playerAt -> "PLAYER_AT " + resolveName(playerAt.getLocationId());
-            case ItemAtConditionData itemAt -> "ITEM_AT " + resolveName(itemAt.getThingId()) + " " + resolveName(itemAt.getLocationId());
-            case EqualsConditionData eq -> "EQ " + txt(eq.getVariableName()) + " " + num(eq.getValue());
-            case GreaterThanConditionData gt -> "GT " + txt(gt.getVariableName()) + " " + num(gt.getValue());
-            case LessThanConditionData lt -> "LT " + txt(lt.getVariableName()) + " " + num(lt.getValue());
-            case SameConditionData same -> "SAME " + txt(same.getVariableNameOne()) + " " + txt(same.getVariableNameTwo());
-            case ChanceConditionData chance -> "CHANCE " + num(chance.getValue());
-            case PrepositionConditionData preposition -> "PREPOSITION " + txt(preposition.getPrepositionText());
-            case AdverbConditionData adverb -> "ADVERB " + txt(adverb.getAdverbText());
-            case Noun2ConditionData noun2 -> "NOUN2 " + txt(noun2.getNoun2Text());
-            case Adjective2ConditionData adjective2 -> "ADJECTIVE2 " + txt(adjective2.getAdjective2Text());
+            case PlayerAtConditionData playerAt -> "PLAYER AT " + resolveName(playerAt.getLocationId());
+            case ItemAtConditionData itemAt -> "ITEM " + resolveName(itemAt.getThingId()) + " AT " + resolveName(itemAt.getLocationId());
+            case EqualsConditionData eq -> "VAR " + txt(eq.getVariableName()) + " =? " + num(eq.getValue());
+            case GreaterThanConditionData gt -> "VAR " + txt(gt.getVariableName()) + " >? " + num(gt.getValue());
+            case LessThanConditionData lt -> "VAR " + txt(lt.getVariableName()) + " <? " + num(lt.getValue());
+            case SameConditionData same -> "VAR " + txt(same.getVariableNameOne()) + " =? " + txt(same.getVariableNameTwo());
+            case ClickedConditionData clicked -> "CLICKED " + num(clicked.getX()) + ", " + num(clicked.getY());
+            case ChanceConditionData chance -> "CHANCE <? " + num(chance.getValue());
+            case PrepositionConditionData preposition -> "PREPOSITION =? " + txt(preposition.getPrepositionText());
+            case AdverbConditionData adverb -> "ADVERB =? " + txt(adverb.getAdverbText());
+            case Noun2ConditionData noun2 -> "NOUN2 =? " + txt(noun2.getNoun2Text());
+            case Adjective2ConditionData adjective2 -> "ADJECTIVE2 =? " + txt(adjective2.getAdjective2Text());
             default -> c.getPreconditionName().replace("ConditionData", "").toUpperCase(Locale.ROOT);
         };
     }
@@ -120,17 +131,21 @@ public class PreconditionActionFormatter {
     public String formatAction(ActionData a) {
         return switch (a) {
             case null -> "?";
-            case SetVariableActionData sv -> "SETVAR " + txt(sv.getVariableName()) + " " + num(sv.getVariableValue());
-            case IncrementVariableActionData iv -> "INCVAR " + txt(iv.getName()) + " " + num(iv.getValue());
-            case DecrementVariableActionData dv -> "DECVAR " + txt(dv.getName()) + " " + num(dv.getValue());
-            case AddVariableActionData av -> "ADD " + txt(av.getFirstName()) + " " + txt(av.getSecondName());
-            case SubtractVariableActionData sv -> "MINUS " + txt(sv.getFirstName()) + " " + txt(sv.getSecondName());
+            case SetVariableActionData sv -> "SETVAR " + txt(sv.getVariableName()) + " = " + num(sv.getVariableValue());
+            case IncrementVariableActionData iv -> "INCVAR " + txt(iv.getName()) + " += " + num(iv.getValue());
+            case DecrementVariableActionData dv -> "DECVAR " + txt(dv.getName()) + " -= " + num(dv.getValue());
+            case AddVariableActionData av -> "ADD " + txt(av.getFirstName()) + " TO " + txt(av.getSecondName());
+            case SubtractVariableActionData sv -> "DEDUCT " + txt(sv.getFirstName()) + " FROM " + txt(sv.getSecondName());
             case DiagnoseVariablesActionData _ -> "DIAGNOSE_VARS";
-            case RandomActionData r -> "RANDOM " + txt(r.getName());
+            case RandomActionData r -> "RANDOM -> " + txt(r.getName());
             case PrintActionData p -> "PRINT " + txt(p.getName());
             case DiagnoseVariableActionData pv -> "DIAGNOSE_VAR " + txt(pv.getName());
             case MessageActionData m -> "MESSAGE " + resolveMessage(m.getMessageId());
             case MesActionData m -> "MSG " + resolveMessage(m.getMessageId());
+            case NewLineActionData _ -> "NEWLINE";
+            case PictureModeActionData pm -> "PICTUREMODE " + (pm.getMode() == null ? "?" : pm.getMode().name());
+            case ListAtActionData la -> "LISTAT " + resolveContainer(la.getContainerId());
+            case SysMesActionData s -> "SYSMESS " + txt(s.getMessageKeyId());
             case CreateActionData cr -> "CREATE " + resolveName(cr.getThingId());
             case DestroyActionData d -> "DESTROY " + resolveName(d.getThingId());
             case DropActionData d -> "DROP " + resolveName(d.getThingId());
@@ -138,8 +153,8 @@ public class PreconditionActionFormatter {
             case WearActionData w -> "WEAR " + resolveName(w.getThingId());
             case RemoveActionData r -> "REMOVE " + resolveName(r.getThingId());
             case LightActionData l -> "LIGHT " + resolveName(l.getThingId()) + " " + num(l.getLumen());
-            case MoveItemActionData mi -> "MOVE_ITEM " + resolveName(mi.getThingId()) + " " + resolveName(mi.getDestinationId());
-            case MovePlayerActionData mp -> "MOVE_PLAYER " + resolveName(mp.getLocationId());
+            case MoveItemActionData mi -> "MOVE " + resolveName(mi.getThingId()) + " TO " + resolveContainer(mi.getDestinationId());
+            case MovePlayerActionData mp -> "MOVE PLAYER TO " + resolveName(mp.getLocationId());
             case DescribeActionData de -> "DESCRIBE " + resolveName(de.getTargetId());
             case PictureActionData p -> "PICTURE " + resolvePictureName(p.getPictureId());
             case LookActionData _ -> "LOOK";
@@ -190,6 +205,24 @@ public class PreconditionActionFormatter {
             return ViewSupporter.getLocationsShortedDescription(location);
         }
         return id;
+    }
+
+    /**
+     * A container's name for the formatted action: "pocket", the location the container belongs to, or else whatever
+     * {@link #resolveName} makes of the id.
+     */
+    private String resolveContainer(String id) {
+        if (id == null || id.isBlank()) {
+            return "?";
+        }
+        if (pocketId != null && pocketId.equals(id)) {
+            return "pocket";
+        }
+        return locationsById.values().stream()
+                            .filter(l -> l.getItemContainerData() != null && id.equals(l.getItemContainerData().getId()))
+                            .findFirst()
+                            .map(ViewSupporter::getLocationsShortedDescription)
+                            .orElseGet(() -> resolveName(id));
     }
 
     private static String txt(String s) {

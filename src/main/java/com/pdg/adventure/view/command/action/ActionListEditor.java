@@ -48,12 +48,15 @@ public class ActionListEditor extends VerticalLayout {
                 .collect(Collectors.toList());
     }
 
+    /** Validates every action and marks all its invalid fields, not just those of the first invalid action. */
     public boolean validate() {
         return rowsLayout.getChildren()
                 .filter(ActionRow.class::isInstance)
                 .map(ActionRow.class::cast)
-                .allMatch(ActionRow::validate);
+                .map(ActionRow::validate)
+                .reduce(true, Boolean::logicalAnd);
     }
+
 
     private void addRow(ActionData data, boolean opened) {
         ActionEditorComponent editor = ActionEditorFactory.createEditor(data, adventureData);
@@ -76,6 +79,10 @@ public class ActionListEditor extends VerticalLayout {
             }
         });
         rowsLayout.add(row);
+        if (opened) {
+            // A freshly chosen action: the author's next step is to fill in its first argument.
+            editor.focusFirstSelectBox();
+        }
     }
 
     private void moveRow(ActionRow row, int delta) {

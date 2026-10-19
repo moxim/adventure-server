@@ -155,6 +155,10 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         usedHeader.getElement().setAttribute("title", "How many exits lead to this location");
         grid.addColumn(LocationDescriptionAdapter::getUsageCount).setHeader(usedHeader).setAutoWidth(true);
 
+        Span commandsHeader = new Span("Commands");
+        commandsHeader.getElement().setAttribute("title", "How many commands are defined in this location");
+        grid.addColumn(LocationDescriptionAdapter::getCommandCount).setHeader(commandsHeader).setAutoWidth(true);
+
         List<LocationDescriptionAdapter> locationDescriptions = new ArrayList<>(locations.size());
         for (LocationData location : locations) {
             int usageCount = LocationUsageTracker.countLocationUsages(adventureData, location.getId());

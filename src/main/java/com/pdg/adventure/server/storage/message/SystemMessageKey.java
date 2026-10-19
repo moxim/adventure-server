@@ -95,7 +95,7 @@ public enum SystemMessageKey {
          "is printed when the player tries to take an item out of a container that is not allowed. (I can't take the %1s out of the %2s.)"),
     SM56(56, "I put the %1$s into the %2$s.", "is printed when the player puts an item into a container. (I put the %1$s into the %2$s.)"),
     SM57(57, "The %s evaporates into thin air.", "is printed when an item disappears. (The %s evaporates into thin air.)"),
-    SM58(58, "A %1$s appears in the %2$s.", "is printed when an item appears in a container. (A %1$s appears in the %2$s.)"),
+    SM58(58, "%1$s appears in the %2$s.", "is printed when an item appears in a container. (A %1$s appears in the %2$s.)"),
     SM59(59, "Exits are:", "is printed after a location description. (Exits are:)"),
     SM60(60, "What should I %s?", "is printed when a verb matches multiple commands and no noun was given. (What should I %s?)"),
     SM61(61, "Which %1$s should I %2$s?", "is printed when a verb+noun still matches multiple commands, or when take, drop, wear or remove finds several items that fit the noun. (Which %1$s should I %2$s?)"),

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.pdg.adventure.api.Action;
 import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.server.action.NewLineAction;
 
 class GenericCommandTest {
 
@@ -81,6 +82,38 @@ class GenericCommandTest {
         command.addAction(continuingAction("two"));
 
         assertThat(command.execute().getResultMessage()).isEqualTo("one two");
+    }
+
+    private static final String NL = System.lineSeparator();
+
+    @Test
+    void newLine_afterALineContinuingText_endsTheLine() {
+        GenericCommand command = new GenericCommand(mock(CommandDescription.class));
+        command.addAction(continuingAction("You have "));
+        command.addAction(continuingAction("14"));
+        command.addAction(new NewLineAction());
+        command.addAction(action("Next line."));
+
+        assertThat(command.execute().getResultMessage()).isEqualTo("You have 14" + NL + "Next line.");
+    }
+
+    @Test
+    void newLine_afterAnOrdinaryText_leavesAnEmptyLine() {
+        GenericCommand command = new GenericCommand(mock(CommandDescription.class));
+        command.addAction(action("First."));
+        command.addAction(new NewLineAction());
+        command.addAction(action("Second."));
+
+        assertThat(command.execute().getResultMessage()).isEqualTo("First." + NL + NL + "Second.");
+    }
+
+    @Test
+    void newLine_atTheEnd_leavesTheLineEnded() {
+        GenericCommand command = new GenericCommand(mock(CommandDescription.class));
+        command.addAction(continuingAction("Done"));
+        command.addAction(new NewLineAction());
+
+        assertThat(command.execute().getResultMessage()).isEqualTo("Done" + NL);
     }
 
     @Test

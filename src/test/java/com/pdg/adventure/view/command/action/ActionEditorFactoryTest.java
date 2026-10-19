@@ -16,7 +16,11 @@ import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.action.AddVariableActionData;
 import com.pdg.adventure.model.action.PrintActionData;
+import com.pdg.adventure.model.action.ListAtActionData;
+import com.pdg.adventure.model.action.PictureModeActionData;
+import com.pdg.adventure.model.action.NewLineActionData;
 import com.pdg.adventure.model.action.RandomActionData;
+import com.pdg.adventure.model.action.SysMesActionData;
 import com.pdg.adventure.model.action.MesActionData;
 import com.pdg.adventure.model.action.SubtractVariableActionData;
 import com.pdg.adventure.model.action.CreateActionData;
@@ -144,6 +148,30 @@ class ActionEditorFactoryTest {
     void createEditor_withRandomActionData_shouldReturnRandomActionEditor() {
         ActionEditorComponent editor = ActionEditorFactory.createEditor(new RandomActionData(), adventureData);
         assertThat(editor).isNotNull().isInstanceOf(RandomActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withListAtActionData_shouldReturnListAtActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new ListAtActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(ListAtActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withPictureModeActionData_shouldReturnPictureModeActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new PictureModeActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(PictureModeActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withNewLineActionData_shouldReturnNewLineActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new NewLineActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(NewLineActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withSysMesActionData_shouldReturnSysMesActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new SysMesActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(SysMesActionEditor.class);
     }
 
     @Test

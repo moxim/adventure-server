@@ -7,6 +7,7 @@ import com.pdg.adventure.model.action.DestroyActionData;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.DestroyAction;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.support.MapperSupporter;
 
 @Service
@@ -14,16 +15,20 @@ import com.pdg.adventure.server.support.MapperSupporter;
 public class DestroyActionMapper extends ActionMapper<DestroyActionData, DestroyAction> {
 
     private final AdventureConfig adventureConfig;
+    private final GameContext gameContext;
 
-    public DestroyActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig) {
+    public DestroyActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig,
+                               GameContext aGameContext) {
         super(aMapperSupporter);
         adventureConfig = anAdventureConfig;
+        gameContext = aGameContext;
     }
 
     @Override
     public DestroyAction mapToBO(DestroyActionData actionData) {
         return new DestroyAction(
-                getMapperSupporter().requireMappedItem(actionData.getThingId(), actionData));
+                getMapperSupporter().requireMappedItem(actionData.getThingId(), actionData),
+                gameContext);
     }
 
     @Override

@@ -18,11 +18,11 @@ order, when that command fires.
 | **AutoTake** | Player picks up the item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
 | **AutoWear** | Player puts on the carried item named by the noun they typed | Nothing — use it in a Response with the noun `~` |
 | **Break** | Stops the rest of this action list — and the rest of the command chain — immediately | Nothing — pair it with a **Message** action if you want it to say something as it stops |
-| **Create Item** | Places an item into a location (bringing it into play) | The item; the destination location |
+| **Create Item** | Places an item into a location (bringing it into play). The player is only told ("... appears in the ...") if it appears in the room they are in (and the room is not too dark to see) or in their pocket; what happens inside a chest or bag goes unnoticed | The item; the destination location |
 | **Decrement Variable** | Subtracts an amount from a named variable | Variable name; amount |
 | **Describe** | Prints the description of one fixed item or location | The target |
 | **Examine** | Prints the long description of the item the player named, carried or here; says "There isn't one of those here." otherwise | Nothing — use it in a Response with your look verb and the noun `~` |
-| **Destroy** | Deletes an item from the game permanently | The item |
+| **Destroy** | Deletes an item from the game permanently. The player is only told if the item was loose in the room they are in (and the room is not too dark to see) or in their pocket; what happens inside a chest or bag goes unnoticed | The item |
 | **Drop** | Player drops an item at the current location | The item |
 | **Increment Variable** | Adds an amount to a named variable | Variable name; amount |
 | **Inventory** | Lists everything the player carries | Nothing — fully automatic |
@@ -31,11 +31,15 @@ order, when that command fires.
 | **Look** | Describes the location the player is in, in full, shows its picture and fires your Arrival Processes | Nothing — use it in a Response with your look verb, not in an Arrival Process (Look already fires those) |
 | **Message** | Prints a message from your [message catalog](10-messages.md) | The message (picked by its summary) |
 | **Msg** | Prints a message from your [message catalog](10-messages.md) like **Message**, but does **not** end the line: the text of the next action continues right after it (see below) | The message (picked by its summary) |
+| **SystemMsg** | Prints one of the built-in [system messages](10-messages.md), e.g. *15: OK.*, in your adventure's own wording of it, and, like **Msg**, does **not** end the line. Messages that need a name or number filled in (the ones with a `%s`) are not offered | The system message (picked by its number and text) |
+| **NewLine** | Ends the line, so the text of the next action starts on a new line. Use it after **Msg**, **SystemMsg** or **Print**; after a **Message**, which ends its line itself, it leaves an empty line. On its own in a command it shows nothing | – |
+| **ListAt** | Prints the items in one place, as a list like the one under a room description. It adds no heading: put a **Message** such as *"On the beach lie:"* in front. A place without items shows *"nothing."* (system message 53) | The place: your pocket, or any location |
 | **Move Item** | Moves an item into a different container | The item; the destination (a location or the player's pocket) |
 | **Move Player** | Moves the player to a location and shows its description | Destination location |
 | **Picture** | Shows a [picture](11-pictures.md) in the play screen's picture panel until the next move, look or Picture action | The picture |
+| **PictureMode** | Sets when a location's default [picture](11-pictures.md#the-picturemode-action) is shown on arrival: **ON** on every arrival, **OFF** never (a Look or a Picture action still shows one), **DEFAULT** on the first arrival only (the start value). Shows nothing itself | The mode: ON, OFF or DEFAULT |
 | **Print** | Prints the value of a variable (just the number, e.g. *14*) and does **not** end the line, so the next text continues right after it (see below) | The variable, chosen from the dropdown |
-| **Diagnose Variable** | Prints a variable's name and its current value, e.g. *"VISITED : 14"* | The variable, chosen from the dropdown (`VISITED` and `TURNS` are always listed) |
+| **Diagnose Variable** | Prints a variable's name and its current value, e.g. *"VISITED : 14"* | The variable, chosen from the dropdown (`VISITED`, `TURNS` and `PROMPT` are always listed) |
 | **Diagnose Variables** | Prints every variable and its current value, one per line, sorted by name: *"TURNS : 3"*, *"VISITED : 14"* | Nothing - fully automatic |
 | **Quit** | Ends the game session | Nothing — pair it with a **Message** action for a farewell line |
 | **Random** | Sets a variable to a random whole number from 0 to 99 (both included) | The variable: pick an existing one or type a new name, which creates it (no error for a new name) |
@@ -48,7 +52,7 @@ order, when that command fires.
 | **Wear** | Player puts on a wearable item | The item |
 
 **Joining texts on one line.** Every text-producing action in a command normally
-starts on a new line. **Msg** and **Print** are the exception: they do not end
+starts on a new line. **Msg**, **SystemMsg** and **Print** are the exception: they do not end
 their line, so the text of the next action follows directly. This lets you build
 a sentence from several parts, for example Msg *"You have "*, Print *score*,
 Message *" points."* gives *"You have 14 points."*. A **Message** ends the line
@@ -66,7 +70,7 @@ Variable names are chosen from a dropdown, not typed. **Set Variable** and
 a new one. As soon as you enter the name in one of them, it shows up in the dropdowns of
 **Increment Variable**, **Decrement Variable**, **Add Variable**, **Subtract Variable**, **Print**, the **Diagnose** actions and the variable conditions
 (**Equals**, **Greater Than**, **Less Than**, **Same**), which accept only
-names that are already set somewhere. The engine's own `VISITED` and `TURNS`
+names that are already set somewhere. The engine's own `VISITED`, `TURNS` and `PROMPT`
 variables are always listed. The variable is stored with the adventure when you save the
 command, and it stays defined even if you later delete the Set or Random action. A
 condition naming a variable that was never defined is flagged as invalid when
@@ -87,7 +91,8 @@ roll stays the same only until the next Random on that variable.
 `TURNS` is a variable the engine keeps for you, the same idea as the turn
 counter of the original Professional Adventure Writer. It starts at 0 whenever
 a game starts, and goes up by one for every command the game understands,
-whether or not that command then succeeds. Input the game could not make
+whether or not that command then succeeds. Every click on the picture is a
+turn too. Typed input the game could not make
 sense of ("I was not able to understand any of that") is not a turn, and
 `take key and open door` is two turns. The command that is being run already
 counts, so a **Turns** action in a `turns` Response reports *"You have taken
@@ -105,6 +110,25 @@ System Messages**: SM17 (*"You have taken "*, before the number), SM18
 (*"."*). The spaces in SM17 and SM18 matter: keep them if you change the
 wording.
 
+### The standard variable `PROMPT`
+
+`PROMPT` decides which question the game asks when it waits for the player
+(see [System messages](10-messages.md)). It starts at 0 whenever a game starts,
+which leaves the choice to chance. Set it with **Set Variable** to pick one:
+
+| `PROMPT` | The game asks |
+|----------|----------------|
+| 0, 1 or below | A random one of the four (the default) |
+| 2 | *"What now?"* (system message 2) |
+| 3 | *"What next?"* (system message 3) |
+| 4 | *"What should I do now?"* (system message 4) |
+| 5 | *"What should I do next?"* (system message 5) |
+| 6 and above | Starts over: 6 is message 2, 7 is message 3, 8 is message 4, 9 is message 5, 10 is message 2 again, and so on |
+
+The change takes effect with the next question, so a Process that sets `PROMPT`
+changes the question of the very turn it runs in. Set it back to 0 to return to
+chance.
+
 ## PreConditions
 
 Preconditions gate a command or command variant — all of them must pass
@@ -117,6 +141,7 @@ flipped with the **Negate** checkbox on its row.
 | **Adverb** | The player typed a specific adverb | The adverb, picked from your vocabulary |
 | **Carried** | The item is in the player's inventory | The item |
 | **Chance** | A random roll succeeds | A chance percentage (1–100) |
+| **Clicked** | The player clicked a cell of the picture (only offered for Processes) | X (column) and Y (row), each 0–9 |
 | **Equals** | A variable equals a value | Variable name; value |
 | **Greater Than** | A variable is greater than a value | Variable name; value |
 | **Here** | The item is at the player's current location | The item |
@@ -132,6 +157,12 @@ flipped with the **Negate** checkbox on its row.
 command is attempted, so a 20% chance condition doesn't mean "one in five
 players" — it means "roughly one in five *attempts*," which matters if a
 player can just try again.
+
+**Clicked** is the mouse as a second input. The picture in the running game is divided into a
+10 × 10 grid, like the world map: columns **X** from 0 at the left to 9 at the right, rows **Y** from
+0 at the top to 9 at the bottom. A Process with `Clicked 3, 4` and, say, a Move Player action
+takes the player through the door that the picture shows in that cell. It is offered only when
+you edit a Process (see [Chapter 9](09-workflow.md)), because only Processes run on a click.
 
 **Preposition / Adverb / Noun 2 / Adjective 2** check parts of the typed
 command beyond the command editor's own Verb/Adjective/Noun pickers — they

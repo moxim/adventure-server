@@ -20,6 +20,8 @@ public class GameSnapshotData {
 
     private String currentLocationId;
         private String currentPictureId;
+        /** Null in saves from before the picture mode existed: restored as {@link PictureMode#DEFAULT}. */
+        private PictureMode pictureMode;
         /** Every item id registered when the game was saved; an item in none of {@link #containers} was "nowhere". */
         private Set<String> knownItemIds;
         /** Container id -> the ids of its contents, in order. */

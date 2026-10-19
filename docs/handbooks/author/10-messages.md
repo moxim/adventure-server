@@ -56,6 +56,14 @@ row to edit it. The dialog shows:
 | The new text must keep the **same placeholders** (`%s` and the like) as the original. | The engine fills those in at runtime (e.g. the item's name); dropping one would break the message. Save is refused with an error if they don't match. |
 | An unedited message has no stored row at all. | It just reads as the default until the first time you change it — so leaving most of them alone costs nothing.|
 
+**The question after every turn.** When the game waits for the player, it asks a
+question as the last line of its output — after the opening room and after every
+turn. The question is picked at random from messages **2 to 5** (*"What now?"*,
+*"What next?"*, *"What should I do now?"*, *"What should I do next?"*), so you can
+reword or translate them like any other. To always get the same question, give all
+four the same text, or set the standard variable `PROMPT` (see the
+[action and condition reference](appendix-a-action-and-condition-reference.md)) to 2, 3, 4 or 5. No question is asked once the game is over.
+
 ## What's next
 
 [Chapter 11: Pictures](11-pictures.md) covers the last editing screen — the

@@ -58,6 +58,7 @@ public class GenericCommand implements Command {
         if (result.getExecutionState() != ExecutionResult.State.SUCCESS) {
             return result;                 // preconditions unmet → command does not apply
         }
+        preConditions.forEach(PreCondition::commandApplied);
         StringBuilder messages = new StringBuilder();
         boolean previousContinuesLine = false;
         for (Action action : actions) {

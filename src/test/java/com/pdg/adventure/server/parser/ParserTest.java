@@ -76,6 +76,59 @@ class ParserTest {
     }
 
     @Test
+    void handle_comma_splitsIntoTwoCommands_equivalentToAnd() {
+        // given
+        Parser parser = new Parser(vocabularyWithTakeSwordAndKillOgre());
+
+        // when
+        CommandSequence sequence = parser.handle("take sword, kill ogre");
+
+        // then
+        assertThat(sequence.commands()).hasSize(2);
+        assertThat(sequence.commands().get(0).getVerb()).isEqualTo("take");
+        assertThat(sequence.commands().get(0).getNoun()).isEqualTo("sword");
+        assertThat(sequence.commands().get(1).getVerb()).isEqualTo("kill");
+        assertThat(sequence.commands().get(1).getNoun()).isEqualTo("ogre");
+    }
+
+    @Test
+    void handle_commasBetweenThreeOrMoreCommands_splitIntoAsManyCommands() {
+        // given
+        Parser parser = new Parser(vocabularyWithTakeSwordAndKillOgre());
+
+        // when
+        CommandSequence sequence = parser.handle("take sword, kill ogre, take sword,kill ogre");
+
+        // then
+        assertThat(sequence.commands()).extracting(GenericCommandDescription::getVerb)
+                                       .containsExactly("take", "kill", "take", "kill");
+    }
+
+    @Test
+    void handle_commaMixedWithPeriodAndConjunction_splitsAtEachOfThem() {
+        // given
+        Parser parser = new Parser(vocabularyWithTakeSwordAndKillOgre());
+
+        // when
+        CommandSequence sequence = parser.handle("take sword, kill ogre. take sword then kill ogre");
+
+        // then
+        assertThat(sequence.commands()).hasSize(4);
+    }
+
+    @Test
+    void handle_trailingAndLeadingAndDoubledCommas_doNotProduceEmptyCommands() {
+        // given
+        Parser parser = new Parser(vocabularyWithTakeSwordAndKillOgre());
+
+        // when
+        CommandSequence sequence = parser.handle(", take sword,, kill ogre,");
+
+        // then
+        assertThat(sequence.commands()).hasSize(2);
+    }
+
+    @Test
     void handle_trailingPeriod_doesNotProduceAnEmptyThirdCommand() {
         // given
         Parser parser = new Parser(vocabularyWithTakeSwordAndKillOgre());

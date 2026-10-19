@@ -62,6 +62,10 @@ public class LocationDescriptionAdapter implements Describable {
         locationData.setId(anId);
     }
 
+    public int getCommandCount() {
+        return locationData.getCommandProviderData().countCommands();
+    }
+
     public int getLumen() {
         return locationData.getLumen();
     }

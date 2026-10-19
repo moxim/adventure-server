@@ -9,6 +9,7 @@ import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.CreateAction;
 import com.pdg.adventure.server.annotation.AutoRegisterMapper;
 import com.pdg.adventure.server.engine.ContainerSupplier;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.support.MapperSupporter;
 
@@ -17,17 +18,21 @@ import com.pdg.adventure.server.support.MapperSupporter;
 public class CreateActionMapper extends ActionMapper<CreateActionData, CreateAction> {
 
     private final AdventureConfig adventureConfig;
+    private final GameContext gameContext;
 
-    public CreateActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig) {
+    public CreateActionMapper(MapperSupporter aMapperSupporter, @Lazy AdventureConfig anAdventureConfig,
+                              GameContext aGameContext) {
         super(aMapperSupporter);
         adventureConfig = anAdventureConfig;
+        gameContext = aGameContext;
     }
 
     @Override
     public CreateAction mapToBO(CreateActionData actionData) {
         return new CreateAction(
                 getMapperSupporter().requireMappedItem(actionData.getThingId(), actionData),
-                new ContainerSupplier(resolveContainer(actionData.getContainerProviderId())));
+                new ContainerSupplier(resolveContainer(actionData.getContainerProviderId())),
+                gameContext);
     }
 
     @Override

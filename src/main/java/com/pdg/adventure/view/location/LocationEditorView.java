@@ -88,6 +88,7 @@ public class LocationEditorView extends VerticalLayout
         TextArea longDescription = getLongDescTextArea();
         IntegerField lumen = getLumenField();
         IntegerField exits = getExitsField();
+        IntegerField commands = getCommandsField();
         pictureSelector = getPictureSelector();
 
         final ResetBackSaveView resetBackSaveView = setUpNavigationButtons();
@@ -108,6 +109,7 @@ public class LocationEditorView extends VerticalLayout
         binder.bindReadOnly(locationIdTF, LocationViewModel::getId);
         binder.bindReadOnly(adventureIdTF, LocationViewModel::getAdventureId);
         binder.bindReadOnly(exits, LocationViewModel::getNumberOfExits);
+        binder.bindReadOnly(commands, LocationViewModel::getNumberOfCommands);
 
         binder.addStatusChangeListener(event -> {
             boolean isValid = event.getBinder().isValid();
@@ -118,7 +120,7 @@ public class LocationEditorView extends VerticalLayout
         });
 
         HorizontalLayout h1 = new HorizontalLayout(adjectiveSelector, nounSelector);
-        HorizontalLayout h2 = new HorizontalLayout(lumen, exits, pictureSelector);
+        HorizontalLayout h2 = new HorizontalLayout(lumen, exits, commands, pictureSelector);
 
         VerticalLayout hl = new VerticalLayout(h1, h2);
 
@@ -190,6 +192,12 @@ public class LocationEditorView extends VerticalLayout
 
     private IntegerField getExitsField() {
         IntegerField field = new IntegerField("Number of exits");
+        field.setReadOnly(true);
+        return field;
+    }
+
+    private IntegerField getCommandsField() {
+        IntegerField field = new IntegerField("Number of commands");
         field.setReadOnly(true);
         return field;
     }

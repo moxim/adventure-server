@@ -38,7 +38,7 @@ List<GenericCommandDescription>       ← one per conjunction/period-separated s
    │
    ▼  for each sub-command, in order (stop at the first that fails):
    │
-   ├─ GameContext.runProcesses()         ← Workflow Processes (+ the "What now?" (SM2) prompt)
+   ├─ GameContext.runProcesses()         ← Workflow Processes (the SM2 to SM5 prompt is added by `AdventureRunSession`, not here)
    │                                        run once BEFORE each sub-command,
    │                                        not once per typed line
    ├─ empty-verb check → SM6 ("I was not able to understand any of that…"); stop the sequence
@@ -92,13 +92,44 @@ short-circuit:
   [§ AdventureRunSession](#adventurerunsession-the-in-browser-play-surface)).
 - Any other `RuntimeException` is logged at ERROR and returns `ERROR`.
 
-`GameLoop.processCommand(String)` is the **only** per-line entry point. The
+`GameLoop.processCommand(String)` is the **only** per-line entry point for typed input (a click on the picture has its own, `processClick`, below). The
 former `GameLoop.run(BufferedReader)` console read-loop has been deleted with
 the CLI runner; `processCommand` now calls `GameContext.runProcesses()`
 itself — once for **each** parsed sub-command of the line — rather than
 relying on the caller to do it first. A conjunction-joined turn
 ("take x and drop y") therefore runs every Workflow Process once per
 sub-command.
+
+### Clicks on the picture: `GameLoop.processClick`
+
+A click on the picture is a second input stream. `GameLoop.processClick(int column, int row)`
+(reached through `AdventureRunSession.submitClick`, with the same game-over and
+"ended in another tab" guards as `submit`) runs the Workflow **Processes** only: no
+parsing, no `CommandExecutor`, no Responses, no Arrival Processes of its own. (A MovePlayer
+or Look action inside a clicked Process describes the location and so runs the Arrival
+Processes as always, while the click is still recorded.)
+
+1. `GameContext.beginClick(column, row)` records the cell (the 10 × 10 grid of the
+   picture, counted from 0, column from the left, row from the top), empties the typed
+   fields (verb, adjective, noun, preposition, adverb, noun 2, adjective 2) so that
+   leftovers of the last typed command cannot satisfy a condition, and resets the
+   "handled" flag.
+2. `runProcesses()` runs as always (every Process is tried, not only those with a
+   CLICKED condition). `ClickedCondition.check()` is true only while a click at its
+   cell is recorded, so it is never true on a typed turn.
+3. **Hit or miss.** `PreCondition.commandApplied()` is a default no-op that
+   `GenericCommand.execute()` calls on each of its preconditions once all passed, just
+   before its actions run (a failing action does not undo the hit; its text is told
+   instead of SM6). `ClickedCondition` reacts by `GameContext.markClickHandled()`.
+   `NotCondition` does not pass the call on, so `NOT_CLICKED` never makes a hit. Every
+   click, hit or miss, increases `TURNS` by one before the Processes run (as a typed
+   phrase with a verb does, so a Turns action in the clicked Process shows the click);
+   a miss tells **SM6** first. The
+   Processes' messages follow. `AdventureRunSession` then adds the usual prompt.
+4. `endClick()` runs in a `finally`. `QuitException` ends the game and
+   `UnresolvedReferenceException` is told, as in `processCommand`.
+
+The click is not part of a saved game: `GameStateSnapshotter` does not read it.
 
 ## Core API contracts
 
@@ -182,7 +213,9 @@ Every `Thing` and `GenericDirection` composes a `CommandHandler`
    the [Auto item actions](#auto-item-actions-autotake-autodrop-autowear-autoremove) would. A
    chain counts as a take, drop, wear or remove chain if it contains a `TakeAction`,
    `DropAction`, `WearAction` or `RemoveAction` (a chain built from other actions is left to
-   the ranking below); the item comes from the action. The origin of each chain (pocket or
+   the ranking below) **and the item itself holds that chain**; the item comes from the action.
+   A chain authored elsewhere, e.g. on a location ("wear neoprene suit" at the west dunes),
+   is left to the ranking too, whatever container the item is in. The origin of each chain (pocket or
    location) is known from which of the two lookups returned it. Then: a typed adjective keeps
    only the items with exactly that adjective when any exists in either container (otherwise it
    is ignored); take **honours the location**, the others **the pocket** — the candidates from
@@ -335,13 +368,19 @@ it with what it last drew, after the opening arrival and after every submitted
 line, and shows or hides the picture panel (an id that matches no picture — one
 deleted meanwhile, say — just hides the panel).
 
-Three things write it:
+Four things write it:
 
 | Writer | When | Value set |
 |--------|------|-----------|
-| `MovePlayerAction` | The player walks into a location (including the opening arrival of a run) | `Location.getArrivalDescription().pictureId()` — the location's default picture on the **first** visit only; `null` on every repeat visit, which *clears* whatever was showing |
+| `MovePlayerAction` | The player walks into a location (including the opening arrival of a run) | By `GameContext.getPictureMode()` (below): DEFAULT — `Location.getArrivalDescription().pictureId()`, the location's default picture on the **first** visit only and `null` on every repeat visit, which *clears* whatever was showing; ON — `Location.getVisiblePictureId()` on every visit; OFF — `null` |
 | `describe` / `describe here` Response with a `LookAction` | An explicit look / describe | `Location.getLookDescription().pictureId()` — the default picture **every** time |
 | `PictureAction` | An author-placed action | Its own `pictureId`, kept until the next move, look or Picture action |
+| `PictureModeAction` | An author-placed action | Nothing now: it sets the picture mode, which only `MovePlayerAction` reads |
+
+**Picture mode.** `GameContext.pictureMode` (`PictureMode`: `ON`, `OFF`, `DEFAULT`; never `null`, a `null`
+set means `DEFAULT`) decides what an arrival shows. It starts as `DEFAULT` for every run (reset with the other context
+state in `AdventureRunSessionFactory`) and is part of a saved game (`GameSnapshotData.pictureMode`; a save without one
+restores as `DEFAULT`). It does not touch `LookAction` or `PictureAction`, and the darkness gate below applies in every mode.
 
 Both description methods return a `Location.LocationDescription(text,
 pictureId)` record. In both, the picture is withheld (`null`) when the player
@@ -471,11 +510,12 @@ author-placeable:
 | `SaveGameAction(gameContext, snapshotter, savedGameService)` | **SaveGame.** Save the running game into the typed slot or the first free one — see [§ Saving and loading games](#saving-and-loading-games). |
 | `LoadGameAction(gameContext, snapshotter, savedGameService)` | **LoadGame.** List the player's saves, or restore the typed slot in place. |
 | `LightAction(item, lumen)` | Set the item's light level absolutely; emits `SM66`. |
+| `PictureModeAction(mode, gameContext)` | Set `gameContext.pictureMode`; always SUCCESS with no text (informational-only). |
 | `PictureAction(pictureId, gameContext)` | Set `gameContext.currentPictureId` so the play screen shows that picture; always SUCCESS with no text (informational-only). |
 | `MoveItemAction(item, dest, msgs)` | The primitive: remove the item from its parent if any, add it to `dest` if not full. Emits `SM54` (moved) / `SM55` (full) / `SM56` (can't). |
 | `WearAction(wearable, msgs)` | If `isWearable && !isWorn`, set `isWorn=true`, `SUCCESS` + `SM37`; else `FAILURE` + `SM40`. Interpolates `thing.getStrippedBasicDescription()` (article-less — the `SMnn` texts already carry *"the %s"*). |
 | `RemoveAction(wearable, msgs)` | Inverse of `WearAction`; clears `isWorn`; `SUCCESS` + `SM38` / `FAILURE` + `SM41`. Also interpolates the *stripped* (article-less) description. |
-| `MovePlayerAction(destination, gameContext, variableProvider)` | Set `gameContext.currentLocation = destination`, run `DescribeAction` over `destination.getArrivalDescription()` (visit-aware: long on first visit, short thereafter), set `gameContext.currentPictureId` from that description, record the `VISITED` variable, increment `timesVisited`, then append the Arrival Processes' output. |
+| `MovePlayerAction(destination, gameContext, variableProvider)` | Set `gameContext.currentLocation = destination`, run `DescribeAction` over `destination.getArrivalDescription()` (visit-aware: long on first visit, short thereafter), set `gameContext.currentPictureId` by the picture mode (DEFAULT: from that description; ON: `destination.getVisiblePictureId()`; OFF: none), record the `VISITED` variable, increment `timesVisited`, then append the Arrival Processes' output. |
 | `InventoryAction(pocketSupplier)` | Return the carried-items header (`SM9`) followed by `pocket.listContents()`, one per line, as its result message. |
 | `DiagnoseVariableAction(name, vars)` | **DIAGNOSE_VAR.** Return `name : value` as its result message, e.g. `VISITED : 14`, with the variable's current value. A variable that does not exist prints a hyphen (`ghost : -`) and is not created. Always `SUCCESS`. |
 | `DiagnoseVariablesAction(vars)` | **DIAGNOSE_VARS.** Return every variable currently in the shared provider as `name : value`, one per line in a single message, sorted by name ignoring case; a single hyphen if there are none. Always `SUCCESS`. |
@@ -489,18 +529,38 @@ clears the shared `VariableProvider` and defines each authored `VariableData` at
 | `MesAction(text/messageId, ...)` | **MES.** Same as `MessageAction` (literal or catalog lookup, with font), but `continuesLine()` is true. Authors see it as "Msg". |
 | `PrintAction(name, vars)` | **PRINT.** Return the variable's current value as a plain number; `continuesLine()` true, informational-only. An unknown variable throws `ConfigurationException`. |
 | `AddVariableAction(first, second, vars)` / `SubtractVariableAction(first, second, vars)` | **ADD / MINUS** (via `AbstractTwoVariablesAction`). Read both variables, write `second + first` / `second - first` into the second; the first is unchanged; always `SUCCESS`, no text. Either variable unknown → `ConfigurationException` ("Variable X does not exist!"). The result is not clamped (PAW keeps a flag within 0..255). |
+| `ListAtAction(container)` | **LISTAT.** Prints the container's `listContents()` (the item list form of a location, no heading such as SM1 or SM9), or SM53 "nothing." if the container is empty. Always `SUCCESS`; ends its line like any ordinary action. The mapper resolves the container id with `requireMappedContainer`, so a location's container and the pocket both work. |
+| `NewLineAction()` | **NEWLINE.** Result text is a line separator and `continuesLine()` is true, so `GenericCommand` keeps it (a blank text is only dropped for ordinary actions) and adds no separator after it. After a line-continuing action (Msg, SystemMsg, Print) it ends their line; after an ordinary action it leaves an empty line. Alone in a command it prints nothing, because the run session drops blank lines. |
+| `SysMesAction(messageKey)` | **SYSMESS.** Shows the text of a `SystemMessageKey`, looked up when the action runs, so it carries the running adventure's own wording (overrides bound for the turn). `continuesLine()` is true, as in PAW. The mapper throws `ConfigurationException` for an unknown key id. Authors see it as "SystemMsg". |
 | `RandomAction(name, vars)` | **RANDOM.** Write a random integer from 0 to 99 inclusive into the variable. A variable that does not exist is created — no `ConfigurationException`. Always `SUCCESS`, no text. |
 | `IncrementVariableAction(name, vars, msgs)` | Read the variable, parse it as an integer, write `+1`. |
 | `DecrementVariableAction(name, vars, msgs)` | Same, `-1`. |
-| `CreateAction(thing, containerSupplier, msgs)` | Add `thing` to the supplied container; emits `SM58`. Authorable via the "Create Item" action editor. |
-| `DestroyAction(thing, msgs)` | Remove `thing` from its current parent container; emits `SM57`. Authorable via the "Destroy" action editor. |
+| `CreateAction(thing, containerSupplier, gameContext)` | Take `thing` out of its current container (a `DestroyAction`, whose message is dropped), then add it to the supplied container. Emits `SM58` only if `GameContext.playerNoticesChangeIn(container)`; otherwise the thing is placed without a message. Authorable via the "Create Item" action editor. |
+| `DestroyAction(thing, gameContext)` | Remove `thing` from its current parent container. Emits `SM57` only if `GameContext.playerNoticesChangeIn(parent)`, asked before the removal; otherwise the thing is removed without a message. Authorable via the "Destroy" action editor. |
+| `GameContext.playerNoticesChangeIn(container)` | Whether the player would notice a change in a container: it is the player's pocket (felt even in the dark) or the item container of the current location, unless that location is too dark to see (`Location.isTooDarkToSee()`). Any other container, a chest or bag included, goes unnoticed. Location and pocket are read on every call, as the player moves. |
 | `BreakAction(msgs)` | Stop execution of the current command chain immediately and return the supplied message as SUCCESS. Used to short-circuit multi-action chains when a condition is met. Authorable via the "Break" action editor. |
 
 ### Joining action texts
 
-`GenericCommand.execute()` collects the result messages of its actions in order. A line separator is inserted between two texts **unless the previous contributing action returned `continuesLine() == true`**; only `MesAction` and `PrintAction` do (PAW's MES and PRINT, which print without a new line; MESSAGE ends the line). Blank texts are skipped, except that a blank-but-non-empty text from a line-continuing action (a lone space) is kept as the separator before the next text. The rule applies within one command's action list only — joins further up (`GenericCommandChain`, `Workflow`, the run view) do not carry it, and font changes still start a new bubble in the run view.
+`GenericCommand.execute()` collects the result messages of its actions in order. A line separator is inserted between two texts **unless the previous contributing action returned `continuesLine() == true`**; only `MesAction`, `SysMesAction`, `PrintAction` and `NewLineAction` do (PAW's MES, SYSMESS, PRINT and NEWLINE, which print without a new line; MESSAGE ends the line). Blank texts are skipped, except that a blank-but-non-empty text from a line-continuing action (a lone space) is kept as the separator before the next text. The rule applies within one command's action list only — joins further up (`GenericCommandChain`, `Workflow`, the run view) do not carry it, and font changes still start a new bubble in the run view.
 
 Actions that show text (`Turns`, `Diagnose Variable(s)`, `Inventory`) return it as their result message instead of calling `GameContext.tell` themselves, so their text takes its place among the other actions' texts; a direct `tell` would appear before the command's collected output.
+
+### The PROMPT variable
+
+PAW's flag 42 (which fixes the question asked for input) is one ordinary variable,
+`VariableProvider.PROMPT_VARIABLE_NAME` (`PROMPT`), listed by `VariableChoices` next to `VISITED` and `TURNS`.
+
+- **Start.** `AdventureRunSessionFactory.startRun` sets it to 0, for every run, including a run that takes over
+  from another; the factory also hands the shared provider to `AdventureRunSession`.
+- **Reading.** `AdventureRunSession.prompt()` reads it each time a question is needed (after the opening room and after
+  every turn, so a Process that set it already steers that turn's question). `promptKeyFor(value)`: below 2
+  (0, the start value; 1; negatives) leaves the choice to a random pick of SM2 to SM5; 2 to 5 pick that system message;
+  above 5 wraps around with `2 + (value - 2) % 4` (6 is SM2, 7 SM3, 8 SM4, 9 SM5, 10 SM2, ...). The text is read through
+  `defaultText()`, so the adventure's overrides apply. A session built without a provider (tests) always picks at random.
+- **Saved games.** Like every variable it is part of the snapshot.
+- **Open point.** PAW only honours a flag value that is a valid message number; wrapping above 5 and treating 1 and
+  negatives as "not set" is this project's choice (`TODO: Review needed` in `promptKeyFor`).
 
 ### The TURNS variable
 
@@ -636,7 +696,8 @@ conditions wrap others.
 | `HereCondition(item, gc)` | `gc.currentLocation.contains(item)`. Failure message SM26 (default text `"There isn't one of those here."`). |
 | `ItemAtCondition(item, location, gc)` | The item is at the named location. |
 | `PlayerAtCondition(location, gc)` | `gc.currentLocation.equals(location)`. |
-| `ChanceCondition(chance)` | A fresh random integer in `[1, 100]` (`ThreadLocalRandom.current().nextInt(100) + 1`, injectable via a package-private constructor for testing) is `<= chance`. Re-rolled on every attempt — a 20% chance is "roughly one in five tries," not "one in five players." No failure message of its own. |
+| `ClickedCondition(x, y, gc)` | `gc.isClickAt(x, y)`: the click `GameLoop.processClick` is running is in that cell of the picture grid. Never true outside a click run; a missing or out-of-range coordinate never matches. No failure message. Its `commandApplied()` marks the click as handled (see [§ Clicks on the picture](#clicks-on-the-picture-gameloopprocessclick)). |
+| `ChanceCondition(chance)` | A fresh random integer in `[1, 100]` (`new SecureRandom().nextInt(100) + 1`, injectable via a package-private constructor for testing) is `<= chance`. Re-rolled on every attempt — a 20% chance is "roughly one in five tries," not "one in five players." No failure message of its own. |
 
 ### Variable comparators
 
@@ -678,6 +739,7 @@ logic is expressed as separate Command Chain variants (see
 - `setUpWorkflows()` — instantiates a fresh `Workflow`.
 - `runProcesses()` / `respondTo(cmd)` — delegate to the workflow.
 
+- `beginClick(col, row)` / `endClick()` / `isClickAt(col, row)` / `markClickHandled()` / `isClickHandled()` — the click being run by `GameLoop.processClick`; see [§ Clicks on the picture](#clicks-on-the-picture-gameloopprocessclick).
 - `currentNoun` / `currentAdjective` — the primary noun and adjective of the sub-command being dispatched (`setCurrentNoun` / `setCurrentAdjective`), set fresh by `GameLoop.processCommand` before each sub-command alongside preposition, adverb, `noun2` and `adjective2`. Actions receive no arguments, so the AUTO* actions read the typed noun from here.
 
 `Workflow.runProcesses()` walks all `processes` **in alphabetical (verb,
@@ -763,7 +825,12 @@ engine, without touching `GameLoop`/`GameContext` directly:
      sub-command — `submit` no longer calls it), collects the
      non-blank/non-prompt lines, and **always** clears the sink
      (`setOutputSink(null)`) in a `finally` block before returning.
-   - Returns a `RunResult(List<String> lines, boolean gameOver)`.
+   - Returns a `RunResult(List<String> lines, boolean gameOver, String prompt)`. `prompt` is the question that
+     tells the player the game waits for input: one of system messages SM2 to SM5 ("What now?", "What next?", "What
+     should I do now?", "What should I do next?"), picked at random with the session's overrides bound, via
+     `AdventureRunSession.prompt()`; empty once the game is over. `AdventureRunView` shows it as the last line of the
+     output, after the opening room and after every turn. The `PROMPT` variable steers the pick, see
+     [§ The PROMPT variable](#the-prompt-variable).
    - Binds the session's system-message overrides
      (`SystemMessageKey.bindOverrides`) for the whole turn and unbinds in a
      `finally`.

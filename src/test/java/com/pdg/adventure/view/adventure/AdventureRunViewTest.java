@@ -1,6 +1,10 @@
 package com.pdg.adventure.view.adventure;
 
 import com.vaadin.browserless.BrowserlessTest;
+import com.vaadin.browserless.ComponentTester;
+import com.vaadin.flow.component.html.Image;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.messages.MessageInput;
@@ -149,6 +153,44 @@ class AdventureRunViewTest extends BrowserlessTest {
         MessageList messageList = find(MessageList.class, view).single();
         assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
                 .containsExactly("A grand throne room.", "go north", "You head north.");
+    }
+
+    @Test
+    void thePromptIsTheLastLineOfTheOpeningRoom() {
+        stubOpeningRoom("A grand throne room.");
+        when(session.prompt()).thenReturn("What now?");
+
+        enterViaAuthorRoute();
+
+        MessageList messageList = find(MessageList.class, view).single();
+        assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
+                .containsExactly("A grand throne room.\nWhat now?");
+    }
+
+    @Test
+    void thePromptIsTheLastLineOfEveryTurn() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(session.submit("go north")).thenReturn(new RunResult(List.of("You head north."), false, "What next?"));
+
+        test(find(MessageInput.class, view).single()).send("go north");
+
+        MessageList messageList = find(MessageList.class, view).single();
+        assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
+                .containsExactly("A grand throne room.", "go north", "You head north.\nWhat next?");
+    }
+
+    @Test
+    void whenTheGameEnds_noPromptIsShown() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(session.submit("quit")).thenReturn(new RunResult(List.of("Bye."), true, ""));
+
+        test(find(MessageInput.class, view).single()).send("quit");
+
+        MessageList messageList = find(MessageList.class, view).single();
+        assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
+                .containsExactly("A grand throne room.", "quit", "Bye.");
     }
 
     @Test
@@ -560,5 +602,103 @@ class AdventureRunViewTest extends BrowserlessTest {
         assertThat(items.getLast().getText()).isEqualTo("line one\nline two");
         assertThat(items).noneMatch(item -> java.util.Arrays.stream(com.pdg.adventure.model.AdventureFont.values())
                 .anyMatch(font -> font.cssClassName().map(item::hasClassName).orElse(false)));
+    }
+
+    @Test
+    void pictureClick_insideThePicture_submitsTheCellToTheSession_andRendersTheResult() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(session.submitClick(5, 5)).thenReturn(new RunResult(List.of("The door opens."), false, "What now?"));
+
+        view.handlePictureClick(500, 250, 1000, 500, 2000, 1000);
+
+        verify(session).submitClick(5, 5);
+        MessageList messageList = find(MessageList.class, view).single();
+        assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
+                .containsExactly("A grand throne room.", "The door opens.\nWhat now?");
+    }
+
+    @Test
+    void pictureClick_inTheMarginBesideThePicture_doesNotCallTheSession() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+
+        // a square picture in a box twice as wide: x = 100 is empty margin
+        view.handlePictureClick(100, 250, 1000, 500, 500, 500);
+
+        verify(session, never()).submitClick(anyInt(), anyInt());
+    }
+
+    @Test
+    void pictureClick_withoutASession_doesNothing() {
+        view.handlePictureClick(500, 250, 1000, 500, 2000, 1000);
+
+        verify(session, never()).submitClick(anyInt(), anyInt());
+    }
+
+    @Test
+    void pictureClick_whenTheResultIsGameOver_disablesTheInputAndReleasesTheRun() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(session.submitClick(5, 5)).thenReturn(new RunResult(List.of(SystemMessageKey.SM14.defaultText()), true));
+
+        view.handlePictureClick(500, 250, 1000, 500, 2000, 1000);
+
+        assertThat(find(MessageInput.class, view).single().isEnabled()).isFalse();
+        verify(sessionFactory).release(any(RunOwner.class));
+    }
+
+    @Test
+    void pictureClick_afterTheGameIsOver_isIgnored() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        when(session.submitClick(5, 5)).thenReturn(new RunResult(List.of(SystemMessageKey.SM14.defaultText()), true));
+
+        view.handlePictureClick(500, 250, 1000, 500, 2000, 1000);
+        view.handlePictureClick(500, 250, 1000, 500, 2000, 1000);
+
+        verify(session, times(1)).submitClick(5, 5);
+    }
+
+    @Test
+    void pictureClick_whileTheInputIsDisabled_isIgnored() {
+        stubOpeningRoom("A grand throne room.");
+        enterViaAuthorRoute();
+        find(MessageInput.class, view).single().setEnabled(false);
+
+        view.handlePictureClick(500, 250, 1000, 500, 2000, 1000);
+
+        verify(session, never()).submitClick(anyInt(), anyInt());
+    }
+
+    /** Fires the DOM click event with the six values the browser reports, as the real picture would. */
+    private static final class PictureTester extends ComponentTester<Image> {
+        PictureTester(Image anImage) {
+            super(anImage);
+        }
+
+        void click(double offsetX, double offsetY, double boxWidth, double boxHeight,
+                   double naturalWidth, double naturalHeight) {
+            ObjectNode data = JsonMapper.builder().build().createObjectNode();
+            data.put("event.offsetX", offsetX);
+            data.put("event.offsetY", offsetY);
+            data.put("element.clientWidth", boxWidth);
+            data.put("element.clientHeight", boxHeight);
+            data.put("element.naturalWidth", naturalWidth);
+            data.put("element.naturalHeight", naturalHeight);
+            fireDomEvent("click", data);
+        }
+    }
+
+    @Test
+    void pictureClick_asTheBrowserReportsIt_reachesTheSessionAsTheCell() {
+        stubOpeningRoom("A grand throne room.", "pic-1");
+        enterViaAuthorRoute();
+        when(session.submitClick(2, 7)).thenReturn(new RunResult(List.of("The door opens."), false, "What now?"));
+
+        // 200 x 100 box showing a 400 x 200 picture, clicked at (50, 75): column 2, row 7
+        new PictureTester(find(Image.class, view).single()).click(50, 75, 200, 100, 400, 200);
+
+        verify(session).submitClick(2, 7);
     }
 }

@@ -20,6 +20,7 @@ import com.pdg.adventure.model.action.CreateActionData;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.action.CreateAction;
 import com.pdg.adventure.server.location.Location;
+import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.tangible.GenericContainer;
@@ -36,6 +37,7 @@ class CreateActionMapperTest {
     @Mock private AdventureConfig adventureConfig;
     @Mock private MessagesHolder messagesHolder;
     @Mock private Item thing;
+    @Mock private GameContext gameContext;
     @Mock private GenericContainer container;
     @Mock private Location location;
     @Mock private GenericContainer locationContainer;

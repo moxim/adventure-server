@@ -221,7 +221,7 @@ Pay attention to:
    [`04-runtime-engine.md` § AdventureRunSession](04-runtime-engine.md#adventurerunsession-the-in-browser-play-surface).
 3. Implement `server/engine/AdventureRunSession.java` and
    `AdventureRunSessionFactory.java` — the turn-based (`submit(String) →
-   RunResult(lines, gameOver)`) wrapper a Vaadin view needs around
+   RunResult(lines, gameOver, prompt)`) wrapper a Vaadin view needs around
    `GameLoop`/`GameContext`, described in
    [`04-runtime-engine.md` § AdventureRunSession](04-runtime-engine.md#adventurerunsession-the-in-browser-play-surface).
    `AdventureRunSessionFactory.registerBaseWords` seeds only the save/load

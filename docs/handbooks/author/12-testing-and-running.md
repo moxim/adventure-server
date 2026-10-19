@@ -56,6 +56,8 @@ alphabet (for example Cyrillic or Greek) are drawn in a system font instead.
 When the current location (or a **Picture** action) has a [picture](11-pictures.md)
 to show, a picture panel appears above the transcript, scaled to fit. It
 updates after every command and disappears when there's nothing to show.
+You can click the picture: the game then runs your Processes with the cell you hit, see
+[Clicking the picture](09-workflow.md#clicking-the-picture).
 
 **Back**, above the transcript, exits the session — see the table above for
 where it sends you.

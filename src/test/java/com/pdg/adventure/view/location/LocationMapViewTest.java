@@ -88,7 +88,7 @@ class LocationMapViewTest extends BrowserlessTest {
 
         Div frame = find(Div.class, view).withClassName("world-map").single();
         assertThat(frame.getStyle().get("aspect-ratio")).isEqualTo("16 / 9");
-        assertThat(frame.getStyle().get("max-width")).isEqualTo("1280px");
+        assertThat(frame.getStyle().get("max-width")).isEqualTo("min(1280px, calc(50vh * 16 / 9))");
         assertThat(find(Button.class, view).all()).isEmpty();
     }
 

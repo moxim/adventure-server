@@ -117,8 +117,8 @@ public class GenericContainer extends Item implements Container {
         } else if (contents.size() >= maxSize) {
             result.setResultMessage(SystemMessageKey.SM54.defaultText().formatted(containerDescription));
         } else {
-            anItem.setParentContainer(this);
             contents.add(anItem);
+            anItem.setParentContainer(this);
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         }
         return result;
@@ -126,9 +126,14 @@ public class GenericContainer extends Item implements Container {
 
     @Override
     public ExecutionResult remove(Containable anItem) {
-        ExecutionResult result = new CommandExecutionResult(ExecutionResult.State.SUCCESS);
+        ExecutionResult result = new CommandExecutionResult();
         if (!contents.remove(anItem)) {
-            result.setExecutionState(ExecutionResult.State.FAILURE);
+            String itemDescription = anItem.getEnrichedBasicDescription();
+            String containerDescription = getEnrichedBasicDescription();
+            result.setResultMessage(SystemMessageKey.SM52.defaultText().formatted(itemDescription, containerDescription));
+        } else {
+            result.setExecutionState(ExecutionResult.State.SUCCESS);
+            anItem.setParentContainer(null);
         }
         return result;
     }

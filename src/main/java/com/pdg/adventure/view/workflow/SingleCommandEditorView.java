@@ -70,6 +70,8 @@ public class SingleCommandEditorView extends VerticalLayout
     private final boolean offersWildcardNoun;
     private final Span preconditionAndActionHolder;
     private PreconditionActionEditor preconditionActionEditor;
+    // Only a Process can be run by a click on the picture, so only there the CLICKED condition is offered.
+    private final boolean offersClicked;
     private Button saveButton;
     private Button resetButton;
 
@@ -92,6 +94,7 @@ public class SingleCommandEditorView extends VerticalLayout
         listViewClass = aListViewClass;
         binder = new Binder<>(CommandViewModel.class);
         offersWildcardNoun = aCommandListType == CommandListType.RESPONSE;
+        offersClicked = aCommandListType == CommandListType.PROCESS;
 
         Span helpText = new Span("Entering verb / adjective / noun combos here is optional " +
                         "and serves only as a hint for you. They are not evaluated against the player's input.");
@@ -227,7 +230,7 @@ public class SingleCommandEditorView extends VerticalLayout
         workflowData = adventureData.getWorkflowData();
 
         if (preconditionActionEditor == null) {
-            preconditionActionEditor = new PreconditionActionEditor(adventureData);
+            preconditionActionEditor = new PreconditionActionEditor(adventureData, offersClicked);
             preconditionActionEditor.setOnChange(() -> {
                 editorHasChanges = true;
                 updateSaveButtonState();

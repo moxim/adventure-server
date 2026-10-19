@@ -35,6 +35,7 @@ public class GameStateSnapshotter {
         Location current = gameContext.getCurrentLocation();
         snapshot.setCurrentLocationId(current == null ? null : current.getId());
         snapshot.setCurrentPictureId(gameContext.getCurrentPictureId());
+        snapshot.setPictureMode(gameContext.getPictureMode());
 
         for (Item item : adventureConfig.allItems().values()) {
             snapshot.getKnownItemIds().add(item.getId());
@@ -82,6 +83,7 @@ public class GameStateSnapshotter {
 
         gameContext.setCurrentLocation(savedLocation);
         gameContext.setCurrentPictureId(aSnapshot.getCurrentPictureId());
+        gameContext.setPictureMode(aSnapshot.getPictureMode());
         return true;
     }
 

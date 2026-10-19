@@ -25,6 +25,12 @@ public class VariableProvider implements Serializable {
     /** The number of turns the player has taken: PAW's flags 31 and 32, kept as one variable. */
     public static final String TURNS_VARIABLE_NAME = "TURNS";
 
+    /**
+     * Steers the question the game asks when it waits for input: PAW's flag 42. 0 (the start value) leaves the choice
+     * to chance; a value from 2 on picks system message 2 to 5, see {@code AdventureRunSession#prompt()}.
+     */
+    public static final String PROMPT_VARIABLE_NAME = "PROMPT";
+
     private final Map<String, Integer> variables;
 
     public VariableProvider() {

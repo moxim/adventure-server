@@ -8,6 +8,7 @@ import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.model.PictureMode;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.WorkflowData;
 import com.pdg.adventure.server.location.Location;
@@ -32,6 +33,11 @@ public class GameContext {
     private String currentNoun = VocabularyData.EMPTY_STRING;
     private String currentAdjective = VocabularyData.EMPTY_STRING;
     private String currentPictureId;
+    private PictureMode pictureMode = PictureMode.DEFAULT;
+    // The grid cell of the click GameLoop is running the Processes for; null outside such a run.
+    private Integer clickedColumn;
+    private Integer clickedRow;
+    private boolean clickHandled;
 
     /** Who is playing which adventure, and the builder version the adventure carried; set when a run starts. */
     public record RunIdentity(String playerId, String adventureId, String adventureTitle, String builderVersion) {
@@ -71,6 +77,27 @@ public class GameContext {
 
     public Container getPocket() {
         return pocket;
+    }
+
+    /**
+     * Whether the player would notice a thing being added to or removed from the container, so that actions like
+     * Create and Destroy show their message only to a player who is there to see it. That is the case for the player's
+     * pocket (it is felt even in the dark) and for the item container of the current location, unless that is too dark
+     * to see anything. What happens inside any other container, a chest in the room included, goes unnoticed.
+     * <p>
+     * The location and the pocket are looked at on every call: the player moves during a game.
+     *
+     * @param aContainer where a thing is added or removed; null (a thing without a container) is not noticed
+     */
+    public boolean playerNoticesChangeIn(Container aContainer) {
+        if (aContainer == null) {
+            return false;
+        }
+        if (aContainer.equals(pocket)) {
+            return true;
+        }
+        return currentLocation != null && !currentLocation.isTooDarkToSee()
+               && aContainer.equals(currentLocation.getItemContainer());
     }
 
     /**
@@ -160,6 +187,53 @@ public class GameContext {
 
     public String getCurrentAdjective() {
         return currentAdjective;
+    }
+
+    /**
+     * Starts a click: records the cell of the picture grid (column, row, counted from 0) and empties the typed
+     * fields, so that what the player typed last cannot satisfy a condition during the click run. Ended by
+     * {@link #endClick()}.
+     */
+    public void beginClick(int aColumn, int aRow) {
+        clickedColumn = aColumn;
+        clickedRow = aRow;
+        clickHandled = false;
+        setCurrentVerb(null);
+        setCurrentAdjective(null);
+        setCurrentNoun(null);
+        setCurrentPreposition(null);
+        setCurrentAdverb(null);
+        setCurrentNoun2(null);
+        setCurrentAdjective2(null);
+    }
+
+    public void endClick() {
+        clickedColumn = null;
+        clickedRow = null;
+        clickHandled = false;
+    }
+
+    /** Whether a click is being run and it is in this cell; false for a missing coordinate. */
+    public boolean isClickAt(Integer aColumn, Integer aRow) {
+        return clickedColumn != null && clickedColumn.equals(aColumn) && clickedRow != null && clickedRow.equals(aRow);
+    }
+
+    /** Called when a command with a CLICKED condition for the click ran its actions: the click was understood. */
+    public void markClickHandled() {
+        clickHandled = true;
+    }
+
+    public boolean isClickHandled() {
+        return clickHandled;
+    }
+
+    /** Whether a location's picture is shown on arrival; DEFAULT until a PictureMode action says otherwise. */
+    public PictureMode getPictureMode() {
+        return pictureMode;
+    }
+
+    public void setPictureMode(PictureMode aPictureMode) {
+        pictureMode = aPictureMode == null ? PictureMode.DEFAULT : aPictureMode;
     }
 
     public void setCurrentPictureId(String aPictureId) {

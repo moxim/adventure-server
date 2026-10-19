@@ -14,7 +14,12 @@ public class PreconditionActionEditor extends VerticalLayout {
     private final ActionListEditor actionListEditor;
 
     public PreconditionActionEditor(AdventureData adventureData) {
-        conditionListEditor = new ConditionListEditor(adventureData);
+        this(adventureData, false);
+    }
+
+    /** @param offersClicked whether the CLICKED condition can be added: only for the list of Processes */
+    public PreconditionActionEditor(AdventureData adventureData, boolean offersClicked) {
+        conditionListEditor = new ConditionListEditor(adventureData, offersClicked);
         actionListEditor = new ActionListEditor(adventureData);
 
         VerticalLayout preconditionsSection = new VerticalLayout(new NativeLabel("Preconditions"), conditionListEditor);
@@ -36,8 +41,11 @@ public class PreconditionActionEditor extends VerticalLayout {
         commandData.setActions(actionListEditor.getActions());
     }
 
+    /** Validates the conditions and the actions, marking the invalid fields of all of them. */
     public boolean validate() {
-        return actionListEditor.validate();
+        boolean conditionsValid = conditionListEditor.validate();
+        boolean actionsValid = actionListEditor.validate();
+        return conditionsValid && actionsValid;
     }
 
     /** Wire a single change callback to both editors so the host view can track dirtiness. */

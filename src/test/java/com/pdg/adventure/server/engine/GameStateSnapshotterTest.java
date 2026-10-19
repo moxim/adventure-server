@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.model.GameSnapshotData;
+import com.pdg.adventure.model.PictureMode;
 import com.pdg.adventure.server.AdventureConfig;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.support.DescriptionProvider;
@@ -87,11 +88,13 @@ class GameStateSnapshotterTest {
     void capture_recordsLocationPictureKnownItemsAndOrderedContainers() {
         hall.setTimesVisited(3);
         gameContext.setCurrentPictureId("pic-1");
+        gameContext.setPictureMode(PictureMode.ON);
 
         GameSnapshotData snapshot = snapshotter.capture();
 
         assertThat(snapshot.getCurrentLocationId()).isEqualTo(hall.getId());
         assertThat(snapshot.getCurrentPictureId()).isEqualTo("pic-1");
+        assertThat(snapshot.getPictureMode()).isEqualTo(PictureMode.ON);
         assertThat(snapshot.getKnownItemIds())
                 .containsExactlyInAnyOrder(apple.getId(), lamp.getId(), cloak.getId(), sword.getId(), ring.getId());
         assertThat(snapshot.getContainers().get(hallItems.getId())).containsExactly(apple.getId(), lamp.getId());
@@ -113,7 +116,9 @@ class GameStateSnapshotterTest {
     @Test
     void restore_putsEverythingBackAsCaptured() {
         hall.setTimesVisited(3);
+        gameContext.setPictureMode(PictureMode.OFF);
         GameSnapshotData snapshot = snapshotter.capture();
+        gameContext.setPictureMode(PictureMode.ON);
 
         // play on: take the apple, drop the cloak into the cellar and take it off, move, change the world
         hallItems.remove(apple);
@@ -141,6 +146,18 @@ class GameStateSnapshotterTest {
         assertThat(variables.get("score").orElseThrow().value()).isEqualTo(7);
         assertThat(gameContext.getCurrentLocation()).isSameAs(hall);
         assertThat(gameContext.getCurrentPictureId()).isNull();
+        assertThat(gameContext.getPictureMode()).isEqualTo(PictureMode.OFF);
+    }
+
+    @Test
+    void restore_ofASaveWithoutAPictureMode_goesBackToTheDefaultMode() {
+        GameSnapshotData snapshot = snapshotter.capture();
+        snapshot.setPictureMode(null);
+        gameContext.setPictureMode(PictureMode.ON);
+
+        snapshotter.restore(snapshot);
+
+        assertThat(gameContext.getPictureMode()).isEqualTo(PictureMode.DEFAULT);
     }
 
     @Test

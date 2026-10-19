@@ -18,11 +18,12 @@ import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
+import com.pdg.adventure.view.support.PictureGrid;
 import com.pdg.adventure.view.support.RouteIds;
 
 /**
  * Shows the picture the author chose as the adventure's world map (set in the {@link AdventureEditorView}),
- * stretched into a 16:9 frame of at most 1280 x 720 pixels with a clickable 10 x 10 grid on top.
+ * stretched into a 16:9 frame of at most 1280 x 720 pixels (and half the window height) with a clickable 10 x 10 grid on top.
  * Without a chosen picture it hints at where to choose one.
  */
 @PageTitle("Your World")
@@ -31,8 +32,10 @@ import com.pdg.adventure.view.support.RouteIds;
 @StyleSheet("styles/world-map.css")
 public class LocationMapView extends VerticalLayout implements BeforeEnterObserver {
 
-    private static final int GRID_SIZE = 10;
-    private static final String MAX_WIDTH = "1280px";
+    private static final int GRID_SIZE = PictureGrid.SIZE;
+    // At most 1280 x 720 pixels, and at most half the window high (the 16:9 frame is that high at 50vh * 16 / 9 wide),
+    // so a wide window that is not tall does not let the map take all of it.
+    private static final String MAX_WIDTH = "min(1280px, calc(50vh * 16 / 9))";
     private static final String TEXT_POSITION = "position";
 
     private final transient AdventureAccessService accessService;

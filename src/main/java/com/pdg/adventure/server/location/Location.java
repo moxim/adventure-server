@@ -161,11 +161,16 @@ public class Location extends Thing implements Visitable {
         return total;
     }
 
-    private boolean isTooDarkToSee() {
+    public boolean isTooDarkToSee() {
         return getPerceivedLight() < MINIMUM_LIGHT_TO_SEE;
     }
 
     private String pictureIdIfVisible() {
+        return getVisiblePictureId();
+    }
+
+    /** This location's picture, or {@code null} if it has none or is too dark to see it. */
+    public String getVisiblePictureId() {
         return isTooDarkToSee() ? null : pictureId;
     }
 

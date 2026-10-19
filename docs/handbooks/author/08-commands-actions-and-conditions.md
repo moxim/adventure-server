@@ -17,6 +17,11 @@ page.
 - **Create** opens a blank command editor.
 - **Double-click a row**, or right-click it for **Edit**, to open the full
   editor for that command.
+- A command's preconditions and actions are written as short lines, for
+  example `NOT_HERE dragon`, `VAR score >? 3`, `SETVAR door_open = 1`,
+  `MOVE key TO pocket` or `MESSAGE The door creaks open`. Items and locations
+  appear under their names, the player's pocket as `pocket`, and a Message by its
+  summary. A `?` means that the field has not been filled in yet.
 - Right-click a row for **Delete** to remove just that one variant. A
   **Delete Command** dialog asks you to confirm first.
 
@@ -33,9 +38,10 @@ build commands as specific as `unlock rusty door` or as general as `look`.
 
 Here's the part that surprises new authors: a location or item can have
 **more than one command with the exact same verb/adjective/noun**. The
-Command Chain grid lists every variant sharing that trigger (its columns
-show each one's first precondition and first action, so you can tell them
-apart at a glance).
+Command Chain grid lists every variant sharing that trigger. Its
+**Preconditions** and **Actions** columns show all of each variant's
+preconditions and actions, one per line, just like the list of commands, so
+you can tell the variants apart at a glance.
 
 At play time, Adventure Builder walks the chain **in order** and runs the
 **first variant whose preconditions all pass**. This is how you make one
@@ -77,6 +83,9 @@ every kind alphabetically. Each row:
   precondition passes when the check would normally *fail*. This is how you
   express "NOT" — there's no separate "Not" entry in the dropdown; every
   condition can be negated in place instead.
+
+The **Clicked** condition (a click on a cell of the picture) appears in the dropdown only when
+you edit a Process, see [Chapter 9](09-workflow.md#clicking-the-picture).
 
 All the preconditions on one command variant are combined with **AND** —
 every one of them must pass. There's no OR; if you need "either of these

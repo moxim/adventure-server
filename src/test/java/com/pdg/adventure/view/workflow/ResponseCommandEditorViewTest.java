@@ -29,6 +29,8 @@ import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.WorkflowData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
+import com.pdg.adventure.view.command.condition.ConditionSelector;
+import com.pdg.adventure.view.command.condition.ConditionSelectorProbe;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
@@ -124,5 +126,16 @@ class ResponseCommandEditorViewTest extends BrowserlessTest {
         assertThat(saved).isTrue();
         assertThat(adventure.getWorkflowData().getInterceptorCommands()).hasSize(2);
         verify(adventureService).saveAdventureData(adventure);
+    }
+
+    @Test
+    void conditionSelector_doesNotOfferClicked_forResponses() {
+        AdventureData adventure = adventureWithOneResponse();
+        when(accessService.findAdventureById(eq("adv-1"), any(UserData.class))).thenReturn(Optional.of(adventure));
+
+        view.beforeEnter(eventWithParams(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), "adv-1")));
+
+        ConditionSelector selector = find(ConditionSelector.class, view).single();
+        assertThat(ConditionSelectorProbe.labels(selector)).doesNotContain(ConditionSelectorProbe.CLICKED_LABEL);
     }
 }

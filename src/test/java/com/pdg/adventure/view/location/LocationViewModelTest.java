@@ -7,9 +7,11 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.pdg.adventure.model.CommandData;
 import com.pdg.adventure.model.DirectionData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.Word;
+import com.pdg.adventure.model.basic.CommandDescriptionData;
 import com.pdg.adventure.model.basic.DescriptionData;
 
 class LocationViewModelTest {
@@ -54,6 +56,23 @@ class LocationViewModelTest {
         LocationViewModel vm = new LocationViewModel(data);
 
         assertThat(vm.getNumberOfExits()).isEqualTo(2);
+    }
+
+    @Test
+    void getNumberOfCommands_returnsCountFromCommandProviderData() {
+        LocationData data = createLocationData();
+        Word verb = new Word("open", Word.Type.VERB);
+        data.getCommandProviderData().add(new CommandData(new CommandDescriptionData(verb, null, null)));
+        data.getCommandProviderData().add(new CommandData(new CommandDescriptionData(verb, null, null)));
+
+        LocationViewModel vm = new LocationViewModel(data);
+
+        assertThat(vm.getNumberOfCommands()).isEqualTo(2);
+    }
+
+    @Test
+    void numberOfCommands_isZero_whenNoCommands() {
+        assertThat(new LocationViewModel(createLocationData()).getNumberOfCommands()).isZero();
     }
 
     @Test

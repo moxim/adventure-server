@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.PictureMode;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.SystemMessageData;
 import com.pdg.adventure.model.VocabularyData;
@@ -267,6 +268,18 @@ class AdventureRunSessionFactoryTest {
     }
 
     @Test
+    void start_leavesThePromptToChance_andAReplacingRunStartsThatWayAgain() {
+        AdventureData adventureData = startableAdventure();
+        AdventureRunSession old = factory.start(adventureData, new RunOwner("player-1"));
+        assertThat(variables.getAllAsMap()).containsEntry(VariableProvider.PROMPT_VARIABLE_NAME, 0);
+        variables.set(VariableProvider.PROMPT_VARIABLE_NAME, 4);
+
+        factory.startReplacingActive(adventureData, new RunOwner("player-1"));
+
+        assertThat(variables.getAllAsMap()).containsEntry(VariableProvider.PROMPT_VARIABLE_NAME, 0);
+    }
+
+    @Test
     void startReplacingActive_startsTheNewRunAtTurnZeroAgain() {
         AdventureData adventureData = startableAdventure();
         AdventureRunSession old = factory.start(adventureData, new RunOwner("player-1"));
@@ -285,12 +298,14 @@ class AdventureRunSessionFactoryTest {
         factory.start(adventureData, owner);
         items.put("sword", mock(Item.class));
         gameContext.setCurrentPictureId("pic-1");
+        gameContext.setPictureMode(PictureMode.OFF);
 
         factory.release(owner);
 
         assertThat(items).isEmpty();
         assertThat(gameContext.getCurrentLocation()).isNull();
         assertThat(gameContext.getCurrentPictureId()).isNull();
+        assertThat(gameContext.getPictureMode()).isEqualTo(PictureMode.DEFAULT);
         assertThat(factory.start(adventureData, new RunOwner("player-1")).isGameOver()).isFalse();
     }
 
