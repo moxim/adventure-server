@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.model.PictureMode;
 import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.location.Location;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
@@ -124,5 +125,53 @@ class MovePlayerActionTest {
         new MovePlayerAction(destination, gameContext, variableProvider).execute();
 
         verify(gameContext).setCurrentPictureId(null);
+    }
+
+    @Test
+    void execute_inPictureModeOn_showsTheLocationsPicture_alsoOnARepeatVisit() {
+        when(gameContext.getPictureMode()).thenReturn(PictureMode.ON);
+        when(destination.getArrivalDescription()).thenReturn(new Location.LocationDescription("A tower.", null));
+        when(destination.getVisiblePictureId()).thenReturn("tower-picture");
+        when(destination.getTimesVisited()).thenReturn(3);
+
+        new MovePlayerAction(destination, gameContext, variableProvider).execute();
+
+        verify(gameContext).setCurrentPictureId("tower-picture");
+    }
+
+    @Test
+    void execute_inPictureModeOn_withNothingToSee_clearsThePicture() {
+        when(gameContext.getPictureMode()).thenReturn(PictureMode.ON);
+        when(destination.getArrivalDescription()).thenReturn(new Location.LocationDescription("A dark cave.", null));
+        when(destination.getVisiblePictureId()).thenReturn(null);
+        when(destination.getTimesVisited()).thenReturn(0);
+
+        new MovePlayerAction(destination, gameContext, variableProvider).execute();
+
+        verify(gameContext).setCurrentPictureId(null);
+    }
+
+    @Test
+    void execute_inPictureModeOff_showsNoPicture_evenOnTheFirstVisit() {
+        when(gameContext.getPictureMode()).thenReturn(PictureMode.OFF);
+        when(destination.getArrivalDescription())
+                .thenReturn(new Location.LocationDescription("A cave.", "cave-entrance"));
+        when(destination.getTimesVisited()).thenReturn(0);
+
+        new MovePlayerAction(destination, gameContext, variableProvider).execute();
+
+        verify(gameContext).setCurrentPictureId(null);
+    }
+
+    @Test
+    void execute_inPictureModeDefault_showsThePictureOnTheFirstVisitOnly() {
+        when(gameContext.getPictureMode()).thenReturn(PictureMode.DEFAULT);
+        when(destination.getArrivalDescription())
+                .thenReturn(new Location.LocationDescription("A cave.", "cave-entrance"));
+        when(destination.getTimesVisited()).thenReturn(0);
+
+        new MovePlayerAction(destination, gameContext, variableProvider).execute();
+
+        verify(gameContext).setCurrentPictureId("cave-entrance");
     }
 }

@@ -8,6 +8,7 @@ import com.pdg.adventure.api.CommandDescription;
 import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.api.ExecutionResult;
+import com.pdg.adventure.model.PictureMode;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.WorkflowData;
 import com.pdg.adventure.server.location.Location;
@@ -32,6 +33,7 @@ public class GameContext {
     private String currentNoun = VocabularyData.EMPTY_STRING;
     private String currentAdjective = VocabularyData.EMPTY_STRING;
     private String currentPictureId;
+    private PictureMode pictureMode = PictureMode.DEFAULT;
     // The grid cell of the click GameLoop is running the Processes for; null outside such a run.
     private Integer clickedColumn;
     private Integer clickedRow;
@@ -223,6 +225,15 @@ public class GameContext {
 
     public boolean isClickHandled() {
         return clickHandled;
+    }
+
+    /** Whether a location's picture is shown on arrival; DEFAULT until a PictureMode action says otherwise. */
+    public PictureMode getPictureMode() {
+        return pictureMode;
+    }
+
+    public void setPictureMode(PictureMode aPictureMode) {
+        pictureMode = aPictureMode == null ? PictureMode.DEFAULT : aPictureMode;
     }
 
     public void setCurrentPictureId(String aPictureId) {

@@ -29,6 +29,7 @@ import com.pdg.adventure.model.action.InventoryActionData;
 import com.pdg.adventure.model.action.LoadGameActionData;
 import com.pdg.adventure.model.action.LightActionData;
 import com.pdg.adventure.model.action.ListAtActionData;
+import com.pdg.adventure.model.action.PictureModeActionData;
 import com.pdg.adventure.model.action.MessageActionData;
 import com.pdg.adventure.model.action.MesActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
@@ -142,6 +143,7 @@ public class PreconditionActionFormatter {
             case MessageActionData m -> "MESSAGE " + resolveMessage(m.getMessageId());
             case MesActionData m -> "MSG " + resolveMessage(m.getMessageId());
             case NewLineActionData _ -> "NEWLINE";
+            case PictureModeActionData pm -> "PICTUREMODE " + (pm.getMode() == null ? "?" : pm.getMode().name());
             case ListAtActionData la -> "LISTAT " + resolveContainer(la.getContainerId());
             case SysMesActionData s -> "SYSMESS " + txt(s.getMessageKeyId());
             case CreateActionData cr -> "CREATE " + resolveName(cr.getThingId());

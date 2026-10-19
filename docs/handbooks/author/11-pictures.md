@@ -53,7 +53,7 @@ confirmation first.
 
 ## Showing a picture
 
-There are two ways, and they work together.
+There are three ways, and they work together.
 
 ### A location's default picture
 
@@ -66,6 +66,8 @@ name. A location with a default picture shows it to the player like this:
 | The player arrives at the location **for the first time** | The default picture is shown. |
 | The player arrives at it **again** | No picture is shown, and whatever was showing is **cleared** — the panel disappears. |
 | The player types `look` (or `l`, `desc`) | The default picture is shown, **every** time. |
+
+That is the **DEFAULT** behaviour; the [PictureMode action](#the-picturemode-action) changes it.
 
 > **Note:** A location's picture is only shown if the player can see. If the
 > location is too dark, there's no picture. "Too dark" means the location's
@@ -87,11 +89,31 @@ command's action list it appears as `PICTURE <name>`.
 The picture stays up until the player moves to another location, looks, or a
 different Picture action runs.
 
-> **Tip: show a picture on every arrival, not just the first.** Add an
+> **Tip: show a picture on every arrival, not just the first.** Set the
+> picture mode to **ON** (see below). For one location only, add an
 > **Arrival Process** ([Workflow I](09-workflow.md#arrival-processes-run-when-a-location-is-described))
 > with a **Player At** precondition for the location and a **Picture** action.
 > Arrival Processes run *after* the location's own picture has been set, so
 > yours wins — and it comes back on every visit.
+
+### The PictureMode action
+
+A **PictureMode** action ("Decide when a location's picture is shown on
+arrival") takes one argument, picked from the required **Mode** drop-down. It
+changes the rule in the table above for every location from then on, until
+another PictureMode action runs; in the command's action list it appears as
+`PICTUREMODE <mode>`. A game starts in **DEFAULT**.
+
+| Mode | When the player arrives at a location |
+|------|---------------------------------------|
+| **ON** | The location's default picture is shown on **every** arrival, however often the player has been there. |
+| **OFF** | No picture is shown on arrival, and whatever was showing is **cleared**. |
+| **DEFAULT** | The default picture is shown on the **first** arrival only; on later arrivals the picture is cleared. |
+
+In every mode a `look` shows the location's default picture and a **Picture**
+action shows its own, and a location too dark to see never shows its picture.
+The mode is part of a saved game; a game saved before the action existed loads
+in DEFAULT.
 
 ## What players see
 

@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.MessageData;
+import com.pdg.adventure.model.PictureMode;
 import com.pdg.adventure.model.action.*;
 
 class PreconditionActionFormatterActionsTest {
@@ -82,6 +83,19 @@ class PreconditionActionFormatterActionsTest {
     @Test
     void listAt_withoutAContainer_showsAQuestionMark() {
         assertThat(formatter.formatAction(new ListAtActionData())).isEqualTo("LISTAT ?");
+    }
+
+    @Test
+    void pictureMode() {
+        PictureModeActionData a = new PictureModeActionData();
+        a.setMode(PictureMode.OFF);
+
+        assertThat(formatter.formatAction(a)).isEqualTo("PICTUREMODE OFF");
+    }
+
+    @Test
+    void pictureMode_withoutAMode_showsAQuestionMark() {
+        assertThat(formatter.formatAction(new PictureModeActionData())).isEqualTo("PICTUREMODE ?");
     }
 
     @Test

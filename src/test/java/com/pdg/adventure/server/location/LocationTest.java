@@ -330,4 +330,20 @@ class LocationTest {
         assertThat(desc).doesNotContain(SystemMessageKey.SM0.defaultText())
                         .contains("small", "perch", "mouse", "loop");
     }
+
+    @Test
+    void getVisiblePictureId_returnsThePicture_whateverTheVisitCount() {
+        Location room = roomWithDescriptionsAndPicture("short", "long", "treasure-chest");
+        room.setTimesVisited(5);
+
+        assertThat(room.getVisiblePictureId()).isEqualTo("treasure-chest");
+    }
+
+    @Test
+    void getVisiblePictureId_whenTooDarkToSee_isNull() {
+        Location room = roomWithDescriptionsAndPicture("short", "long", "treasure-chest");
+        room.setLight(0);
+
+        assertThat(room.getVisiblePictureId()).isNull();
+    }
 }

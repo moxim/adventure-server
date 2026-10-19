@@ -488,6 +488,7 @@ this chapter only documents the storage shape.
 | `BreakActionData` | stop the rest of the current command chain / action list (`BreakAction`) |
 | `SetVariableActionData`, `IncrementVariableActionData`, `DecrementVariableActionData` | variable mutations |
 | `ListAtActionData` | `ListAtAction` (PAW's LISTAT); one field, `containerId` — the id of a location's `ItemContainerData` or of the player pocket; shown to authors as "ListAt" |
+| `PictureModeActionData` | `PictureModeAction`; one field, `mode` — a `PictureMode` (`ON`, `OFF`, `DEFAULT`); shown to authors as "PictureMode" |
 | `NewLineActionData` | `NewLineAction` (PAW's NEWLINE); no fields; shown to authors as "NewLine" |
 | `SysMesActionData` | `SysMesAction` (PAW's SYSMESS); one field, `messageKeyId` — the id of a `SystemMessageKey`, e.g. `"15"`; shown to authors as "SystemMsg" |
 | `RandomActionData` | `RandomAction` (PAW's RANDOM); one field, `name` — the variable set to a random integer 0..99 |

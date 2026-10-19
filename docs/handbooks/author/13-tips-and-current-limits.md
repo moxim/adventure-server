@@ -49,7 +49,8 @@ worth planning around.
   precondition to tie one to a location. See [Chapter 9](09-workflow.md#arrival-processes-run-when-a-location-is-described).
 - **A location's picture shows on the first arrival and on every `look`, but
   not on later arrivals.** Arriving again *clears* the picture; to bring it
-  back each time, use an Arrival Process with a **Picture** action. A picture
+  back each time, use the **PictureMode** action with **ON** (or, for one
+  location, an Arrival Process with a **Picture** action). A picture
   also stays hidden in a location that's too dark (total light below 10).
   Uploads must be PNG, JPEG or WebP and under 2 MB. See
   [Chapter 11](11-pictures.md).

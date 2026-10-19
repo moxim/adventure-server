@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.pdg.adventure.model.AdventureData;
+import com.pdg.adventure.model.PictureMode;
 import com.pdg.adventure.model.SavedGameData;
 import com.pdg.adventure.model.SystemMessageData;
 import com.pdg.adventure.model.Word;
@@ -127,6 +128,7 @@ public class AdventureRunSessionFactory {
         gameContext.setCurrentLocation(null);
         gameContext.setPocket(null);
         gameContext.setCurrentPictureId(null);
+        gameContext.setPictureMode(PictureMode.DEFAULT);
         gameContext.setRunIdentity(null);
     }
 

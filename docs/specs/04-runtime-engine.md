@@ -368,13 +368,19 @@ it with what it last drew, after the opening arrival and after every submitted
 line, and shows or hides the picture panel (an id that matches no picture — one
 deleted meanwhile, say — just hides the panel).
 
-Three things write it:
+Four things write it:
 
 | Writer | When | Value set |
 |--------|------|-----------|
-| `MovePlayerAction` | The player walks into a location (including the opening arrival of a run) | `Location.getArrivalDescription().pictureId()` — the location's default picture on the **first** visit only; `null` on every repeat visit, which *clears* whatever was showing |
+| `MovePlayerAction` | The player walks into a location (including the opening arrival of a run) | By `GameContext.getPictureMode()` (below): DEFAULT — `Location.getArrivalDescription().pictureId()`, the location's default picture on the **first** visit only and `null` on every repeat visit, which *clears* whatever was showing; ON — `Location.getVisiblePictureId()` on every visit; OFF — `null` |
 | `describe` / `describe here` Response with a `LookAction` | An explicit look / describe | `Location.getLookDescription().pictureId()` — the default picture **every** time |
 | `PictureAction` | An author-placed action | Its own `pictureId`, kept until the next move, look or Picture action |
+| `PictureModeAction` | An author-placed action | Nothing now: it sets the picture mode, which only `MovePlayerAction` reads |
+
+**Picture mode.** `GameContext.pictureMode` (`PictureMode`: `ON`, `OFF`, `DEFAULT`; never `null`, a `null`
+set means `DEFAULT`) decides what an arrival shows. It starts as `DEFAULT` for every run (reset with the other context
+state in `AdventureRunSessionFactory`) and is part of a saved game (`GameSnapshotData.pictureMode`; a save without one
+restores as `DEFAULT`). It does not touch `LookAction` or `PictureAction`, and the darkness gate below applies in every mode.
 
 Both description methods return a `Location.LocationDescription(text,
 pictureId)` record. In both, the picture is withheld (`null`) when the player
@@ -504,11 +510,12 @@ author-placeable:
 | `SaveGameAction(gameContext, snapshotter, savedGameService)` | **SaveGame.** Save the running game into the typed slot or the first free one — see [§ Saving and loading games](#saving-and-loading-games). |
 | `LoadGameAction(gameContext, snapshotter, savedGameService)` | **LoadGame.** List the player's saves, or restore the typed slot in place. |
 | `LightAction(item, lumen)` | Set the item's light level absolutely; emits `SM66`. |
+| `PictureModeAction(mode, gameContext)` | Set `gameContext.pictureMode`; always SUCCESS with no text (informational-only). |
 | `PictureAction(pictureId, gameContext)` | Set `gameContext.currentPictureId` so the play screen shows that picture; always SUCCESS with no text (informational-only). |
 | `MoveItemAction(item, dest, msgs)` | The primitive: remove the item from its parent if any, add it to `dest` if not full. Emits `SM54` (moved) / `SM55` (full) / `SM56` (can't). |
 | `WearAction(wearable, msgs)` | If `isWearable && !isWorn`, set `isWorn=true`, `SUCCESS` + `SM37`; else `FAILURE` + `SM40`. Interpolates `thing.getStrippedBasicDescription()` (article-less — the `SMnn` texts already carry *"the %s"*). |
 | `RemoveAction(wearable, msgs)` | Inverse of `WearAction`; clears `isWorn`; `SUCCESS` + `SM38` / `FAILURE` + `SM41`. Also interpolates the *stripped* (article-less) description. |
-| `MovePlayerAction(destination, gameContext, variableProvider)` | Set `gameContext.currentLocation = destination`, run `DescribeAction` over `destination.getArrivalDescription()` (visit-aware: long on first visit, short thereafter), set `gameContext.currentPictureId` from that description, record the `VISITED` variable, increment `timesVisited`, then append the Arrival Processes' output. |
+| `MovePlayerAction(destination, gameContext, variableProvider)` | Set `gameContext.currentLocation = destination`, run `DescribeAction` over `destination.getArrivalDescription()` (visit-aware: long on first visit, short thereafter), set `gameContext.currentPictureId` by the picture mode (DEFAULT: from that description; ON: `destination.getVisiblePictureId()`; OFF: none), record the `VISITED` variable, increment `timesVisited`, then append the Arrival Processes' output. |
 | `InventoryAction(pocketSupplier)` | Return the carried-items header (`SM9`) followed by `pocket.listContents()`, one per line, as its result message. |
 | `DiagnoseVariableAction(name, vars)` | **DIAGNOSE_VAR.** Return `name : value` as its result message, e.g. `VISITED : 14`, with the variable's current value. A variable that does not exist prints a hyphen (`ghost : -`) and is not created. Always `SUCCESS`. |
 | `DiagnoseVariablesAction(vars)` | **DIAGNOSE_VARS.** Return every variable currently in the shared provider as `name : value`, one per line in a single message, sorted by name ignoring case; a single hyphen if there are none. Always `SUCCESS`. |
