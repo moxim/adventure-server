@@ -1,8 +1,11 @@
 package com.pdg.adventure.view.picture;
 
 import com.vaadin.browserless.BrowserlessTest;
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextField;
@@ -19,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -229,5 +233,55 @@ class PictureEditorViewBrowserlessTest extends BrowserlessTest {
 
         assertThat(test(find(Notification.class).single()).getText()).isEqualTo("Could not read the uploaded file.");
         assertThat(find(Image.class, view).all()).isEmpty();
+    }
+
+    private List<Div> gridCells() {
+        return find(Div.class, view).withClassName("world-map-cell").all();
+    }
+
+    @Test
+    void aStoredPicture_isShownWithATenByTenGridOverIt() {
+        enterWithPictureId("pic-1");
+
+        assertThat(find(Image.class, view).all()).hasSize(1);
+        assertThat(gridCells()).hasSize(100);
+    }
+
+    @Test
+    void theGridSitsInTheSameBoxAsThePicture_soItsCellsCoverExactlyThePicture() {
+        enterWithPictureId("pic-1");
+        Image image = find(Image.class, view).single();
+
+        Div frame = (Div) image.getParent().orElseThrow();
+
+        assertThat(frame.getStyle().get("position")).isEqualTo("relative");
+        assertThat(frame.getChildren().filter(Div.class::isInstance).findFirst().orElseThrow()
+                        .getStyle().get("position")).isEqualTo("absolute");
+    }
+
+    @Test
+    void clickingACellOfTheGrid_tellsTheAuthorWhichLocationWasClicked() {
+        enterWithPictureId("pic-1");
+        Div cell = gridCells().get(4 * 10 + 3);
+
+        ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
+
+        assertThat(test(find(Notification.class).single()).getText()).isEqualTo("Location 3 : 4");
+    }
+
+    @Test
+    void aNewPictureWithoutAnUpload_hasNoGrid() {
+        enterWithPictureId(null);
+
+        assertThat(gridCells()).isEmpty();
+    }
+
+    @Test
+    void aStagedUpload_isShownWithTheGridToo() {
+        enterWithPictureId(null);
+
+        view.handleUpload(uploadEventWith(new ByteArrayInputStream(pngBytes(64))));
+
+        assertThat(gridCells()).hasSize(100);
     }
 }

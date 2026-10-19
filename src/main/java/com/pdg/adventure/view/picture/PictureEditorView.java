@@ -3,10 +3,11 @@ package com.pdg.adventure.view.picture;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
@@ -28,11 +29,13 @@ import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
+import com.pdg.adventure.view.support.PictureGrid;
 import com.pdg.adventure.view.support.RouteIds;
 
 @Route(value = "author/adventures/:adventureId/pictures/:pictureId/edit", layout = PicturesMainLayout.class)
 @RouteAlias(value = "author/adventures/:adventureId/pictures/new", layout = PicturesMainLayout.class)
 @RolesAllowed("ROLE_AUTHOR")
+@StyleSheet("styles/world-map.css")
 public class PictureEditorView extends VerticalLayout
         implements HasDynamicTitle, BeforeLeaveObserver, BeforeEnterObserver {
 
@@ -43,6 +46,7 @@ public class PictureEditorView extends VerticalLayout
     private final transient AdventureAccessService accessService;
     private final Binder<PictureViewModel> binder;
     private final Image preview = new Image();
+    private final Div previewFrame = new Div(preview, PictureGrid.createOverlay());
     private final Upload upload;
 
     private Button saveButton;
@@ -75,8 +79,12 @@ public class PictureEditorView extends VerticalLayout
         upload.setMaxFileSize(MAX_FILE_SIZE_BYTES);
         upload.setMaxFiles(1);
 
-        preview.setMaxWidth("300px");
-        preview.setVisible(false);
+        // The frame hugs the drawn picture and the grid covers the frame, so the grid's cells are the cells the run view
+        // turns a click into (the picture is shown in its own proportions, as the run view shows it).
+        preview.getStyle().set("display", "block").set("max-width", "100%").set("max-height", "min(720px, 60vh)")
+               .set("width", "auto").set("height", "auto");
+        previewFrame.getStyle().set("position", "relative").set("width", "fit-content").set("max-width", "100%");
+        previewFrame.setVisible(false);
 
         upload.addFileRejectedListener(event -> {
             Notification notification = Notification.show(event.getErrorMessage(), 5000,
@@ -100,8 +108,7 @@ public class PictureEditorView extends VerticalLayout
         setMargin(true);
         setPadding(true);
 
-        HorizontalLayout uploadRow = new HorizontalLayout(upload, preview);
-        add(nameField, uploadRow, resetBackSaveView);
+        add(nameField, upload, previewFrame, resetBackSaveView);
     }
 
     /**
@@ -169,7 +176,7 @@ public class PictureEditorView extends VerticalLayout
     private void updatePreview() {
         byte[] content = pendingContent != null ? pendingContent : pictureData.getContent();
         if (content == null) {
-            preview.setVisible(false);
+            previewFrame.setVisible(false);
             return;
         }
         String contentType = pendingContent != null ? pendingContentType : pictureData.getContentType();
@@ -178,7 +185,7 @@ public class PictureEditorView extends VerticalLayout
             event.setContentType(contentType);
             event.getOutputStream().write(content);
         });
-        preview.setVisible(true);
+        previewFrame.setVisible(true);
     }
 
     private ResetBackSaveView setUpNavigationButtons() {

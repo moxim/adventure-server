@@ -1,14 +1,21 @@
 package com.pdg.adventure.view.support;
 
+import com.vaadin.browserless.BrowserlessTest;
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.notification.Notification;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.view.support.PictureGrid.Cell;
 
-class PictureGridTest {
+class PictureGridTest extends BrowserlessTest {
 
     @Test
     void size_isTen() {
@@ -66,5 +73,38 @@ class PictureGridTest {
     void aPictureNotLoadedYetOrAnEmptyBox_isOutside() {
         assertThat(PictureGrid.cellAt(10, 10, 1000, 500, 0, 0)).isEmpty();
         assertThat(PictureGrid.cellAt(10, 10, 0, 0, 2000, 1000)).isEmpty();
+    }
+
+    @Test
+    void overlay_hasTenTimesTenClickableCells() {
+        Div overlay = PictureGrid.createOverlay();
+        UI.getCurrent().add(overlay);
+
+        assertThat(cells(overlay)).hasSize(100);
+    }
+
+    @Test
+    void overlay_coversTheWholeBoxItIsPlacedIn() {
+        Div overlay = PictureGrid.createOverlay();
+
+        assertThat(overlay.getStyle().get("position")).isEqualTo("absolute");
+        assertThat(overlay.getStyle().get("inset")).isEqualTo("0");
+        assertThat(overlay.getStyle().get("grid-template-columns")).isEqualTo("repeat(10, 1fr)");
+        assertThat(overlay.getStyle().get("grid-template-rows")).isEqualTo("repeat(10, 1fr)");
+    }
+
+    @Test
+    void overlay_clickingACell_reportsItsColumnAndRow() {
+        Div overlay = PictureGrid.createOverlay();
+        UI.getCurrent().add(overlay);
+        Div cell = cells(overlay).get(3 * 10 + 7);
+
+        ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
+
+        assertThat(test(find(Notification.class).single()).getText()).isEqualTo("Location 7 : 3");
+    }
+
+    private List<Div> cells(Div anOverlay) {
+        return find(Div.class, anOverlay).withClassName("world-map-cell").all();
     }
 }

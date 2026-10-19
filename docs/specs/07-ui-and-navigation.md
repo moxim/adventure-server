@@ -472,7 +472,14 @@ tests can drive them without a context-menu click.
 - **`PictureEditorView`** (`…/pictures/:pictureId/edit`, alias
   `…/pictures/new`) — a required **Name** `TextField` and a single-file
   `Upload` (accepts `image/png`, `image/jpeg`, `image/webp`; at most 2 MB) with a
-  300 px preview. The upload is handled by an `UploadHandler` (`handleUpload`),
+  preview below it. The preview sits in a `position: relative`, `fit-content`
+  frame (the image in its own proportions, at most the frame's width and
+  `min(720px, 60vh)` high) with `PictureGrid.createOverlay()` laid over it: the
+  same 10 × 10 hover-highlighted, clickable grid as the world map
+  (`styles/world-map.css`; a click says "Location x : y"), so an author sees the
+  cells a `Clicked` condition names. The frame hugs the drawn picture, so the cells
+  cover it exactly as `AdventureRunView` maps a click (`PictureGrid.cellAt`).
+  The upload is handled by an `UploadHandler` (`handleUpload`),
   which runs without the UI lock and so reaches the UI only through
   `ui.access(...)`. It reads at most 2 MB + 1 byte, so an oversized body is
   refused without being buffered whole, and the content type is **sniffed from

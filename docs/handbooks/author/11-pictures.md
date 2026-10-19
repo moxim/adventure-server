@@ -37,6 +37,12 @@ is then removed for good.
 | **Name** | Required. A label for you — it's what you pick in the **Default Picture** and **Picture** drop-downs. It doesn't have to be unique. |
 | **Upload** | One image: **PNG, JPEG or WebP**, **smaller than 2 MB**. A preview appears as soon as the upload succeeds. |
 
+The preview has the same 10 × 10 grid over it as the [world map](05-locations-and-exits.md#the-world-map), so
+you can see where the cells of a [**Clicked** condition](09-workflow.md#clicking-the-picture) lie. Move the mouse
+over the picture and the cell under it is highlighted; click a cell and a message tells you its position, for
+example *"Location 7 : 3"*: **X** (the column, counted from 0 at the left) is 7 and **Y** (the row, counted from 0 at
+the top) is 3. The cells cover the picture exactly as in the running game.
+
 Adventure Builder looks at the file's actual contents, not its name. A file
 that merely *ends* in `.png` but isn't really a PNG, JPEG or WebP image is
 refused with *"The uploaded file is not a recognized PNG, JPEG, or WebP

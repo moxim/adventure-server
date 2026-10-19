@@ -1,4 +1,5 @@
-/* The clickable 10 x 10 grid laid over an adventure's world map (see LocationMapView). */
+/* The clickable 10 x 10 grid laid over an adventure's world map and over a picture in the picture editor
+   (see PictureGrid.createOverlay, LocationMapView and PictureEditorView). */
 .world-map-cell {
   cursor: pointer;
 }
