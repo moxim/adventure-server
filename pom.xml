@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.pdg-software.adventurebuilder</groupId>
@@ -15,6 +13,7 @@
     <properties>
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
+        <maven.deploy.skip>true</maven.deploy.skip> <!-- Skip deployment to Maven Central, use our Nexus -->
         <java.version>25</java.version>
         <spring-boot.version>4.1.1</spring-boot.version>
         <vaadin.version>25.2.6</vaadin.version>
@@ -26,7 +25,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>4.1.1</version>
-        <relativePath/>
+        <relativePath />
     </parent>
 
     <licenses>
@@ -110,11 +109,20 @@
         <!--            <url>https://maven.pkg.github.com/moxim/adventure-server</url>-->
         <!--        </repository>-->
         <repository>
-            <id>pdg-internal</id>
-            <name>mafw</name>
-            <url>https://nexus.pdg-software.com/repository/pdg-internal/</url>
+            <id>pdg-public</id>
+            <url>https://nexus.pdg-software.com/repository/pdg-public/</url>
         </repository>
+        <snapshotRepository>
+           <id>pdg-internal</id>
+            <url>https://nexus.pdg-software.com/repository/pdg-internal/</url>
+        </snapshotRepository>
     </distributionManagement>
+
+    <scm>
+        <connection>scm:git:git@github.com:moxim/adventure-server.git</connection>
+        <developerConnection>scm:git:git@github.com:moxim/adventure-server.git</developerConnection>
+        <url>https://github.com/moxim/adventure-server</url>
+    </scm>
 
     <dependencyManagement>
         <dependencies>
@@ -416,7 +424,6 @@
                 </configuration>
                 <version>3.5.6</version>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
@@ -432,6 +439,30 @@
                     <trimStackTrace>false</trimStackTrace>
                     <enableAssertions>true</enableAssertions>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.16.0</version>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.46</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-release-plugin</artifactId>
+               <version>3.3.1</version>
+               <configuration>
+                  <tagNameFormat>v@{project.version}</tagNameFormat>
+                  <autoVersionSubmodules>true</autoVersionSubmodules>
+                  <releaseProfiles>releases</releaseProfiles>
+               </configuration>
             </plugin>
 
             <plugin>
@@ -452,21 +483,29 @@
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>1.18.46</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
+               <groupId>org.sonatype.plugins</groupId>
+               <artifactId>nexus-staging-maven-plugin</artifactId>
+               <version>1.7.0</version>
+               <executions>
+                  <execution>
+                     <id>default-deploy</id>
+                     <phase>deploy</phase>
+                     <goals>
+                        <goal>deploy</goal>
+                     </goals>
+                  </execution>
+               </executions>
+               <configuration>
+                  <serverId>pdg-internal</serverId>
+                   <nexusUrl>https://nexus.pdg-software.com</nexusUrl>
+                   <skipStaging>true</skipStaging>
+               </configuration>
             </plugin>
         </plugins>
     </build>
+
     <reporting>
         <plugins>
             <plugin>
@@ -586,7 +625,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
-                        <version>3.9.0</version>
+                        <version>3.11.0</version>
                         <executions>
                             <execution>
                                 <goals>
@@ -607,5 +646,31 @@
                 </plugins>
             </build>
         </profile>
+       <profile>
+          <id>releases</id>
+          <build>
+             <plugins>
+                <plugin>
+                   <groupId>org.sonatype.plugins</groupId>
+                   <artifactId>nexus-staging-maven-plugin</artifactId>
+                   <version>1.5.1</version>
+                   <executions>
+                      <execution>
+                         <id>default-deploy</id>
+                         <phase>deploy</phase>
+                         <goals>
+                            <goal>deploy</goal>
+                         </goals>
+                      </execution>
+                   </executions>
+                   <configuration>
+                      <serverId>pdg-internal</serverId>
+                      <nexusUrl>https://nexus.pdg-software.com</nexusUrl>
+                      <skipStaging>true</skipStaging>
+                   </configuration>
+                </plugin>
+             </plugins>
+          </build>
+       </profile>
     </profiles>
 </project>

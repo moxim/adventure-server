@@ -6,7 +6,6 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
 import jakarta.annotation.security.RolesAllowed;
@@ -32,7 +31,6 @@ import com.pdg.adventure.view.support.RouteIds;
 @StyleSheet("styles/world-map.css")
 public class LocationMapView extends VerticalLayout implements BeforeEnterObserver {
 
-    private static final int GRID_SIZE = PictureGrid.SIZE;
     // At most 1280 x 720 pixels, and at most half the window high (the 16:9 frame is that high at 50vh * 16 / 9 wide),
     // so a wide window that is not tall does not let the map take all of it.
     private static final String MAX_WIDTH = "min(1280px, calc(50vh * 16 / 9))";
@@ -71,28 +69,11 @@ public class LocationMapView extends VerticalLayout implements BeforeEnterObserv
         // Out of flow like the grid, so only the frame's aspect-ratio sets its height, never the image's own size.
         image.getStyle().set("object-fit", "fill").set(TEXT_POSITION, "absolute").set("inset", "0");
 
-        Div grid = new Div();
-        grid.getStyle().set(TEXT_POSITION, "absolute").set("inset", "0").set("display", "grid")
-            .set("grid-template-columns", "repeat(" + GRID_SIZE + ", 1fr)")
-            .set("grid-template-rows", "repeat(" + GRID_SIZE + ", 1fr)");
-        for (int y = 0; y < GRID_SIZE; y++) {
-            for (int x = 0; x < GRID_SIZE; x++) {
-                grid.add(createCell(x, y));
-            }
-        }
-
-        Div frame = new Div(image, grid);
+        Div frame = new Div(image, PictureGrid.createOverlay());
         frame.addClassName("world-map");
         frame.getStyle().set(TEXT_POSITION, "relative").set("width", "100%").set("max-width", MAX_WIDTH)
              .set("aspect-ratio", "16 / 9");
         return frame;
-    }
-
-    private static Div createCell(int aColumn, int aRow) {
-        Div cell = new Div();
-        cell.addClassName("world-map-cell");
-        cell.addClickListener(_ -> Notification.show("Location " + aColumn + " : " + aRow));
-        return cell;
     }
 
     private Div createHint(AdventureData anAdventureData) {
