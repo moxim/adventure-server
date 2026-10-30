@@ -16,6 +16,7 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
+import com.vaadin.flow.server.streams.DownloadHandler;
 import jakarta.annotation.security.RolesAllowed;
 import tools.jackson.databind.JsonNode;
 
@@ -28,6 +29,7 @@ import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.AdventureFont;
 import com.pdg.adventure.model.PictureData;
+import com.pdg.adventure.model.PictureOverlayData;
 import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.engine.*;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
@@ -78,10 +80,39 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     private final transient AdventureRunSessionFactory sessionFactory;
     private final transient AdventureAccessService accessService;
     private final transient VariableProvider variableProvider;
+    /**
+     * Runs on the picture ({@code this}): lays the overlay layer ($0) exactly over the drawn picture, the way
+     * {@code object-fit: contain} draws it (scaled to fit the box, centred), and keeps it there when the picture loads
+     * or the box resizes. The same maths as {@code PictureGrid#cellAt}, so a cell on screen is the cell a click reports.
+     */
+    private static final String FIT_OVERLAY_LAYER = """
+            const img = this, layer = $0;
+            const fit = () => {
+              if (!img.naturalWidth || !img.naturalHeight) { return; }
+              const scale = Math.min(img.clientWidth / img.naturalWidth, img.clientHeight / img.naturalHeight);
+              const width = img.naturalWidth * scale, height = img.naturalHeight * scale;
+              layer.style.left = (img.offsetLeft + (img.clientWidth - width) / 2) + 'px';
+              layer.style.top = (img.offsetTop + (img.clientHeight - height) / 2) + 'px';
+              layer.style.width = width + 'px';
+              layer.style.height = height + 'px';
+            };
+            if (img._overlayFit) {
+              img.removeEventListener('load', img._overlayFit);
+              img._overlayObserver.disconnect();
+            }
+            img._overlayFit = fit;
+            img._overlayObserver = new ResizeObserver(fit);
+            img._overlayObserver.observe(img);
+            img.addEventListener('load', fit);
+            fit();
+            """;
+
     private final MessageList messageList = new MessageList();
     private final MessageInput messageInput = new MessageInput();
     private final Image pictureDisplay = new Image();
-    private final Div pictureContainer = new Div(pictureDisplay);
+    // Holds the overlay pictures; JS (see FIT_OVERLAY_LAYER) keeps it exactly over the drawn picture, letterbox excluded.
+    private final Div overlayLayer = new Div();
+    private final Div pictureContainer = new Div(pictureDisplay, overlayLayer);
 
     private final RunOwner runOwner = new RunOwner(ViewSupporter.getCurrentUser().getId());
 
@@ -89,6 +120,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     private transient AdventureRunSession session;
     private transient AdventureData adventureData;
     private String displayedPictureId;
+    private transient List<PictureOverlayData> displayedOverlays = List.of();
     private String adventureId;
     private String pageTitle = "Adventure";
     private Origin origin = Origin.EDITOR;
@@ -126,6 +158,10 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         pictureContainer.setWidthFull();
         pictureContainer.getStyle().set("flex", "0 0 auto");
         pictureContainer.setVisible(false);
+        pictureContainer.getStyle().set("position", "relative");
+        // pointer-events: none lets a click on an overlay reach the picture below it, so a CLICKED condition still fires.
+        overlayLayer.getStyle().set("position", "absolute").set("pointer-events", "none");
+        pictureDisplay.addAttachListener(_ -> pictureDisplay.getElement().executeJs(FIT_OVERLAY_LAYER, overlayLayer));
         pictureDisplay.getStyle().set("max-width", "1280px");
         // Also at most half the window: a wide window need not be a tall one, and the text below must stay readable.
         pictureDisplay.getStyle().set("max-height", "min(720px, 50vh)");
@@ -213,6 +249,8 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             session = null;
             messageList.setItems(List.of());
             displayedPictureId = null;
+            displayedOverlays = List.of();
+            overlayLayer.removeAll();
             pictureContainer.setVisible(false);
         }
         try {
@@ -404,23 +442,54 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
 
     private void refreshPictureDisplay() {
         String pictureId = session.getGameContext().getCurrentPictureId();
-        if (Objects.equals(pictureId, displayedPictureId)) {
+        List<PictureOverlayData> overlays = session.getGameContext().getOverlays();
+        if (Objects.equals(pictureId, displayedPictureId) && overlays.equals(displayedOverlays)) {
             return;
         }
+        boolean pictureChanged = !Objects.equals(pictureId, displayedPictureId);
         displayedPictureId = pictureId;
+        displayedOverlays = overlays;
 
         PictureData picture = pictureId == null ? null : adventureData.getPictureData().get(pictureId);
         if (picture == null) {
+            overlayLayer.removeAll();
             pictureContainer.setVisible(false);
             return;
         }
 
-        pictureDisplay.setSrc(event -> {
-            event.inline();
-            event.setContentType(picture.getContentType());
-            event.getOutputStream().write(picture.getContent());
-        });
+        if (pictureChanged) {
+            pictureDisplay.setSrc(streamOf(picture));
+        }
+        showOverlays(overlays);
         pictureContainer.setVisible(true);
+    }
+
+    /** Rebuilds the overlay images: each fills the cell its column and row name, as percentages of the layer. */
+    private void showOverlays(List<PictureOverlayData> overlays) {
+        overlayLayer.removeAll();
+        for (PictureOverlayData overlay : overlays) {
+            PictureData overlayPicture = adventureData.getPictureData().get(overlay.getPictureId());
+            if (overlayPicture == null) {
+                continue;
+            }
+            Image image = new Image();
+            image.setSrc(streamOf(overlayPicture));
+            double cell = 100.0 / PictureGrid.SIZE;
+            image.getStyle().set("position", "absolute")
+                 .set("left", overlay.getColumn() * cell + "%").set("top", overlay.getRow() * cell + "%")
+                 .set("width", cell + "%").set("height", cell + "%")
+                 // TODO: Review needed — the overlay is stretched to its cell, whatever its own proportions.
+                 .set("object-fit", "fill");
+            overlayLayer.add(image);
+        }
+    }
+
+    private static DownloadHandler streamOf(PictureData aPicture) {
+        return event -> {
+            event.inline();
+            event.setContentType(aPicture.getContentType());
+            event.getOutputStream().write(aPicture.getContent());
+        };
     }
 
     private void navigateBack() {

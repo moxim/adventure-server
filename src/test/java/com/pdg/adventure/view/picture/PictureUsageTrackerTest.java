@@ -9,6 +9,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.*;
+import com.pdg.adventure.model.action.OverlayActionData;
 import com.pdg.adventure.model.action.PictureActionData;
 import com.pdg.adventure.model.basic.CommandDescriptionData;
 
@@ -202,6 +203,24 @@ class PictureUsageTrackerTest {
         adventureData.setWorkflowData(null);
 
         assertThat(PictureUsageTracker.findPictureUsages(adventureData, "pic-1")).isEmpty();
+    }
+
+    @Test
+    void findPictureUsages_findsAnOverlayActionInALocationCommand() {
+        OverlayActionData overlay = new OverlayActionData();
+        overlay.setPictureId("pic-1");
+        CommandData command = new CommandData(new CommandDescriptionData(new Word("open", Word.Type.VERB), null, null));
+        command.addAction(overlay);
+        LocationData location = new LocationData();
+        location.setId("loc-1");
+        location.getCommandProviderData().add(command);
+        adventureData.getLocationData().put("loc-1", location);
+
+        List<PictureUsageTracker.PictureUsage> usages = PictureUsageTracker.findPictureUsages(adventureData, "pic-1");
+
+        assertThat(usages).hasSize(1);
+        assertThat(usages.getFirst().getDisplayText()).startsWith("Overlay Action");
+        assertThat(PictureUsageTracker.isPictureUsed(adventureData, "pic-2")).isFalse();
     }
 
     // Helper methods

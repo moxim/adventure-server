@@ -84,6 +84,7 @@ public class GameStateSnapshotter {
         gameContext.setCurrentLocation(savedLocation);
         gameContext.setCurrentPictureId(aSnapshot.getCurrentPictureId());
         gameContext.setPictureMode(aSnapshot.getPictureMode());
+        gameContext.clearOverlays(); // not saved; also drops those of the same picture shown before the load
         return true;
     }
 

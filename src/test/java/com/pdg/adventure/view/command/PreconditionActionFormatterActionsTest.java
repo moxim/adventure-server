@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.MessageData;
+import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.model.PictureMode;
 import com.pdg.adventure.model.action.*;
 
@@ -83,6 +84,25 @@ class PreconditionActionFormatterActionsTest {
     @Test
     void listAt_withoutAContainer_showsAQuestionMark() {
         assertThat(formatter.formatAction(new ListAtActionData())).isEqualTo("LISTAT ?");
+    }
+
+    @Test
+    void overlay() {
+        OverlayActionData a = new OverlayActionData();
+        a.setX(3);
+        a.setY(4);
+        a.setPictureId("pic-1");
+        PictureData picture = new PictureData();
+        picture.setId("pic-1");
+        picture.setName("Open door");
+        adventureData.setPictureData(new java.util.HashMap<>(java.util.Map.of("pic-1", picture)));
+
+        assertThat(new PreconditionActionFormatter(adventureData).formatAction(a)).isEqualTo("OVERLAY 3 4 Open door");
+    }
+
+    @Test
+    void overlay_withoutData_showsQuestionMarks() {
+        assertThat(formatter.formatAction(new OverlayActionData())).isEqualTo("OVERLAY ? ? ?");
     }
 
     @Test

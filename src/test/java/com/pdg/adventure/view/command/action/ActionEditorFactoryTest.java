@@ -17,6 +17,7 @@ import com.pdg.adventure.model.action.ActionData;
 import com.pdg.adventure.model.action.AddVariableActionData;
 import com.pdg.adventure.model.action.PrintActionData;
 import com.pdg.adventure.model.action.ListAtActionData;
+import com.pdg.adventure.model.action.OverlayActionData;
 import com.pdg.adventure.model.action.PictureModeActionData;
 import com.pdg.adventure.model.action.NewLineActionData;
 import com.pdg.adventure.model.action.RandomActionData;
@@ -160,6 +161,12 @@ class ActionEditorFactoryTest {
     void createEditor_withPictureModeActionData_shouldReturnPictureModeActionEditor() {
         ActionEditorComponent editor = ActionEditorFactory.createEditor(new PictureModeActionData(), adventureData);
         assertThat(editor).isNotNull().isInstanceOf(PictureModeActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withOverlayActionData_shouldReturnOverlayActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new OverlayActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(OverlayActionEditor.class);
     }
 
     @Test

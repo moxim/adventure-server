@@ -2,6 +2,11 @@ package com.pdg.adventure.server.engine;
 
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import com.pdg.adventure.api.CommandDescription;
@@ -9,6 +14,7 @@ import com.pdg.adventure.api.Container;
 import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.PictureMode;
+import com.pdg.adventure.model.PictureOverlayData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.WorkflowData;
 import com.pdg.adventure.server.location.Location;
@@ -16,6 +22,9 @@ import com.pdg.adventure.server.location.Location;
 @Component
 @PerBrowserSession
 public class GameContext {
+
+    // The picture grid is 10 x 10 (see PictureGrid, in the view package, which the engine must not depend on).
+    private static final int GRID_SIZE = 10;
 
     private Workflow workflow;
     private Location currentLocation;
@@ -34,6 +43,8 @@ public class GameContext {
     private String currentAdjective = VocabularyData.EMPTY_STRING;
     private String currentPictureId;
     private PictureMode pictureMode = PictureMode.DEFAULT;
+    // Pictures laid over cells of the picture on show, keyed by cell (row * grid size + column), oldest first.
+    private final Map<Integer, PictureOverlayData> overlays = new LinkedHashMap<>();
     // The grid cell of the click GameLoop is running the Processes for; null outside such a run.
     private Integer clickedColumn;
     private Integer clickedRow;
@@ -236,8 +247,43 @@ public class GameContext {
         pictureMode = aPictureMode == null ? PictureMode.DEFAULT : aPictureMode;
     }
 
+    /**
+     * Shows another picture. The overlays belong to the picture on show, so they go when the picture changes; setting
+     * the picture already on show (a Look, say) keeps them.
+     * TODO: Review needed — an overlay is not remembered for a picture that is left and shown again (an opened door
+     *  is closed again after leaving the location and coming back).
+     */
     public void setCurrentPictureId(String aPictureId) {
+        if (!Objects.equals(currentPictureId, aPictureId)) {
+            clearOverlays();
+        }
         currentPictureId = aPictureId;
+    }
+
+    /**
+     * Lays a picture over a cell of the picture on show (column, row, each 0 to 9), replacing the overlay already on
+     * that cell. Does nothing when no picture is on show or the cell or the picture is missing or out of range.
+     */
+    public void showOverlay(Integer aColumn, Integer aRow, String aPictureId) {
+        if (currentPictureId == null || aPictureId == null || !isCell(aColumn) || !isCell(aRow)) {
+            return;
+        }
+        int key = aRow * GRID_SIZE + aColumn;
+        overlays.remove(key); // a replacement goes on top of the overlays stacked since
+        overlays.put(key, new PictureOverlayData(aColumn, aRow, aPictureId));
+    }
+
+    private static boolean isCell(Integer aCoordinate) {
+        return aCoordinate != null && aCoordinate >= 0 && aCoordinate < GRID_SIZE;
+    }
+
+    /** The overlays on the picture on show, oldest first (the last is drawn on top). */
+    public List<PictureOverlayData> getOverlays() {
+        return new ArrayList<>(overlays.values());
+    }
+
+    public void clearOverlays() {
+        overlays.clear();
     }
 
     public String getCurrentPictureId() {

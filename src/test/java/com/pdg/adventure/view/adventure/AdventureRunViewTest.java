@@ -605,6 +605,59 @@ class AdventureRunViewTest extends BrowserlessTest {
     }
 
     @Test
+    void anOverlayOnThePicture_isShownOverItsCell_withoutCatchingClicks() {
+        stubOpeningRoom("A grand throne room.", "pic-1");
+        com.pdg.adventure.model.PictureData open = new com.pdg.adventure.model.PictureData();
+        open.setId("pic-2");
+        open.setContentType("image/png");
+        open.setContent(new byte[] {4, 5, 6});
+        adventureData.getPictureData().put("pic-2", open);
+        when(gameContext.getOverlays())
+                .thenReturn(List.of(new com.pdg.adventure.model.PictureOverlayData(3, 4, "pic-2")));
+
+        enterViaAuthorRoute();
+
+        List<com.vaadin.flow.component.html.Image> images = find(com.vaadin.flow.component.html.Image.class, view).all();
+        assertThat(images).hasSize(2);
+        com.vaadin.flow.component.html.Image overlay = images.get(1);
+        assertThat(overlay.getStyle().get("left")).isEqualTo("30.0%");
+        assertThat(overlay.getStyle().get("top")).isEqualTo("40.0%");
+        assertThat(overlay.getStyle().get("width")).isEqualTo("10.0%");
+        assertThat(overlay.getStyle().get("height")).isEqualTo("10.0%");
+        assertThat(overlay.getParent().orElseThrow().getStyle().get("pointer-events")).isEqualTo("none");
+    }
+
+    @Test
+    void anOverlayAddedByAClick_isShownThoughThePictureStaysTheSame() {
+        stubOpeningRoom("A grand throne room.", "pic-1");
+        com.pdg.adventure.model.PictureData open = new com.pdg.adventure.model.PictureData();
+        open.setId("pic-2");
+        open.setContentType("image/png");
+        open.setContent(new byte[] {4, 5, 6});
+        adventureData.getPictureData().put("pic-2", open);
+        enterViaAuthorRoute();
+        assertThat(find(com.vaadin.flow.component.html.Image.class, view).all()).hasSize(1);
+        when(gameContext.getOverlays())
+                .thenReturn(List.of(new com.pdg.adventure.model.PictureOverlayData(5, 5, "pic-2")));
+        when(session.submitClick(5, 5)).thenReturn(new RunResult(List.of("The door opens."), false, "What now?"));
+
+        view.handlePictureClick(500, 250, 1000, 500, 2000, 1000);
+
+        assertThat(find(com.vaadin.flow.component.html.Image.class, view).all()).hasSize(2);
+    }
+
+    @Test
+    void anOverlayWhosePictureIsGone_isSkipped() {
+        stubOpeningRoom("A grand throne room.", "pic-1");
+        when(gameContext.getOverlays())
+                .thenReturn(List.of(new com.pdg.adventure.model.PictureOverlayData(3, 4, "missing")));
+
+        enterViaAuthorRoute();
+
+        assertThat(find(com.vaadin.flow.component.html.Image.class, view).all()).hasSize(1);
+    }
+
+    @Test
     void pictureClick_insideThePicture_submitsTheCellToTheSession_andRendersTheResult() {
         stubOpeningRoom("A grand throne room.");
         enterViaAuthorRoute();
