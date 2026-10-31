@@ -17,10 +17,8 @@ import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import static com.pdg.adventure.model.Word.Type.*;
@@ -29,8 +27,6 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.DirectionData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.VocabularyData;
-import com.pdg.adventure.model.action.MovePlayerActionData;
-import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
@@ -240,17 +236,7 @@ public class DirectionEditorView extends VerticalLayout
         try {
             binder.writeBean(aDirectionViewModel);
             final DirectionData directionData = aDirectionViewModel.getData();
-            final DescriptionData locationDescriptionData = locationData.getDescriptionData();
-            final DescriptionData directionDescriptionData = directionData.getDescriptionData();
-            directionDescriptionData.setAdjective(locationDescriptionData.getAdjective());
-            directionDescriptionData.setNoun(locationDescriptionData.getNoun());
-
-            final MovePlayerActionData movePlayerActionData = new MovePlayerActionData();
-            movePlayerActionData.setLocationId(aDirectionViewModel.getDestinationId());
-            directionData.getCommandData().setActions(new ArrayList<>(List.of(movePlayerActionData)));
-
-            final Set<DirectionData> directionsData = locationData.getDirectionsData();
-            directionsData.add(directionData);
+            DirectionBuilder.attach(directionData, locationData);
 
             adventureService.saveLocationData(locationData);
 

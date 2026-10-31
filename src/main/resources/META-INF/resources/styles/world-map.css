@@ -8,3 +8,18 @@
   background: rgba(0, 0, 0, 0.12);
   outline: 1px solid rgba(255, 255, 255, 0.6);
 }
+
+/* A cell that holds a location (LocationMapView). */
+.world-map-cell-occupied {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.world-map-cell-occupied:hover {
+  background: rgba(0, 0, 0, 0.22);
+}
+
+/* The cell the author clicked first while connecting two locations. */
+.world-map-cell-selected {
+  outline: 3px solid rgba(255, 200, 0, 0.9);
+  outline-offset: -3px;
+}

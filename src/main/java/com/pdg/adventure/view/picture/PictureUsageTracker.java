@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.action.OverlayActionData;
 import com.pdg.adventure.model.action.PictureActionData;
 import com.pdg.adventure.view.support.ActionScanner;
 import com.pdg.adventure.view.support.TrackedUsage;
@@ -80,6 +81,7 @@ public class PictureUsageTracker {
 
         addAnyPicturesUsedInLocations(adventureData, pictureId, usages);
         addAnyPicturesUsedInCommands(adventureData, pictureId, usages);
+        addAnyPicturesUsedInOverlays(adventureData, pictureId, usages);
         return usages;
     }
 
@@ -89,6 +91,18 @@ public class PictureUsageTracker {
             if (pictureId.equals(((PictureActionData) scanned.action()).getPictureId())) {
                 ActionScanner.Origin origin = scanned.origin();
                 usages.add(new PictureUsage("Picture Action", origin.locationId(), origin.locationDescription(),
+                                            "Command '" + scanned.commandSpecification() + "', Action #"
+                                            + scanned.actionNumber(), origin.source()));
+            }
+        }
+    }
+
+    private static void addAnyPicturesUsedInOverlays(final AdventureData adventureData, final String pictureId,
+                                                     final List<PictureUsage> usages) {
+        for (ActionScanner.ScannedAction scanned : ActionScanner.scan(adventureData, OverlayActionData.class)) {
+            if (pictureId.equals(((OverlayActionData) scanned.action()).getPictureId())) {
+                ActionScanner.Origin origin = scanned.origin();
+                usages.add(new PictureUsage("Overlay Action", origin.locationId(), origin.locationDescription(),
                                             "Command '" + scanned.commandSpecification() + "', Action #"
                                             + scanned.actionNumber(), origin.source()));
             }

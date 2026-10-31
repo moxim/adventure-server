@@ -150,6 +150,18 @@ class GameStateSnapshotterTest {
     }
 
     @Test
+    void restore_showsNoOverlays_whateverWasOnTheSamePictureBefore() {
+        gameContext.setCurrentPictureId("room");
+        GameSnapshotData snapshot = snapshotter.capture();
+        gameContext.showOverlay(1, 1, "x");
+
+        snapshotter.restore(snapshot);
+
+        assertThat(gameContext.getCurrentPictureId()).isEqualTo("room");
+        assertThat(gameContext.getOverlays()).isEmpty();
+    }
+
+    @Test
     void restore_ofASaveWithoutAPictureMode_goesBackToTheDefaultMode() {
         GameSnapshotData snapshot = snapshotter.capture();
         snapshot.setPictureMode(null);

@@ -16,7 +16,7 @@
         <maven.deploy.skip>true</maven.deploy.skip> <!-- Skip deployment to Maven Central, use our Nexus -->
         <java.version>25</java.version>
         <spring-boot.version>4.1.1</spring-boot.version>
-        <vaadin.version>25.2.6</vaadin.version>
+        <vaadin.version>25.3.2</vaadin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <org.mockito.mockito-core>5.23.0</org.mockito.mockito-core>
     </properties>

@@ -35,6 +35,7 @@ import com.pdg.adventure.model.action.MesActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.model.PictureData;
+import com.pdg.adventure.model.action.OverlayActionData;
 import com.pdg.adventure.model.action.PictureActionData;
 import com.pdg.adventure.model.action.QuitActionData;
 import com.pdg.adventure.model.action.SaveGameActionData;
@@ -157,6 +158,8 @@ public class PreconditionActionFormatter {
             case MovePlayerActionData mp -> "MOVE PLAYER TO " + resolveName(mp.getLocationId());
             case DescribeActionData de -> "DESCRIBE " + resolveName(de.getTargetId());
             case PictureActionData p -> "PICTURE " + resolvePictureName(p.getPictureId());
+            case OverlayActionData o -> "OVERLAY " + num(o.getX()) + " " + num(o.getY()) + " "
+                                        + resolvePictureName(o.getPictureId());
             case LookActionData _ -> "LOOK";
             case ExamineActionData _ -> "EXAMINE";
             case AutoTakeActionData _ -> "AUTOTAKE";
