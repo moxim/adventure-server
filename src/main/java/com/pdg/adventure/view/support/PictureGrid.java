@@ -4,6 +4,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * The 10 x 10 grid laid over a picture, as on the world map: cells are numbered from 0, the column from left to
@@ -29,22 +30,35 @@ public final class PictureGrid {
      * "Location column : row".
      */
     public static Div createOverlay() {
+        return createOverlay(cell -> Notification.show("Location " + cell.column() + " : " + cell.row()));
+    }
+
+    /**
+     * Like {@link #createOverlay()}, but a click on a cell is handed to the callback instead of showing the
+     * notification, so a view can do something with the cell (the world map places and connects locations).
+     */
+    public static Div createOverlay(Consumer<Cell> anOnCellClick) {
         Div grid = new Div();
         grid.getStyle().set("position", "absolute").set("inset", "0").set("display", "grid")
             .set("grid-template-columns", "repeat(" + SIZE + ", 1fr)")
             .set("grid-template-rows", "repeat(" + SIZE + ", 1fr)");
         for (int row = 0; row < SIZE; row++) {
             for (int column = 0; column < SIZE; column++) {
-                grid.add(createCell(column, row));
+                grid.add(createCell(new Cell(column, row), anOnCellClick));
             }
         }
         return grid;
     }
 
-    private static Div createCell(int aColumn, int aRow) {
+    /** The component of a cell in an overlay made by {@code createOverlay}, e.g. to highlight it or give it a tooltip. */
+    public static Div cellComponent(Div anOverlay, Cell aCell) {
+        return (Div) anOverlay.getChildren().toList().get(aCell.row() * SIZE + aCell.column());
+    }
+
+    private static Div createCell(Cell aCell, Consumer<Cell> anOnCellClick) {
         Div cell = new Div();
         cell.addClassName("world-map-cell");
-        cell.addClickListener(_ -> Notification.show("Location " + aColumn + " : " + aRow));
+        cell.addClickListener(_ -> anOnCellClick.accept(aCell));
         return cell;
     }
 

@@ -8,6 +8,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -102,6 +103,27 @@ class PictureGridTest extends BrowserlessTest {
         ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
 
         assertThat(test(find(Notification.class).single()).getText()).isEqualTo("Location 7 : 3");
+    }
+
+    @Test
+    void overlayWithCallback_reportsTheClickedCellAndShowsNoNotification() {
+        List<Cell> clicked = new ArrayList<>();
+        Div overlay = PictureGrid.createOverlay(clicked::add);
+        UI.getCurrent().add(overlay);
+        Div cell = PictureGrid.cellComponent(overlay, new Cell(3, 7));
+
+        ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
+
+        assertThat(clicked).containsExactly(new Cell(3, 7));
+        assertThat(find(Notification.class).all()).isEmpty();
+    }
+
+    @Test
+    void cellComponent_findsTheChildByRowAndColumn() {
+        Div overlay = PictureGrid.createOverlay();
+        UI.getCurrent().add(overlay);
+
+        assertThat(PictureGrid.cellComponent(overlay, new Cell(7, 3))).isSameAs(cells(overlay).get(3 * 10 + 7));
     }
 
     private List<Div> cells(Div anOverlay) {
