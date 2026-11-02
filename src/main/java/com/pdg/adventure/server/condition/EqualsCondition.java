@@ -4,7 +4,6 @@ import lombok.Getter;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
-import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
 
 public class EqualsCondition extends AbstractVariableCondition {
@@ -23,8 +22,8 @@ public class EqualsCondition extends AbstractVariableCondition {
     @Override
     public ExecutionResult check() {
         ExecutionResult result = new CommandExecutionResult();
-        final Variable envVariable = getVariable(variableName);
-        if (envVariable.value().equals(value)) {
+        final int envVariable = extractVariableValue(variableName);
+        if (value.equals(envVariable)) {
             result.setExecutionState(ExecutionResult.State.SUCCESS);
         } else {
             result.setExecutionState(ExecutionResult.State.FAILURE);

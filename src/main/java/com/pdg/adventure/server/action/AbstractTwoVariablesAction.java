@@ -48,11 +48,6 @@ public abstract class AbstractTwoVariablesAction extends AbstractAction {
     protected abstract int combine(int aFirst, int aSecond);
 
     private int valueOf(String aName) {
-        return variableProvider.get(aName).orElseThrow(() -> {
-            String errorText = "Variable " + aName + " does not exist!";
-            ConfigurationException ce = new ConfigurationException(errorText);
-            LOG.warn(errorText, ce);
-            return ce;
-        }).value();
+        return variableProvider.findVariableOrThrow(aName).value();
     }
 }

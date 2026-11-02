@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.action.IncrementVariableActionData;
 import com.pdg.adventure.server.action.IncrementVariableAction;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.support.VariableProvider;
 
@@ -42,7 +41,7 @@ class IncrementVariableActionMapperTest {
         IncrementVariableAction result = mapper.mapToBO(data);
 
         assertThat(result).isNotNull().isInstanceOf(IncrementVariableAction.class);
-        assertThat(result.getName()).isEqualTo(VAR_NAME);
+        assertThat(result.getVariableName()).isEqualTo(VAR_NAME);
         assertThat(result.getValue()).isEqualTo(VAR_VALUE);
         assertThat(result.getId()).isEqualTo(data.getId());
     }

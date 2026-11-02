@@ -158,9 +158,9 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         pictureContainer.setWidthFull();
         pictureContainer.getStyle().set("flex", "0 0 auto");
         pictureContainer.setVisible(false);
-        pictureContainer.getStyle().set("position", "relative");
+        pictureContainer.getStyle().set(POSITION_TXT, "relative");
         // pointer-events: none lets a click on an overlay reach the picture below it, so a CLICKED condition still fires.
-        overlayLayer.getStyle().set("position", "absolute").set("pointer-events", "none");
+        overlayLayer.getStyle().set(POSITION_TXT, "absolute").set("pointer-events", "none");
         pictureDisplay.addAttachListener(_ -> pictureDisplay.getElement().executeJs(FIT_OVERLAY_LAYER, overlayLayer));
         pictureDisplay.getStyle().set("max-width", "1280px");
         // Also at most half the window: a wide window need not be a tall one, and the text below must stay readable.
@@ -283,7 +283,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             renderNarratorLines(withPrompt(List.of(result.getResultMessage()), session.prompt()));
             refreshPictureDisplay();
         } catch (RuntimeException e) {
-            FlashNotifier.show("Error during game play: " + e.getMessage());
+            FlashNotifier.show(String.format(GAMEPLAY_ERROR_TXT, e.getMessage()));
         }
     }
 
@@ -369,7 +369,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
         try {
             handleInput(input);
         } catch (RuntimeException e) {
-            FlashNotifier.show("Error during game play: " + e.getMessage());
+            FlashNotifier.show(GAMEPLAY_ERROR_TXT + e.getMessage());
 //            navigateBack();
         }
     }
@@ -401,7 +401,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
                        try {
                            render(session.submitClick(cell.column(), cell.row()));
                        } catch (RuntimeException e) {
-                           FlashNotifier.show("Error during game play: " + e.getMessage());
+                           FlashNotifier.show(GAMEPLAY_ERROR_TXT + e.getMessage());
                        }
                    });
     }
@@ -475,7 +475,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             Image image = new Image();
             image.setSrc(streamOf(overlayPicture));
             double cell = 100.0 / PictureGrid.SIZE;
-            image.getStyle().set("position", "absolute")
+            image.getStyle().set(POSITION_TXT, "absolute")
                  .set("left", overlay.getColumn() * cell + "%").set("top", overlay.getRow() * cell + "%")
                  .set("width", cell + "%").set("height", cell + "%")
                  // TODO: Review needed — the overlay is stretched to its cell, whatever its own proportions.
@@ -518,4 +518,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     public String getPageTitle() {
         return pageTitle;
     }
+
+    private static final String GAMEPLAY_ERROR_TXT = "Error during game play: %s";
+    private static final String POSITION_TXT = "position";
 }

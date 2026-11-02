@@ -9,20 +9,19 @@ import com.pdg.adventure.server.support.VariableProvider;
 @Getter
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class IncrementVariableAction extends AbstractVariableAction {
-    private final String name;
     private final Integer value;
 
     public IncrementVariableAction(String aName, Integer aValue, VariableProvider aVariableProvider) {
-        super(aVariableProvider);
-        name = aName;
+        super(aName, aVariableProvider);
         value = aValue;
     }
 
     @Override
     public ExecutionResult execute() {
-        return super.execute(name, value);
+        return super.execute();
     }
 
     protected void changeValue(Integer aBaseValue) {
-        variableProvider.set(name, aBaseValue + value);
-    }}
+        variableProvider.set(getVariableName(), aBaseValue + value);
+    }
+}

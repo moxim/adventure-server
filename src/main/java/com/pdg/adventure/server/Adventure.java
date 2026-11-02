@@ -37,27 +37,19 @@ public class Adventure implements Ided {
 
     private final Map<String, Location> locationMap;
     private final Vocabulary allWords;
-//    private final transient MessagesHolder allMessages;
-    private final Map<String, Item> allItems;
-    private final Map<String, Container> allContainers;
 
     @Getter
     @Setter
     private VariableProvider variableProvider;
 
-    // Todo: must I autowire? where?
     @Autowired
     public Adventure(Vocabulary aBagOfAllWords, Map<String, Container> aContainerBag,
-//                     MessagesHolder aBagOfAllMessages,
                      Map<String, Item> aContainerForAllItems) {
         id = UUID.randomUUID().toString();
         locationMap = new HashMap<>();
         pocket = new GenericContainer(new DescriptionProvider("Player Pocket"), 20);
 
         allWords = aBagOfAllWords;
-        allContainers = aContainerBag;
-//        allMessages = aBagOfAllMessages;
-        allItems = aContainerForAllItems;
         variableProvider = new VariableProvider();
     }
 

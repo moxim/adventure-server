@@ -31,8 +31,8 @@ public class SecurityConfig {
     private String rememberMeKey;
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        /**
+    SecurityFilterChain securityFilterChain(HttpSecurity http) {
+        /*
          * Delegating the responsibility of general configuration
          * of HTTP security to the VaadinSecurityConfigurer.
          *
@@ -82,13 +82,12 @@ public class SecurityConfig {
                     "/frontend/**").permitAll();
         });
 
-        // Unmatched requests must reach Vaadin's router for RouteNotFoundView to render;
+        // Unmatched requests must reach Vaadin's router for {@code RouteNotFoundView} to render;
         // real routes stay gated by the hasRole matchers above (evaluated first) and by
         // each view's own NavigationAccessControl annotation (@RolesAllowed/@AnonymousAllowed).
         http.with(VaadinSecurityConfigurer.vaadin(), configurer -> {
             configurer.loginView(LoginView.class)
                     .anyRequest(AuthorizedUrl::permitAll);
-//                    , "/logged-out.html");
         });
 
         // Keep only the failure handler for login-attempt logging.
