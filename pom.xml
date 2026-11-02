@@ -422,6 +422,10 @@
                 <configuration>
                     <trimStackTrace>false</trimStackTrace>
                     <enableAssertions>true</enableAssertions>
+                    <systemPropertyVariables>
+                        <!-- Copilot rescans the whole classpath (ClassGraph) before every browserless test, ~1s each -->
+                        <vaadin.copilot.enable>false</vaadin.copilot.enable>
+                    </systemPropertyVariables>
                 </configuration>
                 <version>3.5.6</version>
             </plugin>
