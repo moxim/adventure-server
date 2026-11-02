@@ -1,8 +1,16 @@
 package com.pdg.adventure.server.support;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import com.pdg.adventure.server.exception.ConfigurationException;
 
 /**
  * Plain POJO, not a Spring bean - its single instance is registered via
@@ -19,6 +27,8 @@ import java.util.*;
 public class VariableProvider implements Serializable {
     @Serial
     private static final long serialVersionUID = 20261008130300L;
+
+    private static final Logger LOG = LoggerFactory.getLogger(VariableProvider.class);
 
     public static final String VISITED_VARIABLE_NAME = "VISITED";
 
@@ -90,4 +100,14 @@ public class VariableProvider implements Serializable {
         }
         return Optional.empty();
     }
+
+    public Variable findVariableOrThrow(final String aName) {
+        return get(aName).orElseThrow(() -> {
+            String errorText = "Variable " + aName + " does not exist!";
+            ConfigurationException ce = new ConfigurationException(errorText);
+            LOG.warn(errorText, ce);
+            return ce;
+        });
+    }
+
 }

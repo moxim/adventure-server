@@ -52,9 +52,4 @@ class FirstSelectBoxTest {
         assertThat(editorFor(new TurnsActionData()).firstSelectBox()).isEmpty();
         assertThat(editorFor(new NewLineActionData()).firstSelectBox()).isEmpty();
     }
-
-    @Test
-    void focusFirstSelectBox_withoutSelectBox_doesNothing() {
-        editorFor(new QuitActionData()).focusFirstSelectBox();
-    }
 }

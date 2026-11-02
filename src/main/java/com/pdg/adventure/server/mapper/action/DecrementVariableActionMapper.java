@@ -22,6 +22,6 @@ public class DecrementVariableActionMapper extends ActionMapper<DecrementVariabl
 
     @Override
     public DecrementVariableActionData mapToDO(DecrementVariableAction from) {
-        return new DecrementVariableActionData(from.getName(), from.getValue());
+        return new DecrementVariableActionData(from.getVariableName(), from.getValue());
     }
 }

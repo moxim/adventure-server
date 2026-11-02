@@ -2,12 +2,9 @@ package com.pdg.adventure.server.action;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.support.Variable;
@@ -16,16 +13,20 @@ import com.pdg.adventure.server.support.VariableProvider;
 @ExtendWith(MockitoExtension.class)
 class SetVariableActionTest {
 
-    @Mock private VariableProvider variableProvider;
+    private final VariableProvider variableProvider = new VariableProvider();
 
     @Test
     void execute_setsVariableInProvider() {
+        // given
+        assertThat(variableProvider.get("score")).isEmpty();
+
+        // when
         new SetVariableAction("score", 100, variableProvider).execute();
 
-        ArgumentCaptor<Variable> captor = ArgumentCaptor.forClass(Variable.class);
-        verify(variableProvider).define(captor.capture());
-        assertThat(captor.getValue().name()).isEqualTo("score");
-        assertThat(captor.getValue().value()).isEqualTo(100);
+        // then
+        assertThat(variableProvider.get("score")).isPresent();
+        Variable variable = variableProvider.findVariableOrThrow("score");
+        assertThat(variable.value()).isEqualTo(100);
     }
 
     @Test
@@ -34,4 +35,18 @@ class SetVariableActionTest {
 
         assertThat(result.getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);
     }
+
+    @Test
+    void execute_overwritesExistingVariable() {
+        // given
+        variableProvider.set("health", 50);
+
+        // when
+        new SetVariableAction("health", 75, variableProvider).execute();
+
+        // then
+        Variable variable = variableProvider.findVariableOrThrow("health");
+        assertThat(variable.value()).isEqualTo(75);
+    }
+
 }

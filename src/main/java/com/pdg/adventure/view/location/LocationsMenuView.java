@@ -148,15 +148,15 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         Grid<LocationDescriptionAdapter> grid = gridProvider.getGrid();
 
         Span lumenHeader = new Span("Lumen");
-        lumenHeader.getElement().setAttribute("title", "Whether the location is lit (1 = lit, 0 = dark)");
+        lumenHeader.getElement().setAttribute(TITLE_TXT, "Whether the location is lit (1 = lit, 0 = dark)");
         grid.addColumn(LocationDescriptionAdapter::getLumen).setHeader(lumenHeader).setAutoWidth(true);
 
         Span usedHeader = new Span("Used");
-        usedHeader.getElement().setAttribute("title", "How many exits lead to this location");
+        usedHeader.getElement().setAttribute(TITLE_TXT, "How many exits lead to this location");
         grid.addColumn(LocationDescriptionAdapter::getUsageCount).setHeader(usedHeader).setAutoWidth(true);
 
         Span commandsHeader = new Span("Commands");
-        commandsHeader.getElement().setAttribute("title", "How many commands are defined in this location");
+        commandsHeader.getElement().setAttribute(TITLE_TXT, "How many commands are defined in this location");
         grid.addColumn(LocationDescriptionAdapter::getCommandCount).setHeader(commandsHeader).setAutoWidth(true);
 
         List<LocationDescriptionAdapter> locationDescriptions = new ArrayList<>(locations.size());
@@ -324,5 +324,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
     private static ConfirmDialog getConfirmDialog(final LocationDescriptionAdapter aLocation) {
         return ViewSupporter.getConfirmDialog("Delete Location", "location", aLocation.getId());
     }
+
+    private static final String TITLE_TXT = "Title";
 
 }

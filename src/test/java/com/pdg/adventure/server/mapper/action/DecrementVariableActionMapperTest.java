@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 
 import com.pdg.adventure.model.action.DecrementVariableActionData;
 import com.pdg.adventure.server.action.DecrementVariableAction;
-import com.pdg.adventure.server.storage.message.MessagesHolder;
 import com.pdg.adventure.server.support.MapperSupporter;
 import com.pdg.adventure.server.support.VariableProvider;
 
@@ -39,7 +38,7 @@ class DecrementVariableActionMapperTest {
         DecrementVariableAction result = mapper.mapToBO(data);
 
         assertThat(result).isNotNull().isInstanceOf(DecrementVariableAction.class);
-        assertThat(result.getName()).isEqualTo(VAR_NAME);
+        assertThat(result.getVariableName()).isEqualTo(VAR_NAME);
         assertThat(result.getValue()).isEqualTo(VAR_VALUE);
     }
 

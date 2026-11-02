@@ -5,8 +5,6 @@ import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
-
 import com.pdg.adventure.server.exception.ConfigurationException;
 import com.pdg.adventure.server.support.Variable;
 import com.pdg.adventure.server.support.VariableProvider;
@@ -22,15 +20,8 @@ public abstract class AbstractVariableCondition extends AbstractCondition {
         variableProvider = aVariableProvider;
     }
 
-    protected Variable getVariable(String aVariableName) {
-        Optional<Variable> variableOptional = variableProvider.get(aVariableName);
-        if (variableOptional.isEmpty()) {
-            String errorText = "Variable " + aVariableName + " does not exist!";
-            ConfigurationException ce = new ConfigurationException(errorText);
-            LOG.warn(errorText, ce);
-            throw ce;
-        }
-        return variableOptional.get();
+    private Variable getVariable(String aVariableName) {
+        return variableProvider.findVariableOrThrow(aVariableName);
     }
 
     protected int extractVariableValue(String aVariableName) {

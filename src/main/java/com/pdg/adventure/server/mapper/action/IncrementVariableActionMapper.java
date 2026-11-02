@@ -26,7 +26,7 @@ public class IncrementVariableActionMapper extends ActionMapper<IncrementVariabl
     @Override
     public IncrementVariableActionData mapToDO(IncrementVariableAction from) {
         IncrementVariableActionData actionData = new IncrementVariableActionData();
-        actionData.setName(from.getName());
+        actionData.setName(from.getVariableName());
         actionData.setValue(from.getValue());
         actionData.setId(from.getId());
         return actionData;

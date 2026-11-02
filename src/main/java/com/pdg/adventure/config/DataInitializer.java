@@ -1,5 +1,7 @@
 package com.pdg.adventure.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -13,6 +15,8 @@ import com.pdg.adventure.server.security.repository.UserRepository;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DataInitializer.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -34,9 +38,9 @@ public class DataInitializer implements CommandLineRunner {
             admin.setEnabled(true);
 
             userRepository.save(admin);
-            System.out.println(">>> Default Admin user created: admin / " + adminPassword);
+            LOG.info(">>> Default Admin user created: admin / {}", adminPassword);
         } else {
-            System.out.println(">>> Admin user already exists. Skipping creation.");
+            LOG.info(">>> Admin user already exists. Skipping creation.");
         }
     }
 }

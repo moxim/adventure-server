@@ -34,19 +34,11 @@ public class CommandDescriptionData extends BasicDescriptionData {
         String adjectiveText = getAdjective() != null && getAdjective().getText() != null ? getAdjective().getText() :
                                "";
         String nounText = getNoun() != null && getNoun().getText() != null ? getNoun().getText() : "";
-        //        if (!verbText.isEmpty()) {
         String result = verbText +
-//        }
-//        if (!adjectiveText.isEmpty()) {
-//            if (result.length() > 0)
                         CommandDescription.COMMAND_SEPARATOR +
                         adjectiveText +
-//        }
-//        if (!nounText.isEmpty()) {
-//            if (result.length() > 0)
                         CommandDescription.COMMAND_SEPARATOR +
                         nounText;
-//        }
         return result;
     }
 
