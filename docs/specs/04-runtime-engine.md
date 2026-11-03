@@ -109,7 +109,7 @@ parsing, no `CommandExecutor`, no Responses, no Arrival Processes of its own. (A
 or Look action inside a clicked Process describes the location and so runs the Arrival
 Processes as always, while the click is still recorded.)
 
-1. `GameContext.beginClick(column, row)` records the cell (the 10 × 10 grid of the
+1. `GameContext.beginClick(column, row)` records the cell (the 20 × 20 grid of the
    picture, counted from 0, column from the left, row from the top), empties the typed
    fields (verb, adjective, noun, preposition, adverb, noun 2, adjective 2) so that
    leftovers of the last typed command cannot satisfy a condition, and resets the

@@ -141,7 +141,7 @@ flipped with the **Negate** checkbox on its row.
 | **Adverb** | The player typed a specific adverb | The adverb, picked from your vocabulary |
 | **Carried** | The item is in the player's inventory | The item |
 | **Chance** | A random roll succeeds | A chance percentage (1–100) |
-| **Clicked** | The player clicked a cell of the picture (only offered for Processes) | X (column) and Y (row), each 0–9 |
+| **Clicked** | The player clicked a cell of the picture (only offered for Processes) | X (column) and Y (row), each 0–19 |
 | **Equals** | A variable equals a value | Variable name; value |
 | **Greater Than** | A variable is greater than a value | Variable name; value |
 | **Here** | The item is at the player's current location | The item |
@@ -159,8 +159,8 @@ players" — it means "roughly one in five *attempts*," which matters if a
 player can just try again.
 
 **Clicked** is the mouse as a second input. The picture in the running game is divided into a
-10 × 10 grid, like the world map: columns **X** from 0 at the left to 9 at the right, rows **Y** from
-0 at the top to 9 at the bottom. A Process with `Clicked 3, 4` and, say, a Move Player action
+20 × 20 grid, like the world map: columns **X** from 0 at the left to 19 at the right, rows **Y** from
+0 at the top to 19 at the bottom. A Process with `Clicked 3, 4` and, say, a Move Player action
 takes the player through the door that the picture shows in that cell. It is offered only when
 you edit a Process (see [Chapter 9](09-workflow.md)), because only Processes run on a click.
 

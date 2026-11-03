@@ -364,7 +364,7 @@ table with severity and pointer:
 | **Medium** | Spring AI / Ollama integration commented out, base URL hardcoded | Same. |
 | **Low** | Saved games are restored in place (items the author added after a save keep their position); saves cannot be deleted; `saveWord` / `loadWord` slots unused | [`02-functional-requirements.md` § Known gaps](02-functional-requirements.md#known-gaps), [`04-runtime-engine.md` § Saving and loading games](04-runtime-engine.md#saving-and-loading-games). |
 | **Medium** | `AmbiguousCommandException` declared but unused | [`04-runtime-engine.md` § Known gaps](04-runtime-engine.md#known-gaps). |
-| **Low** | `LocationMapView` is a non-functional static-image placeholder, not bound to real location data | [`07-ui-and-navigation.md` § Known gaps](07-ui-and-navigation.md#known-gaps). |
+| **Low** | World-map dialogs save location by location without a transaction; after a Cancel of the unsaved-changes prompt Flow ignores later history navigations | [`07-ui-and-navigation.md` § Known gaps](07-ui-and-navigation.md#known-gaps). |
 | **Medium** | `UserService.delete` does not block on referencing rows | [`06-security-and-access-control.md` § Known gaps](06-security-and-access-control.md#known-gaps). |
 | **Medium** | Cross-store atomicity gap on adventure create | [`05-persistence-and-mappers.md` § Cross-store consistency](05-persistence-and-mappers.md#cross-store-consistency). |
 | **Medium** | No password change view | [`06-security-and-access-control.md` § Known gaps](06-security-and-access-control.md#known-gaps). |

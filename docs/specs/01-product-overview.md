@@ -101,9 +101,9 @@ and into UI structure in [`07-ui-and-navigation.md`](07-ui-and-navigation.md).
       verbs are ordinary Responses (the Look, Examine, Inventory and Quit actions);
       a Response sharing a verb with an authored location/item command now
       loses to it.
-- Visualise the adventure as a location map (`LocationMapView` — currently a
-  static placeholder image, not yet driven by the adventure's actual
-  locations).
+- Visualise the adventure as a location map (`LocationMapView` — the world-map
+  picture with a 20 × 20 grid on which the author places, replaces, connects and
+  removes the adventure's locations; the start location is starred).
 - Save/Reset/Cancel/Back semantics consistent across nested editor views
   (see
   [`02-functional-requirements.md`](02-functional-requirements.md#editor-navigation-contract));

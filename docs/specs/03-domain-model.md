@@ -161,6 +161,7 @@ DO fields beyond `ThingData`:
 | `timesVisited` | `int` | Increments on entry. |
 | `lumen` | `int`, default 50 | Light level; see `HasLight` API and `DescribeAction` semantics. |
 | `pictureId` | `String`, optional | Id of the location's *default picture* (a key of `AdventureData.pictureData`); `null` = none. See [§ PictureData](#picturedata). |
+| `mapColumn`, `mapRow` | `Integer`, optional | The location's cell on the world map's 20 × 20 grid (`PictureGrid.SIZE`; from 0, column from the left, row from the top); both `null` = not placed on the map. Set by placing, replacing and removing in `LocationMapView`; removing sets both to `null` and keeps the location. |
 
 BO holds `directions: Container<Direction>`, `itemContainer: Container`,
 `timesVisited`, `lumen`, `pictureId` and inherits the description and command map from `Thing`.
@@ -500,7 +501,7 @@ Plus a runtime-only `LoadAdventureAction` (no DO; engine-managed).
 |------------------|---------|
 | `CarriedConditionData`, `WornConditionData`, `HereConditionData`, `ItemAtConditionData`, `PlayerAtConditionData` | item / location predicates |
 | `ChanceConditionData` | random-roll gate (`ChanceCondition`) |
-| `ClickedConditionData` | a click on the picture (`ClickedCondition`); fields `x` (column) and `y` (row), each 0 to 9 on the picture's 10 × 10 grid; true only while a click at that cell is handled, offered for Processes only |
+| `ClickedConditionData` | a click on the picture (`ClickedCondition`); fields `x` (column) and `y` (row), each 0 to 19 on the picture's 20 × 20 grid; true only while a click at that cell is handled, offered for Processes only |
 | `EqualsConditionData`, `GreaterThanConditionData`, `LessThanConditionData`, `SameConditionData` | variable comparisons |
 | `NotConditionData` | composite — wraps another `PreConditionData` and inverts its result. Applied in the UI via a per-condition **Negate** checkbox (`ConditionRow.toConditionData()`) rather than being one of the directly-selectable condition kinds. |
 

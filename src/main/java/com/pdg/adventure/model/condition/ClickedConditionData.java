@@ -3,7 +3,7 @@ package com.pdg.adventure.model.condition;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-/** A click on the picture in the cell x (column), y (row) of the 10 x 10 grid, both counted from 0. */
+/** A click on the picture in the cell x (column), y (row) of the 20 x 20 grid, both counted from 0. */
 @Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class ClickedConditionData extends PreConditionData {

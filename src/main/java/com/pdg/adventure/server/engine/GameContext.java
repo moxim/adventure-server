@@ -23,8 +23,9 @@ import com.pdg.adventure.server.location.Location;
 @PerBrowserSession
 public class GameContext {
 
-    // The picture grid is 10 x 10 (see PictureGrid, in the view package, which the engine must not depend on).
-    private static final int GRID_SIZE = 10;
+    // The picture grid is 20 x 20 (see PictureGrid.SIZE, in the view package, which the engine must not depend on:
+    // keep the two in step).
+    private static final int GRID_SIZE = 20;
 
     private Workflow workflow;
     private Location currentLocation;
@@ -261,7 +262,7 @@ public class GameContext {
     }
 
     /**
-     * Lays a picture over a cell of the picture on show (column, row, each 0 to 9), replacing the overlay already on
+     * Lays a picture over a cell of the picture on show (column, row, each 0 to 19), replacing the overlay already on
      * that cell. Does nothing when no picture is on show or the cell or the picture is missing or out of range.
      */
     public void showOverlay(Integer aColumn, Integer aRow, String aPictureId) {

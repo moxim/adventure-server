@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.model.action.OverlayActionData;
+import com.pdg.adventure.view.support.PictureGrid;
 
 class OverlayActionEditorTest {
 
@@ -84,7 +85,7 @@ class OverlayActionEditorTest {
     @Test
     void validate_withACellOutsideTheGrid_returnsFalse() {
         OverlayActionData data = new OverlayActionData();
-        data.setX(10);
+        data.setX(PictureGrid.SIZE);
         data.setY(0);
         data.setPictureId("door-open");
 

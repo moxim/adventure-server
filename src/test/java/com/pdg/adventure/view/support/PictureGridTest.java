@@ -18,17 +18,20 @@ import com.pdg.adventure.view.support.PictureGrid.Cell;
 
 class PictureGridTest extends BrowserlessTest {
 
+    private static final int LAST = PictureGrid.SIZE - 1;
+    private static final int MIDDLE = PictureGrid.SIZE / 2;
+
     @Test
-    void size_isTen() {
-        assertThat(PictureGrid.SIZE).isEqualTo(10);
+    void size_isTwenty() {
+        assertThat(PictureGrid.SIZE).isEqualTo(20);
     }
 
     @Test
     void pictureFillingTheBox_cornersAndCentre() {
         // 2000 x 1000 picture in a 1000 x 500 box: same shape, no margins
         assertThat(PictureGrid.cellAt(0, 0, 1000, 500, 2000, 1000)).contains(new Cell(0, 0));
-        assertThat(PictureGrid.cellAt(999, 499, 1000, 500, 2000, 1000)).contains(new Cell(9, 9));
-        assertThat(PictureGrid.cellAt(500, 250, 1000, 500, 2000, 1000)).contains(new Cell(5, 5));
+        assertThat(PictureGrid.cellAt(999, 499, 1000, 500, 2000, 1000)).contains(new Cell(LAST, LAST));
+        assertThat(PictureGrid.cellAt(500, 250, 1000, 500, 2000, 1000)).contains(new Cell(MIDDLE, MIDDLE));
     }
 
     @Test
@@ -48,7 +51,7 @@ class PictureGridTest extends BrowserlessTest {
         // drawn 500 wide, centred: the picture spans x = 250 .. 750
         assertThat(PictureGrid.cellAt(100, 250, 1000, 500, 500, 500)).isEmpty();
         assertThat(PictureGrid.cellAt(250, 0, 1000, 500, 500, 500)).contains(new Cell(0, 0));
-        assertThat(PictureGrid.cellAt(749, 499, 1000, 500, 500, 500)).contains(new Cell(9, 9));
+        assertThat(PictureGrid.cellAt(749, 499, 1000, 500, 500, 500)).contains(new Cell(LAST, LAST));
         assertThat(PictureGrid.cellAt(750, 250, 1000, 500, 500, 500)).isEmpty();
     }
 
@@ -57,7 +60,7 @@ class PictureGridTest extends BrowserlessTest {
         // drawn 500 x 250, centred: the picture spans y = 375 .. 625
         assertThat(PictureGrid.cellAt(250, 100, 500, 1000, 500, 250)).isEmpty();
         assertThat(PictureGrid.cellAt(0, 375, 500, 1000, 500, 250)).contains(new Cell(0, 0));
-        assertThat(PictureGrid.cellAt(499, 624, 500, 1000, 500, 250)).contains(new Cell(9, 9));
+        assertThat(PictureGrid.cellAt(499, 624, 500, 1000, 500, 250)).contains(new Cell(LAST, LAST));
         assertThat(PictureGrid.cellAt(250, 625, 500, 1000, 500, 250)).isEmpty();
     }
 
@@ -66,7 +69,7 @@ class PictureGridTest extends BrowserlessTest {
         Optional<Cell> full = PictureGrid.cellAt(640, 360, 1280, 720, 1280, 720);
         Optional<Cell> half = PictureGrid.cellAt(320, 180, 640, 360, 1280, 720);
 
-        assertThat(full).contains(new Cell(5, 5));
+        assertThat(full).contains(new Cell(MIDDLE, MIDDLE));
         assertThat(half).isEqualTo(full);
     }
 
@@ -77,11 +80,11 @@ class PictureGridTest extends BrowserlessTest {
     }
 
     @Test
-    void overlay_hasTenTimesTenClickableCells() {
+    void overlay_hasSizeTimesSizeClickableCells() {
         Div overlay = PictureGrid.createOverlay();
         UI.getCurrent().add(overlay);
 
-        assertThat(cells(overlay)).hasSize(100);
+        assertThat(cells(overlay)).hasSize(PictureGrid.SIZE * PictureGrid.SIZE);
     }
 
     @Test
@@ -90,15 +93,15 @@ class PictureGridTest extends BrowserlessTest {
 
         assertThat(overlay.getStyle().get("position")).isEqualTo("absolute");
         assertThat(overlay.getStyle().get("inset")).isEqualTo("0");
-        assertThat(overlay.getStyle().get("grid-template-columns")).isEqualTo("repeat(10, 1fr)");
-        assertThat(overlay.getStyle().get("grid-template-rows")).isEqualTo("repeat(10, 1fr)");
+        assertThat(overlay.getStyle().get("grid-template-columns")).isEqualTo("repeat(" + PictureGrid.SIZE + ", 1fr)");
+        assertThat(overlay.getStyle().get("grid-template-rows")).isEqualTo("repeat(" + PictureGrid.SIZE + ", 1fr)");
     }
 
     @Test
     void overlay_clickingACell_reportsItsColumnAndRow() {
         Div overlay = PictureGrid.createOverlay();
         UI.getCurrent().add(overlay);
-        Div cell = cells(overlay).get(3 * 10 + 7);
+        Div cell = cells(overlay).get(3 * PictureGrid.SIZE + 7);
 
         ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
 
@@ -123,7 +126,7 @@ class PictureGridTest extends BrowserlessTest {
         Div overlay = PictureGrid.createOverlay();
         UI.getCurrent().add(overlay);
 
-        assertThat(PictureGrid.cellComponent(overlay, new Cell(7, 3))).isSameAs(cells(overlay).get(3 * 10 + 7));
+        assertThat(PictureGrid.cellComponent(overlay, new Cell(7, 3))).isSameAs(cells(overlay).get(3 * PictureGrid.SIZE + 7));
     }
 
     private List<Div> cells(Div anOverlay) {

@@ -7,14 +7,14 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
- * The 10 x 10 grid laid over a picture, as on the world map: cells are numbered from 0, the column from left to
+ * The 20 x 20 grid laid over a picture, as on the world map: cells are numbered from 0, the column from left to
  * right and the row from top to bottom. The run view uses it to turn a click on the picture into the cell a CLICKED
  * condition names; the world map and the picture editor lay {@link #createOverlay()} over a picture so an author can
  * see the cells.
  */
 public final class PictureGrid {
 
-    public static final int SIZE = 10;
+    public static final int SIZE = 20;
 
     /** A grid cell, column and row from 0 to {@code SIZE - 1}. */
     public record Cell(int column, int row) {

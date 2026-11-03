@@ -8,8 +8,11 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.pdg.adventure.model.condition.ClickedConditionData;
+import com.pdg.adventure.view.support.PictureGrid;
 
 class ClickedConditionEditorTest {
+
+    private static final int LAST = PictureGrid.SIZE - 1;
 
     private static ClickedConditionEditor editorFor(Integer x, Integer y) {
         ClickedConditionData data = new ClickedConditionData();
@@ -28,7 +31,7 @@ class ClickedConditionEditorTest {
     void initialize_buildsTwoRequiredFieldsWithTheGridLabels() {
         List<IntegerField> fields = fields(editorFor(null, null));
 
-        assertThat(fields).extracting(IntegerField::getLabel).containsExactly("X (column, 0–9)", "Y (row, 0–9)");
+        assertThat(fields).extracting(IntegerField::getLabel).containsExactly("X (column, 0–" + LAST + ")", "Y (row, 0–" + LAST + ")");
         assertThat(fields).allSatisfy(field -> assertThat(field.isRequiredIndicatorVisible()).isTrue());
     }
 
@@ -60,20 +63,20 @@ class ClickedConditionEditorTest {
     }
 
     @Test
-    void validate_acceptsTheBoundaries0And9() {
+    void validate_acceptsTheBoundaries0AndTheLastCell() {
         assertThat(editorFor(0, 0).validate()).isTrue();
-        assertThat(editorFor(9, 9).validate()).isTrue();
+        assertThat(editorFor(LAST, LAST).validate()).isTrue();
     }
 
     @Test
     void validate_rejectsValuesOutsideTheGrid() {
         assertThat(editorFor(-1, 4).validate()).isFalse();
-        assertThat(editorFor(3, 10).validate()).isFalse();
+        assertThat(editorFor(3, PictureGrid.SIZE).validate()).isFalse();
     }
 
     @Test
     void validate_marksOnlyTheInvalidFieldAsInvalid() {
-        ClickedConditionEditor editor = editorFor(3, 10);
+        ClickedConditionEditor editor = editorFor(3, PictureGrid.SIZE);
 
         editor.validate();
 

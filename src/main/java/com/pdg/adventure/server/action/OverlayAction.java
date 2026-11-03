@@ -8,7 +8,7 @@ import com.pdg.adventure.server.engine.GameContext;
 import com.pdg.adventure.server.parser.CommandExecutionResult;
 
 /**
- * Lays a picture over one cell of the 10 x 10 grid of the picture on show, e.g. an open door over the closed one the
+ * Lays a picture over one cell of the 20 x 20 grid of the picture on show, e.g. an open door over the closed one the
  * player just clicked. Does nothing, and still succeeds, when no picture is on show or the cell or picture is missing
  * (half-filled or imported data); tells nothing. See {@link GameContext#showOverlay(Integer, Integer, String)} for how
  * long the overlay stays.

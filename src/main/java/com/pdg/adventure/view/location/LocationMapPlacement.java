@@ -24,6 +24,10 @@ import com.pdg.adventure.view.support.ViewSupporter;
  */
 public final class LocationMapPlacement {
 
+    /** A direction together with the location that owns it, i.e. the one it leads away from. */
+    public record IncomingDirection(LocationData owner, DirectionData direction) {
+    }
+
     private LocationMapPlacement() {
     }
 
@@ -53,6 +57,36 @@ public final class LocationMapPlacement {
     public static List<DirectionData> directionsTo(LocationData aSource, String aTargetId) {
         return aSource.getDirectionsData().stream()
                       .filter(direction -> aTargetId.equals(direction.getDestinationId())).toList();
+    }
+
+    /** The directions of the other locations that lead to the location. Its own directions to itself are not listed. */
+    public static List<IncomingDirection> incomingDirections(AdventureData anAdventure, LocationData aLocation) {
+        return anAdventure.getLocationData().values().stream()
+                          .filter(owner -> !owner.getId().equals(aLocation.getId()))
+                          .flatMap(owner -> directionsTo(owner, aLocation.getId()).stream()
+                                                                                  .map(direction -> new IncomingDirection(owner, direction)))
+                          .toList();
+    }
+
+    /**
+     * Takes the location off the map and removes the given directions, but only those that lead away from the
+     * location or to it. The location itself stays in the adventure, unplaced. Returns the locations that changed,
+     * each once, for the caller to save.
+     */
+    public static List<LocationData> remove(AdventureData anAdventure, LocationData aLocation,
+                                            Collection<DirectionData> aRemovedDirections) {
+        final Set<LocationData> changed = new LinkedHashSet<>();
+        aLocation.setMapColumn(null);
+        aLocation.setMapRow(null);
+        changed.add(aLocation);
+        for (LocationData owner : anAdventure.getLocationData().values()) {
+            final boolean ownerIsTheLocation = owner.getId().equals(aLocation.getId());
+            if (owner.getDirectionsData().removeIf(direction -> aRemovedDirections.contains(direction)
+                    && (ownerIsTheLocation || aLocation.getId().equals(direction.getDestinationId())))) {
+                changed.add(owner);
+            }
+        }
+        return List.copyOf(changed);
     }
 
     /** A direction of the owner that is followed with the same verb, adjective and noun. */

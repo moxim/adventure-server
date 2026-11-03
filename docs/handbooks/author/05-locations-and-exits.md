@@ -15,7 +15,7 @@ one consistent four-button bar, always in this order:
 |--------|-----------|
 | **Cancel** | Discard unsaved changes and go back, in one click. |
 | **Reset** | Reload the form from its last saved state. Stays on the page. |
-| **Back** | Go back to the parent list. If you have unsaved changes, you'll be asked to confirm before leaving. |
+| **Back** | Go back to the parent list. If you have unsaved changes, you'll be asked to confirm before leaving. Without unsaved changes it steps back in your browser's history, so going in and out of an editor does not pile up entries behind your browser's Back button. |
 | **Save** | Validate and save. Only enabled once there are changes and they're all valid. |
 
 This handbook won't re-describe this bar in every chapter — assume it's
@@ -96,14 +96,32 @@ clean up what points at it first.
 
 ## The World map
 
-The drawer for this section (icon: a stack of maps) includes a **"The
-World"** link to a map view.
+The **The World** button on the locations list, just above **Edit
+Location**, opens a map of your adventure. The map is the picture you chose
+as the adventure's **World Map** in the Adventure Editor, with a 20 × 20
+grid of clickable cells over it. (Without a chosen picture you see a hint
+and a button to the Adventure Editor.) The **Back** button below the picture
+returns to the locations list.
 
-> **Note:** Today, this map is an early placeholder — a static illustration
-> with a hardcoded grid you can click for a location-name popup, not a live
-> view of your actual locations and how they connect. Don't rely on it to
-> visualize your adventure's layout yet; the locations grid above is the
-> accurate source of truth.
+Locations are placed on the grid. A cell that holds a location is drawn
+darker, and hovering over it shows the location's description. The cell of
+the adventure's **start location** (see the *Entry location* picker above)
+shows a **yellow star**. A mode switch above the picture decides what a click
+on a cell does:
+
+| Mode | Click on… | What happens |
+|------|-----------|--------------|
+| **Place** (the default) | an empty cell | A dialog lists the locations that are not on the map yet; pick one and press **Place**. |
+| **Place** | a cell with a location | The **Replace** dialog: pick an unplaced location that takes the cell. Exits that led to the old location now lead to the new one, and you tick which of the old location's own exits move to the new one. |
+| **Connect** | one location, then another | A dialog lists the exits that already lead from the first to the second and lets you add one, optionally with the opposite exit back. You choose the words from the adventure's vocabulary. |
+| **Remove** | a cell with a location | A dialog takes the location off the map. The location itself stays in the adventure and can be placed again. |
+
+When you remove a location you also decide what happens to its exits. The
+dialog lists **the exits leading away from it** and **the exits leading to
+it** (those that start in other locations), each with a checkbox. Nothing is
+ticked at first: only the exits you tick are deleted, the others stay and
+still lead to the location. **Select all** ticks a whole list. If you remove
+the start location, it stays the adventure's start location.
 
 ## What's next
 
