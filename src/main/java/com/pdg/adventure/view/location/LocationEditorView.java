@@ -25,7 +25,6 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.model.VocabularyData;
-import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
@@ -240,11 +239,7 @@ public class LocationEditorView extends VerticalLayout
             if (binder.validate().isOk()) {
                 binder.writeBean(aLocationViewModel);
                 final LocationData data = aLocationViewModel.getData();
-                final DescriptionData locationDescriptionData = data.getDescriptionData();
-                final DescriptionData containerDescriptionData = data.getItemContainerData()
-                                                                             .getDescriptionData();
-                containerDescriptionData.setAdjective(locationDescriptionData.getAdjective());
-                containerDescriptionData.setNoun(locationDescriptionData.getNoun());
+                LocationCreator.syncItemContainerDescription(data);
                 adventureData.getLocationData().put(aLocationViewModel.getId(), data);
                 adventureService.saveAdventureData(adventureData);
                 saveButton.setEnabled(false);

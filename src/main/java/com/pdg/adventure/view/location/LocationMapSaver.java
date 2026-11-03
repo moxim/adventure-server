@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
+import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.server.storage.service.AdventureService;
 
@@ -14,6 +15,20 @@ final class LocationMapSaver {
     private static final Logger LOG = LoggerFactory.getLogger(LocationMapSaver.class);
 
     private LocationMapSaver() {
+    }
+
+    /**
+     * Saves the adventure, which stores the locations it holds, new ones included. Like {@link #saveAll}, a failure is
+     * logged and shown to the author.
+     */
+    static void saveAdventure(AdventureService aService, AdventureData anAdventure) {
+        try {
+            aService.saveAdventureData(anAdventure);
+        } catch (RuntimeException e) {
+            LOG.error("Could not save the new location", e);
+            Notification.show("Could not save the new location (" + e.getMessage() + "). Reload the map to see what "
+                              + "was stored.", 8000, Notification.Position.MIDDLE);
+        }
     }
 
     /**

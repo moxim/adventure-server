@@ -127,14 +127,37 @@ class LocationMapViewTest extends BrowserlessTest {
     }
 
     @Test
-    void clickingAnEmptyCellWithoutUnplacedLocationsSaysSoAndOpensNoDialog() {
+    void clickingAnEmptyCellWithoutUnplacedLocationsStillOpensTheDialogToCreateOne() {
         enterAdventure("MAP", location("placed", "cellar", 2, 3));
         Div cell = cells().get(0);
 
         ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
 
-        assertThat(test(find(Notification.class).single()).getText()).isEqualTo("No unplaced locations.");
-        assertThat(find(Dialog.class).all()).isEmpty();
+        Dialog dialog = find(Dialog.class).single();
+        assertThat(find(Grid.class, dialog).all()).isEmpty();
+        assertThat(find(com.pdg.adventure.view.component.VocabularyPickerField.class, dialog).withCaption("Noun").all())
+                .hasSize(1);
+    }
+
+    @Test
+    void creatingALocationOnAnEmptyCellPlacesItThereAndSavesTheAdventure() {
+        AdventureData adventure = enterAdventure("MAP");
+        Word cellar = new Word("cellar", Word.Type.NOUN);
+        adventure.getVocabularyData().addWord(cellar);
+        Div cell = cells().get(3 * PictureGrid.SIZE + 7);
+        ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
+        Dialog dialog = find(Dialog.class).single();
+        find(com.pdg.adventure.view.component.VocabularyPickerField.class, dialog).withCaption("Noun").single()
+                .setValue(cellar);
+
+        test(find(Button.class, dialog).withText("Place").single()).click();
+
+        LocationData created = adventure.getLocationData().values().stream()
+                .filter(location -> cellar.equals(location.getDescriptionData().getNoun())).findFirst().orElseThrow();
+        assertThat(created.getMapColumn()).isEqualTo(7);
+        assertThat(created.getMapRow()).isEqualTo(3);
+        verify(adventureService).saveAdventureData(adventure);
+        assertThat(cells().get(3 * PictureGrid.SIZE + 7).hasClassName("world-map-cell-occupied")).isTrue();
     }
 
     @Test

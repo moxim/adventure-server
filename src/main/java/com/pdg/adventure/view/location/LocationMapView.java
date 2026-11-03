@@ -191,12 +191,8 @@ public class LocationMapView extends VerticalLayout implements BeforeEnterObserv
     }
 
     private void openPlaceDialog(PictureGrid.Cell aCell) {
-        List<LocationData> unplaced = LocationMapPlacement.unplaced(adventure);
-        if (unplaced.isEmpty()) {
-            Notification.show(NO_UNPLACED_LOCATIONS);
-            return;
-        }
-        open(new PlaceLocationDialog(adventureService, unplaced, aCell, this::refresh));
+        // Also without unplaced locations: the dialog can make a new one.
+        open(new PlaceLocationDialog(adventure, adventureService, aCell, this::refresh));
     }
 
     private void openReplaceDialog(LocationData anOccupant) {

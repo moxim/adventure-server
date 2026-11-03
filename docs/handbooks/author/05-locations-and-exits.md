@@ -111,7 +111,7 @@ on a cell does:
 
 | Mode | Click on… | What happens |
 |------|-----------|--------------|
-| **Place** (the default) | an empty cell | A dialog lists the locations that are not on the map yet; pick one and press **Place**. |
+| **Place** (the default) | an empty cell | A dialog with two tabs. **Unplaced locations** lists the locations that are not on the map yet: pick one and press **Place**. **New location** makes a brand-new location right on that cell: choose its **Noun** from your vocabulary (required), optionally an **Adjective** and a **Short description**, and press **Place**. Everything else (long description, light, picture, commands, exits) you edit later in the location editor. If every location is already on the map, only the new-location form is shown. |
 | **Place** | a cell with a location | The **Replace** dialog: pick an unplaced location that takes the cell. Exits that led to the old location now lead to the new one, and you tick which of the old location's own exits move to the new one. |
 | **Connect** | one location, then another | A dialog lists the exits that already lead from the first to the second and lets you add one, optionally with the opposite exit back. You choose the words from the adventure's vocabulary. |
 | **Remove** | a cell with a location | A dialog takes the location off the map. The location itself stays in the adventure and can be placed again. |

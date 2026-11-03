@@ -362,7 +362,7 @@ it. Without a chosen picture it shows a hint and a button to the adventure edito
 
 | Mode | Click | Result |
 |------|-------|--------|
-| `PLACE` | empty cell | `PlaceLocationDialog`: choose one of the unplaced locations. "No unplaced locations." when none is left. |
+| `PLACE` | empty cell | `PlaceLocationDialog`: two tabs, *Unplaced locations* (choose one) and *New location* (a required noun picker over the vocabulary's nouns, an optional adjective picker and a short-description field). With no unplaced location only the new-location form is shown; with no noun in the vocabulary it says so and **Place** stays disabled. A new location is made by `LocationCreator.create` (also used by the location editor for the item container's description), placed on the cell and stored by saving the adventure (`LocationMapSaver.saveAdventure`; the adventure cascade-saves its `locationData`), whereas an existing one is saved on its own. The start location is not offered. |
 | `PLACE` | occupied cell | `ReplaceLocationDialog`: an unplaced location takes the cell; directions that led to the old one lead to the new one, the ticked directions of the old one move over (`LocationMapPlacement.replace`). |
 | `CONNECT` | a location, then another | `ConnectLocationsDialog`: lists existing directions between them, adds one, optionally with the opposite direction. Words are chosen from the vocabulary. |
 | `REMOVE` | occupied cell | `RemoveLocationDialog`; also works when no location is unplaced. An empty cell only shows "Click a cell that holds a location." |
@@ -714,7 +714,7 @@ swapping the brand image per layout and using `LumoUtility` classes.
 - `src/main/java/com/pdg/adventure/view/adventure/{AdventuresMainLayout,AdventuresMenuView,AdventureEditorView,AdventureRunView}.java`
 - `src/main/java/com/pdg/adventure/view/workflow/{WorkflowMainLayout,CommandListEditorView,WorkflowEditorView,ResponsesEditorView,ArrivalProcessesEditorView}.java`
 - `src/main/java/com/pdg/adventure/view/systemmessage/{SystemMessagesView,SystemMessageEntry}.java`
-- `src/main/java/com/pdg/adventure/view/location/{LocationsMainLayout,LocationsMenuView,LocationEditorView,LocationMapView,LocationMapPlacement,LocationMapSaver,PlaceLocationDialog,ReplaceLocationDialog,ConnectLocationsDialog,RemoveLocationDialog,LocationViewModel,LocationDescriptionAdapter,LocationProvider,LocationUsageTracker}.java`
+- `src/main/java/com/pdg/adventure/view/location/{LocationsMainLayout,LocationsMenuView,LocationEditorView,LocationMapView,LocationCreator,LocationMapPlacement,LocationMapSaver,PlaceLocationDialog,ReplaceLocationDialog,ConnectLocationsDialog,RemoveLocationDialog,LocationViewModel,LocationDescriptionAdapter,LocationProvider,LocationUsageTracker}.java`
 - `src/main/java/com/pdg/adventure/view/item/*.java`
 - `src/main/java/com/pdg/adventure/view/direction/*.java`
 - `src/main/java/com/pdg/adventure/view/command/*.java` (and `command/action/`, `command/condition/`)

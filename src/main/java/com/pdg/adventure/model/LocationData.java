@@ -24,7 +24,7 @@ public class LocationData extends ThingData {
     private int timesVisited;
     private int lumen = 50;
     private String pictureId;
-    /** The world map grid cell (0 to 9, column left to right, row top to bottom); both null while unplaced. */
+    /** The world map grid cell (0 to 19, column left to right, row top to bottom); both null while unplaced. */
     private Integer mapColumn;
     private Integer mapRow;
 
