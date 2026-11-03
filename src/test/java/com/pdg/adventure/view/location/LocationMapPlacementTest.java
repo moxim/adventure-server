@@ -170,4 +170,55 @@ class LocationMapPlacementTest {
 
         assertThat(y.getDirectionsData()).containsExactlyInAnyOrder(first, second);
     }
+
+    @Test
+    void incomingDirectionsListTheDirectionsOfOtherLocationsThatLeadHere() {
+        DirectionData aToX = DirectionBuilder.create(a, "x", go, null, north);
+        DirectionBuilder.create(a, "y", go, null, door);
+        DirectionBuilder.create(x, "x", enter, null, door);
+
+        assertThat(LocationMapPlacement.incomingDirections(adventure, x))
+                .containsExactly(new LocationMapPlacement.IncomingDirection(a, aToX));
+    }
+
+    @Test
+    void removeUnplacesTheLocationAndRemovesOnlyTheGivenOutgoingAndIncomingDirections() {
+        DirectionData out = DirectionBuilder.create(x, "a", go, null, north);
+        DirectionData keptOut = DirectionBuilder.create(x, "y", go, null, door);
+        DirectionData in = DirectionBuilder.create(a, "x", go, null, north);
+        DirectionData keptIn = DirectionBuilder.create(a, "x", enter, null, door);
+
+        List<LocationData> changed = LocationMapPlacement.remove(adventure, x, List.of(out, in));
+
+        assertThat(x.getMapColumn()).isNull();
+        assertThat(x.getMapRow()).isNull();
+        assertThat(x.getDirectionsData()).containsExactly(keptOut);
+        assertThat(a.getDirectionsData()).containsExactly(keptIn);
+        assertThat(changed).containsExactlyInAnyOrder(x, a);
+    }
+
+    @Test
+    void removeWithoutDirectionsOnlyChangesTheLocation() {
+        DirectionBuilder.create(a, "x", go, null, north);
+
+        assertThat(LocationMapPlacement.remove(adventure, x, List.of())).containsExactly(x);
+        assertThat(a.getDirectionsData()).hasSize(1);
+    }
+
+    @Test
+    void removeLeavesDirectionsAloneThatHaveNothingToDoWithTheLocation() {
+        DirectionData unrelated = DirectionBuilder.create(a, "y", go, null, north);
+
+        assertThat(LocationMapPlacement.remove(adventure, x, List.of(unrelated))).containsExactly(x);
+        assertThat(a.getDirectionsData()).containsExactly(unrelated);
+    }
+
+    @Test
+    void removeTakesADirectionOfTheLocationToItselfAlong() {
+        DirectionData loop = DirectionBuilder.create(x, "x", go, null, north);
+
+        LocationMapPlacement.remove(adventure, x, List.of(loop));
+
+        assertThat(x.getDirectionsData()).isEmpty();
+    }
 }

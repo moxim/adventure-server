@@ -81,4 +81,30 @@ class GameContextOverlayTest {
 
         assertThat(gameContext.getOverlays()).hasSize(1);
     }
+
+    @Test
+    void anOverlayOnTheLastCellOfTheGrid_isKept() {
+        gameContext.showOverlay(19, 19, "a");
+        gameContext.showOverlay(10, 0, "b");
+
+        assertThat(gameContext.getOverlays())
+                .containsExactly(new PictureOverlayData(19, 19, "a"), new PictureOverlayData(10, 0, "b"));
+    }
+
+    @Test
+    void overlaysOnDifferentCellsOfAnyRowAndColumn_doNotReplaceEachOther() {
+        gameContext.showOverlay(0, 1, "a");
+        gameContext.showOverlay(10, 0, "b");
+
+        assertThat(gameContext.getOverlays()).hasSize(2);
+    }
+
+    @Test
+    void aCellOutsideTheGrid_isIgnored() {
+        gameContext.showOverlay(20, 0, "a");
+        gameContext.showOverlay(0, 20, "a");
+        gameContext.showOverlay(-1, 0, "a");
+
+        assertThat(gameContext.getOverlays()).isEmpty();
+    }
 }

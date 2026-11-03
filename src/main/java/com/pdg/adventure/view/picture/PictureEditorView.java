@@ -29,6 +29,7 @@ import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.PictureGrid;
 import com.pdg.adventure.view.support.RouteIds;
 
@@ -212,9 +213,10 @@ public class PictureEditorView extends VerticalLayout
     }
 
     private void navigateBack() {
-        UI.getCurrent().navigate(PictureMenuView.class,
-                                 new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                    adventureData.getId())));
+        HistoryNavigation.navigateUp(PictureMenuView.class,
+                                     new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                        adventureData.getId())),
+                                     binder.hasChanges() || hasPendingUpload);
     }
 
     private void validateSave(PictureViewModel aPictureViewModel) {

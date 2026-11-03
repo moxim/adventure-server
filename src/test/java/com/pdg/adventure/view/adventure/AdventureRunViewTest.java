@@ -48,9 +48,16 @@ import com.pdg.adventure.server.storage.message.SystemMessageKey;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.view.player.PlayerLibraryView;
 import com.pdg.adventure.view.support.FlashNotifier;
+import com.pdg.adventure.view.support.PictureGrid;
 import com.pdg.adventure.view.support.RouteIds;
 
 class AdventureRunViewTest extends BrowserlessTest {
+
+    // the cell in the middle of the picture, and the one under a click at 50 of 200 across, 75 of 100 down
+    private static final int MIDDLE = PictureGrid.SIZE / 2;
+    private static final int COLUMN_AT_50 = 50 * PictureGrid.SIZE / 200;
+    private static final int ROW_AT_75 = 75 * PictureGrid.SIZE / 100;
+    private static final double CELL_PERCENT = 100.0 / PictureGrid.SIZE;
 
     private AdventureRunSessionFactory sessionFactory;
     private AdventureAccessService accessService;
@@ -620,10 +627,10 @@ class AdventureRunViewTest extends BrowserlessTest {
         List<com.vaadin.flow.component.html.Image> images = find(com.vaadin.flow.component.html.Image.class, view).all();
         assertThat(images).hasSize(2);
         com.vaadin.flow.component.html.Image overlay = images.get(1);
-        assertThat(overlay.getStyle().get("left")).isEqualTo("30.0%");
-        assertThat(overlay.getStyle().get("top")).isEqualTo("40.0%");
-        assertThat(overlay.getStyle().get("width")).isEqualTo("10.0%");
-        assertThat(overlay.getStyle().get("height")).isEqualTo("10.0%");
+        assertThat(overlay.getStyle().get("left")).isEqualTo(3 * CELL_PERCENT + "%");
+        assertThat(overlay.getStyle().get("top")).isEqualTo(4 * CELL_PERCENT + "%");
+        assertThat(overlay.getStyle().get("width")).isEqualTo(CELL_PERCENT + "%");
+        assertThat(overlay.getStyle().get("height")).isEqualTo(CELL_PERCENT + "%");
         assertThat(overlay.getParent().orElseThrow().getStyle().get("pointer-events")).isEqualTo("none");
     }
 
@@ -639,7 +646,7 @@ class AdventureRunViewTest extends BrowserlessTest {
         assertThat(find(com.vaadin.flow.component.html.Image.class, view).all()).hasSize(1);
         when(gameContext.getOverlays())
                 .thenReturn(List.of(new com.pdg.adventure.model.PictureOverlayData(5, 5, "pic-2")));
-        when(session.submitClick(5, 5)).thenReturn(new RunResult(List.of("The door opens."), false, "What now?"));
+        when(session.submitClick(MIDDLE, MIDDLE)).thenReturn(new RunResult(List.of("The door opens."), false, "What now?"));
 
         view.handlePictureClick(500, 250, 1000, 500, 2000, 1000);
 
@@ -661,11 +668,11 @@ class AdventureRunViewTest extends BrowserlessTest {
     void pictureClick_insideThePicture_submitsTheCellToTheSession_andRendersTheResult() {
         stubOpeningRoom("A grand throne room.");
         enterViaAuthorRoute();
-        when(session.submitClick(5, 5)).thenReturn(new RunResult(List.of("The door opens."), false, "What now?"));
+        when(session.submitClick(MIDDLE, MIDDLE)).thenReturn(new RunResult(List.of("The door opens."), false, "What now?"));
 
         view.handlePictureClick(500, 250, 1000, 500, 2000, 1000);
 
-        verify(session).submitClick(5, 5);
+        verify(session).submitClick(MIDDLE, MIDDLE);
         MessageList messageList = find(MessageList.class, view).single();
         assertThat(test(messageList).getMessages()).extracting(MessageListItem::getText)
                 .containsExactly("A grand throne room.", "The door opens.\nWhat now?");
@@ -693,7 +700,7 @@ class AdventureRunViewTest extends BrowserlessTest {
     void pictureClick_whenTheResultIsGameOver_disablesTheInputAndReleasesTheRun() {
         stubOpeningRoom("A grand throne room.");
         enterViaAuthorRoute();
-        when(session.submitClick(5, 5)).thenReturn(new RunResult(List.of(SystemMessageKey.SM14.defaultText()), true));
+        when(session.submitClick(MIDDLE, MIDDLE)).thenReturn(new RunResult(List.of(SystemMessageKey.SM14.defaultText()), true));
 
         view.handlePictureClick(500, 250, 1000, 500, 2000, 1000);
 
@@ -705,12 +712,12 @@ class AdventureRunViewTest extends BrowserlessTest {
     void pictureClick_afterTheGameIsOver_isIgnored() {
         stubOpeningRoom("A grand throne room.");
         enterViaAuthorRoute();
-        when(session.submitClick(5, 5)).thenReturn(new RunResult(List.of(SystemMessageKey.SM14.defaultText()), true));
+        when(session.submitClick(MIDDLE, MIDDLE)).thenReturn(new RunResult(List.of(SystemMessageKey.SM14.defaultText()), true));
 
         view.handlePictureClick(500, 250, 1000, 500, 2000, 1000);
         view.handlePictureClick(500, 250, 1000, 500, 2000, 1000);
 
-        verify(session, times(1)).submitClick(5, 5);
+        verify(session, times(1)).submitClick(MIDDLE, MIDDLE);
     }
 
     @Test
@@ -747,11 +754,11 @@ class AdventureRunViewTest extends BrowserlessTest {
     void pictureClick_asTheBrowserReportsIt_reachesTheSessionAsTheCell() {
         stubOpeningRoom("A grand throne room.", "pic-1");
         enterViaAuthorRoute();
-        when(session.submitClick(2, 7)).thenReturn(new RunResult(List.of("The door opens."), false, "What now?"));
+        when(session.submitClick(COLUMN_AT_50, ROW_AT_75)).thenReturn(new RunResult(List.of("The door opens."), false, "What now?"));
 
-        // 200 x 100 box showing a 400 x 200 picture, clicked at (50, 75): column 2, row 7
+        // 200 x 100 box showing a 400 x 200 picture, clicked at (50, 75): a quarter across, three quarters down
         new PictureTester(find(Image.class, view).single()).click(50, 75, 200, 100, 400, 200);
 
-        verify(session).submitClick(2, 7);
+        verify(session).submitClick(COLUMN_AT_50, ROW_AT_75);
     }
 }

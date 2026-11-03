@@ -33,6 +33,7 @@ import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.component.AdventureFontSelect;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.RouteIds;
 
 @Route(value = "author/adventures/:adventureId/messages/:messageId/edit", layout = MessagesMainLayout.class)
@@ -167,8 +168,8 @@ public class MessageEditorView extends VerticalLayout
     }
 
     private void navigateBack() {
-        UI.getCurrent().navigate(MessagesMenuView.class, new RouteParameters(
-                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
+        HistoryNavigation.navigateUp(MessagesMenuView.class, new RouteParameters(
+                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())), binder.hasChanges());
     }
 
     private void updatePreview() {

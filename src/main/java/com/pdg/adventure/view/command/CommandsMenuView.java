@@ -30,6 +30,7 @@ import com.pdg.adventure.view.adventure.AdventuresMainLayout;
 import com.pdg.adventure.view.item.ItemEditorView;
 import com.pdg.adventure.view.location.LocationEditorView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -82,12 +83,12 @@ public class CommandsMenuView extends VerticalLayout
 
         backButton = new Button("Back", _ -> {
             if (itemData != null) {
-                UI.getCurrent().navigate(ItemEditorView.class, new RouteParameters(
+                HistoryNavigation.navigateUp(ItemEditorView.class, new RouteParameters(
                         new RouteParam(ADVENTURE_ID.getValue(), adventureData.getId()),
                         new RouteParam(LOCATION_ID.getValue(), locationData.getId()),
                         new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())));
             } else {
-                UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(
+                HistoryNavigation.navigateUp(LocationEditorView.class, new RouteParameters(
                         new RouteParam(LOCATION_ID.getValue(), locationData.getId()),
                         new RouteParam(ADVENTURE_ID.getValue(), adventureData.getId())));
             }

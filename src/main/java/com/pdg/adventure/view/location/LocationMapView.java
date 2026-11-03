@@ -25,19 +25,21 @@ import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.PictureGrid;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 /**
  * Shows the picture the author chose as the adventure's world map (set in the {@link AdventureEditorView}),
- * stretched into a 16:9 frame of at most 1280 x 720 pixels (and half the window height) with a clickable 10 x 10 grid on top.
+ * stretched into a 16:9 frame of at most 1280 x 720 pixels (and half the window height) with a clickable 20 x 20 grid on top.
  * Without a chosen picture it hints at where to choose one.
  * <p>
  * On the grid the author places the adventure's locations: a cell that holds a location is drawn darker and shows the
  * location's description when hovered. In {@link Mode#PLACE} a click on an empty cell places one of the unplaced
  * locations there and a click on an occupied cell replaces its location; in {@link Mode#CONNECT} a click on one
- * location and then on another connects them with directions.
+ * location and then on another connects them with directions; in {@link Mode#REMOVE} a click on a location takes it
+ * off the map, after the author chose which of its directions go with it.
  */
 @PageTitle("Your World")
 @Route(value = "author/adventures/:adventureId/map", layout = LocationsMainLayout.class)
@@ -54,11 +56,13 @@ public class LocationMapView extends VerticalLayout implements BeforeEnterObserv
     private static final String TITLE = "title";
     private static final String NO_UNPLACED_LOCATIONS = "No unplaced locations.";
     private static final String SELECTED_CLASS = "world-map-cell-selected";
+    private static final String START_CLASS = "world-map-cell-start";
 
     /** What a click on a cell of the map does. */
     enum Mode {
         PLACE("Place"),
-        CONNECT("Connect");
+        CONNECT("Connect"),
+        REMOVE("Remove");
 
         private final String label;
 
@@ -111,6 +115,15 @@ public class LocationMapView extends VerticalLayout implements BeforeEnterObserv
             add(mode, createMap(worldMap));
             refresh();
         }
+        add(createBackButton(adventureData));
+    }
+
+    /** Below the picture; back to the adventure's locations, where "The World" was opened from. */
+    private static Button createBackButton(AdventureData anAdventureData) {
+        // No Escape shortcut as on the other Back buttons: Escape closes the place/connect dialogs of this view.
+        return new Button("Back", _ -> HistoryNavigation.navigateUp(
+                LocationsMenuView.class,
+                new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), anAdventureData.getId()))));
     }
 
     /** What a click on a grid cell does, depending on the mode. */
@@ -119,16 +132,30 @@ public class LocationMapView extends VerticalLayout implements BeforeEnterObserv
             // A double-click sends a second click before the first dialog shows; it must not open another one.
             return;
         }
-        if (mode.getValue() == Mode.PLACE) {
-            Optional<LocationData> occupant = LocationMapPlacement.locationAt(adventure, aCell);
-            if (occupant.isEmpty()) {
-                openPlaceDialog(aCell);
-            } else {
-                openReplaceDialog(occupant.get());
-            }
-        } else {
-            onConnectClick(aCell);
+        switch (mode.getValue()) {
+            case PLACE -> onPlaceClick(aCell);
+            case CONNECT -> onConnectClick(aCell);
+            case REMOVE -> onRemoveClick(aCell);
         }
+    }
+
+    private void onPlaceClick(PictureGrid.Cell aCell) {
+        Optional<LocationData> occupant = LocationMapPlacement.locationAt(adventure, aCell);
+        if (occupant.isEmpty()) {
+            openPlaceDialog(aCell);
+        } else {
+            openReplaceDialog(occupant.get());
+        }
+    }
+
+    /** Works with or without unplaced locations: taking one off the map is how one gets freed. */
+    private void onRemoveClick(PictureGrid.Cell aCell) {
+        Optional<LocationData> clicked = LocationMapPlacement.locationAt(adventure, aCell);
+        if (clicked.isEmpty()) {
+            Notification.show("Click a cell that holds a location.");
+            return;
+        }
+        open(new RemoveLocationDialog(adventure, adventureService, clicked.get(), this::refresh));
     }
 
     /** The first click on a location picks the source, the second one the target of the new direction. */
@@ -164,12 +191,8 @@ public class LocationMapView extends VerticalLayout implements BeforeEnterObserv
     }
 
     private void openPlaceDialog(PictureGrid.Cell aCell) {
-        List<LocationData> unplaced = LocationMapPlacement.unplaced(adventure);
-        if (unplaced.isEmpty()) {
-            Notification.show(NO_UNPLACED_LOCATIONS);
-            return;
-        }
-        open(new PlaceLocationDialog(adventureService, unplaced, aCell, this::refresh));
+        // Also without unplaced locations: the dialog can make a new one.
+        open(new PlaceLocationDialog(adventure, adventureService, aCell, this::refresh));
     }
 
     private void openReplaceDialog(LocationData anOccupant) {
@@ -180,12 +203,16 @@ public class LocationMapView extends VerticalLayout implements BeforeEnterObserv
         open(new ReplaceLocationDialog(adventure, adventureService, anOccupant, this::refresh));
     }
 
-    /** Draws the cells that hold a location darker, with the location's description as hover text. */
+    /**
+     * Draws the cells that hold a location darker, with the location's description as hover text, and marks the cell
+     * of the adventure's start location with a star.
+     */
     private void refresh() {
         for (int row = 0; row < PictureGrid.SIZE; row++) {
             for (int column = 0; column < PictureGrid.SIZE; column++) {
                 Div cell = PictureGrid.cellComponent(overlay, new PictureGrid.Cell(column, row));
                 cell.removeClassName(OCCUPIED_CLASS);
+                cell.removeClassName(START_CLASS);
                 cell.getElement().removeAttribute(TITLE);
             }
         }
@@ -200,6 +227,10 @@ public class LocationMapView extends VerticalLayout implements BeforeEnterObserv
                 cell.addClassName(OCCUPIED_CLASS);
                 // TODO: Review needed — native title attribute as hover text; a Vaadin Tooltip may fit the look better
                 cell.getElement().setAttribute(TITLE, hoverText(location));
+            }
+            // The star is drawn by the style sheet (world-map.css) on the start location's cell.
+            if (location.getId().equals(adventure.getCurrentLocationId())) {
+                cell.addClassName(START_CLASS);
             }
         }
     }

@@ -48,6 +48,9 @@ drawer entry by matching `window.location.pathname` against every
 this is a workaround for the lack of an out-of-the-box `aria-current` mark in
 Vaadin's `SideNav` at the time of writing.
 
+The drawer's `SideNav` replaces the browser-history entry instead of adding one when an
+entry is clicked (see [Browser history](#browser-history)).
+
 ## Route × role matrix
 
 This is the canonical list of routed views with their `@Route` value, layout,
@@ -132,7 +135,8 @@ is the base `@PermitAll` AppLayout. Common behaviour:
 - `createHeader(title)` — adds a `DrawerToggle`, the brand image
   (`images/adventure.png`, 30 px), and an `H2` title.
 - `createDrawer(name)` — adds an `H1` brand and a `SideNav` with the standard
-  *About / Dashboard / Logout* entries.
+  *About / Dashboard / Logout* entries; the `SideNav` runs
+  `HistoryNavigation.DRAWER_REPLACE_SCRIPT` so its links replace the history entry.
 - `extendDrawer(...)` — hook for sub-layouts to add their own `SideNavItem`s.
 - `afterNavigation(...)` — picks up the routed view's title (either via
   `@PageTitle` or `HasDynamicTitle.getPageTitle()`) and writes it into the
@@ -144,7 +148,7 @@ themed image:
 | Sub-layout | Brand image | Extra nav |
 |------------|-------------|-----------|
 | `AdventuresMainLayout` | `images/adventure.png` | (Dashboard / About / Logout only) |
-| `LocationsMainLayout` | `icons/maps.gif` | "The World" → `LocationMapView` |
+| `LocationsMainLayout` | `icons/maps.gif` | (none) — "The World" is a button on `LocationsMenuView`, not a drawer entry |
 | `ItemsMainLayout` | `icons/treasure.gif` | (none) |
 | `DirectionsMainLayout` | `icons/path.gif` | (none) |
 | `CommandMainLayout` | `icons/to-do-list.gif` | (none) — note: `CommandsMenuView` currently uses `AdventuresMainLayout` instead |
@@ -155,6 +159,32 @@ themed image:
 
 `AdventuresMainLayout.checkIfUserWantsToLeavePage(event, hasChanges)` is the
 shared unsaved-change guard called by every editor's `beforeLeave(...)`.
+
+## Browser history
+
+Authors move between views a lot, so views must not add a browser-history entry for every hop
+(`view/support/HistoryNavigation`, `HistoryNavigationInitializer`):
+
+- A client script, started once per UI by the `HistoryNavigationInitializer`
+  (`VaadinServiceInitListener`), records `history.state.idx → path` in `sessionStorage`
+  (`adventure-nav-trail`) on every `vaadin-navigated`. That is the only way to know the browser's
+  previous entry; the server never sees it. It offers `window.adventureTrail.stepBackTo(parent)`.
+- **BACK buttons** (and their Escape shortcut) call
+  `HistoryNavigation.navigateUp(Parent.class, params, hasUnsavedChanges)` instead of
+  `UI.navigate`. The server asks the browser to `stepBackTo` the parent's path; the browser steps
+  back (`history.back()`) only when the previous entry is that path, and otherwise the server falls
+  back to the plain `ui.navigate` (after a refresh, a deep link, or an error answering). Editors pass
+  the same condition their `beforeLeave` guard uses; menus pass nothing.
+- **With unsaved changes `navigateUp` always navigates normally.** After one Cancel on the
+  "uncommitted changes" prompt Flow silently ignores further client-side navigations (browser Back,
+  `history.back()`, drawer links), while a server-side `ui.navigate` keeps prompting. A history step must
+  never be what leaves a dirty view.
+- **Drawer links** replace the current entry: `DRAWER_REPLACE_SCRIPT` sets the `SideNav`'s `onNavigate`
+  hook to dispatch `vaadin-navigate` with `replace: true`; modifier clicks (new tab) keep their default.
+  After a drawer switch the browser's Back button therefore does not return to the view that was left.
+- Drill-down (menu → editor, double-click or button) stays a normal `ui.navigate`, which pushes an entry.
+- `LocationMapView`'s **Back** button (below the picture, no Escape shortcut because Escape closes the
+  map's dialogs) uses `navigateUp(LocationsMenuView.class, …)`.
 
 ## Editor template: `BaseEditorView<T>`
 
@@ -314,9 +344,44 @@ the dialogue:
 
 This cascade is `VocabularyData.findWordsBySynonym`'s primary call site.
 
+### World map: `LocationMapView`
+
+`LocationMapView` (`…/:adventureId/map`, `LocationsMainLayout`, `ROLE_AUTHOR`) shows the adventure's
+`worldMapPictureId` picture stretched into a 16:9 frame of at most 1280×720 px and at most half the
+window height, with `PictureGrid.createOverlay(callback)` (20 × 20 cells, `styles/world-map.css`) laid over
+it. Without a chosen picture it shows a hint and a button to the adventure editor. Below the picture is a
+**Back** button (see [Browser history](#browser-history)).
+
+- A cell that holds a location (`mapColumn`/`mapRow`, see [`03-domain-model.md`](03-domain-model.md)) gets the
+  class `world-map-cell-occupied` and the location's description as its `title`. The cell of the location
+  whose id is the adventure's `currentLocationId` also gets `world-map-cell-start`, which the style sheet
+  draws as a yellow star with a dark outline (two clipped `::before`/`::after` boxes sized only in percentages of the cell; container-query or viewport units are avoided because some browsers drew the star as big as the window). `refresh()` redraws
+  both after every change.
+- A `RadioButtonGroup<Mode>` chooses what a click does; one dialog is open at a time
+  (`onCellClicked` ignores clicks while one is open):
+
+| Mode | Click | Result |
+|------|-------|--------|
+| `PLACE` | empty cell | `PlaceLocationDialog`: two tabs, *Unplaced locations* (choose one) and *New location* (a required noun picker over the vocabulary's nouns, an optional adjective picker and a short-description field). With no unplaced location only the new-location form is shown; with no noun in the vocabulary it says so and **Place** stays disabled. A new location is made by `LocationCreator.create` (also used by the location editor for the item container's description), placed on the cell and stored by saving the adventure (`LocationMapSaver.saveAdventure`; the adventure cascade-saves its `locationData`), whereas an existing one is saved on its own. The start location is not offered. |
+| `PLACE` | occupied cell | `ReplaceLocationDialog`: an unplaced location takes the cell; directions that led to the old one lead to the new one, the ticked directions of the old one move over (`LocationMapPlacement.replace`). |
+| `CONNECT` | a location, then another | `ConnectLocationsDialog`: lists existing directions between them, adds one, optionally with the opposite direction. Words are chosen from the vocabulary. |
+| `REMOVE` | occupied cell | `RemoveLocationDialog`; also works when no location is unplaced. An empty cell only shows "Click a cell that holds a location." |
+
+- **Removing** (`LocationMapPlacement.remove`) sets `mapColumn`/`mapRow` to `null`; the location stays in
+  the adventure. The dialog has two `CheckboxGroup`s, *Directions leading away from here* (the location's own
+  `directionsData`) and *Directions leading here* (`LocationMapPlacement.incomingDirections`: directions of other
+  locations whose `destinationId` is the location; a direction to itself is listed once, under *away*), each with
+  a **Select all**. Nothing is ticked at first and a section without directions is not shown. Only ticked
+  directions are deleted, and only if they lead away from or to the location; unticked ones stay and keep
+  pointing at the now unplaced location. The start location is not special-cased (no warning; it stays the
+  start). The changed locations are saved one by one through `LocationMapSaver.saveAll`.
+- `LocationMapPlacement` holds these rules on plain data and never saves; the dialogs save what it returns.
+
 ### Locations list and editor: counts
 
-`LocationsMenuView`'s grid (via `GridProvider`, ID column hidden) shows the location's
+`LocationsMenuView`'s left column holds the **Entry location** picker, the location count and the buttons
+**The World** (opens `LocationMapView`; a plain navigation, always enabled, just above **Edit Location**),
+**Edit Location**, **Create Location** and **Back**. Its grid (via `GridProvider`, ID column hidden) shows the location's
 description plus **Lumen**, **Used** (`LocationUsageTracker.countLocationUsages`, exits
 leading here) and, as its rightmost column, **Commands**
 (`LocationDescriptionAdapter.getCommandCount()`). `LocationEditorView` shows the read-only
@@ -475,7 +540,7 @@ tests can drive them without a context-menu click.
   preview below it. The preview sits in a `position: relative`, `fit-content`
   frame (the image in its own proportions, at most the frame's width and
   `min(720px, 60vh)` high) with `PictureGrid.createOverlay()` laid over it: the
-  same 10 × 10 hover-highlighted, clickable grid as the world map
+  same 20 × 20 hover-highlighted, clickable grid as the world map
   (`styles/world-map.css`; a click says "Location x : y"), so an author sees the
   cells a `Clicked` condition names. The frame hugs the drawn picture, so the cells
   cover it exactly as `AdventureRunView` maps a click (`PictureGrid.cellAt`).
@@ -506,7 +571,7 @@ tests can drive them without a context-menu click.
   and `element.naturalWidth/naturalHeight`; `AdventureRunView.handlePictureClick` hands them
   to `view/support/PictureGrid.cellAt`, which draws the picture like CSS `object-fit: contain`
   (scaled to fit and centred), ignores clicks in the empty margin, and numbers the cell on
-  the same 10 × 10 grid as `LocationMapView` (`PictureGrid.SIZE`; column from the left, row
+  the same 20 × 20 grid as `LocationMapView` (`PictureGrid.SIZE`; column from the left, row
   from the top, from 0). A cell goes to `AdventureRunSession.submitClick` and its result is
   rendered like a typed turn (the click itself is not echoed). Clicks are ignored while the message input is disabled (game over, or a run conflict), so a finished game cannot be clicked on. The rules for what is shown when
   are in [`04-runtime-engine.md` § Pictures](04-runtime-engine.md#pictures).
@@ -595,7 +660,7 @@ it needs two fields). Sets an item's light level. |
 | `HereConditionEditor` | Item selector (via `AbstractSingleItemConditionEditor`). |
 | `WornConditionEditor` | Item selector (via `AbstractSingleItemConditionEditor`). |
 | `ChanceConditionEditor` | A single numeric field for the 1–100 chance percentage. |
-| `ClickedConditionEditor` | Two required integer fields, "X (column, 0–9)" and "Y (row, 0–9)", validated against `PictureGrid.SIZE`. Matches a click on that cell of the picture grid (see [`04-runtime-engine.md` § Clicks on the picture](04-runtime-engine.md#clicks-on-the-picture-gameloopprocessclick)). |
+| `ClickedConditionEditor` | Two required integer fields, "X (column, 0–19)" and "Y (row, 0–19)", validated against `PictureGrid.SIZE`. Matches a click on that cell of the picture grid (see [`04-runtime-engine.md` § Clicks on the picture](04-runtime-engine.md#clicks-on-the-picture-gameloopprocessclick)). |
 | `EqualsConditionEditor` | Variable name + value text fields. |
 | `GreaterThanConditionEditor` | Variable name + numeric threshold (via `AbstractNumericComparisonConditionEditor`). |
 | `LessThanConditionEditor` | Variable name + numeric threshold (via `AbstractNumericComparisonConditionEditor`). |
@@ -642,14 +707,14 @@ swapping the brand image per layout and using `LumoUtility` classes.
 - `src/main/java/com/pdg/adventure/view/component/`
   — `AdventureAppLayout`, `BaseEditorView`, `ResetBackSaveView`, `VocabularyPicker`, `VocabularyPickerField`, `AdventureGrid`, `GridFactory`, `NavigationHelper`.
 - `src/main/java/com/pdg/adventure/view/support/`
-  — `ViewSupporter`, `RouteIds`, `GridProvider`, `TrackedUsage`.
+  — `ViewSupporter`, `RouteIds`, `GridProvider`, `TrackedUsage`, `PictureGrid`, `HistoryNavigation`, `HistoryNavigationInitializer`.
 - `src/main/java/com/pdg/adventure/view/admin/{AdminDashboardView,AdventureAssignmentView,UserManagementView}.java`
 - `src/main/java/com/pdg/adventure/view/author/AuthorDashboardView.java`
 - `src/main/java/com/pdg/adventure/view/player/PlayerLibraryView.java`
 - `src/main/java/com/pdg/adventure/view/adventure/{AdventuresMainLayout,AdventuresMenuView,AdventureEditorView,AdventureRunView}.java`
 - `src/main/java/com/pdg/adventure/view/workflow/{WorkflowMainLayout,CommandListEditorView,WorkflowEditorView,ResponsesEditorView,ArrivalProcessesEditorView}.java`
 - `src/main/java/com/pdg/adventure/view/systemmessage/{SystemMessagesView,SystemMessageEntry}.java`
-- `src/main/java/com/pdg/adventure/view/location/{LocationsMainLayout,LocationsMenuView,LocationEditorView,LocationMapView,LocationViewModel,LocationDescriptionAdapter,LocationProvider,LocationUsageTracker}.java`
+- `src/main/java/com/pdg/adventure/view/location/{LocationsMainLayout,LocationsMenuView,LocationEditorView,LocationMapView,LocationCreator,LocationMapPlacement,LocationMapSaver,PlaceLocationDialog,ReplaceLocationDialog,ConnectLocationsDialog,RemoveLocationDialog,LocationViewModel,LocationDescriptionAdapter,LocationProvider,LocationUsageTracker}.java`
 - `src/main/java/com/pdg/adventure/view/item/*.java`
 - `src/main/java/com/pdg/adventure/view/direction/*.java`
 - `src/main/java/com/pdg/adventure/view/command/*.java` (and `command/action/`, `command/condition/`)
@@ -668,16 +733,14 @@ swapping the brand image per layout and using `LumoUtility` classes.
 - **`VocabularyMenuView` has a commented-out `@RouteAlias`**
   (`adventures/vocabulary`). Decide whether to keep the alias for
   bookmark-friendly URLs and re-enable it, or remove the dead annotation.
-- **`LocationMapView` shows a picture, not the real locations.** It renders the
-  adventure's `worldMapPictureId` picture (chosen in `AdventureEditorView`) stretched
-  into a 16:9 frame of at most 1280×720px and at most half the window height, under a fixed 10×10 grid of cells
-  that just pop a `"Location X : Y"` notification on click — the grid is not
-  bound to `LocationData` at all. Without a chosen picture it shows a hint and a
-  button to the adventure editor. The "The World" drawer entry linking to it is
-  built into `AdventureAppLayout` (a `BeforeEnterObserver`), so every editor layout shows it as soon as
-  the route names an adventure. A rebuild should either wire a real
-  node-graph view of the adventure's actual locations/exits, or drop the
-  drawer link until it is.
+- **World-map changes are not transactional.** The place / replace / connect / remove dialogs save the
+  changed locations one by one (`LocationMapSaver.saveAll`); a failure part-way leaves the map half-updated and
+  tells the author to reload it. Two locations stored on one cell: the first one wins and the other is not shown.
+- **Unsaved-changes prompt and browser history.** After one Cancel on the prompt, Flow ignores further
+  client-side navigations (browser Back, drawer links) on that view; BACK buttons are unaffected because they
+  navigate on the server when there are unsaved changes (see [Browser history](#browser-history)).
+- **`AdventureEditorView`'s leave guard never fires:** `binder.hasChanges()` is always false in `setBean` mode
+  (the view says so itself), so leaving it never asks about unsaved edits.
 - **ComboBox browserless test workarounds.** Two ComboBox quirks
   (silent `setValue`, wrong scope on `$()` queries) are documented in the
   testing strategy; until the upstream fix lands, browserless tests for

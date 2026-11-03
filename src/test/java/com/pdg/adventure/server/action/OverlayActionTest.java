@@ -35,8 +35,8 @@ class OverlayActionTest {
         gameContext.setCurrentPictureId("door-closed");
 
         for (OverlayAction action : new OverlayAction[] {
-                new OverlayAction(-1, 4, "p", gameContext), new OverlayAction(10, 4, "p", gameContext),
-                new OverlayAction(3, -1, "p", gameContext), new OverlayAction(3, 10, "p", gameContext),
+                new OverlayAction(-1, 4, "p", gameContext), new OverlayAction(20, 4, "p", gameContext),
+                new OverlayAction(3, -1, "p", gameContext), new OverlayAction(3, 20, "p", gameContext),
                 new OverlayAction(null, 4, "p", gameContext), new OverlayAction(3, null, "p", gameContext),
                 new OverlayAction(3, 4, null, gameContext)}) {
             assertThat(action.execute().getExecutionState()).isEqualTo(ExecutionResult.State.SUCCESS);

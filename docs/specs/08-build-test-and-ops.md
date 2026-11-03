@@ -196,6 +196,13 @@ Test resources live in `src/test/resources/`:
 | `OneLocation.json`, `QuickAdventure.json`, `Vocab.json` | JSON fixtures. |
 | `EverlastAI-Test.http` | IntelliJ HTTP-client requests; not run by Maven. |
 
+### Copilot in browserless tests
+
+Vaadin Copilot rescans the whole classpath before every browserless test, which made the view suite take
+about 420 s instead of about 20 s. The main Surefire `<configuration>` in `pom.xml` therefore sets the system
+property `vaadin.copilot.enable=false` (`systemPropertyVariables`; not in the `it` profile). Running a test from
+the IDE needs `-Dvaadin.copilot.enable=false` in the run configuration's **VM options**.
+
 ### Unit tests
 
 - Convention: `*Test.java`, JUnit Jupiter + Mockito (`@ExtendWith(MockitoExtension.class)` or plain `mock()`) + AssertJ.

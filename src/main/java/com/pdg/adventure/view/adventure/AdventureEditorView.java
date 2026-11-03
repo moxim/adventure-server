@@ -32,6 +32,7 @@ import com.pdg.adventure.view.location.LocationsMenuView;
 import com.pdg.adventure.view.message.MessagesMenuView;
 import com.pdg.adventure.view.picture.PictureMenuView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 import com.pdg.adventure.view.systemmessage.SystemMessagesView;
@@ -110,7 +111,7 @@ public class AdventureEditorView extends VerticalLayout
         setMargin(true);
         setPadding(true);
 
-        Button backButton = new Button("Back", _ -> UI.getCurrent().navigate(AdventuresMenuView.class));
+        Button backButton = new Button("Back", _ -> HistoryNavigation.navigateUp(AdventuresMenuView.class, binder.hasChanges()));
         backButton.addClickShortcut(Key.ESCAPE);
 
         saveButton.setEnabled(false);

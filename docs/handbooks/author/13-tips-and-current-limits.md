@@ -30,9 +30,12 @@ worth planning around.
   whoever imports it. Importing never overwrites, so it can't be used to
   restore a backup *over* an adventure — import it, then delete or rename the
   old one. See [Chapter 3](03-your-adventures.md#exporting-an-adventure).
-- **The World map isn't wired to your actual locations yet.** It's a
-  placeholder illustration, not a live diagram of your world — see
-  [Chapter 5](05-locations-and-exits.md#the-world-map).
+- **After you Cancel the "unsaved changes" prompt once, the browser's Back
+  button and the drawer links stop reacting** on that screen until you leave
+  it another way (the **Back** button of the screen still asks again). This is
+  how the underlying framework behaves.
+- **The Adventure Editor does not warn about unsaved edits** when you leave it.
+  Save before you go.
 - **Taking and carrying have no weight limit.** The AutoTake action only checks
   how many things the player carries, not how heavy they are.
 - **Workflow *Processes* print their failure message every turn, not once

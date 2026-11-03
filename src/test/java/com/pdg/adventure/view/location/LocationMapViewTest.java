@@ -39,6 +39,7 @@ import com.pdg.adventure.model.Word;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.view.support.PictureGrid;
 import com.pdg.adventure.view.support.RouteIds;
 
 class LocationMapViewTest extends BrowserlessTest {
@@ -46,6 +47,7 @@ class LocationMapViewTest extends BrowserlessTest {
     private AdventureAccessService accessService;
     private AdventureService adventureService;
     private LocationMapView view;
+    private String startLocationId;
 
     @BeforeEach
     void setUp() {
@@ -68,6 +70,7 @@ class LocationMapViewTest extends BrowserlessTest {
     private AdventureData enterAdventure(String worldMapPictureId, LocationData... locations) {
         AdventureData adventure = new AdventureData();
         adventure.setId("adv-1");
+        adventure.setCurrentLocationId(startLocationId);
         for (LocationData location : locations) {
             adventure.getLocationData().put(location.getId(), location);
         }
@@ -113,25 +116,48 @@ class LocationMapViewTest extends BrowserlessTest {
         Div frame = find(Div.class, view).withClassName("world-map").single();
         assertThat(frame.getStyle().get("aspect-ratio")).isEqualTo("16 / 9");
         assertThat(frame.getStyle().get("max-width")).isEqualTo("min(1280px, calc(50vh * 16 / 9))");
-        assertThat(find(Button.class, view).all()).isEmpty();
+        assertThat(find(Button.class, view).all()).extracting(Button::getText).containsExactly("Back");
     }
 
     @Test
-    void overlaysAClickableTenByTenGrid() {
+    void overlaysAClickableGrid() {
         enterAdventure("MAP");
 
-        assertThat(cells()).hasSize(100);
+        assertThat(cells()).hasSize(PictureGrid.SIZE * PictureGrid.SIZE);
     }
 
     @Test
-    void clickingAnEmptyCellWithoutUnplacedLocationsSaysSoAndOpensNoDialog() {
+    void clickingAnEmptyCellWithoutUnplacedLocationsStillOpensTheDialogToCreateOne() {
         enterAdventure("MAP", location("placed", "cellar", 2, 3));
         Div cell = cells().get(0);
 
         ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
 
-        assertThat(test(find(Notification.class).single()).getText()).isEqualTo("No unplaced locations.");
-        assertThat(find(Dialog.class).all()).isEmpty();
+        Dialog dialog = find(Dialog.class).single();
+        assertThat(find(Grid.class, dialog).all()).isEmpty();
+        assertThat(find(com.pdg.adventure.view.component.VocabularyPickerField.class, dialog).withCaption("Noun").all())
+                .hasSize(1);
+    }
+
+    @Test
+    void creatingALocationOnAnEmptyCellPlacesItThereAndSavesTheAdventure() {
+        AdventureData adventure = enterAdventure("MAP");
+        Word cellar = new Word("cellar", Word.Type.NOUN);
+        adventure.getVocabularyData().addWord(cellar);
+        Div cell = cells().get(3 * PictureGrid.SIZE + 7);
+        ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
+        Dialog dialog = find(Dialog.class).single();
+        find(com.pdg.adventure.view.component.VocabularyPickerField.class, dialog).withCaption("Noun").single()
+                .setValue(cellar);
+
+        test(find(Button.class, dialog).withText("Place").single()).click();
+
+        LocationData created = adventure.getLocationData().values().stream()
+                .filter(location -> cellar.equals(location.getDescriptionData().getNoun())).findFirst().orElseThrow();
+        assertThat(created.getMapColumn()).isEqualTo(7);
+        assertThat(created.getMapRow()).isEqualTo(3);
+        verify(adventureService).saveAdventureData(adventure);
+        assertThat(cells().get(3 * PictureGrid.SIZE + 7).hasClassName("world-map-cell-occupied")).isTrue();
     }
 
     @Test
@@ -145,7 +171,7 @@ class LocationMapViewTest extends BrowserlessTest {
     void anOccupiedCellIsMarkedAndShowsTheLocationsDescriptionOnHover() {
         enterAdventure("MAP", location("placed", "cellar", 2, 3));
 
-        Div cell = cells().get(3 * 10 + 2);
+        Div cell = cells().get(3 * PictureGrid.SIZE + 2);
         assertThat(cell.hasClassName("world-map-cell-occupied")).isTrue();
         assertThat(cell.getElement().getAttribute("title")).contains("cellar");
         assertThat(cells().stream().filter(c -> c.hasClassName("world-map-cell-occupied"))).hasSize(1);
@@ -168,7 +194,7 @@ class LocationMapViewTest extends BrowserlessTest {
     void placingALocationStoresItsCellSavesItAndMarksTheCell() {
         LocationData unplaced = location("u1", "attic", null, null);
         enterAdventure("MAP", unplaced);
-        Div cell = cells().get(3 * 10 + 7);
+        Div cell = cells().get(3 * PictureGrid.SIZE + 7);
         ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
         Dialog dialog = find(Dialog.class).single();
         test(find(Grid.class, dialog).single()).select(0);
@@ -178,13 +204,13 @@ class LocationMapViewTest extends BrowserlessTest {
         assertThat(unplaced.getMapColumn()).isEqualTo(7);
         assertThat(unplaced.getMapRow()).isEqualTo(3);
         verify(adventureService).saveLocationData(unplaced);
-        assertThat(cells().get(3 * 10 + 7).hasClassName("world-map-cell-occupied")).isTrue();
+        assertThat(cells().get(3 * PictureGrid.SIZE + 7).hasClassName("world-map-cell-occupied")).isTrue();
     }
 
     @Test
     void clickingAnOccupiedCellInPlaceModeOpensTheReplaceDialog() {
         enterAdventure("MAP", location("placed", "cellar", 2, 3), location("u1", "attic", null, null));
-        Div cell = cells().get(3 * 10 + 2);
+        Div cell = cells().get(3 * PictureGrid.SIZE + 2);
 
         ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
 
@@ -194,7 +220,7 @@ class LocationMapViewTest extends BrowserlessTest {
     @Test
     void clickingAnOccupiedCellWithoutUnplacedLocationsSaysSoAndOpensNoDialog() {
         enterAdventure("MAP", location("placed", "cellar", 2, 3));
-        Div cell = cells().get(3 * 10 + 2);
+        Div cell = cells().get(3 * PictureGrid.SIZE + 2);
 
         ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
 
@@ -208,7 +234,7 @@ class LocationMapViewTest extends BrowserlessTest {
     }
 
     private void click(int aColumn, int aRow) {
-        Div cell = cells().get(aRow * 10 + aColumn);
+        Div cell = cells().get(aRow * PictureGrid.SIZE + aColumn);
         ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
     }
 
@@ -223,14 +249,14 @@ class LocationMapViewTest extends BrowserlessTest {
 
         click(2, 3);
 
-        assertThat(cells().get(3 * 10 + 2).hasClassName("world-map-cell-selected")).isTrue();
+        assertThat(cells().get(3 * PictureGrid.SIZE + 2).hasClassName("world-map-cell-selected")).isTrue();
         assertThat(notificationTexts()).containsExactly("Now click the target location.");
         assertThat(find(ConnectLocationsDialog.class).all()).isEmpty();
 
         click(6, 6);
 
         assertThat(find(ConnectLocationsDialog.class).all()).hasSize(1);
-        assertThat(cells().get(3 * 10 + 2).hasClassName("world-map-cell-selected")).isFalse();
+        assertThat(cells().get(3 * PictureGrid.SIZE + 2).hasClassName("world-map-cell-selected")).isFalse();
     }
 
     @Test
@@ -242,7 +268,7 @@ class LocationMapViewTest extends BrowserlessTest {
         modeGroup().setValue(LocationMapView.Mode.PLACE);
         modeGroup().setValue(LocationMapView.Mode.CONNECT);
 
-        assertThat(cells().get(3 * 10 + 2).hasClassName("world-map-cell-selected")).isFalse();
+        assertThat(cells().get(3 * PictureGrid.SIZE + 2).hasClassName("world-map-cell-selected")).isFalse();
         click(6, 6);
         assertThat(find(ConnectLocationsDialog.class).all()).isEmpty();
     }
@@ -256,7 +282,7 @@ class LocationMapViewTest extends BrowserlessTest {
         click(0, 0);
 
         assertThat(notificationTexts()).contains("Click a cell that holds a location.");
-        assertThat(cells().get(3 * 10 + 2).hasClassName("world-map-cell-selected")).isTrue();
+        assertThat(cells().get(3 * PictureGrid.SIZE + 2).hasClassName("world-map-cell-selected")).isTrue();
         click(6, 6);
         assertThat(find(ConnectLocationsDialog.class).all()).hasSize(1);
     }
@@ -299,7 +325,7 @@ class LocationMapViewTest extends BrowserlessTest {
     @Test
     void twoLocationsOnOneCellAndCellsOutOfRangeDoNotBreakTheMap() {
         enterAdventure("MAP", location("l1", "cellar", 1, 1), location("l2", "attic", 1, 1),
-                       location("l3", "yard", 10, 10), location("l4", "hall", -1, 0));
+                       location("l3", "yard", PictureGrid.SIZE, PictureGrid.SIZE), location("l4", "hall", -1, 0));
 
         assertThat(cells().stream().filter(c -> c.hasClassName("world-map-cell-occupied"))).hasSize(1);
     }
@@ -308,7 +334,7 @@ class LocationMapViewTest extends BrowserlessTest {
     void aLocationWithoutAnyDescriptionStillGetsAHoverText() {
         enterAdventure("MAP", location("bare", null, 4, 4));
 
-        assertThat(cells().get(4 * 10 + 4).getElement().getAttribute("title")).isNotBlank();
+        assertThat(cells().get(4 * PictureGrid.SIZE + 4).getElement().getAttribute("title")).isNotBlank();
     }
 
     @Test
@@ -336,5 +362,116 @@ class LocationMapViewTest extends BrowserlessTest {
 
         assertThat(find(Image.class, view).all()).isEmpty();
         assertThat(cells()).isEmpty();
+    }
+
+    @Test
+    void backButtonSitsBelowThePicture() {
+        enterAdventure("MAP");
+
+        var children = view.getChildren().toList();
+        Button back = find(Button.class, view).withText("Back").single();
+        Div frame = find(Div.class, view).withClassName("world-map").single();
+        assertThat(children.indexOf(back)).isEqualTo(children.indexOf(frame) + 1);
+    }
+
+    @Test
+    void backButtonIsAlsoOfferedWithoutAWorldMap() {
+        enterAdventure(null);
+
+        assertThat(find(Button.class, view).withText("Back").all()).hasSize(1);
+    }
+
+    @Test
+    void backButtonAsksTheBrowserToStepBackToTheLocations() {
+        enterAdventure("MAP");
+
+        test(find(Button.class, view).withText("Back").single()).click();
+
+        var requests = UI.getCurrent().getInternals().dumpPendingJavaScriptInvocations().stream()
+                         .filter(invocation -> invocation.getInvocation().getExpression().contains("stepBackTo"))
+                         .toList();
+        assertThat(requests).singleElement()
+                .extracting(request -> request.getInvocation().getParameters().getFirst())
+                .isEqualTo("author/adventures/adv-1/locations");
+    }
+
+    @Test
+    void theRemoveModeOpensTheRemoveDialogEvenWhenNoLocationIsUnplaced() {
+        enterAdventure("MAP", location("placed", "cellar", 2, 3));
+        modeGroup().setValue(LocationMapView.Mode.REMOVE);
+        Div cell = cells().get(3 * PictureGrid.SIZE + 2);
+
+        ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
+
+        find(Dialog.class).single();
+        assertThat(find(Button.class, find(Dialog.class).single()).withText("Remove").all()).hasSize(1);
+    }
+
+    @Test
+    void theRemoveModeOnAnEmptyCellOnlyTellsTheAuthor() {
+        enterAdventure("MAP", location("placed", "cellar", 2, 3));
+        modeGroup().setValue(LocationMapView.Mode.REMOVE);
+        Div cell = cells().get(0);
+
+        ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
+
+        assertThat(test(find(Notification.class).single()).getText()).isEqualTo("Click a cell that holds a location.");
+        assertThat(find(Dialog.class).all()).isEmpty();
+    }
+
+    @Test
+    void removingALocationClearsItsCellOnTheMapAndSavesIt() {
+        LocationData placed = location("placed", "cellar", 2, 3);
+        enterAdventure("MAP", placed);
+        modeGroup().setValue(LocationMapView.Mode.REMOVE);
+        Div cell = cells().get(3 * PictureGrid.SIZE + 2);
+        ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
+
+        test(find(Button.class, find(Dialog.class).single()).withText("Remove").single()).click();
+
+        assertThat(placed.getMapColumn()).isNull();
+        assertThat(cell.hasClassName("world-map-cell-occupied")).isFalse();
+        verify(adventureService).saveLocationData(placed);
+    }
+
+    private long starredCells() {
+        return cells().stream().filter(c -> c.hasClassName("world-map-cell-start")).count();
+    }
+
+    @Test
+    void theCellOfTheStartLocationIsMarkedWithAStar() {
+        startLocationId = "start";
+        enterAdventure("MAP", location("start", "cellar", 2, 3), location("other", "attic", 4, 4));
+
+        assertThat(cells().get(3 * PictureGrid.SIZE + 2).hasClassName("world-map-cell-start")).isTrue();
+        assertThat(starredCells()).isEqualTo(1);
+    }
+
+    @Test
+    void noCellIsStarredWhenTheStartLocationIsNotOnTheMap() {
+        startLocationId = "start";
+        enterAdventure("MAP", location("start", "cellar", null, null), location("other", "attic", 4, 4));
+
+        assertThat(starredCells()).isZero();
+    }
+
+    @Test
+    void noCellIsStarredWithoutAStartLocation() {
+        enterAdventure("MAP", location("other", "attic", 4, 4));
+
+        assertThat(starredCells()).isZero();
+    }
+
+    @Test
+    void takingTheStartLocationOffTheMapRemovesTheStar() {
+        startLocationId = "start";
+        enterAdventure("MAP", location("start", "cellar", 2, 3));
+        modeGroup().setValue(LocationMapView.Mode.REMOVE);
+        Div cell = cells().get(3 * PictureGrid.SIZE + 2);
+        ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
+
+        test(find(Button.class, find(Dialog.class).single()).withText("Remove").single()).click();
+
+        assertThat(starredCells()).isZero();
     }
 }

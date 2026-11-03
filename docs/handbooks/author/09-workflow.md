@@ -62,8 +62,8 @@ That second sentence of the reminder is the single most common surprise:
 A player can also **click the picture** in the running game. Then the game runs your
 Processes, and nothing else: it reads no words, so Responses and the commands of locations and
 items do not take part. A Process reacts to the click with the **Clicked** condition, which
-takes the cell: the picture is divided into a 10 × 10 grid like the world map, **X** is the
-column (0 at the left to 9 at the right) and **Y** the row (0 at the top to 9 at the bottom).
+takes the cell: the picture is divided into a 20 × 20 grid like the world map, **X** is the
+column (0 at the left to 19 at the right) and **Y** the row (0 at the top to 19 at the bottom).
 
 For example, the picture shows a door in the cell at column 3, row 4: add a Process with the
 precondition `Clicked 3, 4` and a Move Player action to the room behind the door. Clicking the

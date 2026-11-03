@@ -1,4 +1,4 @@
-/* The clickable 10 x 10 grid laid over an adventure's world map and over a picture in the picture editor
+/* The clickable grid laid over an adventure's world map and over a picture in the picture editor
    (see PictureGrid.createOverlay, LocationMapView and PictureEditorView). */
 .world-map-cell {
   cursor: pointer;
@@ -22,4 +22,35 @@
 .world-map-cell-selected {
   outline: 3px solid rgba(255, 200, 0, 0.9);
   outline-offset: -3px;
+}
+
+/* The cell of the adventure's start location (LocationMapView): a yellow star with a dark outline, centred in the
+   cell and as high as the cell. Only percentages of the cell are used (no container-query or viewport units, which
+   some browsers resolve differently for a pseudo-element and then draw the star as big as the window): the star is
+   a clipped box whose height is the cell's, a square, so it never grows beyond the cell. */
+.world-map-cell-start {
+  position: relative;
+}
+
+.world-map-cell-start::before,
+.world-map-cell-start::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  pointer-events: none;
+}
+
+/* the outline: a slightly bigger dark star behind the yellow one */
+.world-map-cell-start::before {
+  height: 100%;
+  background: #000;
+}
+
+.world-map-cell-start::after {
+  height: 88%;
+  background: #ffd600;
 }

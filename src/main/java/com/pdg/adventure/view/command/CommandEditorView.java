@@ -36,6 +36,7 @@ import com.pdg.adventure.view.component.VocabularyPicker;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.location.LocationsMainLayout;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -206,14 +207,16 @@ public class CommandEditorView extends VerticalLayout
 
     private void navigateBack() {
         if (itemData != null) {
-            UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
+            HistoryNavigation.navigateUp(CommandsMenuView.class, new RouteParameters(
                       new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()),
                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                      new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())));
+                      new RouteParam(RouteIds.ITEM_ID.getValue(), itemData.getId())),
+                      binder.hasChanges() || editorHasChanges);
         } else {
-            UI.getCurrent().navigate(CommandsMenuView.class, new RouteParameters(
+            HistoryNavigation.navigateUp(CommandsMenuView.class, new RouteParameters(
                       new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
+                      new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())),
+                      binder.hasChanges() || editorHasChanges);
         }
     }
 

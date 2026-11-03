@@ -37,6 +37,7 @@ import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
+import com.pdg.adventure.view.support.PictureGrid;
 import com.pdg.adventure.view.support.RouteIds;
 
 class PictureEditorViewBrowserlessTest extends BrowserlessTest {
@@ -240,11 +241,11 @@ class PictureEditorViewBrowserlessTest extends BrowserlessTest {
     }
 
     @Test
-    void aStoredPicture_isShownWithATenByTenGridOverIt() {
+    void aStoredPicture_isShownWithTheGridOverIt() {
         enterWithPictureId("pic-1");
 
         assertThat(find(Image.class, view).all()).hasSize(1);
-        assertThat(gridCells()).hasSize(100);
+        assertThat(gridCells()).hasSize(PictureGrid.SIZE * PictureGrid.SIZE);
     }
 
     @Test
@@ -262,7 +263,7 @@ class PictureEditorViewBrowserlessTest extends BrowserlessTest {
     @Test
     void clickingACellOfTheGrid_tellsTheAuthorWhichLocationWasClicked() {
         enterWithPictureId("pic-1");
-        Div cell = gridCells().get(4 * 10 + 3);
+        Div cell = gridCells().get(4 * PictureGrid.SIZE + 3);
 
         ComponentUtil.fireEvent(cell, new ClickEvent<>(cell));
 
@@ -282,6 +283,6 @@ class PictureEditorViewBrowserlessTest extends BrowserlessTest {
 
         view.handleUpload(uploadEventWith(new ByteArrayInputStream(pngBytes(64))));
 
-        assertThat(gridCells()).hasSize(100);
+        assertThat(gridCells()).hasSize(PictureGrid.SIZE * PictureGrid.SIZE);
     }
 }

@@ -2,7 +2,6 @@ package com.pdg.adventure.view.workflow;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Span;
@@ -40,6 +39,7 @@ import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPicker;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -159,8 +159,9 @@ public class SingleCommandEditorView extends VerticalLayout
     }
 
     private void navigateBack() {
-        UI.getCurrent().navigate(listViewClass, new RouteParameters(
-                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
+        HistoryNavigation.navigateUp(listViewClass, new RouteParameters(
+                new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())),
+                binder.hasChanges() || editorHasChanges);
     }
 
     private void updateSaveButtonState() {

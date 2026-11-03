@@ -20,6 +20,7 @@ import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.location.LocationEditorView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -65,7 +66,7 @@ public class ItemsMenuView extends VerticalLayout implements BeforeEnterObserver
         });
 
         backButton = new Button("Back to Location", _ -> {
-            UI.getCurrent().navigate(LocationEditorView.class, new RouteParameters(
+            HistoryNavigation.navigateUp(LocationEditorView.class, new RouteParameters(
 //                                  new RouteParam(RouteIds.ITEM_ID.getValue(), selectedItemId),
                                   new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
                                   new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));

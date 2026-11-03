@@ -224,8 +224,15 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     Picture** (one of the adventure's pictures, see B13), commands, directions,
     items.
   - The map view at `/author/adventures/:adventureId/map` shows the picture the author chose as the adventure's
-    world map (the "World Map" field of the adventure editor) with a clickable 10×10 grid; without a chosen
-    picture it hints at the adventure editor.
+    world map (the "World Map" field of the adventure editor) with a clickable 20×20 grid; without a chosen
+    picture it hints at the adventure editor. It is opened by the **The World** button of the locations list
+    (just above **Edit Location**), and a **Back** button below the picture returns to that list. On the grid
+    the author **places** an unplaced location in a cell or **creates** a new location right there (noun from the
+    vocabulary, optional adjective and short description), **replaces** a placed one, **connects** two placed
+    locations with directions and **removes** a placed location from the map (a mode toggle chooses which).
+    Removing asks which of the location's directions go with it, those leading away and those leading to it
+    (checkboxes, none ticked at first); the location itself stays, unplaced. The cell of the adventure's start
+    location shows a yellow star.
   - A location MUST be referenced by the adventure's starting-location id or by
     at least one direction; orphan locations may exist during editing but are
     flagged.

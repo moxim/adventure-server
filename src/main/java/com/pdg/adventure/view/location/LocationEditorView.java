@@ -25,7 +25,6 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.model.VocabularyData;
-import com.pdg.adventure.model.basic.DescriptionData;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventuresMainLayout;
@@ -35,6 +34,7 @@ import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.direction.DirectionsMenuView;
 import com.pdg.adventure.view.item.ItemsMenuView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -228,9 +228,10 @@ public class LocationEditorView extends VerticalLayout
     }
 
     private void navigateBack() {
-        UI.getCurrent().navigate(LocationsMenuView.class,
-                                 new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                    adventureData.getId())));
+        HistoryNavigation.navigateUp(LocationsMenuView.class,
+                                     new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                        adventureData.getId())),
+                                     binder.hasChanges());
     }
 
     private void validateSave(LocationViewModel aLocationViewModel) {
@@ -238,11 +239,7 @@ public class LocationEditorView extends VerticalLayout
             if (binder.validate().isOk()) {
                 binder.writeBean(aLocationViewModel);
                 final LocationData data = aLocationViewModel.getData();
-                final DescriptionData locationDescriptionData = data.getDescriptionData();
-                final DescriptionData containerDescriptionData = data.getItemContainerData()
-                                                                             .getDescriptionData();
-                containerDescriptionData.setAdjective(locationDescriptionData.getAdjective());
-                containerDescriptionData.setNoun(locationDescriptionData.getNoun());
+                LocationCreator.syncItemContainerDescription(data);
                 adventureData.getLocationData().put(aLocationViewModel.getId(), data);
                 adventureService.saveAdventureData(adventureData);
                 saveButton.setEnabled(false);
