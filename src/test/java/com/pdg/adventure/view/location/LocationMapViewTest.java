@@ -113,7 +113,7 @@ class LocationMapViewTest extends BrowserlessTest {
         Div frame = find(Div.class, view).withClassName("world-map").single();
         assertThat(frame.getStyle().get("aspect-ratio")).isEqualTo("16 / 9");
         assertThat(frame.getStyle().get("max-width")).isEqualTo("min(1280px, calc(50vh * 16 / 9))");
-        assertThat(find(Button.class, view).all()).isEmpty();
+        assertThat(find(Button.class, view).all()).extracting(Button::getText).containsExactly("Back");
     }
 
     @Test
@@ -336,5 +336,36 @@ class LocationMapViewTest extends BrowserlessTest {
 
         assertThat(find(Image.class, view).all()).isEmpty();
         assertThat(cells()).isEmpty();
+    }
+
+    @Test
+    void backButtonSitsBelowThePicture() {
+        enterAdventure("MAP");
+
+        var children = view.getChildren().toList();
+        Button back = find(Button.class, view).withText("Back").single();
+        Div frame = find(Div.class, view).withClassName("world-map").single();
+        assertThat(children.indexOf(back)).isEqualTo(children.indexOf(frame) + 1);
+    }
+
+    @Test
+    void backButtonIsAlsoOfferedWithoutAWorldMap() {
+        enterAdventure(null);
+
+        assertThat(find(Button.class, view).withText("Back").all()).hasSize(1);
+    }
+
+    @Test
+    void backButtonAsksTheBrowserToStepBackToTheLocations() {
+        enterAdventure("MAP");
+
+        test(find(Button.class, view).withText("Back").single()).click();
+
+        var requests = UI.getCurrent().getInternals().dumpPendingJavaScriptInvocations().stream()
+                         .filter(invocation -> invocation.getInvocation().getExpression().contains("stepBackTo"))
+                         .toList();
+        assertThat(requests).singleElement()
+                .extracting(request -> request.getInvocation().getParameters().getFirst())
+                .isEqualTo("author/adventures/adv-1/locations");
     }
 }

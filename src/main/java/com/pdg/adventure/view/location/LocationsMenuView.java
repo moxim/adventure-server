@@ -34,6 +34,7 @@ import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.GridProvider;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -54,6 +55,7 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
     private final ComboBox<LocationData> entryLocationSelector;
     private final Button create;
     private final Button edit;
+    private final Button world;
     private final TextField searchField;
     private final Button backButton;
     private final Span numberOfLocations;
@@ -79,6 +81,13 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
 
         numberOfLocations = new Span();
 
+        // The adventure's world map; a drill-down like Edit, so it is a plain navigation that adds a history entry.
+        world = new Button("The World", VaadinIcon.GLOBE.create(), _ -> {
+            UI.getCurrent().navigate(LocationMapView.class,
+                                     new RouteParameters(
+                                             new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
+        });
+
         edit = new Button("Edit Location", _ -> {
                 UI.getCurrent().navigate(LocationEditorView.class,
                                          new RouteParameters(
@@ -95,13 +104,13 @@ public class LocationsMenuView extends VerticalLayout implements BeforeLeaveObse
         });
 
         backButton = new Button("Back", _ -> {
-            UI.getCurrent().navigate(AdventureEditorView.class,
-                                     new RouteParameters(
-                                             new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
+            HistoryNavigation.navigateUp(AdventureEditorView.class,
+                                         new RouteParameters(
+                                                 new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
         });
         backButton.addClickShortcut(Key.ESCAPE);
 
-        VerticalLayout leftSide = new VerticalLayout(entryLocationSelector, numberOfLocations, edit, create, backButton);
+        VerticalLayout leftSide = new VerticalLayout(entryLocationSelector, numberOfLocations, world, edit, create, backButton);
         leftSide.setMaxWidth("25%");
         leftSide.setMinWidth("25%");
         leftSide.setWidth("25%");

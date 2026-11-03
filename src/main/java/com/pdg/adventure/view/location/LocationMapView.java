@@ -25,6 +25,7 @@ import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.server.support.DescriptionProvider;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.PictureGrid;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
@@ -111,6 +112,15 @@ public class LocationMapView extends VerticalLayout implements BeforeEnterObserv
             add(mode, createMap(worldMap));
             refresh();
         }
+        add(createBackButton(adventureData));
+    }
+
+    /** Below the picture; back to the adventure's locations, where "The World" was opened from. */
+    private static Button createBackButton(AdventureData anAdventureData) {
+        // No Escape shortcut as on the other Back buttons: Escape closes the place/connect dialogs of this view.
+        return new Button("Back", _ -> HistoryNavigation.navigateUp(
+                LocationsMenuView.class,
+                new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), anAdventureData.getId()))));
     }
 
     /** What a click on a grid cell does, depending on the mode. */

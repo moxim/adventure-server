@@ -3,6 +3,7 @@ package com.pdg.adventure.view.location;
 import com.vaadin.browserless.BrowserlessTest;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
@@ -121,5 +122,34 @@ class LocationsMenuViewTest extends BrowserlessTest {
         FlashNotifier.showPending();
         Notification notification = find(Notification.class).single();
         assertThat(test(notification).getText()).isEqualTo("Adventure not found or access denied: missing");
+    }
+
+    private void enterAdventure(String anId) {
+        AdventureData adventure = new AdventureData();
+        adventure.setId(anId);
+        when(accessService.findAdventureById(eq(anId), any(UserData.class))).thenReturn(Optional.of(adventure));
+        view.beforeEnter(eventWithAdventureId(anId));
+    }
+
+    @Test
+    void theWorldButton_sitsJustAboveEditLocation() {
+        Button world = find(Button.class, view).withText("The World").single();
+        Button edit = find(Button.class, view).withText("Edit Location").single();
+
+        var column = world.getParent().orElseThrow();
+        assertThat(edit.getParent()).contains(column);
+        assertThat(column.getChildren().toList()).containsSubsequence(world, edit);
+        assertThat(column.getElement().indexOfChild(edit.getElement()))
+                .isEqualTo(column.getElement().indexOfChild(world.getElement()) + 1);
+    }
+
+    @Test
+    void theWorldButton_opensTheMapOfTheAdventure() {
+        enterAdventure("adv-1");
+
+        test(find(Button.class, view).withText("The World").single()).click();
+
+        assertThat(UI.getCurrent().getInternals().getActiveViewLocation().getPath())
+                .isEqualTo("author/adventures/adv-1/map");
     }
 }

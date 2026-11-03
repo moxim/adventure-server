@@ -31,6 +31,7 @@ import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.GridProvider;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -51,9 +52,9 @@ public class MessagesMenuView extends VerticalLayout implements HasDynamicTitle,
         setSizeFull();
 
         Button backButton = new Button("Back", _ ->
-                UI.getCurrent().navigate(AdventureEditorView.class,
-                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                            adventureData.getId())))
+                HistoryNavigation.navigateUp(AdventureEditorView.class,
+                                             new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                                adventureData.getId())))
         );
         backButton.addClickShortcut(Key.ESCAPE);
 

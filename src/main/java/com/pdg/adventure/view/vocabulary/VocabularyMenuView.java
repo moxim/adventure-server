@@ -1,7 +1,6 @@
 package com.pdg.adventure.view.vocabulary;
 
 import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -35,6 +34,7 @@ import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.GridProvider;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -107,9 +107,9 @@ public class VocabularyMenuView extends VerticalLayout implements SaveListener, 
             createWordInfoDialog(WordEditorDialogue.EditType.NEW, null);
         });
         back = new Button("Back", _ -> {
-            UI.getCurrent().navigate(AdventureEditorView.class,
-                                     new RouteParameters(
-                                             new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))
+            HistoryNavigation.navigateUp(AdventureEditorView.class,
+                                         new RouteParameters(
+                                                 new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))
             );
         });
         back.addClickShortcut(Key.ESCAPE);

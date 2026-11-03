@@ -21,31 +21,24 @@ import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.RouteParam;
-import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import jakarta.annotation.security.PermitAll;
-
-import java.util.Optional;
 
 import com.pdg.adventure.security.model.UserData;
 import com.pdg.adventure.view.about.AboutView;
 import com.pdg.adventure.view.admin.AdminDashboardView;
 import com.pdg.adventure.view.author.AuthorDashboardView;
-import com.pdg.adventure.view.location.LocationMapView;
 import com.pdg.adventure.view.login.LogoutView;
 import com.pdg.adventure.view.player.PlayerLibraryView;
-import com.pdg.adventure.view.support.RouteIds;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.ViewSupporter;
 
 @StyleSheet(Lumo.STYLESHEET)
 @PermitAll
-public class AdventureAppLayout extends AppLayout implements AfterNavigationObserver, BeforeEnterObserver {
+public class AdventureAppLayout extends AppLayout implements AfterNavigationObserver {
 
     static final String APP_NAME = "Adventure Builder";
     private static final String COLOR_SCHEME_KEY = "adventure-color-scheme";
@@ -54,11 +47,8 @@ public class AdventureAppLayout extends AppLayout implements AfterNavigationObse
     private VerticalLayout drawer;
     private final Button colorSchemeToggle = new Button();
     private boolean dark;
-    // The adventure's world map; links to the adventure named by the current route, hidden when there is none.
-    private final SideNavItem worldItem = new SideNavItem("The World", "", VaadinIcon.GLOBE.create());
 
     public AdventureAppLayout() {
-        worldItem.setVisible(false);
         createHeader(APP_NAME);
     }
 
@@ -155,6 +145,7 @@ public class AdventureAppLayout extends AppLayout implements AfterNavigationObse
                         : new Header(anAppImage, appName);
 
         SideNav nav = new SideNav();
+        nav.getElement().executeJs(HistoryNavigation.DRAWER_REPLACE_SCRIPT);
         nav.addItem(new SideNavItem("About", AboutView.class, VaadinIcon.INFO_CIRCLE.create()));
 
         UserData user = ViewSupporter.getCurrentUser();
@@ -166,7 +157,6 @@ public class AdventureAppLayout extends AppLayout implements AfterNavigationObse
             nav.addItem(new SideNavItem("Library", PlayerLibraryView.class, VaadinIcon.BOOK.create()));
         }
 
-        nav.addItem(worldItem);
         nav.addItem(new SideNavItem("Logout", LogoutView.class, VaadinIcon.SIGN_OUT.create()));
 
         // SideNavItem settings = new SideNavItem("Settings", VaadinIcon.COGS.create());
@@ -192,22 +182,6 @@ public class AdventureAppLayout extends AppLayout implements AfterNavigationObse
         for (Component component : components) {
             drawer.add(component);
         }
-    }
-
-    /**
-     * Offers the world map to authors as soon as the route names an adventure, whatever view they are in, their
-     * test run included. Players never get it: it is an author's reference.
-     */
-    @Override
-    public void beforeEnter(BeforeEnterEvent aBeforeEnterEvent) {
-        Optional<String> adventureId = aBeforeEnterEvent.getRouteParameters().get(RouteIds.ADVENTURE_ID.getValue());
-        boolean offered = adventureId.isPresent() && ViewSupporter.getCurrentUser().isAuthor();
-        if (offered) {
-            worldItem.setPath(LocationMapView.class,
-                              new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                 adventureId.get())));
-        }
-        worldItem.setVisible(offered);
     }
 
     @Override

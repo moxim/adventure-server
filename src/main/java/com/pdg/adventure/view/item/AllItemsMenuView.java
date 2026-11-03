@@ -30,6 +30,7 @@ import com.pdg.adventure.server.storage.service.ItemService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.GridProvider;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -81,7 +82,7 @@ public class AllItemsMenuView extends VerticalLayout implements BeforeEnterObser
                 event -> createButton.setEnabled(event.getValue() != null));
 
         Button backButton = new Button("Back",
-                                       _ -> UI.getCurrent().navigate(AdventureEditorView.class, new RouteParameters(
+                                       _ -> HistoryNavigation.navigateUp(AdventureEditorView.class, new RouteParameters(
                                                new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
                                                               adventureData.getId()))));
         backButton.addClickShortcut(Key.ESCAPE);

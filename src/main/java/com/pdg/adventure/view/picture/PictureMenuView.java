@@ -32,6 +32,7 @@ import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.adventure.AdventureEditorView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -68,7 +69,7 @@ public class PictureMenuView extends VerticalLayout implements BeforeLeaveObserv
         create = new Button("Create Picture", _ -> UI.getCurrent().navigate(PictureEditorView.class,
                 new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))));
 
-        backButton = new Button("Back", _ -> UI.getCurrent().navigate(AdventureEditorView.class,
+        backButton = new Button("Back", _ -> HistoryNavigation.navigateUp(AdventureEditorView.class,
                 new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId()))));
         backButton.addClickShortcut(Key.ESCAPE);
 

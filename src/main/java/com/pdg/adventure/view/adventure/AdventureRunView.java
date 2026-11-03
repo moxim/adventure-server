@@ -38,6 +38,7 @@ import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.view.player.PlayerLibraryView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.FlashNotifier;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.PictureGrid;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
@@ -493,13 +494,11 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     }
 
     private void navigateBack() {
-        getUI().ifPresent(ui -> {
-            switch (origin) {
-                case LIBRARY -> ui.navigate(PlayerLibraryView.class);
-                case MENU -> ui.navigate(AdventuresMenuView.class);
-                case EDITOR -> ui.navigate(AdventureEditorView.class, routeParameters(adventureId));
-            }
-        });
+        switch (origin) {
+            case LIBRARY -> HistoryNavigation.navigateUp(PlayerLibraryView.class);
+            case MENU -> HistoryNavigation.navigateUp(AdventuresMenuView.class);
+            case EDITOR -> HistoryNavigation.navigateUp(AdventureEditorView.class, routeParameters(adventureId));
+        }
     }
 
     private void forwardToOrigin(BeforeEnterEvent event) {

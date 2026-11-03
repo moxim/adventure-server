@@ -35,6 +35,7 @@ import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.direction.DirectionsMenuView;
 import com.pdg.adventure.view.item.ItemsMenuView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -228,9 +229,10 @@ public class LocationEditorView extends VerticalLayout
     }
 
     private void navigateBack() {
-        UI.getCurrent().navigate(LocationsMenuView.class,
-                                 new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
-                                                                    adventureData.getId())));
+        HistoryNavigation.navigateUp(LocationsMenuView.class,
+                                     new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                        adventureData.getId())),
+                                     binder.hasChanges());
     }
 
     private void validateSave(LocationViewModel aLocationViewModel) {

@@ -31,6 +31,7 @@ import com.pdg.adventure.view.command.CommandsMenuView;
 import com.pdg.adventure.view.component.ResetBackSaveView;
 import com.pdg.adventure.view.component.VocabularyPickerField;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -230,10 +231,10 @@ public class ItemEditorView extends VerticalLayout
     }
 
     private void navigateBack() {
-        UI.getCurrent().navigate(ItemsMenuView.class, new RouteParameters(
+        HistoryNavigation.navigateUp(ItemsMenuView.class, new RouteParameters(
 //                  new RouteParam(RouteIds.ITEM_ID.getValue(), itemId),
                   new RouteParam(RouteIds.LOCATION_ID.getValue(), locationData.getId()),
-                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())));
+                  new RouteParam(RouteIds.ADVENTURE_ID.getValue(), adventureData.getId())), binder.hasChanges());
     }
 
     private void validateSave(ItemViewModel anItemViewModel) {

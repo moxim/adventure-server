@@ -30,6 +30,7 @@ import com.pdg.adventure.server.storage.service.AdventureService;
 import com.pdg.adventure.view.location.LocationEditorView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.GridProvider;
+import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.RouteIds;
 import com.pdg.adventure.view.support.ViewSupporter;
 
@@ -49,7 +50,7 @@ public class DirectionsMenuView extends VerticalLayout implements HasDynamicTitl
         accessService = anAccessService;
         setSizeFull();
 
-        Button backButton = new Button("Back", _ -> UI.getCurrent().navigate(LocationEditorView.class,
+        Button backButton = new Button("Back", _ -> HistoryNavigation.navigateUp(LocationEditorView.class,
                                                                                  new RouteParameters(
                                                                                          new RouteParam(
                                                                                                  RouteIds.ADVENTURE_ID.getValue(),
