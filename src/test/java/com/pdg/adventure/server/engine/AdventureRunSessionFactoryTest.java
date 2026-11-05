@@ -310,6 +310,18 @@ class AdventureRunSessionFactoryTest {
     }
 
     @Test
+    void release_dropsPendingSoundInstructions() {
+        AdventureData adventureData = startableAdventure();
+        RunOwner owner = new RunOwner("player-1");
+        factory.start(adventureData, owner);
+        gameContext.playSound("sound-1", 2);
+
+        factory.release(owner);
+
+        assertThat(gameContext.drainSoundInstructions()).isEmpty();
+    }
+
+    @Test
     void release_byAStaleOwner_keepsTheNewerRunsRegistries() {
         AdventureData adventureData = startableAdventure();
         RunOwner stale = new RunOwner("player-1");

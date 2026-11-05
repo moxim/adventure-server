@@ -57,6 +57,10 @@ worth planning around.
   also stays hidden in a location that's too dark (total light below 10).
   Uploads must be PNG, JPEG or WebP and under 2 MB. See
   [Chapter 11](11-pictures.md).
+- **Sounds are mp3 only, at most 6 MB, and silent until the player has acted.** Browsers refuse sound before the
+  first key press, click or touch on the page, so a **Play** action in the opening room is skipped. A sound keeps
+  playing when the player moves on — stop it with `Play … 0`. There is no mute button, and sounds are not saved with a
+  saved game. See [Chapter 11a](11a-sounds.md).
 - **A Workflow *Response* is a fallback, not an override of your own
   commands.** A Response fires only when the typed verb matches it exactly
   *and* nothing in the current location or the player's pocket handles that

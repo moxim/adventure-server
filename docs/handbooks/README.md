@@ -40,6 +40,7 @@ itself is one you'll share with players.
 | 9 | [Workflow: Processes, Arrival Processes & Responses](author/09-workflow.md) | Global rules that apply no matter where the player is — every-turn Processes, Arrival Processes that run when a location is described, and command-intercepting Responses |
 | 10 | [Messages](author/10-messages.md) | Reusable text snippets your commands can print, plus editing the built-in engine messages |
 | 11 | [Pictures](author/11-pictures.md) | Uploading images and showing them — a location's default picture, or on demand with a Picture action |
+| 11a | [Sounds](author/11a-sounds.md) | Uploading mp3 sounds and playing or stopping them with a Play action |
 | 12 | [Testing & Running your adventure](author/12-testing-and-running.md) | Playing your adventure from inside the editor, or from your adventure list |
 | 13 | [Tips, gotchas & current limits](author/13-tips-and-current-limits.md) | Honest notes on what's still rough around the edges |
 | A | [Appendix: Action & Condition reference](author/appendix-a-action-and-condition-reference.md) | Every Action and PreCondition type, in one table |

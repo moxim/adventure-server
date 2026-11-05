@@ -15,6 +15,7 @@ import com.pdg.adventure.api.Describable;
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.model.PictureMode;
 import com.pdg.adventure.model.PictureOverlayData;
+import com.pdg.adventure.model.SoundInstruction;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.WorkflowData;
 import com.pdg.adventure.server.location.Location;
@@ -26,6 +27,12 @@ public class GameContext {
     // The picture grid is 20 x 20 (see PictureGrid.SIZE, in the view package, which the engine must not depend on:
     // keep the two in step).
     private static final int GRID_SIZE = 20;
+
+    /**
+     * The most times one PLAY action plays a sound in a row.
+     * TODO: Review needed — the product owner gave no upper bound; 99 is the builder's call (see the PLAY design spec).
+     */
+    static final int MAX_SOUND_REPEATS = 99;
 
     private Workflow workflow;
     private Location currentLocation;
@@ -46,6 +53,8 @@ public class GameContext {
     private PictureMode pictureMode = PictureMode.DEFAULT;
     // Pictures laid over cells of the picture on show, keyed by cell (row * grid size + column), oldest first.
     private final Map<Integer, PictureOverlayData> overlays = new LinkedHashMap<>();
+    // What PLAY actions asked of the browser since it was last told, oldest first (see drainSoundInstructions).
+    private final List<SoundInstruction> soundInstructions = new ArrayList<>();
     // The grid cell of the click GameLoop is running the Processes for; null outside such a run.
     private Integer clickedColumn;
     private Integer clickedRow;
@@ -285,6 +294,28 @@ public class GameContext {
 
     public void clearOverlays() {
         overlays.clear();
+    }
+
+    /**
+     * Queues a sound for the browser: play it {@code aTimes} times in a row, or stop every copy of it with 0. A blank
+     * id or a count outside 0 to {@value #MAX_SOUND_REPEATS} (hand-edited or imported data) is ignored.
+     */
+    public void playSound(String aSoundId, int aTimes) {
+        if (aSoundId == null || aSoundId.isBlank() || aTimes < 0 || aTimes > MAX_SOUND_REPEATS) {
+            return;
+        }
+        soundInstructions.add(new SoundInstruction(aSoundId, aTimes));
+    }
+
+    /** The queued sound instructions, oldest first; the queue is empty afterwards. */
+    public List<SoundInstruction> drainSoundInstructions() {
+        List<SoundInstruction> drained = new ArrayList<>(soundInstructions);
+        soundInstructions.clear();
+        return drained;
+    }
+
+    public void clearSoundInstructions() {
+        soundInstructions.clear();
     }
 
     public String getCurrentPictureId() {

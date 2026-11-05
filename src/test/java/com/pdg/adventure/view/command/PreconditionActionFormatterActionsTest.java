@@ -11,6 +11,7 @@ import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.model.PictureMode;
+import com.pdg.adventure.model.SoundData;
 import com.pdg.adventure.model.action.*;
 
 class PreconditionActionFormatterActionsTest {
@@ -247,6 +248,29 @@ class PreconditionActionFormatterActionsTest {
         DescribeActionData a = new DescribeActionData();
         a.setTargetId("sign");
         assertThat(formatter.formatAction(a)).isEqualTo("DESCRIBE sign");
+    }
+
+    @Test
+    void play_showsTheSoundNameAndTheCount() {
+        AdventureData adventure = new AdventureData();
+        SoundData sound = new SoundData();
+        sound.setId("snd-1");
+        sound.setName("pirate_bay");
+        adventure.getSoundData().put(sound.getId(), sound);
+        PlayActionData a = new PlayActionData();
+        a.setSoundId("snd-1");
+        a.setTimes(2);
+
+        assertThat(new PreconditionActionFormatter(adventure).formatAction(a)).isEqualTo("PLAY pirate_bay 2");
+    }
+
+    @Test
+    void play_withAnUnknownSound_showsAQuestionMark() {
+        PlayActionData a = new PlayActionData();
+        a.setSoundId("gone");
+        a.setTimes(0);
+
+        assertThat(new PreconditionActionFormatter(new AdventureData()).formatAction(a)).isEqualTo("PLAY ? 0");
     }
 
     @Test

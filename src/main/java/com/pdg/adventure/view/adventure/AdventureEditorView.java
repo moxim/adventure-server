@@ -31,6 +31,7 @@ import com.pdg.adventure.view.item.AllItemsMenuView;
 import com.pdg.adventure.view.location.LocationsMenuView;
 import com.pdg.adventure.view.message.MessagesMenuView;
 import com.pdg.adventure.view.picture.PictureMenuView;
+import com.pdg.adventure.view.sound.SoundMenuView;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.HistoryNavigation;
 import com.pdg.adventure.view.support.RouteIds;
@@ -59,6 +60,7 @@ public class AdventureEditorView extends VerticalLayout
     private final TextField numberOfItems;
     private final TextField numberOfMessages;
     private final TextField numberOfPictures;
+    private final TextField numberOfSounds;
     private final ComboBox<PictureData> worldMapSelect;
     private final Binder<AdventureData> binder;
     private final transient AdventureAccessService accessService;
@@ -106,6 +108,10 @@ public class AdventureEditorView extends VerticalLayout
         numberOfPictures.setMaxWidth(NUMBER_TEXT_WIDTH);
         numberOfPictures.setHelperText("The number of pictures in this adventure.");
 
+        numberOfSounds = getReadOnlyTextField("Total Sounds");
+        numberOfSounds.setMaxWidth(NUMBER_TEXT_WIDTH);
+        numberOfSounds.setHelperText("The number of sounds in this adventure.");
+
         VerticalLayout details = createDetails(titleStartRow);
 
         setMargin(true);
@@ -133,6 +139,7 @@ public class AdventureEditorView extends VerticalLayout
                                                          numberOfLocations,
                                                          numberOfItems,
                                                          numberOfPictures,
+                                                         numberOfSounds,
                                                          numberOfMessages);
         TextArea longDescription = getNotesArea();
         VerticalLayout details = new VerticalLayout(titleStartRow, longDescription, statsRow);
@@ -147,6 +154,7 @@ public class AdventureEditorView extends VerticalLayout
                                                           result.editLocationsButton(),
                                                           result.editItemsButton(),
                                                           result.editPicturesButton(),
+                                                          result.editSoundsButton(),
                                                           result.arrivalButton(), result.workflowButton(),
                                                           result.responsesButton(),
                                                           testSaveRow);
@@ -187,12 +195,20 @@ public class AdventureEditorView extends VerticalLayout
             }
         });
 
+        Button editSoundsButton = new Button("Sounds", _ -> {
+            if (binder.writeBeanIfValid(adventureData)) {
+                UI.getCurrent().navigate(SoundMenuView.class,
+                                         new RouteParameters(new RouteParam(RouteIds.ADVENTURE_ID.getValue(),
+                                                                            adventureData.getId())));
+            }
+        });
+
         MessageButtons messageButtons = createMessageButtons();
         WorkflowButtons workFlowButtons = createWorkFlowButtons();
 
         SubMenuButtons result = new SubMenuButtons(editLocationsButton, editVocabularyButton,
                                                    messageButtons.editMessagesButton(), editItemsButton,
-                                                   editPicturesButton, messageButtons.editSystemMessagesButton(),
+                                                   editPicturesButton, editSoundsButton, messageButtons.editSystemMessagesButton(),
                                                    workFlowButtons.workflowButton(), workFlowButtons.responsesButton(),
                                                    workFlowButtons.arrivalButton());
         return result;
@@ -254,7 +270,7 @@ public class AdventureEditorView extends VerticalLayout
     private record WorkflowButtons(Button arrivalButton, Button workflowButton, Button responsesButton) {
     }
 
-    private record SubMenuButtons(Button editLocationsButton, Button editVocabularyButton, Button editMessagesButton, Button editItemsButton, Button editPicturesButton, Button editSystemMessagesButton, Button workflowButton, Button responsesButton, Button arrivalButton) {
+    private record SubMenuButtons(Button editLocationsButton, Button editVocabularyButton, Button editMessagesButton, Button editItemsButton, Button editPicturesButton, Button editSoundsButton, Button editSystemMessagesButton, Button workflowButton, Button responsesButton, Button arrivalButton) {
     }
 
     private void validateSave(AdventureData adventureData) {
@@ -388,6 +404,7 @@ public class AdventureEditorView extends VerticalLayout
         numberOfItems.setValue(ViewSupporter.getItemLocationPairs(adventureData.getLocationData().values()).size() + "");
         numberOfMessages.setValue(adventureData.getMessages().size() + "");
         numberOfPictures.setValue(adventureData.getPictureData().size() + "");
+        numberOfSounds.setValue(adventureData.getSoundData().size() + "");
         worldMapSelect.setItems(adventureData.getPictureData().values().stream()
                                              .sorted(Comparator.comparing(PictureData::getName,
                                                                           String.CASE_INSENSITIVE_ORDER))

@@ -32,6 +32,8 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.AdventureFont;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
+import com.pdg.adventure.model.SoundContentData;
+import com.pdg.adventure.model.SoundData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.exception.AdventureImportException;
@@ -99,6 +101,34 @@ class AdventureImporterTest {
         aChange.accept(envelope);
         return envelope.toJson(JsonWriterSettings.builder().outputMode(JsonMode.EXTENDED).build())
                        .getBytes(StandardCharsets.UTF_8);
+    }
+
+    @Test
+    void exportThenImportKeepsTheSoundsAndTheirBytes() {
+        SoundContentData content = new SoundContentData();
+        content.setId("sound-content-1");
+        content.setContent(new byte[] {7, 8, 9});
+        SoundData sound = new SoundData();
+        sound.setAdventureId(original.getId());
+        sound.setName("creaking_door");
+        sound.setContent(content);
+        original.getSoundData().put(sound.getId(), sound);
+        mongoTemplate.save(content);
+        mongoTemplate.save(sound);
+        mongoTemplate.save(original);
+        byte[] file = exporter.export(original.getId());
+        mongoTemplate.getDb().drop();
+
+        AdventureImporter.ImportResult result = importer.importAdventure(file);
+
+        AdventureData imported = mongoTemplate.findById(result.adventureId(), AdventureData.class);
+        assertThat(imported.getSoundData()).hasSize(1);
+        SoundData importedSound = imported.getSoundData().values().iterator().next();
+        assertSoftly(softly -> {
+            softly.assertThat(importedSound.getName()).isEqualTo("creaking_door");
+            softly.assertThat(importedSound.getId()).isNotEqualTo(sound.getId());
+            softly.assertThat(importedSound.getContent().getContent()).containsExactly(7, 8, 9);
+        });
     }
 
     @Test

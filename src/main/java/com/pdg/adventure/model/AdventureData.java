@@ -32,6 +32,12 @@ public class AdventureData extends DatedData {
     @DBRef(lazy = false)
     @CascadeDelete
     private Map<String, PictureData> pictureData;
+
+    // The mp3 sounds of this adventure: the sound documents are loaded with it, their audio bytes are not (lazy
+    // reference inside SoundData). Documents saved before sounds existed read as an empty map.
+    @DBRef(lazy = false)
+    @CascadeDelete
+    private Map<String, SoundData> soundData;
     // The id of the picture (a key of pictureData) the author shows as this adventure's world map; null while
     // none is chosen. A plain id like LocationData.pictureId, so deleting the picture cannot leave a broken reference.
     private String worldMapPictureId;
@@ -73,6 +79,7 @@ public class AdventureData extends DatedData {
         playerPocket = new ItemContainerData("your pocket");
         locationData = new HashMap<>();
         pictureData = new HashMap<>();
+        soundData = new HashMap<>();
         vocabularyData = aVocabularyData;
         messages = new HashMap<>();
         systemMessages = new HashMap<>();

@@ -201,8 +201,8 @@ ADMIN inherits all AUTHOR and PLAYER user stories below, by virtue of the
     [§ Editor navigation contract](#editor-navigation-contract)); **Test**
     launches `AdventureRunView` in place (route `…/test`) and is gated on the
     adventure being saved, unchanged since save, and having at least one
-    location. Its own body carries nine "Manage" buttons — Locations,
-    Vocabulary, Messages, Items, Pictures, System Messages, **Workflow I**
+    location. Its own body carries ten "Manage" buttons — Locations,
+    Vocabulary, Messages, Items, Pictures, Sounds, System Messages, **Workflow I**
     (Arrival Processes), **Workflow II** (Processes) and **Responses**.
   - Deleting an adventure (right-click a row → **Delete** on
     `/author/adventures`) removes the `AdventureData` and all owned
@@ -443,6 +443,39 @@ below.
   - The **Picture** action ("Show a picture to the player until the next move,
     look, or picture action") picks one picture of the adventure from a
     required combo box.
+
+### B14. Manage sounds and the PLAY action
+
+- **As** an AUTHOR
+- **I want** to upload mp3 sounds for my adventure and play or stop them from my commands
+- **So that** scripted moments can be heard as well as read
+- **Acceptance:**
+  - **Sounds** on `AdventureEditorView` (with a read-only **Total Sounds** field) opens
+    `/author/adventures/:adventureId/sounds` (`SoundMenuView`): a **Sounds: N** count, **Edit Sound**,
+    **Create Sound**, **Back**, a name search, and a grid with a **Play** button, the **Name**, the **Size** and a
+    **Used** count. Double-click, or right-click → **Edit**, **Find Usage**, **Delete**.
+  - The editor (`…/sounds/:soundId/edit`, alias `…/sounds/new`) takes a required **Name**, unique within the
+    adventure (compared trimmed and ignoring case), and one uploaded file: an mp3 of **at most 6 MiB**. The file's first
+    bytes are checked (an ID3 tag or an MPEG Layer III frame header), not its name; a file that is not an mp3 or is
+    too large is rejected with an error notification. **Save** needs a name and a file (stored or staged); **Reset**
+    discards a staged upload; a play button plays the staged or stored file. The name can be changed and the file
+    replaced; **Delete** is offered for a stored sound.
+  - Deleting a sound that a PLAY action uses (anywhere a command can hold actions, as for pictures) is refused: the
+    usage list is shown instead of the confirmation dialog. An unused sound asks for confirmation, then is removed
+    from the adventure, with its audio bytes. Deleting an adventure deletes its sounds; duplicating, exporting and
+    importing an adventure carry them.
+  - The **Play** action takes a sound (stored by id) and a whole number 0 to 99. A number from 1 to 99 plays the sound
+    that many times in a row, starting at once; 0 stops every copy of the sound that is playing. A PLAY never
+    interrupts other sounds, and a second PLAY of a playing sound starts another copy. Sounds keep playing when the
+    player moves to another location. When the game ends or on quit, the sounds playing stop, but a sound the
+    ending command itself started is heard; leaving the play screen and restarting the adventure in the same view stop
+    everything. The action is silent and always succeeds; a sound that no longer
+    exists is skipped. Sounds are not saved with a saved game.
+  - Playing happens in the browser: the engine queues the instruction (`GameContext.playSound`) and
+    `AdventureRunView` hands the queue to the page after every turn. A PLAY that arrives before the player's first
+    key press, click or touch is dropped by the page (browser autoplay rules). The audio is served with byte-range
+    support (206/416), which Safari needs. Audio bytes are fetched only when a
+    sound is played or previewed; an adventure run does not load them with the adventure.
 
 ## Role: PLAYER
 

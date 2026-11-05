@@ -761,4 +761,136 @@ class AdventureRunViewTest extends BrowserlessTest {
 
         verify(session).submitClick(COLUMN_AT_50, ROW_AT_75);
     }
+
+    // --- Sounds: what PLAY actions queued is handed to the browser after each turn ---
+
+    private final List<List<java.io.Serializable>> soundCalls = new java.util.ArrayList<>();
+    private final List<String> soundScripts = new java.util.ArrayList<>();
+
+    private void withRecordingSoundBrowser() {
+        view.setSoundBrowser((script, params) -> {
+            soundScripts.add(script);
+            soundCalls.add(List.of(params));
+        });
+    }
+
+    private void withASound(String anId) {
+        com.pdg.adventure.model.SoundData sound = new com.pdg.adventure.model.SoundData();
+        sound.setId(anId);
+        sound.setName(anId);
+        adventureData.getSoundData().put(anId, sound);
+    }
+
+    @Test
+    void afterATurn_thePendingSoundInstructionsAreHandedToThePlayer() {
+        withASound("snd-1");
+        stubOpeningRoom("A cave.");
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenReturn(session);
+        enterViaAuthorRoute();
+        withRecordingSoundBrowser();
+        when(session.submit("go north")).thenReturn(new RunResult(List.of("You head north."), false));
+        when(gameContext.drainSoundInstructions())
+                .thenReturn(List.of(new com.pdg.adventure.model.SoundInstruction("snd-1", 2)));
+
+        test(find(MessageInput.class, view).single()).send("go north");
+
+        assertThat(soundScripts).singleElement().satisfies(script -> assertThat(script).contains("abSound.play"));
+        assertThat(soundCalls.getFirst()).hasSize(2);
+        assertThat(soundCalls.getFirst().get(1)).isEqualTo(2);
+    }
+
+    @Test
+    void aPlayForADeletedSound_isIgnored_andNothingIsAddedToTheTranscript() {
+        stubOpeningRoom("A cave.");
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenReturn(session);
+        enterViaAuthorRoute();
+        withRecordingSoundBrowser();
+        when(session.submit("go north")).thenReturn(new RunResult(List.of("You head north."), false));
+        when(gameContext.drainSoundInstructions())
+                .thenReturn(List.of(new com.pdg.adventure.model.SoundInstruction("gone", 1)));
+        int linesBefore = test(find(MessageList.class, view).single()).getMessages().size();
+
+        test(find(MessageInput.class, view).single()).send("go north");
+
+        assertThat(soundScripts).isEmpty();
+        assertThat(test(find(MessageList.class, view).single()).getMessages())
+                .hasSize(linesBefore + 2); // the echoed input and "You head north." - nothing for the sound
+    }
+
+    @Test
+    void gameOver_stopsAllSounds() {
+        stubOpeningRoom("A cave.");
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenReturn(session);
+        enterViaAuthorRoute();
+        withRecordingSoundBrowser();
+        when(session.submit("quit")).thenReturn(new RunResult(List.of("Bye."), true, ""));
+
+        test(find(MessageInput.class, view).single()).send("quit");
+
+        assertThat(soundScripts).anySatisfy(script -> assertThat(script).contains("abSound.stopAll()"));
+    }
+
+    @Test
+    void aPlayInTheCommandThatEndsTheGame_isHeard_afterTheSoundsAlreadyPlayingAreStopped() {
+        withASound("snd-1");
+        stubOpeningRoom("A cave.");
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenReturn(session);
+        enterViaAuthorRoute();
+        withRecordingSoundBrowser();
+        when(session.submit("win")).thenReturn(new RunResult(List.of("You win!"), true, ""));
+        when(gameContext.drainSoundInstructions())
+                .thenReturn(List.of(new com.pdg.adventure.model.SoundInstruction("snd-1", 1)));
+
+        test(find(MessageInput.class, view).single()).send("win");
+
+        int stopAll = indexOfScript("abSound.stopAll()");
+        int play = indexOfScript("abSound.play");
+        assertThat(stopAll).as("sounds already playing are stopped").isGreaterThanOrEqualTo(0);
+        assertThat(play).as("the closing sound is played").isGreaterThanOrEqualTo(0);
+        assertThat(stopAll).as("stopped first, so the closing sound is not cut off").isLessThan(play);
+    }
+
+    private int indexOfScript(String aFragment) {
+        for (int i = 0; i < soundScripts.size(); i++) {
+            if (soundScripts.get(i).contains(aFragment)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Test
+    void enteringAgainInTheSameView_stopsAllSounds() {
+        stubOpeningRoom("A cave.");
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenReturn(session);
+        enterViaAuthorRoute();
+        withRecordingSoundBrowser();
+
+        enterViaAuthorRoute();
+
+        assertThat(soundScripts).anySatisfy(script -> assertThat(script).contains("abSound.stopAll()"));
+    }
+
+    @Test
+    void detaching_stopsAllSounds() {
+        stubOpeningRoom("A cave.");
+        when(sessionFactory.start(eq(adventureData), any(RunOwner.class))).thenReturn(session);
+        enterViaAuthorRoute();
+        withRecordingSoundBrowser();
+
+        UI.getCurrent().remove(view);
+
+        assertThat(soundScripts).anySatisfy(script -> assertThat(script).contains("abSound.stopAll()"));
+    }
+
+    @Test
+    void attaching_armsTheFirstInteractionGate() {
+        UI.getCurrent().remove(view);
+        withRecordingSoundBrowser();
+        soundScripts.clear();
+
+        UI.getCurrent().add(view);
+
+        assertThat(soundScripts).singleElement().satisfies(script -> assertThat(script).contains("keydown"));
+    }
 }

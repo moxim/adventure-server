@@ -129,6 +129,7 @@ public class AdventureRunSessionFactory {
         gameContext.setPocket(null);
         gameContext.setCurrentPictureId(null);
         gameContext.setPictureMode(PictureMode.DEFAULT);
+        gameContext.clearSoundInstructions();
         gameContext.setRunIdentity(null);
     }
 
