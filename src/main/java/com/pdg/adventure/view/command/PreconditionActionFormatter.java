@@ -27,6 +27,7 @@ import com.pdg.adventure.model.action.DropActionData;
 import com.pdg.adventure.model.action.IncrementVariableActionData;
 import com.pdg.adventure.model.action.InventoryActionData;
 import com.pdg.adventure.model.action.LoadGameActionData;
+import com.pdg.adventure.model.action.AbilityActionData;
 import com.pdg.adventure.model.action.LightActionData;
 import com.pdg.adventure.model.action.ListAtActionData;
 import com.pdg.adventure.model.action.PictureModeActionData;
@@ -157,6 +158,7 @@ public class PreconditionActionFormatter {
             case TakeActionData t -> "TAKE " + resolveName(t.getThingId());
             case WearActionData w -> "WEAR " + resolveName(w.getThingId());
             case RemoveActionData r -> "REMOVE " + resolveName(r.getThingId());
+            case AbilityActionData ab -> "ABILITY " + num(ab.getMaxWeight()) + " " + num(ab.getMaxItems());
             case LightActionData l -> "LIGHT " + resolveName(l.getThingId()) + " " + num(l.getLumen());
             case MoveItemActionData mi -> "MOVE " + resolveName(mi.getThingId()) + " TO " + resolveContainer(mi.getDestinationId());
             case MovePlayerActionData mp -> "MOVE PLAYER TO " + resolveName(mp.getLocationId());

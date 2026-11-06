@@ -106,6 +106,45 @@ class GameStateSnapshotterTest {
     }
 
     @Test
+    void capture_recordsWhatThePlayerCanCarry() {
+        pocket.setMaxSize(4);
+        pocket.setMaxWeight(25);
+
+        GameSnapshotData snapshot = snapshotter.capture();
+
+        assertThat(snapshot.getPocketMaxSize()).isEqualTo(4);
+        assertThat(snapshot.getPocketMaxWeight()).isEqualTo(25);
+    }
+
+    @Test
+    void restore_putsBackWhatThePlayerCanCarry() {
+        pocket.setMaxSize(4);
+        pocket.setMaxWeight(25);
+        GameSnapshotData snapshot = snapshotter.capture();
+        pocket.setMaxSize(10);
+        pocket.setMaxWeight(Integer.MAX_VALUE);
+
+        assertThat(snapshotter.restore(snapshot)).isTrue();
+
+        assertThat(pocket.getMaxSize()).isEqualTo(4);
+        assertThat(pocket.getMaxWeight()).isEqualTo(25);
+    }
+
+    @Test
+    void restore_ofASaveFromBeforeTheAbilityExisted_leavesTheLimitsAlone() {
+        GameSnapshotData snapshot = snapshotter.capture();
+        snapshot.setPocketMaxSize(null);
+        snapshot.setPocketMaxWeight(null);
+        pocket.setMaxSize(7);
+        pocket.setMaxWeight(30);
+
+        assertThat(snapshotter.restore(snapshot)).isTrue();
+
+        assertThat(pocket.getMaxSize()).isEqualTo(7);
+        assertThat(pocket.getMaxWeight()).isEqualTo(30);
+    }
+
+    @Test
     void capture_countsAnItemInNoContainerAsKnownButUnplaced() {
         GameSnapshotData snapshot = snapshotter.capture();
 

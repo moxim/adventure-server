@@ -12,6 +12,7 @@ import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.model.PictureMode;
 import com.pdg.adventure.model.SoundData;
+import com.pdg.adventure.model.action.AbilityActionData;
 import com.pdg.adventure.model.action.*;
 
 class PreconditionActionFormatterActionsTest {
@@ -271,6 +272,20 @@ class PreconditionActionFormatterActionsTest {
         a.setTimes(0);
 
         assertThat(new PreconditionActionFormatter(new AdventureData()).formatAction(a)).isEqualTo("PLAY ? 0");
+    }
+
+    @Test
+    void ability_showsMaxWeightThenMaxObjects() {
+        AbilityActionData a = new AbilityActionData();
+        a.setMaxWeight(20);
+        a.setMaxItems(5);
+
+        assertThat(formatter.formatAction(a)).isEqualTo("ABILITY 20 5");
+    }
+
+    @Test
+    void ability_withMissingValues_showsQuestionMarks() {
+        assertThat(formatter.formatAction(new AbilityActionData())).isEqualTo("ABILITY ? ?");
     }
 
     @Test

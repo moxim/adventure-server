@@ -20,6 +20,11 @@ public class GenericContainer extends Item implements Container {
     @Setter
     private int maxSize;
 
+    /** {@link Integer#MAX_VALUE} = unlimited; only an ABILITY action lowers it (it is not part of the authored data). */
+    @Getter
+    @Setter
+    private int maxWeight = Integer.MAX_VALUE;
+
     private final boolean holdsDirections;
     private List<Containable> contents;
 
@@ -48,6 +53,17 @@ public class GenericContainer extends Item implements Container {
     @Override
     public int getSize() {
         return contents.size();
+    }
+
+    @Override
+    public int getCarriedWeight() {
+        int result = 0;
+        for (Containable containable : contents) {
+            if (containable instanceof Item item) {
+                result += item.getWeight();
+            }
+        }
+        return result;
     }
 
     @Override
@@ -155,6 +171,7 @@ public class GenericContainer extends Item implements Container {
     public String toString() {
         return "GenericContainer{" +
                "maxSize=" + maxSize +
+               ", maxWeight=" + maxWeight +
                ", holdsDirections=" + holdsDirections +
                ", contents=" + contents +
                ", " + super.toString() +

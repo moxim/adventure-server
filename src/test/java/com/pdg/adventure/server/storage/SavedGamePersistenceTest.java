@@ -40,6 +40,8 @@ class SavedGamePersistenceTest {
         snapshot.getVisits().put("01loc", 3);
         snapshot.getVariables().put("score", 7);
         snapshot.getVariables().put("VISITED", 2);
+        snapshot.setPocketMaxSize(4);
+        snapshot.setPocketMaxWeight(25);
         return snapshot;
     }
 

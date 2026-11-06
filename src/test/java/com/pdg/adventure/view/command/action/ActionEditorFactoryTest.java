@@ -27,6 +27,7 @@ import com.pdg.adventure.model.action.SubtractVariableActionData;
 import com.pdg.adventure.model.action.CreateActionData;
 import com.pdg.adventure.model.action.DecrementVariableActionData;
 import com.pdg.adventure.model.action.DescribeActionData;
+import com.pdg.adventure.model.action.AbilityActionData;
 import com.pdg.adventure.model.action.PlayActionData;
 import com.pdg.adventure.model.action.DestroyActionData;
 import com.pdg.adventure.model.action.IncrementVariableActionData;
@@ -205,6 +206,12 @@ class ActionEditorFactoryTest {
     void createEditor_withDescribeActionData_shouldReturnDescribeActionEditor() {
         ActionEditorComponent editor = ActionEditorFactory.createEditor(new DescribeActionData(), adventureData);
         assertThat(editor).isNotNull().isInstanceOf(DescribeActionEditor.class);
+    }
+
+    @Test
+    void createEditor_withAbilityActionData_shouldReturnAbilityActionEditor() {
+        ActionEditorComponent editor = ActionEditorFactory.createEditor(new AbilityActionData(), adventureData);
+        assertThat(editor).isNotNull().isInstanceOf(AbilityActionEditor.class);
     }
 
     @Test

@@ -32,6 +32,9 @@ public class GameSnapshotData {
         /** Location id -> times visited. */
         private Map<String, Integer> visits;
         private Map<String, Integer> variables;
+        /** What the player can carry (the pocket's limits, set by ABILITY); null in saves from before it existed. */
+        private Integer pocketMaxSize;
+        private Integer pocketMaxWeight;
 
         public GameSnapshotData() {
             knownItemIds = new HashSet<>();

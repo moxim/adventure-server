@@ -3,6 +3,7 @@ package com.pdg.adventure.server.action;
 import lombok.EqualsAndHashCode;
 
 import java.util.Map;
+import java.util.Optional;
 
 import com.pdg.adventure.api.ExecutionResult;
 import com.pdg.adventure.server.engine.GameContext;
@@ -20,7 +21,8 @@ import com.pdg.adventure.server.tangible.Item;
  * Outcomes: taken (SM36); already carried or worn (SM25); several here (SM61); the noun names an item, but not
  * one that is here (SM26); no noun at all - the parser drops words it doesn't know, so "take xyzzy"
  * arrives here as a bare "take" (SM26); the noun is a vocabulary word but no item, or a fixed item (SM8); pocket
- * full (SM27).
+ * full (SM27); item too heavy for what the player can still carry (SM43). Both limits are the player's ability.
+ * @see CarryLimits
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class AutoTakeAction extends AbstractNounItemAction {
@@ -46,12 +48,10 @@ public class AutoTakeAction extends AbstractNounItemAction {
     }
 
     private ExecutionResult take(Item anItem) {
-        if (pocket().getSize() >= pocket().getMaxSize()) {
-            return failure(SystemMessageKey.SM27.defaultText());
+        Optional<String> refusal = CarryLimits.refusalFor(pocket(), anItem);
+        if (refusal.isPresent()) {
+            return failure(refusal.get());
         }
-        // TODO: Review needed — the original PAW also refuses when the object's weight would exceed
-        //  the player's limit; this adventure builder has no weight system yet, so only the
-        //  item-count limit above applies.
         ExecutionResult result = new MoveItemAction(anItem, pocket()).execute();
         if (result.getExecutionState() == ExecutionResult.State.SUCCESS) {
             result.setResultMessage(SystemMessageKey.SM36.defaultText().formatted(anItem.getStrippedBasicDescription()));

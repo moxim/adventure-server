@@ -84,6 +84,7 @@ public class ActionSelector extends HorizontalLayout {
         new ActionTypeDescriptor("AutoWear", "Player wears the item named by the typed noun", AutoWearActionData::new),
         new ActionTypeDescriptor("AutoRemove", "Player removes the worn item named by the typed noun", AutoRemoveActionData::new),
         new ActionTypeDescriptor("Wear", "Player wears a wearable item", WearActionData::new),
+        new ActionTypeDescriptor("Ability", "Set what the player can carry: the most weight and the most objects", AbilityActionData::new),
         new ActionTypeDescriptor("Light", "Set an item's light level (lumen)", LightActionData::new),
         new ActionTypeDescriptor("Set Variable", "Set a named variable to a specific value", () -> new SetVariableActionData(null, null)),
         new ActionTypeDescriptor("Quit", "Terminate the game", QuitActionData::new),

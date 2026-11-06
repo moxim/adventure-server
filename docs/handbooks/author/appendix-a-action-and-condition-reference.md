@@ -12,6 +12,7 @@ order, when that command fires.
 
 | Action | What it does | What you configure |
 |--------|----------------|----------------------|
+| **Ability** | Sets what the player can carry. Taking an item (AutoTake or Take) is refused — "I can't carry any more things." or "The … weighs too much for me." — when the player already carries that many objects or the item would push the carried weight over the limit. Until an Ability runs the weight is unlimited. Items the player already carries stay; the limits are saved with a saved game | Max weight (the sum of the items' weights); max number of objects — both whole numbers from 0 |
 | **Add Variable** | Adds the value of the first variable to the second one (*second = second + first*); the first stays as it is | The two variables, chosen from dropdowns |
 | **AutoDrop** | Player drops the item named by the noun they typed; refuses if it's worn | Nothing — use it in a Response with the noun `~` |
 | **AutoRemove** | Player takes off the worn item named by the noun they typed | Nothing — use it in a Response with the noun `~` |

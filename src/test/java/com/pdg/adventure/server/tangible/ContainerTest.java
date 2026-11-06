@@ -27,6 +27,26 @@ class ContainerTest {
     }
 
     @Test
+    void aNewContainerHasNoWeightLimit_andCarriesNothing() {
+        assertThat(sut.getMaxWeight()).isEqualTo(Integer.MAX_VALUE);
+        assertThat(sut.getCarriedWeight()).isZero();
+    }
+
+    @Test
+    void carriedWeight_sumsTheWeightOfTheContents() {
+        Item heavy = new Item(descriptionProvider, true);
+        heavy.setWeight(7);
+        Item light = new Item(descriptionProvider, true);
+        light.setWeight(0);
+        Item normal = new Item(descriptionProvider, true); // default weight 1
+        sut.add(heavy);
+        sut.add(light);
+        sut.add(normal);
+
+        assertThat(sut.getCarriedWeight()).isEqualTo(8);
+    }
+
+    @Test
     void cannotPutAnyItemIntoContainer() {
         // given
 

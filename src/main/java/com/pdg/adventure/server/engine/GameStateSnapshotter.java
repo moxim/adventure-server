@@ -57,6 +57,11 @@ public class GameStateSnapshotter {
         }
         adventureConfig.allLocations().forEach((id, location) -> snapshot.getVisits().put(id, location.getTimesVisited()));
         snapshot.getVariables().putAll(adventureConfig.allVariables().getAllAsMap());
+        Container pocket = gameContext.getPocket();
+        if (pocket != null) {
+            snapshot.setPocketMaxSize(pocket.getMaxSize());
+            snapshot.setPocketMaxWeight(pocket.getMaxWeight());
+        }
         return snapshot;
     }
 
@@ -81,11 +86,27 @@ public class GameStateSnapshotter {
 
         considerItemStatesVisitsAndVariables(aSnapshot, items, locations);
 
+        considerPlayerAbility(aSnapshot);
+
         gameContext.setCurrentLocation(savedLocation);
         gameContext.setCurrentPictureId(aSnapshot.getCurrentPictureId());
         gameContext.setPictureMode(aSnapshot.getPictureMode());
         gameContext.clearOverlays(); // not saved; also drops those of the same picture shown before the load
         return true;
+    }
+
+    /** What the player can carry; a save from before it existed mentions none and leaves the adventure's own limits. */
+    private void considerPlayerAbility(final GameSnapshotData aSnapshot) {
+        Container pocket = gameContext.getPocket();
+        if (pocket == null) {
+            return;
+        }
+        if (aSnapshot.getPocketMaxSize() != null) {
+            pocket.setMaxSize(aSnapshot.getPocketMaxSize());
+        }
+        if (aSnapshot.getPocketMaxWeight() != null) {
+            pocket.setMaxWeight(aSnapshot.getPocketMaxWeight());
+        }
     }
 
     private static void considerMovedItems(final GameSnapshotData aSnapshot, final Map<String, Item> items) {
