@@ -37,6 +37,7 @@ These are your doors into the rest of the adventure:
 | **Locations** | [Locations & Exits](05-locations-and-exits.md) |
 | **Items** | [Items](06-items.md) (every item across the whole adventure) |
 | **Pictures** | [Pictures](11-pictures.md) |
+| **Sounds** | [Sounds](11a-sounds.md) |
 | **Workflow I** | [Workflow → Arrival Processes](09-workflow.md#arrival-processes-run-when-a-location-is-described) |
 | **Workflow II** | [Workflow → Processes](09-workflow.md#processes-run-every-turn) |
 | **Responses** | [Workflow → Responses](09-workflow.md#responses-a-fallback-for-a-typed-command) |

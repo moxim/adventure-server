@@ -35,8 +35,10 @@ import com.pdg.adventure.model.action.MesActionData;
 import com.pdg.adventure.model.action.MoveItemActionData;
 import com.pdg.adventure.model.action.MovePlayerActionData;
 import com.pdg.adventure.model.PictureData;
+import com.pdg.adventure.model.SoundData;
 import com.pdg.adventure.model.action.OverlayActionData;
 import com.pdg.adventure.model.action.PictureActionData;
+import com.pdg.adventure.model.action.PlayActionData;
 import com.pdg.adventure.model.action.QuitActionData;
 import com.pdg.adventure.model.action.SaveGameActionData;
 import com.pdg.adventure.model.action.RemoveActionData;
@@ -81,6 +83,7 @@ public class PreconditionActionFormatter {
     private final Map<String, ItemData> itemsById;
     private final Map<String, LocationData> locationsById;
     private final Map<String, PictureData> picturesById;
+    private final Map<String, SoundData> soundsById;
     private final Map<String, MessageData> messagesById;
     private final String pocketId;
 
@@ -88,6 +91,7 @@ public class PreconditionActionFormatter {
         itemsById = indexItems(adventureData);
         locationsById = adventureData.getLocationData() == null ? Map.of() : adventureData.getLocationData();
         picturesById = adventureData.getPictureData() == null ? Map.of() : adventureData.getPictureData();
+        soundsById = adventureData.getSoundData() == null ? Map.of() : adventureData.getSoundData();
         messagesById = adventureData.getMessages() == null ? Map.of() : adventureData.getMessages();
         pocketId = adventureData.getPlayerPocket() == null ? null : adventureData.getPlayerPocket().getId();
     }
@@ -158,6 +162,7 @@ public class PreconditionActionFormatter {
             case MovePlayerActionData mp -> "MOVE PLAYER TO " + resolveName(mp.getLocationId());
             case DescribeActionData de -> "DESCRIBE " + resolveName(de.getTargetId());
             case PictureActionData p -> "PICTURE " + resolvePictureName(p.getPictureId());
+            case PlayActionData p -> "PLAY " + resolveSoundName(p.getSoundId()) + " " + num(p.getTimes());
             case OverlayActionData o -> "OVERLAY " + num(o.getX()) + " " + num(o.getY()) + " "
                                         + resolvePictureName(o.getPictureId());
             case LookActionData _ -> "LOOK";
@@ -173,6 +178,14 @@ public class PreconditionActionFormatter {
             case BreakActionData _ -> "BREAK";
             default -> a.getActionName().replace("ActionData", "").toUpperCase(Locale.ROOT);
         };
+    }
+
+    private String resolveSoundName(String soundId) {
+        if (soundId == null || soundId.isBlank()) {
+            return "?";
+        }
+        SoundData sound = soundsById.get(soundId);
+        return sound == null ? "?" : sound.getName();
     }
 
     private String resolvePictureName(String pictureId) {

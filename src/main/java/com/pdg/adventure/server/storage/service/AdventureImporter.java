@@ -29,7 +29,8 @@ public class AdventureImporter {
 
     /** Every {@code @Document} collection an adventure reaches. Deliberately without saved games. */
     public static final Set<String> ALLOWED_COLLECTIONS = Set.of(
-            "adventures", "locations", "containers", "items", "pictures", "vocabularies", "words");
+            "adventures", "locations", "containers", "items", "pictures", "sounds", "soundcontent", "vocabularies",
+            "words");
 
     public static final long DEFAULT_MAX_BYTES = 50L * 1024 * 1024;
 

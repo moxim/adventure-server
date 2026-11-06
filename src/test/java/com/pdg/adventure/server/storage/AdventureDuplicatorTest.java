@@ -24,6 +24,8 @@ import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.MessageData;
 import com.pdg.adventure.model.PictureData;
+import com.pdg.adventure.model.SoundContentData;
+import com.pdg.adventure.model.SoundData;
 import com.pdg.adventure.model.VocabularyData;
 import com.pdg.adventure.model.Word;
 import com.pdg.adventure.server.storage.mongo.CascadeDeleteHelper;
@@ -44,7 +46,8 @@ import com.pdg.adventure.server.storage.service.AdventureDuplicator;
 class AdventureDuplicatorTest {
 
     private static final List<String> COLLECTIONS =
-            List.of("adventures", "locations", "containers", "items", "pictures", "vocabularies", "words");
+            List.of("adventures", "locations", "containers", "items", "pictures", "sounds", "soundcontent", "vocabularies",
+                    "words");
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -58,6 +61,7 @@ class AdventureDuplicatorTest {
     private ItemData lamp;
     private ItemData key;
     private PictureData picture;
+    private SoundData sound;
     private Word takeWord;
     private Word grabWord;
 
@@ -92,6 +96,15 @@ class AdventureDuplicatorTest {
         cellar.setPictureId(picture.getId());
         original.getPictureData().put(picture.getId(), picture);
 
+        SoundContentData soundContent = new SoundContentData();
+        soundContent.setId("sound-content-1");
+        soundContent.setContent(new byte[] {4, 5, 6});
+        sound = new SoundData();
+        sound.setAdventureId(original.getId());
+        sound.setName("creaking_door");
+        sound.setContent(soundContent);
+        original.getSoundData().put(sound.getId(), sound);
+
         original.getLocationData().put(cellar.getId(), cellar);
         original.getLocationData().put(attic.getId(), attic);
         original.setCurrentLocationId(cellar.getId());
@@ -104,6 +117,8 @@ class AdventureDuplicatorTest {
         original.getMessages().put(message.getId(), message);
 
         mongoTemplate.save(picture);
+        mongoTemplate.save(soundContent);
+        mongoTemplate.save(sound);
         mongoTemplate.save(original);
     }
 
@@ -126,6 +141,8 @@ class AdventureDuplicatorTest {
             softly.assertThat(mongoTemplate.getCollection("containers").countDocuments()).isEqualTo(3);
             softly.assertThat(mongoTemplate.getCollection("items").countDocuments()).isEqualTo(2);
             softly.assertThat(mongoTemplate.getCollection("pictures").countDocuments()).isEqualTo(1);
+            softly.assertThat(mongoTemplate.getCollection("sounds").countDocuments()).isEqualTo(1);
+            softly.assertThat(mongoTemplate.getCollection("soundcontent").countDocuments()).isEqualTo(1);
             softly.assertThat(mongoTemplate.getCollection("vocabularies").countDocuments()).isEqualTo(1);
             softly.assertThat(mongoTemplate.getCollection("words").countDocuments()).isEqualTo(2);
         });

@@ -1,6 +1,7 @@
 package com.pdg.adventure.view.adventure;
 
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.ScrollIntoViewOption;
@@ -13,6 +14,7 @@ import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
@@ -20,8 +22,11 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 import jakarta.annotation.security.RolesAllowed;
 import tools.jackson.databind.JsonNode;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -30,12 +35,14 @@ import com.pdg.adventure.model.AdventureData;
 import com.pdg.adventure.model.AdventureFont;
 import com.pdg.adventure.model.PictureData;
 import com.pdg.adventure.model.PictureOverlayData;
+import com.pdg.adventure.model.SoundData;
 import com.pdg.adventure.server.action.MovePlayerAction;
 import com.pdg.adventure.server.engine.*;
 import com.pdg.adventure.server.engine.AdventureRunSession.RunResult;
 import com.pdg.adventure.server.security.service.AdventureAccessService;
 import com.pdg.adventure.server.support.VariableProvider;
 import com.pdg.adventure.view.player.PlayerLibraryView;
+import com.pdg.adventure.view.sound.SoundPlayButton;
 import com.pdg.adventure.view.support.AdventureRouteResolver;
 import com.pdg.adventure.view.support.FlashNotifier;
 import com.pdg.adventure.view.support.HistoryNavigation;
@@ -122,6 +129,10 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     private transient AdventureData adventureData;
     private String displayedPictureId;
     private transient List<PictureOverlayData> displayedOverlays = List.of();
+    // The hidden audio elements that serve the adventure's sounds to the browser, created when a sound is first played.
+    private final transient Map<String, Element> soundElements = new HashMap<>();
+    private transient UI attachedUi;
+    private transient SoundPlayer soundPlayer = new SoundPlayer(this::runInBrowser, this::soundElement);
     private String adventureId;
     private String pageTitle = "Adventure";
     private Origin origin = Origin.EDITOR;
@@ -253,6 +264,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             displayedOverlays = List.of();
             overlayLayer.removeAll();
             pictureContainer.setVisible(false);
+            stopAndForgetSounds();
         }
         try {
             session = sessionFactory.start(adventureData, runOwner);
@@ -283,6 +295,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
             ExecutionResult result = session.runBound(movePlayerAction::execute);
             renderNarratorLines(withPrompt(List.of(result.getResultMessage()), session.prompt()));
             refreshPictureDisplay();
+            playPendingSounds();
         } catch (RuntimeException e) {
             FlashNotifier.show(String.format(GAMEPLAY_ERROR_TXT, e.getMessage()));
         }
@@ -291,6 +304,8 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
+        attachedUi = attachEvent.getUI();
+        soundPlayer.armFirstInteractionGate();
         if (runConflict) {
             runConflict = false;
             openRunConflictDialog();
@@ -300,6 +315,8 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
+        soundPlayer.stopAll();
+        attachedUi = null;
         runOwner.markGone();
         // On logout or session expiry Vaadin closes the session before it detaches its UIs. The session-scoped
         // ActiveRun cannot be resolved then, and it is destroyed with the session anyway.
@@ -327,6 +344,7 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     }
 
     private void takeOverRun() {
+        soundPlayer.stopAll();
         try {
             session = sessionFactory.startReplacingActive(adventureData, runOwner);
         } catch (RuntimeException e) {
@@ -410,10 +428,55 @@ public class AdventureRunView extends VerticalLayout implements HasDynamicTitle,
     private void render(RunResult result) {
         renderNarratorLines(withPrompt(result.lines(), result.prompt()));
         refreshPictureDisplay();
+        if (result.gameOver()) {
+            // TODO: Review needed — the spec says everything stops when the game ends, but is silent on a PLAY in the
+            //  command that ends it. What was playing is stopped first, so a closing sound (a fanfare) is heard; it
+            //  ends when the player leaves the play screen.
+            soundPlayer.stopAll();
+        }
+        playPendingSounds();
         messageInput.setEnabled(!result.gameOver());
         if (result.gameOver()) {
             sessionFactory.release(runOwner);
         }
+    }
+
+    /** Hands what PLAY actions queued during the turn to the browser; a sound no longer in the adventure is skipped. */
+    private void playPendingSounds() {
+        soundPlayer.apply(session.getGameContext().drainSoundInstructions());
+    }
+
+    private void runInBrowser(String aScript, Serializable... someParameters) {
+        if (attachedUi != null) {
+            attachedUi.getPage().executeJs(aScript, someParameters);
+        }
+    }
+
+    /** The hidden audio element that serves the sound, or null when the adventure has no such sound (any more). */
+    private Element soundElement(String aSoundId) {
+        SoundData sound = adventureData == null ? null : adventureData.getSoundData().get(aSoundId);
+        if (sound == null) {
+            return null;
+        }
+        return soundElements.computeIfAbsent(aSoundId, _ -> {
+            Element audio = new Element("audio");
+            audio.setAttribute("preload", "none");
+            audio.getStyle().set("display", "none");
+            audio.setAttribute("src", SoundPlayButton.audioHandler(sound::audioBytes));
+            getElement().appendChild(audio);
+            return audio;
+        });
+    }
+
+    private void stopAndForgetSounds() {
+        soundPlayer.stopAll();
+        soundElements.values().forEach(Element::removeFromParent);
+        soundElements.clear();
+    }
+
+    /** For tests: replaces where the sound scripts run, keeping the view's own sound lookup. */
+    void setSoundBrowser(SoundPlayer.Browser aBrowser) {
+        soundPlayer = new SoundPlayer(aBrowser, this::soundElement);
     }
 
     /** The lines with the question that asks for the next input as their last line, if there is one. */

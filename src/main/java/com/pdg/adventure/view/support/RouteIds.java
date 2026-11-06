@@ -7,6 +7,7 @@ public enum RouteIds {
     DIRECTION_ID("directionId"),
     MESSAGE_ID("messageId"),
     PICTURE_ID("pictureId"),
+    SOUND_ID("soundId"),
     ITEM_ID("itemId");
 
     private final String routeParam;

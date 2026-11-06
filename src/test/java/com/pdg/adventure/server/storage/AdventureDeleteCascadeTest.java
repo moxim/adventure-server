@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.mongodb.test.autoconfigure.DataMongoTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.mongodb.core.convert.LazyLoadingProxy;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,6 +16,8 @@ import com.pdg.adventure.model.ItemContainerData;
 import com.pdg.adventure.model.ItemData;
 import com.pdg.adventure.model.LocationData;
 import com.pdg.adventure.model.MessageData;
+import com.pdg.adventure.model.SoundContentData;
+import com.pdg.adventure.model.SoundData;
 import com.pdg.adventure.model.SystemMessageData;
 import com.pdg.adventure.model.basic.BasicData;
 import com.pdg.adventure.server.storage.mongo.CascadeDeleteHelper;
@@ -148,6 +151,38 @@ class AdventureDeleteCascadeTest {
                                              adventure.getPlayerPocket().getId());
             softly.assertThat(mongoTemplate.findAll(ItemData.class)).extracting(BasicData::getId)
                   .as("items").containsExactly(keptItem.getId());
+        });
+    }
+    @Test
+    void deletingAnAdventureRemovesItsSoundsAndTheirContent(@Autowired MongoTemplate mongoTemplate,
+                                                            @Autowired CascadeDeleteHelper cascadeDeleteHelper) {
+        // given: an adventure with one sound; the bytes live in their own document
+        SoundContentData content = new SoundContentData();
+        content.setId("content-1");
+        content.setContent(new byte[] {1, 2, 3});
+        mongoTemplate.save(content);
+        SoundData sound = new SoundData();
+        sound.setName("pirate_bay");
+        sound.setContent(content);
+        mongoTemplate.save(sound);
+        AdventureData adventure = new AdventureData();
+        adventure.setTitle("sound delete test");
+        adventure.getSoundData().put(sound.getId(), sound);
+        mongoTemplate.save(adventure);
+
+        // when: deleting the way AdventureService.deleteAdventure does - reload, cascade, remove
+        AdventureData reloaded = mongoTemplate.findById(adventure.getId(), AdventureData.class);
+        SoundData reloadedSound = reloaded.getSoundData().get(sound.getId());
+        assertThat(reloadedSound.getContent())
+                .as("the audio bytes are not loaded together with the adventure").isInstanceOf(LazyLoadingProxy.class);
+        cascadeDeleteHelper.cascadeDelete(reloaded);
+        mongoTemplate.remove(reloaded);
+
+        // then: neither the sound nor its bytes may survive
+        assertSoftly(softly -> {
+            softly.assertThat(mongoTemplate.findAll(AdventureData.class)).as("adventures").isEmpty();
+            softly.assertThat(mongoTemplate.findAll(SoundData.class)).as("sounds").isEmpty();
+            softly.assertThat(mongoTemplate.findAll(SoundContentData.class)).as("sound content").isEmpty();
         });
     }
 }

@@ -38,6 +38,7 @@ order, when that command fires.
 | **Move Player** | Moves the player to a location and shows its description | Destination location |
 | **Picture** | Shows a [picture](11-pictures.md) in the play screen's picture panel until the next move, look or Picture action | The picture |
 | **PictureMode** | Sets when a location's default [picture](11-pictures.md#the-picturemode-action) is shown on arrival: **ON** on every arrival, **OFF** never (a Look or a Picture action still shows one), **DEFAULT** on the first arrival only (the start value). Shows nothing itself | The mode: ON, OFF or DEFAULT |
+| **Play** | Plays a [sound](11a-sounds.md) the given number of times in a row, starting at once, on top of whatever is already playing; **0** stops every copy of that sound. Shows no text. A play before the player's first key press or click is skipped (browser rule) | The sound; a number from 0 to 99 |
 | **Print** | Prints the value of a variable (just the number, e.g. *14*) and does **not** end the line, so the next text continues right after it (see below) | The variable, chosen from the dropdown |
 | **Diagnose Variable** | Prints a variable's name and its current value, e.g. *"VISITED : 14"* | The variable, chosen from the dropdown (`VISITED`, `TURNS` and `PROMPT` are always listed) |
 | **Diagnose Variables** | Prints every variable and its current value, one per line, sorted by name: *"TURNS : 3"*, *"VISITED : 14"* | Nothing - fully automatic |
