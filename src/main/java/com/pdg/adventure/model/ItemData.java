@@ -33,13 +33,15 @@ public class ItemData extends ThingData {
     private boolean isWearable;
     private boolean isWorn;
     private int lumen; // how much light this item emits, e.g. a lit torch; 0 = none, the default
+    // How heavy this item is; 0 = weightless, the default is 1. The initializer also applies to
+    // items stored before weight existed: Spring Data leaves a missing field untouched.
+    private int weight = 1;
 
 //    private boolean isOpenable;
 //    private boolean isOpen;
 //    private boolean isLockable;
 //    private boolean isLocked;
 //    private String keyId;
-//    private double weight;
 //    private double volume;
 //    private double capacity;
 //    private boolean isTransparent;

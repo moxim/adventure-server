@@ -11,12 +11,21 @@ public class Item extends Thing implements Containable, Wearable {
     private Container parentContainer;
     private boolean isWearable;
     private boolean isWorn;
+    private int weight = 1;
 
     public Item(DescriptionProvider aDescriptionProvider, boolean isContainable) {
         super(aDescriptionProvider);
         this.isContainable = isContainable;
         this.isWearable = false;
         this.isWorn = false;
+    }
+
+    public int getWeight() {
+        return weight;
+    }
+
+    public void setWeight(int aWeight) {
+        weight = aWeight;
     }
 
     @Override
@@ -106,6 +115,7 @@ public class Item extends Thing implements Containable, Wearable {
                ", parentContainer (Id)=" + (parentContainer == null ? "null" : parentContainer.getId()) +
                ", isWearable=" + isWearable +
                ", isWorn=" + isWorn +
+               ", weight=" + weight +
                ", " + super.toString() +
                '}';
     }

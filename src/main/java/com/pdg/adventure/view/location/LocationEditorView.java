@@ -100,7 +100,10 @@ public class LocationEditorView extends VerticalLayout
         binder.forField(adjectiveSelector).bind(LocationViewModel::getAdjective, LocationViewModel::setAdjective);
         binder.bind(shortDescription, LocationViewModel::getShortDescription, LocationViewModel::setShortDescription);
         binder.bind(longDescription, LocationViewModel::getLongDescription, LocationViewModel::setLongDescription);
-        binder.bind(lumen, LocationViewModel::getLumen, LocationViewModel::setLumen);
+        binder.forField(lumen).asRequired("Lumen is required")
+              .withValidator(value -> value >= MIN_LUMEN && value <= MAX_LUMEN,
+                             "Lumen must be between " + MIN_LUMEN + " and " + MAX_LUMEN)
+              .bind(LocationViewModel::getLumen, LocationViewModel::setLumen);
         binder.forField(pictureSelector)
               .withConverter(
                       picture -> picture == null ? null : picture.getId(),

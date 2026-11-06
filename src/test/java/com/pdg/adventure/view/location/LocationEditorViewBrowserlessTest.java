@@ -142,6 +142,28 @@ class LocationEditorViewBrowserlessTest extends BrowserlessTest {
     }
 
     @Test
+    void emptyOrOutOfRangeLumen_disablesSave() {
+        enterWithLocationId("loc-1");
+        Button save = find(Button.class, view).withText("Save").single();
+        IntegerField lumen = find(IntegerField.class, view).withLabel("Lighting (Lumen)").single();
+
+        lumen.setValue(60);
+        assertThat(save.isEnabled()).isTrue();
+
+        lumen.setValue(null);
+        assertThat(save.isEnabled()).isFalse();
+
+        lumen.setValue(-1);
+        assertThat(save.isEnabled()).isFalse();
+
+        lumen.setValue(101);
+        assertThat(save.isEnabled()).isFalse();
+
+        lumen.setValue(100);
+        assertThat(save.isEnabled()).isTrue();
+    }
+
+    @Test
     void saveButton_isDisabled_afterSetData() {
         enterWithLocationId(null);
         assertThat(find(Button.class, view).withText("Save").single().isEnabled()).isFalse();

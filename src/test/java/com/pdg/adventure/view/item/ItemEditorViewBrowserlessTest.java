@@ -25,6 +25,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -133,7 +134,18 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
     }
 
     private IntegerField lumenField() {
-        return find(IntegerField.class, view).single();
+        return integerFieldLabelled("Lighting (Lumen)");
+    }
+
+    private IntegerField weightField() {
+        return integerFieldLabelled("Weight");
+    }
+
+    private IntegerField integerFieldLabelled(String label) {
+        return find(IntegerField.class, view).all().stream()
+                                             .filter(field -> label.equals(field.getLabel()))
+                                             .findFirst()
+                                             .orElseThrow(() -> new AssertionError("No integer field labelled: " + label));
     }
 
     private Checkbox checkboxLabelled(String label) {
@@ -253,5 +265,111 @@ class ItemEditorViewBrowserlessTest extends BrowserlessTest {
         lumenField().setValue(42);
 
         assertThat(reset.isEnabled()).isTrue();
+    }
+
+    @Test
+    @DisplayName("The view renders a 'Weight' field")
+    void view_rendersWeightField() {
+        enterWithItemId(null);
+
+        assertThat(weightField().getLabel()).isEqualTo("Weight");
+    }
+
+    @Test
+    @DisplayName("A new item's Weight field defaults to 1")
+    void weightField_defaultsToOne_forNewItem() {
+        enterWithItemId(null);
+
+        assertThat(weightField().getValue()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("The Weight field is pre-populated from an existing item's data")
+    void weightField_isPrePopulated_forExistingItem() {
+        existingItem.setWeight(7);
+        locationData.getItemContainerData().getItems().add(existingItem);
+
+        enterWithItemId(ITEM_ID);
+
+        assertThat(weightField().getValue()).isEqualTo(7);
+    }
+
+    @Test
+    @DisplayName("Changing the Weight field marks the form dirty and enables Reset")
+    void changingWeightField_enablesResetButton() {
+        enterWithItemId(null);
+
+        Button reset = find(Button.class, view).withText("Reset").single();
+        assertThat(reset.isEnabled()).isFalse();
+
+        weightField().setValue(3);
+
+        assertThat(reset.isEnabled()).isTrue();
+    }
+
+    @Test
+    @DisplayName("A changed weight is saved to the item")
+    void changedWeight_isSaved() {
+        locationData.getItemContainerData().getItems().add(existingItem);
+        when(itemService.saveItem(any(ItemData.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        enterWithItemId(ITEM_ID);
+
+        weightField().setValue(5);
+        test(find(Button.class, view).withText("Save").single()).click();
+
+        org.mockito.ArgumentCaptor<ItemData> saved = org.mockito.ArgumentCaptor.forClass(ItemData.class);
+        verify(itemService).saveItem(saved.capture());
+        assertThat(saved.getValue().getWeight()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("A weight of 0 (weightless) is accepted")
+    void zeroWeight_isAccepted() {
+        locationData.getItemContainerData().getItems().add(existingItem);
+        enterWithItemId(ITEM_ID);
+
+        weightField().setValue(0);
+
+        assertThat(find(Button.class, view).withText("Save").single().isEnabled()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Clearing the Weight field or entering a negative weight disables Save")
+    void emptyOrNegativeWeight_disablesSave() {
+        locationData.getItemContainerData().getItems().add(existingItem);
+        enterWithItemId(ITEM_ID);
+        Button save = find(Button.class, view).withText("Save").single();
+
+        weightField().setValue(2);
+        assertThat(save.isEnabled()).isTrue();
+
+        weightField().setValue(null);
+        assertThat(save.isEnabled()).isFalse();
+
+        weightField().setValue(-1);
+        assertThat(save.isEnabled()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Clearing the Lumen field or entering a value outside 0..100 disables Save")
+    void emptyOrOutOfRangeLumen_disablesSave() {
+        locationData.getItemContainerData().getItems().add(existingItem);
+        enterWithItemId(ITEM_ID);
+        Button save = find(Button.class, view).withText("Save").single();
+
+        lumenField().setValue(50);
+        assertThat(save.isEnabled()).isTrue();
+
+        lumenField().setValue(null);
+        assertThat(save.isEnabled()).isFalse();
+
+        lumenField().setValue(-1);
+        assertThat(save.isEnabled()).isFalse();
+
+        lumenField().setValue(101);
+        assertThat(save.isEnabled()).isFalse();
+
+        lumenField().setValue(100);
+        assertThat(save.isEnabled()).isTrue();
     }
 }

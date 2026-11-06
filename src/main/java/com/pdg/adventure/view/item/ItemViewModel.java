@@ -14,6 +14,7 @@ public final class ItemViewModel {
     // these attributes can be edited
     private String id;
     private int lumen;
+    private int weight;
     private Word noun;
     private Word adjective;
     private String shortDescription;
@@ -29,6 +30,7 @@ public final class ItemViewModel {
         locationId = data.getLocationId();
         id = data.getId();
         lumen = data.getLumen();
+        weight = data.getWeight();
         noun = data.getDescriptionData().getNoun();
         adjective = data.getDescriptionData().getAdjective();
         shortDescription = data.getDescriptionData().getShortDescription();
@@ -46,6 +48,11 @@ public final class ItemViewModel {
     public void setLumen(Integer aValue) {
         lumen = aValue;
         data.setLumen(aValue);
+    }
+
+    public void setWeight(Integer aValue) {
+        weight = aValue;
+        data.setWeight(aValue);
     }
 
     public void setNoun(Word aNoun) {

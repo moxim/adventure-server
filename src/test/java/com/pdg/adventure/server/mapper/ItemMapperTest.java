@@ -82,6 +82,55 @@ class ItemMapperTest {
     }
 
     @Test
+    void mapToDO_carriesOverTheItemsWeight() {
+        // Given: a heavy anvil
+        Item item = new Item(descriptionProvider, true);
+        item.setId("anvil");
+        item.setWeight(40);
+
+        when(descriptionMapper.mapToDO(descriptionProvider)).thenReturn(descriptionData);
+
+        // When
+        ItemData result = itemMapper.mapToDO(item);
+
+        // Then
+        assertThat(result.getWeight()).isEqualTo(40);
+    }
+
+    @Test
+    void mapToBO_carriesOverTheItemDatasWeight() {
+        // Given: a persisted heavy anvil
+        ItemData itemData = new ItemData();
+        itemData.setId("anvil");
+        itemData.setWeight(40);
+        itemData.setDescriptionData(descriptionData);
+
+        when(descriptionMapper.mapToBO(descriptionData)).thenReturn(descriptionProvider);
+
+        // When
+        Item result = itemMapper.mapToBO(itemData);
+
+        // Then
+        assertThat(result.getWeight()).isEqualTo(40);
+    }
+
+    @Test
+    void mapToBO_defaultsToWeightOneWhenUnset() {
+        // Given: an item whose weight was never set
+        ItemData itemData = new ItemData();
+        itemData.setId("key");
+        itemData.setDescriptionData(descriptionData);
+
+        when(descriptionMapper.mapToBO(descriptionData)).thenReturn(descriptionProvider);
+
+        // When
+        Item result = itemMapper.mapToBO(itemData);
+
+        // Then
+        assertThat(result.getWeight()).isEqualTo(1);
+    }
+
+    @Test
     void mapToBO_convertsItemDataToItem() {
         // Given
         ItemData itemData = new ItemData();

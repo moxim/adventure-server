@@ -46,6 +46,8 @@ public class ItemEditorView extends VerticalLayout
     private static final int MIN_LUMEN = 0;
     private static final int MAX_LUMEN = 100;
     private static final int LUMEN_STEP = 1;
+    private static final int MIN_WEIGHT = 0;
+    private static final int WEIGHT_STEP = 1;
 
     private final transient AdventureService adventureService;
     private final transient ItemService itemService;
@@ -88,6 +90,7 @@ public class ItemEditorView extends VerticalLayout
         TextArea shortDescription = getShortDescTextArea();
         TextArea longDescription = getLongDescTextArea();
         IntegerField lumen = getLumenField();
+        IntegerField weight = getWeightField();
 
         // Checkboxes for item properties
         final var isContainableCheckbox = createIsContainableCheckbox();
@@ -118,7 +121,13 @@ public class ItemEditorView extends VerticalLayout
         binder.bind(isContainableCheckbox, ItemViewModel::isContainable, ItemViewModel::setContainable);
         binder.bind(isWearableCheckbox, ItemViewModel::isWearable, ItemViewModel::setWearable);
         binder.bind(isWornCheckbox, ItemViewModel::isWorn, ItemViewModel::setWorn);
-        binder.bind(lumen, ItemViewModel::getLumen, ItemViewModel::setLumen);
+        binder.forField(lumen).asRequired("Lumen is required")
+              .withValidator(value -> value >= MIN_LUMEN && value <= MAX_LUMEN,
+                             "Lumen must be between " + MIN_LUMEN + " and " + MAX_LUMEN)
+              .bind(ItemViewModel::getLumen, ItemViewModel::setLumen);
+        binder.forField(weight).asRequired("Weight is required")
+              .withValidator(value -> value >= MIN_WEIGHT, "Weight must not be negative")
+              .bind(ItemViewModel::getWeight, ItemViewModel::setWeight);
         binder.bindReadOnly(itemIdTF, ItemViewModel::getId);
         binder.bindReadOnly(locationIdTF, ItemViewModel::getLocationId);
         binder.bindReadOnly(adventureIdTF, ItemViewModel::getAdventureId);
@@ -132,7 +141,7 @@ public class ItemEditorView extends VerticalLayout
         });
 
         HorizontalLayout h1 = new HorizontalLayout(adjectiveSelector, nounSelector);
-        HorizontalLayout h2 = new HorizontalLayout(lumen);
+        HorizontalLayout h2 = new HorizontalLayout(lumen, weight);
         HorizontalLayout checkboxRow = new HorizontalLayout(isContainableCheckbox, isWearableCheckbox, isWornCheckbox,
                                                             commandsButton);
         checkboxRow.setSpacing(true);
@@ -210,6 +219,16 @@ public class ItemEditorView extends VerticalLayout
         field.setTooltipText(
                 "Set how much light this item emits, e.g. a lit torch. (" + MAX_LUMEN + " = max, " + MIN_LUMEN
                 + " = none)");
+        field.setValueChangeMode(ValueChangeMode.EAGER);
+        return field;
+    }
+
+    private IntegerField getWeightField() {
+        IntegerField field = new IntegerField("Weight");
+        field.setMin(MIN_WEIGHT);
+        field.setStep(WEIGHT_STEP);
+        field.setStepButtonsVisible(true);
+        field.setTooltipText("How heavy this item is (" + MIN_WEIGHT + " = weightless, default 1).");
         field.setValueChangeMode(ValueChangeMode.EAGER);
         return field;
     }
